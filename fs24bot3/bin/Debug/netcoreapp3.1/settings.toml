@@ -1,0 +1,14 @@
+[irc]
+name = "djmadest123"
+network = "irc.esper.net"
+channel = "#gentoo"
+reconnect = true
+port = 6697
+ssl = true
+ignore_ssl = true
+nickserv_pass = "zxcvbnM1"
+[services]
+jdoodle_client_id = "b2d6a6e27ac8571cb6c45311b85c7ae4"
+jdoodle_client_secret = "a11029c6024b6e1ea36718b94bdb3771d4fc85aea0bdb9b0ced0931f882676de"
+pastebin_key = "#cc.ru"
+yandex_translate_key = "0"
