@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\140bpmdubstep\\source\\repos\\fs24bot3\\fs24bot3\\fs24bot3.csproj": {}
+    "d:\\projects\\fs24bot3\\fs24bot3\\fs24bot3.csproj": {}
   },
   "projects": {
-    "C:\\Users\\140bpmdubstep\\source\\repos\\fs24bot3\\fs24bot3\\fs24bot3.csproj": {
+    "d:\\projects\\fs24bot3\\fs24bot3\\fs24bot3.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\140bpmdubstep\\source\\repos\\fs24bot3\\fs24bot3\\fs24bot3.csproj",
+        "projectUniqueName": "d:\\projects\\fs24bot3\\fs24bot3\\fs24bot3.csproj",
         "projectName": "fs24bot3",
-        "projectPath": "C:\\Users\\140bpmdubstep\\source\\repos\\fs24bot3\\fs24bot3\\fs24bot3.csproj",
+        "projectPath": "d:\\projects\\fs24bot3\\fs24bot3\\fs24bot3.csproj",
         "packagesPath": "C:\\Users\\140bpmdubstep\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\140bpmdubstep\\source\\repos\\fs24bot3\\fs24bot3\\obj\\",
+        "outputPath": "d:\\projects\\fs24bot3\\fs24bot3\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\140bpmdubstep\\AppData\\Roaming\\NuGet\\NuGet.Config",
