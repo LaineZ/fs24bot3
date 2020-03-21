@@ -70,7 +70,7 @@ namespace fs24bot3
                     Items =
                     {
                         {"name", "djmadest123"},
-                        {"network", "irc.esepr.net"},
+                        {"network", "irc.esper.net"},
                         {"channel", "#cc.ru" },
                         {"reconnect", true },
                         {"port", 6697 },

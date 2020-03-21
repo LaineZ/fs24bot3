@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Data.SQLite;
 
 namespace fs24bot3
 {
@@ -15,12 +16,14 @@ namespace fs24bot3
         public Irc Socket { get; }
 
         public string Channel => Message.Channel;
+        public SQLiteConnection Connection;
 
         // Pass your service provider to the base command context.
-        public CustomCommandContext(Message message, Irc socket, IServiceProvider provider = null) : base(provider)
+        public CustomCommandContext(Message message, Irc socket, SQLiteConnection connection, IServiceProvider provider = null) : base(provider)
         {
             Message = message;
             Socket = socket;
+            Connection = connection;
         }
     }
 
@@ -139,9 +142,30 @@ namespace fs24bot3
 
         [Command("stat")]
         [Qmmands.Description("Статы пользователя или себя")]
-        public void CollectGarbage(string nick = Context.Socket.)
+        public void Userstat(string nick = null)
         {
-            Context.Socket.SendMessage(Context.Channel, nick);
+            string userNick;
+            if (nick != null)
+            {
+                userNick = nick;
+            }
+            else
+            {
+                userNick = Context.Message.User;
+            }
+
+            var cmd = new SQLiteCommand(Context.Connection);
+            cmd.CommandText = "SELECT xp, level, need FROM nicks WHERE username = @username";
+            cmd.Parameters.AddWithValue("@username", userNick);
+            cmd.Prepare();
+            cmd.ExecuteNonQuery();
+
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+
+            while (rdr.Read())
+            {
+                Context.Socket.SendMessage(Context.Channel, "Статистика: " + userNick + " Уровень: " + rdr["level"] + " XP: " + rdr["xp"] + "/" + rdr["need"]);
+            }
         }
     }
 }

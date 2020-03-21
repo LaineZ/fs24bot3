@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Data.SQLite;
 
 namespace fs24bot3
 {
@@ -17,6 +18,7 @@ namespace fs24bot3
         public static CommandManager handler = null;
         private static string _currentChannel;
         private static bool connected = false;
+        private static SQLiteConnection connection;
 
         internal static void SwitchChannel(string channel)
         {
@@ -55,6 +57,9 @@ namespace fs24bot3
             server.Port = Convert.ToInt32(Configuration.port);
 
             SqlTools sql = new SqlTools("fsdb.sqlite");
+
+            connection = new SQLiteConnection(@"Data Source=fsdb.sqlite; Version=3;");
+            connection.Open();
 
             sql.init();
 
@@ -97,7 +102,7 @@ namespace fs24bot3
                     if (!CommandUtilities.HasPrefix(message.Text.TrimEnd(), '@', out string output))
                         return;
 
-                    IResult result = await _service.ExecuteAsync(output, new CustomCommandContext(message, _socket));
+                    IResult result = await _service.ExecuteAsync(output, new CustomCommandContext(message, _socket, connection));
                     if (result is FailedResult failedResult)
                         _socket.SendMessage(_currentChannel, failedResult.Reason + ": " + output);
                 }
