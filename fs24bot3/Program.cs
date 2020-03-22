@@ -6,7 +6,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Data.SQLite;
+using Serilog;
+using SQLite;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace fs24bot3
 {
@@ -44,9 +47,21 @@ namespace fs24bot3
 
         static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+            .WriteTo.ColoredConsole()
+            .MinimumLevel.Verbose()
+            .CreateLogger();
+
+            Shop.Init();
+
+            Log.Information("fs24_bot3 has started");
+
             IrcServer server = new IrcServer();
 
             Configuration.LoadConfiguration();
+
+            connection = new SQLiteConnection("fsdb.sqlite");
+            connection.CreateTable<Models.SQLUser.UserStats>();
 
             server.Hostname = Configuration.network;
             server.Name = "irc network";
@@ -56,12 +71,6 @@ namespace fs24bot3
             server.Ssl = Configuration.ssl;
             server.Port = Convert.ToInt32(Configuration.port);
 
-            SqlTools sql = new SqlTools("fsdb.sqlite");
-
-            connection = new SQLiteConnection(@"Data Source=fsdb.sqlite; Version=3;");
-            connection.Open();
-
-            sql.init();
 
             _socket = new IrcSocket(server);
             _socket.Connect();
@@ -70,10 +79,11 @@ namespace fs24bot3
 
             SwitchChannel("");
             _service.AddModule<CommandModule>();
+            _service.AddModule<SystemCommandModule>();
 
             while (!_socket.ReadOrWriteFailed)
             {
-
+                System.Threading.Thread.Sleep(1000);
             }
 
             Console.WriteLine("Socket connection lost....");
@@ -97,14 +107,45 @@ namespace fs24bot3
                     connected = true;
                 }
 
-                if (connected)
+                if (connected && message.User != "*")
                 {
+                    var query = connection.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(message.User));
+
+                    if (query.Count() <= 0)
+                    {
+                        Log.Warning("User {0} not found in database", message.User);
+
+                        var inv = new Models.ItemInventory.Inventory() { Items = new List<Models.ItemInventory.Item>() };
+
+                        // just add random item to init invertory properly...
+                        inv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem("money").Name, Count = 10});
+
+                        var user = new Models.SQLUser.UserStats()
+                        {
+                            Nick = message.User,
+                            Admin = 0,
+                            AdminPassword = "changeme",
+                            Level = 1,
+                            Xp = 0,
+                            Need = 300,
+                            JsonInv = JsonConvert.SerializeObject(inv).ToString()
+                        };
+
+                        connection.Insert(user);
+
+                    }
+                    else
+                    {
+                        SQLTools sql = new SQLTools();
+                        sql.increaseXp(connection, message.User, message.Text.Length + 1);
+                    }
+
                     if (!CommandUtilities.HasPrefix(message.Text.TrimEnd(), '@', out string output))
                         return;
 
                     IResult result = await _service.ExecuteAsync(output, new CustomCommandContext(message, _socket, connection));
                     if (result is FailedResult failedResult)
-                        _socket.SendMessage(_currentChannel, failedResult.Reason + ": " + output);
+                        _socket.SendMessage(_currentChannel, failedResult.Reason + " command: " + output);
                 }
             }
         }

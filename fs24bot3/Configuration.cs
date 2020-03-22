@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Serilog;
+using System.IO;
 using Tomlyn;
 using Tomlyn.Model;
 using Tomlyn.Syntax;
@@ -61,6 +62,7 @@ namespace fs24bot3
         {
             if (!File.Exists("settings.toml"))
             {
+                Log.Warning("unable to load configuraion file: creating new");
                 var doc = new DocumentSyntax()
                 {
                     Tables =
@@ -114,6 +116,7 @@ namespace fs24bot3
                 jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
                 pastebinKey = (string)((TomlTable)table["services"])["pastebin_key"];
                 yandexTrKey = (string)((TomlTable)table["services"])["yandex_translate_key"];
+                Log.Information("configuration loaded");
             }
         }
      }

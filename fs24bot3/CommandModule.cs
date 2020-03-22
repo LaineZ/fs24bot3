@@ -5,7 +5,8 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Data.SQLite;
+using SQLite;
+using Serilog;
 
 namespace fs24bot3
 {
@@ -29,25 +30,19 @@ namespace fs24bot3
 
     public sealed class CommandModule : ModuleBase<CustomCommandContext>
     {
-        // Dependency Injection via the constructor or public settable properties.
-        // CommandService and IServiceProvider self-inject into modules,
-        // properties and other types are requested from the provided IServiceProvider
         public CommandService Service { get; set; }
 
         readonly HttpTools http = new HttpTools();
 
-        // Invoked with:   !help
-        // Responds with:  `help` - Lists available commands.
-        //                 `sum` - Sums two given numbers.
-        //                 `echo` - Echoes given text.
         [Command("help", "commands")]
         [Qmmands.Description("Список команд")]
         public async void Help()
         {
             Context.Socket.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
             var cmds = Service.GetAllCommands();
-            var commandsOutput = "";
-            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"`{x.Name}` - {x.Description}"));
+            string commandsOutput;
+            var shop = Shop.ShopItems.Where(x => x.Sellable == true);
+            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"`{x.Name}` - {x.Description}")) + "\nМагазин:\n" + string.Join("\n", shop.Select(x =>$"[{x.Slug}] {x.Name}: Цена: {x.Price}"));
             try
             {
                 string link = await http.UploadToPastebin(commandsOutput);
@@ -56,6 +51,21 @@ namespace fs24bot3
             catch (NullReferenceException)
             {
                 Context.Socket.SendMessage(Context.Channel, "Да блин чё такое link снова null!");
+            }
+        }
+
+        [Command("helpcmd")]
+        [Qmmands.Description("Помощь по команде")]
+        public void HelpСmd(string command)
+        {
+            foreach (var cmd in Service.GetAllCommands())
+            {
+                if (cmd.Name == command)
+                {
+                    Context.Socket.SendMessage(Context.Channel, 
+                        cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters) + " - " + cmd.Description);
+                    break;
+                }
             }
         }
 
@@ -73,16 +83,36 @@ namespace fs24bot3
 
             Models.MailSearch.RootObject items = JsonConvert.DeserializeObject<Models.MailSearch.RootObject>(searchData);
 
-            StringBuilder searchResult = new StringBuilder(items.serp.results[0].title);
-            searchResult.Replace("<b>", Models.IrcColors.Bold);
-            searchResult.Replace("</b>", Models.IrcColors.Reset);
-            string url = items.serp.results[0].url;
+            Log.Information("@MS: Antirobot-blocked?: {0}", items.antirobot.blocked);
 
-            Context.Socket.SendMessage(Context.Channel, searchResult.ToString() + Models.IrcColors.Green + " // " + url);
+            foreach (var item in items.serp.results)
+            {
+                if (!item.is_porno)
+                {
+                    StringBuilder searchResult = new StringBuilder(item.title);
+                    searchResult.Replace("<b>", Models.IrcColors.Bold);
+                    searchResult.Replace("</b>", Models.IrcColors.Reset);
+
+                    StringBuilder descResult = new StringBuilder(item.passage);
+                    descResult.Replace("<b>", Models.IrcColors.Bold);
+                    descResult.Replace("</b>", Models.IrcColors.Reset);
+
+
+                    string url = item.url;
+
+                    Context.Socket.SendMessage(Context.Channel, searchResult.ToString() + Models.IrcColors.Green + " // " + url);
+                    Context.Socket.SendMessage(Context.Channel, descResult.ToString());
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
         }
 
         [Command("execute", "exec")]
-        [Qmmands.Description("REPL")]
+        [Qmmands.Description("REPL поддерживает полно языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
         public async void ExecuteAPI(string lang, [Remainder] string code)
         {
             HttpClient client = new HttpClient();
@@ -123,24 +153,7 @@ namespace fs24bot3
             }
         }
 
-        [Command("version")]
-        [Qmmands.Description("Версия проги")]
-        public void Version()
-        {
-            var os = Environment.OSVersion;
-            Context.Socket.SendMessage(Context.Channel, String.Format("NET: {0} Система: {1} Версия: {2} Версия системы: {3}",
-                Environment.Version.ToString(), os.Platform, os.VersionString, os.Version));
-        }
-
-        [Command("gc")]
-        [Qmmands.Description("Вывоз мусора")]
-        public void CollectGarbage()
-        {
-            GC.Collect();
-            Context.Socket.SendMessage(Context.Channel, "Мусор вывезли!");
-        }
-
-        [Command("stat")]
+        [Command("stat", "stats")]
         [Qmmands.Description("Статы пользователя или себя")]
         public void Userstat(string nick = null)
         {
@@ -154,17 +167,33 @@ namespace fs24bot3
                 userNick = Context.Message.User;
             }
 
-            var cmd = new SQLiteCommand(Context.Connection);
-            cmd.CommandText = "SELECT xp, level, need FROM nicks WHERE username = @username";
-            cmd.Parameters.AddWithValue("@username", userNick);
-            cmd.Prepare();
-            cmd.ExecuteNonQuery();
+            SQLTools sql = new SQLTools();
 
-            SQLiteDataReader rdr = cmd.ExecuteReader();
-
-            while (rdr.Read())
+            var data = sql.getUserInfo(Context.Connection, userNick);
+            if (data != null)
             {
-                Context.Socket.SendMessage(Context.Channel, "Статистика: " + userNick + " Уровень: " + rdr["level"] + " XP: " + rdr["xp"] + "/" + rdr["need"]);
+                Context.Socket.SendMessage(Context.Channel, "Статистика: " + data.Nick + " Уровень: " + data.Level + " XP: " + data.Xp + "/" + data.Need);
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, "Пользователя не существует");
+            }
+        }
+
+        [Command("inv", "inventory")]
+        [Qmmands.Description("Инвентарь")]
+        public void Userstat()
+        {
+            SQLTools sql = new SQLTools();
+            var userinfo = sql.getUserInfo(Context.Connection, Context.Message.User);
+
+            Context.Socket.SendMessage(Context.Channel, Context.Message.User + ": Ваш инвентарь");
+
+            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
+
+            foreach (var items in userInv.Items)
+            {
+                Context.Socket.SendMessage(Context.Channel, items.Name + " x" + items.Count);
             }
         }
     }
