@@ -27,7 +27,7 @@ namespace fs24bot3
             cmd.Parameters.AddWithValue("@username", username);
             cmd.Parameters.AddWithValue("@xp", xp);
             prepareAndExec(cmd);
-
+ 
             cmd.CommandText = "SELECT xp, level, need FROM nicks WHERE username = @username LIMIT 1";
             cmd.Parameters.AddWithValue("@username", username);
             prepareAndExec(cmd);
