@@ -13,10 +13,11 @@ namespace fs24bot3.Checks
 
         public override ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
-            SQLTools sql = new SQLTools();
 
-            var context = _ as CustomCommandContext;
-            return sql.getUserInfo(context.Connection, context.Message.User).Admin == 2
+            var context = _ as CommandProcessor.CustomCommandContext;
+
+            UserOperations usr = new UserOperations(context.Message.User, context.Connection);
+            return usr.GetUserInfo().Admin == 2
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful("Это команда только для админов!");
         }

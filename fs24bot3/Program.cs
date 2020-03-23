@@ -78,8 +78,9 @@ namespace fs24bot3
             handler = _socket.CommandManager;
 
             SwitchChannel("");
-            _service.AddModule<CommandModule>();
+            _service.AddModule<GenericCommandsModule>();
             _service.AddModule<SystemCommandModule>();
+            _service.AddModule<InventoryCommandsModule>();
 
             while (!_socket.ReadOrWriteFailed)
             {
@@ -136,15 +137,15 @@ namespace fs24bot3
                     }
                     else
                     {
-                        SQLTools sql = new SQLTools();
-                        sql.increaseXp(connection, message.User, message.Text.Length + 1);
+                        UserOperations usr = new UserOperations(message.User, connection);
+                        usr.IncreaseXp(message.Text.Length + 1);
                     }
 
                     if (!CommandUtilities.HasPrefix(message.Text.TrimEnd(), '@', out string output))
                         return;
 
-                    IResult result = await _service.ExecuteAsync(output, new CustomCommandContext(message, _socket, connection));
-                    if (result is FailedResult failedResult)
+                    IResult result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(message, _socket, connection));
+                    if (result is FailedResult failedResult && !(result is CommandNotFoundResult _))
                         _socket.SendMessage(_currentChannel, failedResult.Reason + " command: " + output);
                 }
             }

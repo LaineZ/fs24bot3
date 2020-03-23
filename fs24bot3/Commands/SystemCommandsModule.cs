@@ -1,10 +1,11 @@
 ﻿using Qmmands;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace fs24bot3
 {
-    public sealed class SystemCommandModule : ModuleBase<CustomCommandContext>
+    public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
 
         public CommandService Service { get; set; }
@@ -32,10 +33,30 @@ namespace fs24bot3
         [Checks.CheckAdmin]
         public void Give(string username, string item, int count)
         {
-            SQLTools sql = new SQLTools();
+            UserOperations sql = new UserOperations(username, Context.Connection);
 
-            sql.AddItemToInv(item, username, count, Context.Connection);
+            sql.AddItemToInv(item, count);
             Context.Socket.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.getItem(item).Name + " пользователю " + username);
+        }
+
+        [Command("xp")]
+        [Checks.CheckAdmin]
+        public void GiveXp(string username, int count)
+        {
+            UserOperations sql = new UserOperations(username, Context.Connection);
+
+            sql.IncreaseXp(count);
+            Context.Socket.SendMessage(Context.Channel, "Вы установили " +  count + " xp пользователю " + username);
+        }
+
+        [Command("level")]
+        [Checks.CheckAdmin]
+        public void GiveLevel(string username, int count)
+        {
+            UserOperations sql = new UserOperations(username, Context.Connection);
+
+            sql.SetLevel(count);
+            Context.Socket.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
         }
     }
 }

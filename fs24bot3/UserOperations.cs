@@ -8,38 +8,48 @@ using System.Linq;
 
 namespace fs24bot3
 {
-    class SQLTools
+    class UserOperations
     {
-        public bool increaseXp(SQLiteConnection connect, string username, int count)
+        public string Username;
+        public SQLiteConnection Connect;
+
+        public UserOperations(string username, SQLiteConnection Connection)
         {
-            var query = connect.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(username));
+            Username = username;
+            Connect = Connection;
+        }
+
+
+        public bool IncreaseXp(int count)
+        {
+            var query = Connect.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(Username));
 
             foreach (var nick in query)
             {
-                connect.Execute("UPDATE UserStats SET Xp = Xp + ? WHERE Nick = ?", count, nick.Nick);
+                Connect.Execute("UPDATE UserStats SET Xp = Xp + ? WHERE Nick = ?", count, nick.Nick);
 
                 Log.Verbose("{4}: Setting level: {0} {1} Current data: {2}/{3}", count, nick.Level, nick.Xp, nick.Need, nick.Nick);
 
                 if (nick.Xp >= nick.Need)
                 {
-                    connect.Execute("UPDATE UserStats SET Level = Level + 1 WHERE Nick = ?", nick.Nick);
-                    connect.Execute("UPDATE UserStats SET Xp = 0 WHERE Nick = ?", nick.Nick);
-                    connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", nick.Nick);
+                    Connect.Execute("UPDATE UserStats SET Level = Level + 1 WHERE Nick = ?", nick.Nick);
+                    Connect.Execute("UPDATE UserStats SET Xp = 0 WHERE Nick = ?", nick.Nick);
+                    Connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", nick.Nick);
                     return true;
                 }
             }
             return false;
         }
 
-        public void setLevel(SQLiteConnection connect, string username, int level)
+        public void SetLevel(int level)
         {
-            connect.Execute("UPDATE UserStats SET Level = ? WHERE Nick = ?", level, username);
-            connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", username);
+            Connect.Execute("UPDATE UserStats SET Level = ? WHERE Nick = ?", level, Username);
+            Connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", Username);
         }
 
-        public Models.SQLUser.UserStats getUserInfo(SQLiteConnection connect, string username)
+        public Models.SQLUser.UserStats GetUserInfo()
         {
-            var query = connect.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(username));
+            var query = Connect.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(Username));
             foreach (var nick in query)
             {
                 return nick;
@@ -47,15 +57,13 @@ namespace fs24bot3
             return null;
         }
 
-        public bool RemItemFromInv(string name, string username, int count, SQLite.SQLiteConnection connect)
+        public bool RemItemFromInv(string name, int count)
         {
-            SQLTools sql = new SQLTools();
-
-            var userinfo = sql.getUserInfo(connect, username);
+            var userinfo = GetUserInfo();
 
             if (userinfo == null)
             {
-                Log.Error("User " + username + " not exsist!");
+                Log.Error("User " + Username + " not exsist!");
                 return false;
             }
 
@@ -64,19 +72,18 @@ namespace fs24bot3
             int itemToRemove = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem(name).Name) && item.Count > count);
             userInv.Items[itemToRemove].Count -= count; 
 
-            connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), username);
+            Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
             return true;
         }
 
-        public bool AddItemToInv(string name, string username, int count, SQLite.SQLiteConnection connect)
+        public bool AddItemToInv(string name, int count)
         {
-            SQLTools sql = new SQLTools();
 
-            var userinfo = sql.getUserInfo(connect, username);
+            var userinfo = GetUserInfo();
 
             if (userinfo == null)
             {
-                Log.Error("User " + username + " not exsist!");
+                Log.Error("User " + Username + " not exsist!");
                 return false;
             }
 
@@ -100,7 +107,7 @@ namespace fs24bot3
                 userInv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem(name).Name, Count = count });
             }
            
-            connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(),  username);
+            Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
             return true;
         }
     }

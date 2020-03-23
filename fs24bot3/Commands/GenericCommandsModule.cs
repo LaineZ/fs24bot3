@@ -1,34 +1,19 @@
 ﻿using IrcClientCore;
 using Newtonsoft.Json;
 using Qmmands;
+using Qmmands.Delegates;
+using Serilog;
+using SQLite;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using SQLite;
-using Serilog;
 
 namespace fs24bot3
 {
 
-    public sealed class CustomCommandContext : CommandContext
-    {
-        public Message Message { get; }
-        public Irc Socket { get; }
-
-        public string Channel => Message.Channel;
-        public SQLiteConnection Connection;
-
-        // Pass your service provider to the base command context.
-        public CustomCommandContext(Message message, Irc socket, SQLiteConnection connection, IServiceProvider provider = null) : base(provider)
-        {
-            Message = message;
-            Socket = socket;
-            Connection = connection;
-        }
-    }
-
-    public sealed class CommandModule : ModuleBase<CustomCommandContext>
+    public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
         public CommandService Service { get; set; }
 
@@ -42,7 +27,7 @@ namespace fs24bot3
             var cmds = Service.GetAllCommands();
             string commandsOutput;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
-            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"`{x.Name}` - {x.Description}")) + "\nМагазин:\n" + string.Join("\n", shop.Select(x =>$"[{x.Slug}] {x.Name}: Цена: {x.Price}"));
+            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"`{x.Name}` - {x.Description}")) + "\nМагазин:\n" + string.Join("\n", shop.Select(x => $"[{x.Slug}] {x.Name}: Цена: {x.Price}"));
             try
             {
                 string link = await http.UploadToPastebin(commandsOutput);
@@ -62,7 +47,7 @@ namespace fs24bot3
             {
                 if (cmd.Name == command)
                 {
-                    Context.Socket.SendMessage(Context.Channel, 
+                    Context.Socket.SendMessage(Context.Channel,
                         cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters) + " - " + cmd.Description);
                     break;
                 }
@@ -167,9 +152,9 @@ namespace fs24bot3
                 userNick = Context.Message.User;
             }
 
-            SQLTools sql = new SQLTools();
+            UserOperations usr = new UserOperations(userNick, Context.Connection);
 
-            var data = sql.getUserInfo(Context.Connection, userNick);
+            var data = usr.GetUserInfo();
             if (data != null)
             {
                 Context.Socket.SendMessage(Context.Channel, "Статистика: " + data.Nick + " Уровень: " + data.Level + " XP: " + data.Xp + "/" + data.Need);
@@ -180,20 +165,31 @@ namespace fs24bot3
             }
         }
 
-        [Command("inv", "inventory")]
-        [Qmmands.Description("Инвентарь")]
-        public void Userstat()
+        [Command("tr", "translate")]
+        [Qmmands.Description("Переводчик")]
+        public async void Translate(string lang, [Remainder] string text)
         {
-            SQLTools sql = new SQLTools();
-            var userinfo = sql.getUserInfo(Context.Connection, Context.Message.User);
+            HttpClient client = new HttpClient();
 
-            Context.Socket.SendMessage(Context.Channel, Context.Message.User + ": Ваш инвентарь");
 
-            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
+            var formVariables = new List<KeyValuePair<string, string>>();
+            formVariables.Add(new KeyValuePair<string, string>("text", text));
+            var formContent = new FormUrlEncodedContent(formVariables);
 
-            foreach (var items in userInv.Items)
+            var response = await client.PostAsync("https://translate.yandex.net/api/v1.5/tr.json/translate?lang=" + lang + "&key=" + Configuration.yandexTrKey, formContent);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            Log.Verbose(responseString);
+
+            var translatedOutput = JsonConvert.DeserializeObject<Models.YandexTranslate.RootObject>(responseString);
+
+            if (translatedOutput.text != null)
             {
-                Context.Socket.SendMessage(Context.Channel, items.Name + " x" + items.Count);
+                Context.Socket.SendMessage(Context.Channel, translatedOutput.text[0] + "(translate.yandex.ru) " + translatedOutput.lang);
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
             }
         }
     }
