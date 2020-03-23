@@ -15,6 +15,7 @@ namespace fs24bot3
             Log.Information("loading shop...");
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍺 Пиво", Price = 500, Sellable = true, Slug = "beer" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 1000, Sellable = true, Slug = "wine" });
             Log.Information("done");
         }
 

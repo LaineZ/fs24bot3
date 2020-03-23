@@ -1,0 +1,45 @@
+# the name of the provider. this will be shown in MusicBee's settings
+name: 'Example'
+
+# the loader for this provider: static, search, api
+loader: static
+
+# prepare the input
+variables:
+	# filters to apply to the artist
+	artist:
+		type: artist # the source of the value
+		filters:
+		- strip_diacritics
+		- [stripdown, _]
+		- urlencode
+
+	# filters to apply to the album
+	# album: skip entry omitted as it isn't needed
+
+	# filters to apply to the title
+	title:
+		type: title
+		filters: artist # reference the filters of artist    
+
+post-filters:
+- strip_html
+- utf8_encode
+- trim
+
+validations:
+- [not contains, Click here to submit these lyrics]
+
+config:
+	# the URL to request. {artist}, {album} and {title} are placeholders for the values from the song.
+	url: "http://www.azlyrics.com/lyrics/{artist}/{title}.html"
+    
+	# The regular expression to apply to the content of the website. The pattern must contain a named capturing group called "lyrics" like: (?<lyrics>.+?)
+	# variables are allowed as well
+	pattern: '<!-- start of lyrics -->(?<lyrics>.+?)<!-- end of lyrics -->'
+
+	# The options for the pattern:
+	# - i: case insensitive
+	#
+	# more to come
+	pattern-options: 'i'

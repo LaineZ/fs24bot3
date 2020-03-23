@@ -56,5 +56,23 @@ namespace fs24bot3
                 Context.Socket.SendMessage(Context.Channel, "Вы не можете это продать!");
             }
         }
+
+        [Command("transfer")]
+        [Qmmands.Description("Передатать вещи")]
+        public void Transfer(string destanationNick, string itemname, int count)
+        {
+            UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
+            UserOperations destanation = new UserOperations(destanationNick, Context.Connection);
+
+            if (user.RemItemFromInv(Shop.getItem(itemname).Name, count))
+            {
+                destanation.AddItemToInv(itemname, count);
+                Context.Socket.SendMessage(Context.Channel, $"Вы успешно передали {Shop.getItem(itemname).Name} x{count} пользователю {destanationNick}");
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, "У вас нет таких предметов!");
+            }
+        }
     }
 }
