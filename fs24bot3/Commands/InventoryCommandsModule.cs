@@ -29,14 +29,16 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
 
-            if (user.RemItemFromInv("money", Shop.getItem("money").Price * count))
+            bool sucessfully = user.RemItemFromInv("money", count);
+
+            if (sucessfully)
             {
                 user.AddItemToInv(itemname, count);
                 Context.Socket.SendMessage(Context.Channel, "Вы успешно купили " + Shop.getItem(itemname).Name + " за " + Shop.getItem(itemname).Price * count + " денег");
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Недостаточно денег: " + Shop.getItem("money").Price * count);
+                Context.Socket.SendMessage(Context.Channel, "Недостаточно денег: " + Shop.getItem(itemname).Price * count);
             }
         }
 
@@ -72,6 +74,39 @@ namespace fs24bot3
             else
             {
                 Context.Socket.SendMessage(Context.Channel, "У вас нет таких предметов!");
+            }
+        }
+
+        [Command("topitem")]
+        [Qmmands.Description("Топ по предматам, по стандарту показывает топ по деньгам")]
+        public void TopItem(string itemname = "money")
+        {
+            var top = new List<(string Name, int Count)>();
+
+            var query = Context.Connection.Table<Models.SQLUser.UserStats>();
+            foreach (var users in query)
+            {
+                UserOperations user = new UserOperations(users.Nick, Context.Connection);
+                var userinfo = user.GetUserInfo();
+                var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
+                int itemToCount = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem(itemname).Name));
+                if (itemToCount > 0)
+                {
+                    top.Add((userinfo.Nick, userInv.Items[itemToCount].Count));
+                }
+            }
+            var result = top.OrderByDescending(p => p.Count).ToList();
+
+            if (result.Count > 4)
+            {
+                result.RemoveRange(4, result.Count - 4);
+            }
+
+            Context.Socket.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.getItem(itemname).Name);
+
+            foreach (var topuser in result)
+            {
+                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
             }
         }
     }

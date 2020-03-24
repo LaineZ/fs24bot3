@@ -35,6 +35,13 @@ namespace fs24bot3
 
         public async Task<String> UploadToPastebin(string data)
         {
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            };
+
+
             Models.PastebinUpload.RootObject paste = new Models.PastebinUpload.RootObject();
 
             paste.sections = new List<Models.PastebinUpload.Section>();
@@ -55,7 +62,7 @@ namespace fs24bot3
 
             var response = await client.PostAsync("https://api.paste.ee/v1/pastes", c);
             var responseString = await response.Content.ReadAsStringAsync();
-            var jsonOutput = JsonConvert.DeserializeObject<Models.PastebinUpload.Output>(responseString);
+            var jsonOutput = JsonConvert.DeserializeObject<Models.PastebinUpload.Output>(responseString, settings);
 
             Console.WriteLine(responseString);
 

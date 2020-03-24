@@ -70,10 +70,17 @@ namespace fs24bot3
             var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
 
             int itemToRemove = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem(name).Name) && item.Count > count);
-            userInv.Items[itemToRemove].Count -= count; 
-
-            Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
-            return true;
+            if (itemToRemove > 0 && userInv.Items[itemToRemove].Count >= count)
+            {
+                userInv.Items[itemToRemove].Count -= count;
+                Log.Information("User {0} removed {1} sucessfully!", name, count);
+                Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public bool AddItemToInv(string name, int count)

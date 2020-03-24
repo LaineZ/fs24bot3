@@ -1,4 +1,5 @@
-﻿using IrcClientCore;
+﻿using HtmlAgilityPack;
+using IrcClientCore;
 using Newtonsoft.Json;
 using Qmmands;
 using Qmmands.Delegates;
@@ -115,22 +116,11 @@ namespace fs24bot3
             var responseString = await response.Content.ReadAsStringAsync();
             var jsonOutput = JsonConvert.DeserializeObject<Models.APIExec.Output>(responseString);
 
-            int count = 0;
 
             if (jsonOutput.output != null)
             {
                 Context.Socket.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
-                foreach (string outputstr in jsonOutput.output.Split("\n"))
-                {
-                    Context.Socket.SendMessage(Context.Channel, outputstr);
-                    count++;
-                    if (count > 4)
-                    {
-                        string link = await http.UploadToPastebin(jsonOutput.output);
-                        Context.Socket.SendMessage(Context.Channel, "Полный вывод здесь: " + link);
-                        break;
-                    }
-                }
+                Context.SendMultiLineMessage(jsonOutput.output);
             }
             else
             {
@@ -167,9 +157,26 @@ namespace fs24bot3
 
         [Command("lyrics", "lyr")]
         [Qmmands.Description("Текст песни")]
-        public void Lyrics(string providername, string artist, [Remainder] string title)
+        public async void Lyrics([Remainder] string song)
         {
-            
+            var data = song.Split(" - ");
+            if (data.Length > 0)
+            {
+                try
+                {
+                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1]);
+
+                    Context.SendMultiLineMessage(await lyrics.GetLyrics());
+                }
+                catch (Exception e)
+                {
+                    Context.SendMultiLineMessage("Ошибка при получении слов: " + e.Message);
+                }
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, "Instumental");
+            }
         }
 
 
