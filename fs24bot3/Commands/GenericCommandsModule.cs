@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using CubeIsland.LyricsReloaded;
-using CubeIsland.LyricsReloaded.Provider;
 
 namespace fs24bot3
 {
@@ -171,15 +169,7 @@ namespace fs24bot3
         [Qmmands.Description("Текст песни")]
         public void Lyrics(string providername, string artist, [Remainder] string title)
         {
-            LyricsReloaded lyricsReloaded = new LyricsReloaded(".");
-            lyricsReloaded.loadConfigurations();
-
-            Context.Socket.SendMessage(Context.Channel, "Юзаем провайдер:" + providername);
-
-            Provider provider = lyricsReloaded.getProviderManager().getProvider(providername);
-            string lyrics = provider.getLyrics(artist, title, "");
-            Log.Verbose("lyrics: " + lyrics);
-            Context.Socket.SendMessage(Context.Channel, "Размер песни" + lyrics.Length);
+            
         }
 
 

@@ -73,7 +73,7 @@ namespace fs24bot3
                     {
                         {"name", "djmadest123"},
                         {"network", "irc.esper.net"},
-                        {"channel", "#cc.ru" },
+                        {"channel", "#gentoo" },
                         {"reconnect", true },
                         {"port", 6697 },
                         {"ssl", true },
