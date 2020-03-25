@@ -3,6 +3,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace fs24bot3
 {
@@ -14,9 +15,46 @@ namespace fs24bot3
         {
             Log.Information("loading shop...");
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍺 Пиво", Price = 500, Sellable = true, Slug = "beer" });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 1000, Sellable = true, Slug = "wine" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍺 Пиво", Price = 200, Sellable = true, Slug = "beer" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 200, Sellable = true, Slug = "wine" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔧 Гаечный ключ", Price = 300, Sellable = true, Slug = "wrench" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🛠 Гаечный ключ и молоток", Price = 400, Sellable = true, Slug = "wrenchadv" });
             Log.Information("done");
+        }
+
+        public static void Update()
+        {
+            foreach (var shopItem in ShopItems)
+            {
+                Random rand = new Random();
+                int check = rand.Next(0, 1);
+                if (check == 1)
+                {
+                    Log.Verbose("Incresing price for {0}", shopItem.Name);
+                    shopItem.Price += 1;
+                }
+                Log.Verbose("Check status: {0}", check);
+            }
+        }
+
+        public static double GetMoneyAvg(SQLite.SQLiteConnection connect)
+        {
+            var money = new List<int>();
+
+            var query = connect.Table<Models.SQLUser.UserStats>();
+            foreach (var users in query)
+            {
+                UserOperations user = new UserOperations(users.Nick, connect);
+                var userinfo = user.GetUserInfo();
+                var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
+                int itemToCount = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem("money").Name));
+                if (itemToCount > 0)
+                {
+                    money.Add(userInv.Items[itemToCount].Count);
+                }
+            }
+
+            return money.Average();
         }
 
         public static Models.ItemInventory.Shop getItem(string name)

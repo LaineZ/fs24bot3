@@ -85,6 +85,7 @@ namespace fs24bot3
             while (!_socket.ReadOrWriteFailed)
             {
                 System.Threading.Thread.Sleep(1000);
+                Shop.Update();
             }
 
             Console.WriteLine("Socket connection lost....");

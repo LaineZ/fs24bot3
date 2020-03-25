@@ -109,5 +109,15 @@ namespace fs24bot3
                 Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
             }
         }
+
+
+        [Command("wrench")]
+        [Qmmands.Description("Топ по предматам, по стандарту показывает топ по деньгам")]
+        public void Wrench(string username)
+        {
+            UserOperations user = new UserOperations(username, Context.Connection);
+            var userinfo = user.GetUserInfo();
+            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
+        }
     }
 }
