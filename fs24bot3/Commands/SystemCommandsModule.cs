@@ -19,6 +19,13 @@ namespace fs24bot3
                 Environment.Version.ToString(), os.Platform, os.VersionString, os.Version));
         }
 
+        [Command("marcroeconomycs")]
+        [Qmmands.Description("Макроэкономические показатели")]
+        public void Economy()
+        {
+            Context.Socket.SendMessage(Context.Channel, Shop.PaydaysCount.ToString());
+        }
+
         [Command("gc")]
         [Checks.CheckAdmin]
         [Qmmands.Description("Вывоз мусора")]

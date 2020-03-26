@@ -10,6 +10,7 @@ namespace fs24bot3
     public static class Shop
     {
         public static List<Models.ItemInventory.Shop> ShopItems = new List<Models.ItemInventory.Shop>();
+        public static int PaydaysCount;
         private static Random rand;
 
         public static void Init()
@@ -41,6 +42,18 @@ namespace fs24bot3
                         Log.Verbose("Incresing price for {0}", shopItem.Name);
                         shopItem.Price += 1;
                     }
+                }
+            }
+            int checkPayday = rand.Next(0, 100);
+            if (checkPayday == 8)
+            {
+                Log.Information("Giving payday!");
+                var query = connect.Table<Models.SQL.UserStats>();
+                foreach (var users in query)
+                {
+                    UserOperations user = new UserOperations(users.Nick, connect);
+                    user.AddItemToInv("money", user.GetUserInfo().Level);
+                    PaydaysCount++;
                 }
             }
         }
