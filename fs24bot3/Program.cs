@@ -51,17 +51,15 @@ namespace fs24bot3
             .WriteTo.ColoredConsole()
             .MinimumLevel.Verbose()
             .CreateLogger();
-
-            Shop.Init();
-
             Log.Information("fs24_bot3 has started");
-
+            Shop.Init();
             IrcServer server = new IrcServer();
 
             Configuration.LoadConfiguration();
 
             connection = new SQLiteConnection("fsdb.sqlite");
-            connection.CreateTable<Models.SQLUser.UserStats>();
+            connection.CreateTable<Models.SQL.UserStats>();
+            connection.CreateTable<Models.SQL.CustomUserCommands>();
 
             server.Hostname = Configuration.network;
             server.Name = "irc network";
@@ -85,7 +83,7 @@ namespace fs24bot3
             while (!_socket.ReadOrWriteFailed)
             {
                 System.Threading.Thread.Sleep(1000);
-                Shop.Update();
+                Shop.Update(connection);
             }
 
             Console.WriteLine("Socket connection lost....");
@@ -111,7 +109,7 @@ namespace fs24bot3
 
                 if (connected && message.User != "*")
                 {
-                    var query = connection.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(message.User));
+                    var query = connection.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(message.User));
 
                     if (query.Count() <= 0)
                     {
@@ -122,7 +120,7 @@ namespace fs24bot3
                         // just add random item to init invertory properly...
                         inv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem("money").Name, Count = 10});
 
-                        var user = new Models.SQLUser.UserStats()
+                        var user = new Models.SQL.UserStats()
                         {
                             Nick = message.User,
                             Admin = 0,
@@ -146,8 +144,14 @@ namespace fs24bot3
                         return;
 
                     IResult result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(message, _socket, connection));
-                    if (result is FailedResult failedResult && !(result is CommandNotFoundResult _))
-                        _socket.SendMessage(_currentChannel, failedResult.Reason + " command: " + output);
+                    if (result is FailedResult failedResult)
+                    {
+                        Core.CustomCommandProcessor.ProcessCmd(_socket, message, connection);
+                        if (!(result is CommandNotFoundResult _))
+                        {
+                            _socket.SendMessage(_currentChannel, failedResult.Reason + " command: " + output);
+                        }
+                    }
                 }
             }
         }

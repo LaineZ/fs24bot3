@@ -29,16 +29,18 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
 
-            bool sucessfully = user.RemItemFromInv("money", count);
+            int buyprice = Shop.getItem(itemname).Price * count;
+
+            bool sucessfully = user.RemItemFromInv("money", buyprice);
 
             if (sucessfully)
             {
-                user.AddItemToInv(itemname, count);
-                Context.Socket.SendMessage(Context.Channel, "Вы успешно купили " + Shop.getItem(itemname).Name + " за " + Shop.getItem(itemname).Price * count + " денег");
+                Context.Socket.SendMessage(Context.Channel, "Вы успешно купили " + Shop.getItem(itemname).Name + " за " + buyprice + " денег");
+                Shop.getItem(itemname).Price += 25;
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Недостаточно денег: " + Shop.getItem(itemname).Price * count);
+                Context.Socket.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
             }
         }
 
@@ -50,8 +52,10 @@ namespace fs24bot3
 
             if (user.RemItemFromInv(Shop.getItem(itemname).Name, count))
             {
-                user.AddItemToInv("money", Shop.getItem(itemname).Price * count);
-                Context.Socket.SendMessage(Context.Channel, "Вы успешно продали " + Shop.getItem(itemname).Name + " за " + Shop.getItem(itemname).Price * count + " денег");
+                // tin
+                int sellprice = (int)Math.Floor((decimal)(Shop.getItem(itemname).Price * count) / 2);
+                user.AddItemToInv("money", sellprice);
+                Context.Socket.SendMessage(Context.Channel, "Вы успешно продали " + Shop.getItem(itemname).Name + " за " + sellprice + " денег");
             }
             else
             {
@@ -83,7 +87,7 @@ namespace fs24bot3
         {
             var top = new List<(string Name, int Count)>();
 
-            var query = Context.Connection.Table<Models.SQLUser.UserStats>();
+            var query = Context.Connection.Table<Models.SQL.UserStats>();
             foreach (var users in query)
             {
                 UserOperations user = new UserOperations(users.Nick, Context.Connection);

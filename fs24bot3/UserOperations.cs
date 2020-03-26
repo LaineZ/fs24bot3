@@ -22,7 +22,7 @@ namespace fs24bot3
 
         public bool IncreaseXp(int count)
         {
-            var query = Connect.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(Username));
+            var query = Connect.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(Username));
 
             foreach (var nick in query)
             {
@@ -47,9 +47,9 @@ namespace fs24bot3
             Connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", Username);
         }
 
-        public Models.SQLUser.UserStats GetUserInfo()
+        public Models.SQL.UserStats GetUserInfo()
         {
-            var query = Connect.Table<Models.SQLUser.UserStats>().Where(v => v.Nick.Equals(Username));
+            var query = Connect.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(Username));
             foreach (var nick in query)
             {
                 return nick;

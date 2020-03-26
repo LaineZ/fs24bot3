@@ -28,11 +28,11 @@ namespace fs24bot3
             var cmds = Service.GetAllCommands();
             string commandsOutput;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
-            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"`{x.Name}` - {x.Description}")) + "\nМагазин:\n" + string.Join("\n", shop.Select(x => $"[{x.Slug}] {x.Name}: Цена: {x.Price}"));
+            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"{string.Join(' ', x.Checks)} @{x.Name} {string.Join(' ', x.Parameters)} - {x.Description}")) + "\nМагазин:\n" + string.Join("\n", shop.Select(x => $"[{x.Slug}] {x.Name}: Цена: {x.Price}"));
             try
             {
                 string link = await http.UploadToPastebin(commandsOutput);
-                Context.Socket.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link);
+                Context.Socket.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
             }
             catch (NullReferenceException)
             {
@@ -205,6 +205,23 @@ namespace fs24bot3
             else
             {
                 Context.Socket.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+            }
+        }
+
+        [Command("regcmd")]
+        [Qmmands.Description("Регистрация команды")]
+        public void CustomCmdRegister(string command, [Remainder] string output)
+        {
+            var commandIntenral = Service.GetAllCommands().Where(x => x.)
+            if (!Service.GetAllCommands().)
+            {
+                var commandInsert = new Models.SQL.CustomUserCommands()
+                {
+                    Command = command,
+                    Output = output,
+                    Nick = Context.Message.User,
+                };
+                Context.Connection.Insert(commandInsert);
             }
         }
     }
