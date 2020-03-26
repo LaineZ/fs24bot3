@@ -50,6 +50,13 @@ namespace fs24bot3
                 {
                     Context.Socket.SendMessage(Context.Channel,
                         cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters) + " - " + cmd.Description);
+                    if (cmd.Remarks != null)
+                    {
+                        foreach (string help in cmd.Remarks.Split("\n"))
+                        {
+                            Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + help);
+                        }
+                    }
                     break;
                 }
             }
@@ -182,6 +189,7 @@ namespace fs24bot3
 
         [Command("tr", "translate")]
         [Qmmands.Description("Переводчик")]
+        [Qmmands.Remarks("Параметр lang нужно вводить в формате 'sourcelang-translatelang' или 'traslatelang' в данном случае переводчик попытается догадаться с какого языка пытаются перевести\nВсе языки вводятся по стандарту ISO-639-1 посмотреть можно здесь: https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")]
         public async void Translate(string lang, [Remainder] string text)
         {
             HttpClient client = new HttpClient();
@@ -209,19 +217,147 @@ namespace fs24bot3
         }
 
         [Command("regcmd")]
-        [Qmmands.Description("Регистрация команды")]
+        [Qmmands.Description("Регистрация команды (Параметр command вводится без @)")]
+        [Qmmands.Remarks("Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду")]
         public void CustomCmdRegister(string command, [Remainder] string output)
         {
-            var commandIntenral = Service.GetAllCommands().Where(x => x.)
-            if (!Service.GetAllCommands().)
+            var commandIntenral = Service.GetAllCommands().Where(x => x.Name.Equals(command));
+            if (!commandIntenral.Any())
             {
                 var commandInsert = new Models.SQL.CustomUserCommands()
                 {
-                    Command = command,
+                    Command = "@" + command,
                     Output = output,
                     Nick = Context.Message.User,
                 };
-                Context.Connection.Insert(commandInsert);
+                try
+                {
+                    Context.Connection.Insert(commandInsert);
+                }
+                catch (SQLiteException)
+                {
+                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
+                }
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже суещствует в fs24_bot");
+            }
+        }
+
+        [Command("cmdout")]
+        [Qmmands.Description("Редактор строки вывода команды: параметр action: add, del")]
+        [Qmmands.Remarks("Параметр action отвечает за действие команды:\nadd - добавить вывод команды при этом параметр value отвечает за строку вывода\ndel - удалить вывод команды, параметр value принимает как числовые значения вывода от 0-n, так и строку вывода которую небоходимо удалить (без ||)")]
+        public void CustomCmdEdit(string command, string action, [Remainder] string value)
+        {
+            var commandConcat = "@" + command;
+            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            UserOperations usr = new UserOperations(Context.Message.User, Context.Connection);
+            if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
+            {
+                if (query[0].Nick == Context.Message.User)
+                {
+                    switch (action)
+                    {
+                        case "add":
+                            Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output + "||" + value, commandConcat);
+                            Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+                            break;
+                        case "del":
+                            var outputlist = query[0].Output.Split("||").ToList();
+                            try
+                            {
+                                int val = int.Parse(value);
+                                if (val < outputlist.Count && val >= 0)
+                                {
+                                    outputlist.RemoveAt(val);
+                                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
+                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
+                                }
+                                else
+                                {
+                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Максимальное число удаления: " + outputlist.Count);
+                                }
+                            }
+                            catch (FormatException)
+                            {
+                                if (outputlist.Remove(value))
+                                {
+                                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
+                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
+                                }
+                                else
+                                {
+                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Такой записи не существует...");
+                                }
+                            }
+                            break;
+                        default:
+                            Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd editout");
+                            break;
+                    }
+                }
+                else
+                {
+                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.User}");
+                }
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
+            }
+        }
+
+        [Command("cmdrep")]
+        [Qmmands.Description("Заменитель строки вывода команды (используете кавычки если замена с пробелом)")]
+        public void CustomCmdRepl(string command, string oldstr, string newstr = "")
+        {
+            var commandConcat = "@" + command;
+            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            UserOperations usr = new UserOperations(Context.Message.User, Context.Connection);
+            if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
+            {
+                if (query[0].Nick == Context.Message.User)
+                {
+                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
+                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+                }
+                else
+                {
+                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.User}");
+                }
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
+            }
+        }
+
+        [Command("delcmd")]
+        [Qmmands.Description("Удалить команду")]
+        public void CustomCmdRem(string command)
+        {
+            var commandConcat = "@" + command;
+            UserOperations usr = new UserOperations(Context.Message.User, Context.Connection);
+            if (usr.GetUserInfo().Admin == 2)
+            {
+                var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
+                if (query > 0)
+                {
+                    Context.Socket.SendMessage(Context.Channel, "Команда удалена!");
+                }
+            }
+            else
+            {
+                var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Message.User)).Delete();
+                if (query > 0)
+                {
+                    Context.Socket.SendMessage(Context.Channel, "Команда удалена!");
+                }
+                else
+                {
+                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Этого не произошло....");
+                }
             }
         }
     }
