@@ -94,7 +94,7 @@ namespace fs24bot3
                 var userinfo = user.GetUserInfo();
                 var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
                 int itemToCount = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem(itemname).Name));
-                if (itemToCount > 0)
+                if (itemToCount >= 0)
                 {
                     top.Add((userinfo.Nick, userInv.Items[itemToCount].Count));
                 }

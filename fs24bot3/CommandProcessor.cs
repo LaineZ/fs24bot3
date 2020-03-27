@@ -32,7 +32,7 @@ namespace fs24bot3
                 int count = 0;
                 foreach (string outputstr in content.Split("\n"))
                 {
-                    this.Socket.SendMessage(this.Message.User + ": " + this.Channel, outputstr);
+                    this.Socket.SendMessage(this.Channel, this.Message.User + ": " + outputstr);
                     count++;
                     if (count > 4)
                     {

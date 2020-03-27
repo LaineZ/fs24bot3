@@ -53,8 +53,8 @@ namespace fs24bot3
                 {
                     UserOperations user = new UserOperations(users.Nick, connect);
                     user.AddItemToInv("money", user.GetUserInfo().Level);
-                    PaydaysCount++;
                 }
+                PaydaysCount++;
             }
         }
 
