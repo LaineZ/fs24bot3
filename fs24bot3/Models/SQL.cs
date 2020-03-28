@@ -30,5 +30,21 @@ namespace fs24bot3.Models
             public string Output { get; set; }
             public string Nick { get; set; }
         }
+
+        internal class Tag
+        {
+            [SQLite.PrimaryKey]
+            public string TagName { get; set; }
+
+            public string Color { get; set; }
+            public int Count { get; set; }
+        }
+
+        internal class Tags
+        {
+            [SQLite.PrimaryKey]
+            public string Username { get; set; }
+            public string Tag { get; set; }
+        }
     }
 }

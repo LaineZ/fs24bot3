@@ -57,6 +57,17 @@ namespace fs24bot3
             return null;
         }
 
+        public List<string> GetUserTags()
+        {
+            List<string> tags = new List<string>();
+            var query = Connect.Table<Models.SQL.Tags>().Where(v => v.Username.Equals(Username));
+            foreach (var nick in query)
+            {
+                tags.Add(nick.Tag);
+            }
+            return tags;
+        }
+
         public bool RemItemFromInv(string name, int count)
         {
             var userinfo = GetUserInfo();
@@ -114,6 +125,41 @@ namespace fs24bot3
                 userInv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem(name).Name, Count = count });
             }
            
+            Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
+            return true;
+        }
+
+        public bool AddTag(string name, int count)
+        {
+
+            var userinfo = GetUserInfo();
+
+            if (userinfo == null)
+            {
+                Log.Error("User " + Username + " not exsist!");
+                return false;
+            }
+
+            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
+
+            bool append = false;
+
+            foreach (var items in userInv.Items)
+            {
+                if (items.Name == Shop.getItem(name).Name)
+                {
+                    items.Count += count;
+                    Log.Verbose("appending {0} count: {1}", items.Name, count);
+                    append = true;
+                    break;
+                }
+            }
+            if (!append)
+            {
+                Log.Verbose("creaing {0} count: {1}", name, count);
+                userInv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem(name).Name, Count = count });
+            }
+
             Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
             return true;
         }
