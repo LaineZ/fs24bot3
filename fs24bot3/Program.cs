@@ -137,7 +137,14 @@ namespace fs24bot3
                     else
                     {
                         UserOperations usr = new UserOperations(message.User, connection);
-                        usr.IncreaseXp(message.Text.Length + 1);
+                        bool newLevel = usr.IncreaseXp(message.Text.Length + 1);
+                        if (newLevel)
+                        {
+                            var random = new Random();
+                            int index = random.Next(Shop.ShopItems.Count);
+                            usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
+                            _socket.SendMessage(message.Channel, message.User + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name);
+                        }
                     }
 
                     if (!CommandUtilities.HasPrefix(message.Text.TrimEnd(), '@', out string output))
@@ -149,7 +156,7 @@ namespace fs24bot3
                         Core.CustomCommandProcessor.ProcessCmd(_socket, message, connection);
                         if (!(result is CommandNotFoundResult _))
                         {
-                            _socket.SendMessage(_currentChannel, failedResult.Reason + " command: " + output);
+                            _socket.SendMessage(_currentChannel, failedResult.Reason + " command line: " + output);
                         }
                     }
                 }
