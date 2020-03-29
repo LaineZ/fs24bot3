@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Serilog;
 using SQLite;
 using System.Linq;
+using SQLiteNetExtensions.Extensions;
 
 namespace fs24bot3
 {
@@ -12,11 +13,16 @@ namespace fs24bot3
     {
         public string Username;
         public SQLiteConnection Connect;
+        IrcClientCore.Irc Socket;
+        IrcClientCore.Message Message;
 
-        public UserOperations(string username, SQLiteConnection Connection)
+
+        public UserOperations(string username, SQLiteConnection connection, IrcClientCore.Irc socket = null, IrcClientCore.Message message = null)
         {
             Username = username;
-            Connect = Connection;
+            Connect = connection;
+            Socket = socket;
+            Message = message;
         }
 
 
@@ -47,121 +53,24 @@ namespace fs24bot3
             Connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", Username);
         }
 
-        public Models.SQL.UserStats GetUserInfo()
+        public bool AddItemToInv(string name, int count)
         {
-            var query = Connect.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(Username));
-            foreach (var nick in query)
-            {
-                return nick;
-            }
-            return null;
-        }
-
-        public List<string> GetUserTags()
-        {
-            List<string> tags = new List<string>();
-            var query = Connect.Table<Models.SQL.Tags>().Where(v => v.Username.Equals(Username));
-            foreach (var nick in query)
-            {
-                tags.Add(nick.Tag);
-            }
-            return tags;
+            throw new NotImplementedException();
         }
 
         public bool RemItemFromInv(string name, int count)
         {
-            var userinfo = GetUserInfo();
-
-            if (userinfo == null)
-            {
-                Log.Error("User " + Username + " not exsist!");
-                return false;
-            }
-
-            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
-
-            int itemToRemove = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem(name).Name) && item.Count > count);
-            if (itemToRemove > 0 && userInv.Items[itemToRemove].Count >= count)
-            {
-                userInv.Items[itemToRemove].Count -= count;
-                Log.Information("User {0} removed {1} sucessfully!", name, count);
-                Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            throw new NotImplementedException();
         }
 
-        public bool AddItemToInv(string name, int count)
+        public Models.SQL.UserStats GetUserInfo()
         {
-
-            var userinfo = GetUserInfo();
-
-            if (userinfo == null)
-            {
-                Log.Error("User " + Username + " not exsist!");
-                return false;
-            }
-
-            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
-
-            bool append = false;
-
-            foreach (var items in userInv.Items)
-            {
-                if (items.Name == Shop.getItem(name).Name)
-                {
-                    items.Count += count;
-                    Log.Verbose("appending {0} count: {1}", items.Name, count);
-                    append = true;
-                    break;
-                }
-            }
-            if (!append)
-            {
-                Log.Verbose("creaing {0} count: {1}", name, count);
-                userInv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem(name).Name, Count = count });
-            }
-           
-            Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
-            return true;
+            throw new NotImplementedException();
         }
 
-        public bool AddTag(string name, int count)
+        internal bool AddTag(string tagname, int v)
         {
-
-            var userinfo = GetUserInfo();
-
-            if (userinfo == null)
-            {
-                Log.Error("User " + Username + " not exsist!");
-                return false;
-            }
-
-            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
-
-            bool append = false;
-
-            foreach (var items in userInv.Items)
-            {
-                if (items.Name == Shop.getItem(name).Name)
-                {
-                    items.Count += count;
-                    Log.Verbose("appending {0} count: {1}", items.Name, count);
-                    append = true;
-                    break;
-                }
-            }
-            if (!append)
-            {
-                Log.Verbose("creaing {0} count: {1}", name, count);
-                userInv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem(name).Name, Count = count });
-            }
-
-            Connect.Execute("UPDATE UserStats SET JsonInv = ? WHERE Nick = ?", JsonConvert.SerializeObject(userInv).ToString(), Username);
-            return true;
+            throw new NotImplementedException();
         }
     }
 }

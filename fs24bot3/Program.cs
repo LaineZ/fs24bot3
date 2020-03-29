@@ -10,6 +10,7 @@ using Serilog;
 using SQLite;
 using System.IO;
 using Newtonsoft.Json;
+using SQLiteNetExtensions.Extensions;
 
 namespace fs24bot3
 {
@@ -49,7 +50,7 @@ namespace fs24bot3
         {
             Log.Logger = new LoggerConfiguration()
             .WriteTo.ColoredConsole()
-            .MinimumLevel.Verbose()
+            .MinimumLevel.Information()
             .CreateLogger();
             Log.Information("fs24_bot3 has started");
             Shop.Init();
@@ -60,6 +61,9 @@ namespace fs24bot3
             connection = new SQLiteConnection("fsdb.sqlite");
             connection.CreateTable<Models.SQL.UserStats>();
             connection.CreateTable<Models.SQL.CustomUserCommands>();
+            connection.CreateTable<Models.SQL.Item>();
+            connection.CreateTable<Models.SQL.Tag>();
+            connection.CreateTable<Models.SQL.Tags>();
 
             server.Hostname = Configuration.network;
             server.Name = "irc network";
@@ -83,7 +87,7 @@ namespace fs24bot3
             while (!_socket.ReadOrWriteFailed)
             {
                 System.Threading.Thread.Sleep(1000);
-                Shop.Update(connection);
+                //Shop.Update(connection);
             }
 
             Console.WriteLine("Socket connection lost....");
@@ -115,10 +119,7 @@ namespace fs24bot3
                     {
                         Log.Warning("User {0} not found in database", message.User);
 
-                        var inv = new Models.ItemInventory.Inventory() { Items = new List<Models.ItemInventory.Item>() };
 
-                        // just add random item to init invertory properly...
-                        inv.Items.Add(new Models.ItemInventory.Item() { Name = Shop.getItem("money").Name, Count = 10});
 
                         var user = new Models.SQL.UserStats()
                         {
@@ -128,10 +129,18 @@ namespace fs24bot3
                             Level = 1,
                             Xp = 0,
                             Need = 300,
-                            JsonInv = JsonConvert.SerializeObject(inv).ToString()
+                        };
+
+                        var newItem = new Models.SQL.Item()
+                        {
+                            Name = Shop.getItem("money").Name,
+                            Count = 10
                         };
 
                         connection.Insert(user);
+                        connection.Insert(newItem);
+                        user.Inv = new List<Models.SQL.Item> { newItem };
+                        connection.UpdateWithChildren(user);
 
                     }
                     else

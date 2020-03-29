@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Qmmands;
+using SQLiteNetExtensions.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,9 @@ namespace fs24bot3
         [Qmmands.Description("Инвентарь")]
         public void Userstat()
         {
-            UserOperations usr = new UserOperations(Context.Message.User, Context.Connection);
-            var userinfo = usr.GetUserInfo();
-            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
+            var userinfo = Context.Connection.GetWithChildren<Models.SQL.UserStats>(Context.Message.User);
 
-            Context.Socket.SendMessage(Context.Channel, Context.Message.User + ": " + string.Join(" ", userInv.Items.Select(x => $"{x.Name} x{x.Count}")));
+            Context.Socket.SendMessage(Context.Channel, Context.Message.User + ": " + string.Join(" ", userinfo.Inv.Select(x => $"{x.Name} x{x.Count}")));
         }
 
         [Command("buy")]
@@ -90,13 +89,11 @@ namespace fs24bot3
             var query = Context.Connection.Table<Models.SQL.UserStats>();
             foreach (var users in query)
             {
-                UserOperations user = new UserOperations(users.Nick, Context.Connection);
-                var userinfo = user.GetUserInfo();
-                var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
-                int itemToCount = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem(itemname).Name));
+                var userinfo = Context.Connection.GetWithChildren<Models.SQL.UserStats>(Context.Message.User);
+                int itemToCount = userinfo.Inv.FindIndex(item => item.Name.Equals(Shop.getItem(itemname).Name));
                 if (itemToCount >= 0)
                 {
-                    top.Add((userinfo.Nick, userInv.Items[itemToCount].Count));
+                    top.Add((userinfo.Nick, userinfo.Inv[itemToCount].Count));
                 }
             }
             var result = top.OrderByDescending(p => p.Count).ToList();
@@ -121,7 +118,6 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(username, Context.Connection);
             var userinfo = user.GetUserInfo();
-            var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
         }
     }
 }

@@ -310,6 +310,7 @@ namespace fs24bot3
 
         [Command("cmdrep")]
         [Qmmands.Description("Заменитель строки вывода команды (используете кавычки если замена с пробелом)")]
+        [Qmmands.Remarks("Если параметр newstr не заполнен - происходит просто удаление oldstr из команды")]
         public void CustomCmdRepl(string command, string oldstr, string newstr = "")
         {
             var commandConcat = "@" + command;
@@ -358,6 +359,69 @@ namespace fs24bot3
                 {
                     Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Этого не произошло....");
                 }
+            }
+        }
+
+        [Command("tag")]
+        [Qmmands.Description("Управление тегами: параметр action: add/del")]
+        [Qmmands.Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndel - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
+        public void AddTag(string action, string tagname, int ircolor = 0)
+        {
+            var user = new UserOperations(Context.Message.User, Context.Connection, Context.Socket, Context.Message);
+
+            switch (action)
+            {
+                case "add":
+                    int todel = (int)Math.Floor(Shop.GetMoneyAvg(Context.Connection) / 5);
+                    if (user.RemItemFromInv("money", 1000))
+                    {
+                        var tag = new Models.SQL.Tag()
+                        {
+                            TagName = tagname,
+                            Color = "" + ircolor,
+                            Count = 0,
+                            Username = Context.Message.User
+                        };
+
+                        Context.Connection.Insert(tag);
+
+                        Context.Socket.SendMessage(Context.Channel, "Тег " + tagname + " успешно добавлен!");
+                    }
+                    else
+                    {
+                        Log.Information("Error occurred while adding!");
+                    }
+                    break;
+                case "del":
+                    var tagDel = new Core.TagsUtils(tagname, Context.Connection);
+                    if (tagDel.GetTagByName().Username == Context.Message.User)
+                    {
+                        Context.Connection.Execute("DELETE Tag WHERE TagName = ?", tagname);
+                        Context.Socket.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
+                    }
+                    else
+                    {
+                        Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Message.User}");
+                    }
+                    break;
+                default:
+                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd addtag");
+                    break;
+            }
+        }
+        [Command("addtag")]
+        [Qmmands.Description("Добавить тег пользователю")]
+        public void InsertTag(string tagname, string destination)
+        {
+            var user = new UserOperations(Context.Message.User, Context.Connection);
+
+            if (user.AddTag(tagname, 1))
+            {
+                Context.Socket.SendMessage(Context.Channel, $"Тег {tagname} добавлен пользователю {destination}");
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
         }
     }

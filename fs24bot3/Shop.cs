@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using SQLiteNetExtensions.Extensions;
 
 namespace fs24bot3
 {
@@ -68,16 +69,18 @@ namespace fs24bot3
             var query = connect.Table<Models.SQL.UserStats>();
             foreach (var users in query)
             {
-                UserOperations user = new UserOperations(users.Nick, connect);
-                var userinfo = user.GetUserInfo();
-                var userInv = JsonConvert.DeserializeObject<Models.ItemInventory.Inventory>(userinfo.JsonInv);
-                int itemToCount = userInv.Items.FindIndex(item => item.Name.Equals(Shop.getItem("money").Name));
+                var userinfo = connect.GetWithChildren<Models.SQL.UserStats>(users.Nick);
+                int itemToCount = userinfo.Inv.FindIndex(item => item.Name.Equals(Shop.getItem("money").Name));
                 if (itemToCount >= 0)
                 {
-                    money.Add(userInv.Items[itemToCount].Count);
+                    money.Add(userinfo.Inv[itemToCount].Count);
                 }
             }
-            return money.Average();
+            if (money.Count > 0)
+            {
+                return Math.Floor(money.Average());
+            }
+            return 0;
         }
 
         public static Models.ItemInventory.Shop getItem(string name)

@@ -19,7 +19,8 @@ namespace fs24bot3.Models
             public int Need { get; set; }
             public int Admin { get; set; }
             public string AdminPassword { get; set; }
-            public string JsonInv { get; set; }
+            [ManyToMany(typeof(Item))]
+            public List<Item> Inv { get; set; }
         }
 
         internal class CustomUserCommands
@@ -31,12 +32,24 @@ namespace fs24bot3.Models
             public string Nick { get; set; }
         }
 
+        public class Item
+        {
+            [PrimaryKey]
+            public string Name { get; set; }
+
+            public int Count { get; set; }
+
+            [ForeignKey(typeof(SQL.UserStats))]
+            public string Username { get; set; }
+        }
+
         internal class Tag
         {
             [SQLite.PrimaryKey]
             public string TagName { get; set; }
 
             public string Color { get; set; }
+            public string Username { get; set; }    
             public int Count { get; set; }
         }
 
@@ -44,7 +57,7 @@ namespace fs24bot3.Models
         {
             [SQLite.PrimaryKey]
             public string Username { get; set; }
-            public string Tag { get; set; }
+            public string JsonTag { get; set; }
         }
     }
 }
