@@ -372,14 +372,13 @@ namespace fs24bot3
             switch (action)
             {
                 case "add":
-                    int todel = (int)Math.Floor(Shop.GetMoneyAvg(Context.Connection) / 5);
                     if (user.RemItemFromInv("money", 1000))
                     {
                         var tag = new Models.SQL.Tag()
                         {
                             TagName = tagname,
                             Color = "" + ircolor,
-                            Count = 0,
+                            TagCount = 0,
                             Username = Context.Message.User
                         };
 

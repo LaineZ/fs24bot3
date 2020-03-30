@@ -11,6 +11,7 @@ using SQLite;
 using System.IO;
 using Newtonsoft.Json;
 using SQLiteNetExtensions.Extensions;
+using System.Text;
 
 namespace fs24bot3
 {
@@ -50,10 +51,11 @@ namespace fs24bot3
         {
             Log.Logger = new LoggerConfiguration()
             .WriteTo.ColoredConsole()
-            .MinimumLevel.Information()
+            .MinimumLevel.Verbose()
             .CreateLogger();
+            Console.OutputEncoding = Encoding.Unicode;
+
             Log.Information("fs24_bot3 has started");
-            Shop.Init();
             IrcServer server = new IrcServer();
 
             Configuration.LoadConfiguration();
@@ -61,9 +63,14 @@ namespace fs24bot3
             connection = new SQLiteConnection("fsdb.sqlite");
             connection.CreateTable<Models.SQL.UserStats>();
             connection.CreateTable<Models.SQL.CustomUserCommands>();
-            connection.CreateTable<Models.SQL.Item>();
             connection.CreateTable<Models.SQL.Tag>();
+            connection.CreateTable<Models.SQL.Item>();
             connection.CreateTable<Models.SQL.Tags>();
+
+            Shop.Init(connection);
+
+            // creating ultimate inventory by @Fingercomp
+            connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
 
             server.Hostname = Configuration.network;
             server.Name = "irc network";
@@ -131,17 +138,7 @@ namespace fs24bot3
                             Need = 300,
                         };
 
-                        var newItem = new Models.SQL.Item()
-                        {
-                            Name = Shop.getItem("money").Name,
-                            Count = 10
-                        };
-
                         connection.Insert(user);
-                        connection.Insert(newItem);
-                        user.Inv = new List<Models.SQL.Item> { newItem };
-                        connection.UpdateWithChildren(user);
-
                     }
                     else
                     {
@@ -151,8 +148,8 @@ namespace fs24bot3
                         {
                             var random = new Random();
                             int index = random.Next(Shop.ShopItems.Count);
-                            usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                            _socket.SendMessage(message.Channel, message.User + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name);
+                            //usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
+                            //_socket.SendMessage(message.Channel, message.User + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name);
                         }
                     }
 

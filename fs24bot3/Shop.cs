@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using SQLiteNetExtensions.Extensions;
+using SQLite;
 
 namespace fs24bot3
 {
@@ -14,7 +15,7 @@ namespace fs24bot3
         public static int PaydaysCount;
         private static Random rand;
 
-        public static void Init()
+        public static void Init(SQLite.SQLiteConnection connect)
         {
             Log.Information("loading shop...");
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
@@ -25,8 +26,30 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔊 Мониторные колонки", Price = 320, Sellable = true, Slug = "speaker" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎛 PIONEER DJ", Price = 320, Sellable = true, Slug = "dj" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎹 Native Instruments Komplete Kontrol S88", Price = 600, Sellable = true, Slug = "midikey" });
+
+            foreach (var item in ShopItems)
+            {
+                var sqlItem = new Models.SQL.Item()
+                {
+                    Name = item.Name
+                };
+                Log.Verbose("Inserting: {0}", item.Name);
+                try
+                {
+                    connect.Insert(sqlItem);
+                }
+                catch (SQLiteException)
+                {
+                    Log.Verbose("Item aready addede: {0}", item.Name);
+                }
+            }
             Log.Information("done");
             rand = new Random();
+        }
+
+        internal static object GetMoneyAvg(SQLiteConnection connection)
+        {
+            throw new NotImplementedException();
         }
 
         public static void Update(SQLite.SQLiteConnection connect)
@@ -36,7 +59,7 @@ namespace fs24bot3
                 int check = rand.Next(0, 10);
                 if (check == 5)
                 {
-                    if (shopItem.Price >= GetMoneyAvg(connect))
+                    if (shopItem.Price >= 1000)
                     {
                         Log.Verbose("Descreaseing price for {0}", shopItem.Name);
                         shopItem.Price -= 5;
@@ -60,27 +83,6 @@ namespace fs24bot3
                 }
                 PaydaysCount++;
             }
-        }
-
-        public static double GetMoneyAvg(SQLite.SQLiteConnection connect)
-        {
-            var money = new List<int>();
-
-            var query = connect.Table<Models.SQL.UserStats>();
-            foreach (var users in query)
-            {
-                var userinfo = connect.GetWithChildren<Models.SQL.UserStats>(users.Nick);
-                int itemToCount = userinfo.Inv.FindIndex(item => item.Name.Equals(Shop.getItem("money").Name));
-                if (itemToCount >= 0)
-                {
-                    money.Add(userinfo.Inv[itemToCount].Count);
-                }
-            }
-            if (money.Count > 0)
-            {
-                return Math.Floor(money.Average());
-            }
-            return 0;
         }
 
         public static Models.ItemInventory.Shop getItem(string name)

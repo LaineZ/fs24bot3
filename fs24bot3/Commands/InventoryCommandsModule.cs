@@ -17,9 +17,16 @@ namespace fs24bot3
         [Qmmands.Description("Инвентарь")]
         public void Userstat()
         {
-            var userinfo = Context.Connection.GetWithChildren<Models.SQL.UserStats>(Context.Message.User);
-
-            Context.Socket.SendMessage(Context.Channel, Context.Message.User + ": " + string.Join(" ", userinfo.Inv.Select(x => $"{x.Name} x{x.Count}")));
+            var userop = new UserOperations(Context.Message.User, Context.Connection);
+            var userInv = userop.GetInventory();
+            if (userInv != null && userInv.Count > 0)
+            {
+                Context.Socket.SendMessage(Context.Channel, Context.Message.User + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
+            }
+            else
+            {
+                Context.Socket.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
+            }
         }
 
         [Command("buy")]
@@ -87,6 +94,7 @@ namespace fs24bot3
             var top = new List<(string Name, int Count)>();
 
             var query = Context.Connection.Table<Models.SQL.UserStats>();
+            /*
             foreach (var users in query)
             {
                 var userinfo = Context.Connection.GetWithChildren<Models.SQL.UserStats>(Context.Message.User);
@@ -96,6 +104,7 @@ namespace fs24bot3
                     top.Add((userinfo.Nick, userinfo.Inv[itemToCount].Count));
                 }
             }
+            */
             var result = top.OrderByDescending(p => p.Count).ToList();
 
             if (result.Count > 4)
