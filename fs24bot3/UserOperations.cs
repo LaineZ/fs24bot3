@@ -179,7 +179,7 @@ namespace fs24bot3
                 List<Models.SQL.Tag> tag = new List<Models.SQL.Tag>();
 
                 Log.Verbose("Trying to find tag with name: {0}", name);
-                var tagInfo = Connect.Table<Models.SQL.Tag>().ToList();
+                var tagInfo = Connect.Table<Models.SQL.Tag>().Where(v => v.TagName.Equals(name)).ToList();
 
                 if (tagInfo.Count > 0)
                 {
