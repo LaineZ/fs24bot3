@@ -121,9 +121,85 @@ namespace fs24bot3
             }
         }
 
-        internal bool AddTag(string tagname, int v)
+        public List<Models.SQL.Tag> GetUserTags()
         {
-            throw new NotImplementedException();
+            List<Models.SQL.Tag> tags = new List<Models.SQL.Tag>();
+            var query = Connect.Table<Models.SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
+
+            var userNick = JsonConvert.DeserializeObject<List<Models.SQL.Tag>>(query[0].JsonTag);
+
+            foreach (var nick in userNick)
+            {
+                tags.Add(nick);
+            }
+            return tags;
         }
+
+
+        public bool AddTag(string name, int count)
+        {
+
+            var userinfo = GetUserInfo();
+
+            if (userinfo == null)
+            {
+                Log.Error("User {0} not found!", Username);
+                return false;
+            }
+
+            var query = Connect.Table<Models.SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
+
+            if (query.Count > 0)
+            {
+                var userTags = JsonConvert.DeserializeObject<List<Models.SQL.Tag>>(query[0].JsonTag);
+
+                bool append = false;
+
+                foreach (var items in userTags)
+                {
+                    if (items.TagName == name)
+                    {
+                        items.TagCount += count;
+                        Log.Verbose("Appending {0} count: {1}", items.TagName, count);
+                        append = true;
+                        break;
+                    }
+                }
+                if (!append)
+                {
+                    Log.Verbose("creaing {0} count: {1}", name, count);
+                    userTags.Add(new Models.SQL.Tag() { TagName = name, TagCount = count });
+                }
+
+                Connect.Execute("UPDATE Tags SET JsonTag = ? WHERE Nick = ?", JsonConvert.SerializeObject(userTags).ToString(), Username);
+                return true;
+            }
+            else
+            {
+                List<Models.SQL.Tag> tag = new List<Models.SQL.Tag>();
+
+                Log.Verbose("Trying to find tag with name: {0}", name);
+                var tagInfo = Connect.Table<Models.SQL.Tag>().ToList();
+
+                if (tagInfo.Count > 0)
+                {
+                    return false;
+                }
+
+                tag.Add(tagInfo[0]);
+
+                Log.Verbose("creaing {0} count: {1}", name, count);
+
+                var user = new Models.SQL.Tags()
+                {
+                    Username = Username,
+                    JsonTag = JsonConvert.SerializeObject(tag).ToString()
+                };
+
+                Connect.Insert(user);
+                return true;
+            }
+        }
+
     }
 }

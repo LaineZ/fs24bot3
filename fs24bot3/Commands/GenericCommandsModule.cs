@@ -384,7 +384,7 @@ namespace fs24bot3
 
                         Context.Connection.Insert(tag);
 
-                        Context.Socket.SendMessage(Context.Channel, "Тег " + tagname + " успешно добавлен!");
+                        Context.Socket.SendMessage(Context.Channel, $"Тег \x0300,{ircolor}⚫{tagname}{Models.IrcColors.Reset} успешно добавлен!");
                     }
                     else
                     {
@@ -412,7 +412,7 @@ namespace fs24bot3
         [Qmmands.Description("Добавить тег пользователю")]
         public void InsertTag(string tagname, string destination)
         {
-            var user = new UserOperations(Context.Message.User, Context.Connection);
+            var user = new UserOperations(destination, Context.Connection);
 
             if (user.AddTag(tagname, 1))
             {
