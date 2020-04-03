@@ -125,14 +125,25 @@ namespace fs24bot3
         {
             List<Models.SQL.Tag> tags = new List<Models.SQL.Tag>();
             var query = Connect.Table<Models.SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
-
-            var userNick = JsonConvert.DeserializeObject<List<Models.SQL.Tag>>(query[0].JsonTag);
-
-            foreach (var nick in userNick)
+            if (query.Count > 0)
             {
-                tags.Add(nick);
+                var userNick = JsonConvert.DeserializeObject<List<Models.SQL.Tag>>(query[0].JsonTag);
+
+                if (userNick == null)
+                {
+                    throw new Core.Exceptions.UserNotFoundException();
+                }
+
+                foreach (var nick in userNick)
+                {
+                    tags.Add(nick);
+                }
+                return tags;
             }
-            return tags;
+            else
+            {
+                throw new Core.Exceptions.UserNotFoundException();
+            }
         }
 
 
@@ -176,30 +187,29 @@ namespace fs24bot3
             }
             else
             {
-                List<Models.SQL.Tag> tag = new List<Models.SQL.Tag>();
 
                 Log.Verbose("Trying to find tag with name: {0}", name);
-                var tagInfo = Connect.Table<Models.SQL.Tag>().Where(v => v.TagName.Equals(name)).ToList();
+                var tagInfo = new Core.TagsUtils(name, Connect);
 
-                if (tagInfo.Count > 0)
+                if (tagInfo.GetTagByName() == null)
                 {
                     return false;
                 }
 
-                tag.Add(tagInfo[0]);
-
                 Log.Verbose("creaing {0} count: {1}", name, count);
+
+                var tagList = new List<Models.SQL.Tag>();
+                tagList.Add(tagInfo.GetTagByName());
 
                 var user = new Models.SQL.Tags()
                 {
                     Username = Username,
-                    JsonTag = JsonConvert.SerializeObject(tag).ToString()
+                    JsonTag = JsonConvert.SerializeObject(tagList).ToString()
                 };
 
                 Connect.Insert(user);
                 return true;
             }
         }
-
     }
 }

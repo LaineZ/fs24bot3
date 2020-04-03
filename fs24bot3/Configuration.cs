@@ -3,6 +3,7 @@ using System.IO;
 using Tomlyn;
 using Tomlyn.Model;
 using Tomlyn.Syntax;
+using System.Collections.Generic;
 
 namespace fs24bot3
 {
@@ -39,7 +40,7 @@ namespace fs24bot3
                         {"port", port },
                         {"ssl", ssl },
                         {"ignore_ssl", ignoreSSL },
-                        {"nickserv_pass", nickservPass }
+                        {"nickserv_pass", nickservPass },
                     }
                 },
 
@@ -78,7 +79,8 @@ namespace fs24bot3
                         {"port", 6697 },
                         {"ssl", true },
                         {"ignore_ssl", true },
-                        {"nickserv_pass", "zxcvbnM1" }
+                        {"nickserv_pass", "zxcvbnM1" },
+                        {"ignore", new string[] { "hubblest", "brote", "ayumi`" } }
                     }
                 },
 

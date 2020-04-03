@@ -66,6 +66,7 @@ namespace fs24bot3
             connection.CreateTable<Models.SQL.Tag>();
             connection.CreateTable<Models.SQL.Item>();
             connection.CreateTable<Models.SQL.Tags>();
+            connection.CreateTable<Models.SQL.Ignore>();
 
             Shop.Init(connection);
 
@@ -90,6 +91,7 @@ namespace fs24bot3
             _service.AddModule<GenericCommandsModule>();
             _service.AddModule<SystemCommandModule>();
             _service.AddModule<InventoryCommandsModule>();
+            _service.AddModule<InternetCommandsModule>();
 
             while (!_socket.ReadOrWriteFailed)
             {
@@ -118,7 +120,9 @@ namespace fs24bot3
                     connected = true;
                 }
 
-                if (connected && message.User != "*")
+                var queryIfExt = connection.Table<Models.SQL.Ignore>().Where(v => v.Username.Equals(message.User));
+
+                if (connected && message.User != "*" && queryIfExt.Count() <= 0 && message.User != Configuration.name)
                 {
                     var query = connection.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(message.User));
 
@@ -148,8 +152,8 @@ namespace fs24bot3
                         {
                             var random = new Random();
                             int index = random.Next(Shop.ShopItems.Count);
-                            //usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                            //_socket.SendMessage(message.Channel, message.User + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name);
+                            usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
+                            _socket.SendMessage(_currentChannel, message.User + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name);
                         }
                     }
 

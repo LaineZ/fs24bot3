@@ -14,7 +14,7 @@ namespace fs24bot3
         public CommandService Service { get; set; }
 
         [Command("inv", "inventory")]
-        [Qmmands.Description("Инвентарь")]
+        [Description("Инвентарь")]
         public void Userstat()
         {
             var userop = new UserOperations(Context.Message.User, Context.Connection);
@@ -30,7 +30,7 @@ namespace fs24bot3
         }
 
         [Command("buy")]
-        [Qmmands.Description("Купить товар")]
+        [Description("Купить товар")]
         public void Buy(string itemname, int count)
         {
             UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
@@ -51,7 +51,7 @@ namespace fs24bot3
         }
 
         [Command("sell")]
-        [Qmmands.Description("Продать товар")]
+        [Description("Продать товар")]
         public void Sell(string itemname, int count)
         {
             UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
@@ -70,7 +70,7 @@ namespace fs24bot3
         }
 
         [Command("transfer")]
-        [Qmmands.Description("Передатать вещи")]
+        [Description("Передатать вещи")]
         public void Transfer(string destanationNick, string itemname, int count)
         {
             UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
@@ -88,7 +88,7 @@ namespace fs24bot3
         }
 
         [Command("topitem")]
-        [Qmmands.Description("Топ по предматам, по стандарту показывает топ по деньгам")]
+        [Description("Топ по предматам, по стандарту показывает топ по деньгам")]
         public void TopItem(string itemname = "money")
         {
             var top = new List<(string Name, int Count)>();
@@ -122,7 +122,7 @@ namespace fs24bot3
 
 
         [Command("wrench")]
-        [Qmmands.Description("Топ по предматам, по стандарту показывает топ по деньгам")]
+        [Description("Топ по предматам, по стандарту показывает топ по деньгам")]
         public void Wrench(string username)
         {
             UserOperations user = new UserOperations(username, Context.Connection);

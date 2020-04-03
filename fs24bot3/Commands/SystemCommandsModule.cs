@@ -11,7 +11,7 @@ namespace fs24bot3
         public CommandService Service { get; set; }
 
         [Command("version")]
-        [Qmmands.Description("Версия проги")]
+        [Description("Версия проги")]
         public void Version()
         {
             var os = Environment.OSVersion;
@@ -20,7 +20,7 @@ namespace fs24bot3
         }
 
         [Command("me")]
-        [Qmmands.Description("Макроэкономические показатели")]
+        [Description("Макроэкономические показатели")]
         public void Economy()
         {
             Context.Socket.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount.ToString()} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)}");
@@ -28,7 +28,7 @@ namespace fs24bot3
 
         [Command("gc")]
         [Checks.CheckAdmin]
-        [Qmmands.Description("Вывоз мусора")]
+        [Description("Вывоз мусора")]
         public void CollectGarbage()
         {
             GC.Collect();
@@ -64,6 +64,36 @@ namespace fs24bot3
 
             sql.SetLevel(count);
             Context.Socket.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
+        }
+
+        [Command("ignore")]
+        [Checks.CheckAdmin]
+        public void Ignore(string action, [Remainder] string username)
+        {
+            var usernames = username.Split(" ");
+            switch (action)
+            {
+                case "add":
+                    foreach (var item in usernames)
+                    {
+                        var ignr = new Models.SQL.Ignore()
+                        {
+                            Username = item
+                        };
+                        Context.Connection.Insert(ignr);
+                    }
+                    Context.Socket.SendMessage(Context.Channel, $"Пользователь(и) {username} добавлен(ы) в игнор!");
+                    break;
+                case "del":
+                    foreach (var item in usernames)
+                    {
+                        Context.Connection.Execute("DELETE FROM Ignore WHERE Username = ?", item);
+                    }
+                    Context.Socket.SendMessage(Context.Channel, $"Пользователь(и) {username} удален(ы) из игнора!");
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

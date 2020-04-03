@@ -21,7 +21,7 @@ namespace fs24bot3
         readonly HttpTools http = new HttpTools();
 
         [Command("help", "commands")]
-        [Qmmands.Description("Список команд")]
+        [Description("Список команд")]
         public async void Help()
         {
             Context.Socket.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
@@ -41,7 +41,7 @@ namespace fs24bot3
         }
 
         [Command("helpcmd")]
-        [Qmmands.Description("Помощь по команде")]
+        [Description("Помощь по команде")]
         public void HelpСmd(string command)
         {
             foreach (var cmd in Service.GetAllCommands())
@@ -62,81 +62,8 @@ namespace fs24bot3
             }
         }
 
-        [Command("ms", "search")]
-        [Qmmands.Description("Поиск@Mail.ru")]
-        public async void MailSearch([Remainder] string query)
-        {
-            string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query);
-
-            string startString = "go.dataJson = {";
-            string stopString = "};";
-
-            string searchDataTemp = response.Substring(response.IndexOf(startString) + startString.Length - 1);
-            string searchData = searchDataTemp.Substring(0, searchDataTemp.IndexOf(stopString) + 1);
-
-            Models.MailSearch.RootObject items = JsonConvert.DeserializeObject<Models.MailSearch.RootObject>(searchData);
-
-            Log.Information("@MS: Antirobot-blocked?: {0}", items.antirobot.blocked);
-
-            foreach (var item in items.serp.results)
-            {
-                if (!item.is_porno)
-                {
-                    StringBuilder searchResult = new StringBuilder(item.title);
-                    searchResult.Replace("<b>", Models.IrcColors.Bold);
-                    searchResult.Replace("</b>", Models.IrcColors.Reset);
-
-                    StringBuilder descResult = new StringBuilder(item.passage);
-                    descResult.Replace("<b>", Models.IrcColors.Bold);
-                    descResult.Replace("</b>", Models.IrcColors.Reset);
-
-
-                    string url = item.url;
-
-                    Context.Socket.SendMessage(Context.Channel, searchResult.ToString() + Models.IrcColors.Green + " // " + url);
-                    Context.Socket.SendMessage(Context.Channel, descResult.ToString());
-                    break;
-                }
-                else
-                {
-                    continue;
-                }
-            }
-        }
-
-        [Command("execute", "exec")]
-        [Qmmands.Description("REPL поддерживает полно языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
-        public async void ExecuteAPI(string lang, [Remainder] string code)
-        {
-            HttpClient client = new HttpClient();
-
-            Models.APIExec.Input codeData = new Models.APIExec.Input();
-
-            codeData.clientId = Configuration.jdoodleClientID;
-            codeData.clientSecret = Configuration.jdoodleClientSecret;
-            codeData.language = lang;
-            codeData.script = code;
-
-            HttpContent c = new StringContent(JsonConvert.SerializeObject(codeData), Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("https://api.jdoodle.com/v1/execute", c);
-            var responseString = await response.Content.ReadAsStringAsync();
-            var jsonOutput = JsonConvert.DeserializeObject<Models.APIExec.Output>(responseString);
-
-
-            if (jsonOutput.output != null)
-            {
-                Context.Socket.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
-                Context.SendMultiLineMessage(jsonOutput.output);
-            }
-            else
-            {
-                Context.Socket.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
-            }
-        }
-
         [Command("stat", "stats")]
-        [Qmmands.Description("Статы пользователя или себя")]
+        [Description("Статы пользователя или себя")]
         public void Userstat(string nick = null)
         {
             string userNick;
@@ -155,70 +82,28 @@ namespace fs24bot3
             if (data != null)
             {
                 Context.Socket.SendMessage(Context.Channel, "Статистика: " + data.Nick + " Уровень: " + data.Level + " XP: " + data.Xp + "/" + data.Need);
-            }
-            else
-            {
-                Context.Socket.SendMessage(Context.Channel, "Пользователя не существует");
-            }
-        }
-
-        [Command("lyrics", "lyr")]
-        [Qmmands.Description("Текст песни")]
-        public async void Lyrics([Remainder] string song)
-        {
-            var data = song.Split(" - ");
-            if (data.Length > 0)
-            {
                 try
                 {
-                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1]);
-
-                    Context.SendMultiLineMessage(await lyrics.GetLyrics());
+                    var userTags = usr.GetUserTags();
+                    if (userTags.Count > 0)
+                    {
+                        Context.Socket.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
+                    }
                 }
-                catch (Exception e)
+                catch (Core.Exceptions.UserNotFoundException)
                 {
-                    Context.SendMultiLineMessage("Ошибка при получении слов: " + e.Message);
+                    Context.Socket.SendMessage(Context.Channel, "Теги: Нет");
                 }
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Instumental");
-            }
-        }
-
-
-        [Command("tr", "translate")]
-        [Qmmands.Description("Переводчик")]
-        [Qmmands.Remarks("Параметр lang нужно вводить в формате 'sourcelang-translatelang' или 'traslatelang' в данном случае переводчик попытается догадаться с какого языка пытаются перевести\nВсе языки вводятся по стандарту ISO-639-1 посмотреть можно здесь: https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")]
-        public async void Translate(string lang, [Remainder] string text)
-        {
-            HttpClient client = new HttpClient();
-
-
-            var formVariables = new List<KeyValuePair<string, string>>();
-            formVariables.Add(new KeyValuePair<string, string>("text", text));
-            var formContent = new FormUrlEncodedContent(formVariables);
-
-            var response = await client.PostAsync("https://translate.yandex.net/api/v1.5/tr.json/translate?lang=" + lang + "&key=" + Configuration.yandexTrKey, formContent);
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            Log.Verbose(responseString);
-
-            var translatedOutput = JsonConvert.DeserializeObject<Models.YandexTranslate.RootObject>(responseString);
-
-            if (translatedOutput.text != null)
-            {
-                Context.Socket.SendMessage(Context.Channel, translatedOutput.text[0] + "(translate.yandex.ru) " + translatedOutput.lang);
-            }
-            else
-            {
-                Context.Socket.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+                Context.Socket.SendMessage(Context.Channel, "Пользователя не существует (это как вообще? даже тебя что ли не существует?)");
             }
         }
 
         [Command("regcmd")]
-        [Qmmands.Description("Регистрация команды (Параметр command вводится без @)")]
-        [Qmmands.Remarks("Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду")]
+        [Description("Регистрация команды (Параметр command вводится без @)")]
+        [Remarks("Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду")]
         public void CustomCmdRegister(string command, [Remainder] string output)
         {
             var commandIntenral = Service.GetAllCommands().Where(x => x.Name.Equals(command));
@@ -246,8 +131,8 @@ namespace fs24bot3
         }
 
         [Command("cmdout")]
-        [Qmmands.Description("Редактор строки вывода команды: параметр action: add, del")]
-        [Qmmands.Remarks("Параметр action отвечает за действие команды:\nadd - добавить вывод команды при этом параметр value отвечает за строку вывода\ndel - удалить вывод команды, параметр value принимает как числовые значения вывода от 0-n, так и строку вывода которую небоходимо удалить (без ||)")]
+        [Description("Редактор строки вывода команды: параметр action: add, del")]
+        [Remarks("Параметр action отвечает за действие команды:\nadd - добавить вывод команды при этом параметр value отвечает за строку вывода\ndel - удалить вывод команды, параметр value принимает как числовые значения вывода от 0-n, так и строку вывода которую небоходимо удалить (без ||)")]
         public void CustomCmdEdit(string command, string action, [Remainder] string value)
         {
             var commandConcat = "@" + command;
@@ -309,8 +194,8 @@ namespace fs24bot3
         }
 
         [Command("cmdrep")]
-        [Qmmands.Description("Заменитель строки вывода команды (используете кавычки если замена с пробелом)")]
-        [Qmmands.Remarks("Если параметр newstr не заполнен - происходит просто удаление oldstr из команды")]
+        [Description("Заменитель строки вывода команды (используете кавычки если замена с пробелом)")]
+        [Remarks("Если параметр newstr не заполнен - происходит просто удаление oldstr из команды")]
         public void CustomCmdRepl(string command, string oldstr, string newstr = "")
         {
             var commandConcat = "@" + command;
@@ -335,7 +220,7 @@ namespace fs24bot3
         }
 
         [Command("delcmd")]
-        [Qmmands.Description("Удалить команду")]
+        [Description("Удалить команду")]
         public void CustomCmdRem(string command)
         {
             var commandConcat = "@" + command;
@@ -363,9 +248,9 @@ namespace fs24bot3
         }
 
         [Command("tag")]
-        [Qmmands.Description("Управление тегами: параметр action: add/del")]
-        [Qmmands.Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndel - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
-        public void AddTag(string action, string tagname, int ircolor = 0)
+        [Description("Управление тегами: параметр action: add/del")]
+        [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndel - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
+        public void AddTag(string action, string tagname, int ircolor = 1)
         {
             var user = new UserOperations(Context.Message.User, Context.Connection, Context.Socket, Context.Message);
 
@@ -377,14 +262,14 @@ namespace fs24bot3
                         var tag = new Models.SQL.Tag()
                         {
                             TagName = tagname,
-                            Color = "" + ircolor,
+                            Color = ircolor.ToString(),
                             TagCount = 0,
                             Username = Context.Message.User
                         };
 
                         Context.Connection.Insert(tag);
 
-                        Context.Socket.SendMessage(Context.Channel, $"Тег \x0300,{ircolor}⚫{tagname}{Models.IrcColors.Reset} успешно добавлен!");
+                        Context.Socket.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{Models.IrcColors.Reset} успешно добавлен!");
                     }
                     else
                     {
@@ -395,7 +280,7 @@ namespace fs24bot3
                     var tagDel = new Core.TagsUtils(tagname, Context.Connection);
                     if (tagDel.GetTagByName().Username == Context.Message.User)
                     {
-                        Context.Connection.Execute("DELETE Tag WHERE TagName = ?", tagname);
+                        Context.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);
                         Context.Socket.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
                     }
                     else
@@ -408,8 +293,9 @@ namespace fs24bot3
                     break;
             }
         }
+
         [Command("addtag")]
-        [Qmmands.Description("Добавить тег пользователю")]
+        [Description("Добавить тег пользователю")]
         public void InsertTag(string tagname, string destination)
         {
             var user = new UserOperations(destination, Context.Connection);
@@ -422,6 +308,19 @@ namespace fs24bot3
             {
                 Context.Socket.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
+        }
+
+        [Command("tags")]
+        [Description("Список всех тегов")]
+        public void AllTags()
+        {
+            List<Models.SQL.Tag> tags = new List<Models.SQL.Tag>();
+            var query = Context.Connection.Table<Models.SQL.Tag>();
+            foreach (var tag in query)
+            {
+                tags.Add(tag);
+            }
+            Context.Socket.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
         }
     }
 }   

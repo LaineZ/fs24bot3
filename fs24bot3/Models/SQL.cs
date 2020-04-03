@@ -48,7 +48,7 @@ namespace fs24bot3.Models
 
         internal class Tag
         {
-            [SQLite.PrimaryKey]
+            [PrimaryKey]
             public string TagName { get; set; }
 
             public string Color { get; set; }
@@ -59,9 +59,16 @@ namespace fs24bot3.Models
 
         internal class Tags
         {
-            [SQLite.PrimaryKey]
+            [PrimaryKey]
             public string Username { get; set; }
             public string JsonTag { get; set; }
+        }
+
+        // ultimate table99999
+        internal class Ignore
+        {
+            [PrimaryKey]
+            public string Username { get; set; }
         }
     }
 }
