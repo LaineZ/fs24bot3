@@ -1,51 +1,18 @@
-﻿using IrcClientCore;
-using IrcClientCore.Commands;
-using Qmmands;
+﻿using Qmmands;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
 using Serilog;
 using SQLite;
-using System.IO;
-using Newtonsoft.Json;
-using SQLiteNetExtensions.Extensions;
 using System.Text;
+using NetIRC;
+using System.Threading.Tasks;
+using NetIRC.Connection;
+using NetIRC.Messages;
 
 namespace fs24bot3
 {
     class Program
     {
-
-        public static ObservableCollection<Message> _channelBuffers = null;
-        public static Irc _socket = null;
-        public static CommandManager handler = null;
-        private static string _currentChannel;
-        private static bool connected = false;
         private static SQLiteConnection connection;
-
-        internal static void SwitchChannel(string channel)
-        {
-            if (_channelBuffers != null)
-            {
-                _channelBuffers.CollectionChanged -= ChannelBuffersOnCollectionChanged;
-            }
-            _currentChannel = channel;
-
-            if (channel == "")
-            {
-                _channelBuffers = _socket.ChannelList.ServerLog.Buffers as ObservableCollection<Message>;
-            }
-            else
-            {
-                _channelBuffers = _socket.ChannelList[_currentChannel].Buffers as ObservableCollection<Message>;
-            }
-
-            PrintMessages(_channelBuffers);
-
-            if (_channelBuffers != null) _channelBuffers.CollectionChanged += ChannelBuffersOnCollectionChanged;
-        }
 
         static void Main(string[] args)
         {
@@ -56,7 +23,6 @@ namespace fs24bot3
             Console.OutputEncoding = Encoding.Unicode;
 
             Log.Information("fs24_bot3 has started");
-            IrcServer server = new IrcServer();
 
             Configuration.LoadConfiguration();
 
@@ -73,68 +39,44 @@ namespace fs24bot3
             // creating ultimate inventory by @Fingercomp
             connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
 
-            server.Hostname = Configuration.network;
-            server.Name = "irc network";
-            server.Username = Configuration.name;
-            server.Channels = Configuration.channel;
-            server.ShouldReconnect = Configuration.reconnect;
-            server.Ssl = Configuration.ssl;
-            server.Port = Convert.ToInt32(Configuration.port);
+            
 
-
-            _socket = new IrcSocket(server);
-            _socket.Connect();
-
-            handler = _socket.CommandManager;
-
-            SwitchChannel("");
             _service.AddModule<GenericCommandsModule>();
             _service.AddModule<SystemCommandModule>();
             _service.AddModule<InventoryCommandsModule>();
             _service.AddModule<InternetCommandsModule>();
 
-            while (!_socket.ReadOrWriteFailed)
+            using (var client = new Client(new User(Configuration.name, "NetIRC"), new TcpClientConnection()))
             {
-                System.Threading.Thread.Sleep(1000);
-                //Shop.Update(connection);
+                client.OnRawDataReceived += Client_OnRawDataReceived;
+                client.EventHub.PrivMsg += EventHub_PrivMsg;
+                client.EventHub.RplWelcome += Client_OnWelcome;
+                Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
+                Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
+
+                Console.ReadKey();
             }
-
-            Console.WriteLine("Socket connection lost....");
         }
 
-        private static void ChannelBuffersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        private async static void Client_OnWelcome(Client client, IRCMessageEventArgs<RplWelcomeMessage> e)
         {
-            PrintMessages(args.NewItems.OfType<Message>());
+            client.SendRaw("JOIN " + Configuration.channel);
         }
 
-        private static readonly CommandService _service = new CommandService();
-
-        private static async void PrintMessages(IEnumerable<Message> messages)
+        private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<NetIRC.Messages.PrivMsgMessage> e)
         {
-
-            foreach (var message in messages)
-            {
-                if (!connected && message.Text.Split(" ").Length > 1 && message.Text.Split(" ")[1] == "366" && message.User == "*")
-                {
-                    SwitchChannel(Configuration.channel);
-                    connected = true;
-                }
-
-                var queryIfExt = connection.Table<Models.SQL.Ignore>().Where(v => v.Username.Equals(message.User));
-
-                if (connected && message.User != "*" && queryIfExt.Count() <= 0 && message.User != Configuration.name)
-                {
-                    var query = connection.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(message.User));
+            Log.Verbose(e.IRCMessage.From);
+            var query = connection.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
 
                     if (query.Count() <= 0)
                     {
-                        Log.Warning("User {0} not found in database", message.User);
+                        Log.Warning("User {0} not found in database", e.IRCMessage.From);
 
 
 
                         var user = new Models.SQL.UserStats()
                         {
-                            Nick = message.User,
+                            Nick = e.IRCMessage.From,
                             Admin = 0,
                             AdminPassword = "changeme",
                             Level = 1,
@@ -146,31 +88,37 @@ namespace fs24bot3
                     }
                     else
                     {
-                        UserOperations usr = new UserOperations(message.User, connection);
-                        bool newLevel = usr.IncreaseXp(message.Text.Length + 1);
+                        UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
+                        bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length + 1);
                         if (newLevel)
                         {
                             var random = new Random();
                             int index = random.Next(Shop.ShopItems.Count);
                             usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                            _socket.SendMessage(_currentChannel, message.User + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name);
+                            await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
                         }
                     }
 
-                    if (!CommandUtilities.HasPrefix(message.Text.TrimEnd(), '@', out string output))
+                    if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
                         return;
 
-                    IResult result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(message, _socket, connection));
+                    IResult result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
                     if (result is FailedResult failedResult)
                     {
-                        Core.CustomCommandProcessor.ProcessCmd(_socket, message, connection);
+                        Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
                         if (!(result is CommandNotFoundResult _))
                         {
-                            _socket.SendMessage(_currentChannel, failedResult.Reason + " command line: " + output);
-                        }
+                            await client.SendAsync( new PrivMsgMessage(e.IRCMessage.To, failedResult.Reason + " command line: " + output));
+                         }       
                     }
-                }
-            }
+
         }
+
+        private static void Client_OnRawDataReceived(Client client, string rawData)
+        {
+            Log.Information(rawData);
+        }
+
+        private static readonly CommandService _service = new CommandService();
     }
 }

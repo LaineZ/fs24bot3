@@ -15,7 +15,7 @@ namespace fs24bot3
         public void Version()
         {
             var os = Environment.OSVersion;
-            Context.Socket.SendMessage(Context.Channel, String.Format("NET: {0} Система: {1} Версия: {2} Версия системы: {3}",
+            Context.SendMessage(Context.Channel, String.Format("NET: {0} Система: {1} Версия: {2} Версия системы: {3}",
                 Environment.Version.ToString(), os.Platform, os.VersionString, os.Version));
         }
 
@@ -23,7 +23,7 @@ namespace fs24bot3
         [Description("Макроэкономические показатели")]
         public void Economy()
         {
-            Context.Socket.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount.ToString()} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)}");
+            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount.ToString()} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)}");
         }
 
         [Command("gc")]
@@ -32,7 +32,7 @@ namespace fs24bot3
         public void CollectGarbage()
         {
             GC.Collect();
-            Context.Socket.SendMessage(Context.Channel, "Мусор вывезли!");
+            Context.SendMessage(Context.Channel, "Мусор вывезли!");
         }
 
 
@@ -43,7 +43,7 @@ namespace fs24bot3
             UserOperations sql = new UserOperations(username, Context.Connection);
 
             sql.AddItemToInv(item, count);
-            Context.Socket.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.getItem(item).Name + " пользователю " + username);
+            Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.getItem(item).Name + " пользователю " + username);
         }
 
         [Command("xp")]
@@ -53,7 +53,7 @@ namespace fs24bot3
             UserOperations sql = new UserOperations(username, Context.Connection);
 
             sql.IncreaseXp(count);
-            Context.Socket.SendMessage(Context.Channel, "Вы установили " +  count + " xp пользователю " + username);
+            Context.SendMessage(Context.Channel, "Вы установили " +  count + " xp пользователю " + username);
         }
 
         [Command("level")]
@@ -63,15 +63,7 @@ namespace fs24bot3
             UserOperations sql = new UserOperations(username, Context.Connection);
 
             sql.SetLevel(count);
-            Context.Socket.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
-        }
-
-        [Command("swchannel")]
-        [Checks.CheckAdmin]
-        public void SwitchCh(string channel)
-        {
-            Program.SwitchChannel(channel);
-            Context.Socket.SendMessage(Context.Channel, "Канал переключен!");
+            Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
         }
 
         [Command("ignore")]
@@ -90,14 +82,14 @@ namespace fs24bot3
                         };
                         Context.Connection.Insert(ignr);
                     }
-                    Context.Socket.SendMessage(Context.Channel, $"Пользователь(и) {username} добавлен(ы) в игнор!");
+                    Context.SendMessage(Context.Channel, $"Пользователь(и) {username} добавлен(ы) в игнор!");
                     break;
                 case "del":
                     foreach (var item in usernames)
                     {
                         Context.Connection.Execute("DELETE FROM Ignore WHERE Username = ?", item);
                     }
-                    Context.Socket.SendMessage(Context.Channel, $"Пользователь(и) {username} удален(ы) из игнора!");
+                    Context.SendMessage(Context.Channel, $"Пользователь(и) {username} удален(ы) из игнора!");
                     break;
                 default:
                     break;

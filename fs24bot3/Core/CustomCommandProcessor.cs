@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using IrcClientCore;
+using NetIRC.Messages;
+using NetIRC.Connection;
 using Serilog;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Core
 {
     public static class CustomCommandProcessor
     {
-        public static bool ProcessCmd(Irc socket, Message message, SQLite.SQLiteConnection connect)
+        public async static Task<bool> ProcessCmd(PrivMsgMessage message, NetIRC.Client client, SQLite.SQLiteConnection connect)
         {
-            if (message.Text.StartsWith("@"))
+            if (message.Message.StartsWith("@"))
             {
-                var argsArray = message.Text.Split(" ").ToList();
+                var argsArray = message.Message.Split(" ").ToList();
                 string cmdname = argsArray[0];
                 Log.Verbose("Issused command: {0}", cmdname);
                 var query = connect.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
@@ -30,8 +32,8 @@ namespace fs24bot3.Core
 
                     StringBuilder argsFinal = new StringBuilder(outputs[index]);
                     argsFinal.Replace("#USERINPUT", argsString);
-                    argsFinal.Replace("#USERNAME", message.User);
-                    socket.SendMessage(message.Channel, argsFinal.ToString());
+                    argsFinal.Replace("#USERNAME", message.From);
+                    await client.SendAsync(new PrivMsgMessage (message.To, argsFinal.ToString()));
                     return true;
                 }
             }

@@ -17,15 +17,15 @@ namespace fs24bot3
         [Description("Инвентарь")]
         public void Userstat()
         {
-            var userop = new UserOperations(Context.Message.User, Context.Connection);
+            var userop = new UserOperations(Context.Message.From, Context.Connection);
             var userInv = userop.GetInventory();
             if (userInv != null && userInv.Count > 0)
             {
-                Context.Socket.SendMessage(Context.Channel, Context.Message.User + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
+                Context.SendMessage(Context.Channel, Context.Message.From + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
+                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
             }
         }
 
@@ -33,7 +33,7 @@ namespace fs24bot3
         [Description("Купить товар")]
         public void Buy(string itemname, int count)
         {
-            UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
+            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
             int buyprice = Shop.getItem(itemname).Price * count;
 
@@ -41,12 +41,12 @@ namespace fs24bot3
 
             if (sucessfully)
             {
-                Context.Socket.SendMessage(Context.Channel, "Вы успешно купили " + Shop.getItem(itemname).Name + " за " + buyprice + " денег");
+                Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.getItem(itemname).Name + " за " + buyprice + " денег");
                 Shop.getItem(itemname).Price += 25;
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
+                Context.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
             }
         }
 
@@ -54,18 +54,18 @@ namespace fs24bot3
         [Description("Продать товар")]
         public void Sell(string itemname, int count)
         {
-            UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
+            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
             if (user.RemItemFromInv(Shop.getItem(itemname).Name, count))
             {
                 // tin
                 int sellprice = (int)Math.Floor((decimal)(Shop.getItem(itemname).Price * count) / 2);
                 user.AddItemToInv("money", sellprice);
-                Context.Socket.SendMessage(Context.Channel, "Вы успешно продали " + Shop.getItem(itemname).Name + " за " + sellprice + " денег");
+                Context.SendMessage(Context.Channel, "Вы успешно продали " + Shop.getItem(itemname).Name + " за " + sellprice + " денег");
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Вы не можете это продать!");
+                Context.SendMessage(Context.Channel, "Вы не можете это продать!");
             }
         }
 
@@ -73,17 +73,17 @@ namespace fs24bot3
         [Description("Передатать вещи")]
         public void Transfer(string destanationNick, string itemname, int count)
         {
-            UserOperations user = new UserOperations(Context.Message.User, Context.Connection);
+            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
             UserOperations destanation = new UserOperations(destanationNick, Context.Connection);
 
             if (user.RemItemFromInv(Shop.getItem(itemname).Name, count))
             {
                 destanation.AddItemToInv(itemname, count);
-                Context.Socket.SendMessage(Context.Channel, $"Вы успешно передали {Shop.getItem(itemname).Name} x{count} пользователю {destanationNick}");
+                Context.SendMessage(Context.Channel, $"Вы успешно передали {Shop.getItem(itemname).Name} x{count} пользователю {destanationNick}");
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "У вас нет таких предметов!");
+                Context.SendMessage(Context.Channel, "У вас нет таких предметов!");
             }
         }
 
@@ -97,7 +97,7 @@ namespace fs24bot3
             /*
             foreach (var users in query)
             {
-                var userinfo = Context.Connection.GetWithChildren<Models.SQL.UserStats>(Context.Message.User);
+                var userinfo = Context.Connection.GetWithChildren<Models.SQL.UserStats>(Context.Message.From);
                 int itemToCount = userinfo.Inv.FindIndex(item => item.Name.Equals(Shop.getItem(itemname).Name));
                 if (itemToCount >= 0)
                 {
@@ -112,11 +112,11 @@ namespace fs24bot3
                 result.RemoveRange(4, result.Count - 4);
             }
 
-            Context.Socket.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.getItem(itemname).Name);
+            Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.getItem(itemname).Name);
 
             foreach (var topuser in result)
             {
-                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
+                Context.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
             }
         }
 

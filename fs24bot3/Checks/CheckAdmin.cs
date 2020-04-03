@@ -16,7 +16,7 @@ namespace fs24bot3.Checks
 
             var context = _ as CommandProcessor.CustomCommandContext;
 
-            UserOperations usr = new UserOperations(context.Message.User, context.Connection);
+            UserOperations usr = new UserOperations(context.Message.From, context.Connection);
             return usr.GetUserInfo().Admin == 2
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful("Это команда только для админов!");

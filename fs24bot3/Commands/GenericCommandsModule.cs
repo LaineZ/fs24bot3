@@ -18,7 +18,7 @@ namespace fs24bot3
         [Description("Список команд")]
         public async void Help()
         {
-            Context.Socket.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
+            Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
             var cmds = Service.GetAllCommands();
             string commandsOutput;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
@@ -26,11 +26,11 @@ namespace fs24bot3
             try
             {
                 string link = await http.UploadToPastebin(commandsOutput);
-                Context.Socket.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
+                Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
             }
             catch (NullReferenceException)
             {
-                Context.Socket.SendMessage(Context.Channel, "Да блин чё такое link снова null!");
+                Context.SendMessage(Context.Channel, "Да блин чё такое link снова null!");
             }
         }
 
@@ -42,13 +42,13 @@ namespace fs24bot3
             {
                 if (cmd.Name == command)
                 {
-                    Context.Socket.SendMessage(Context.Channel,
+                    Context.SendMessage(Context.Channel,
                         cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters) + " - " + cmd.Description);
                     if (cmd.Remarks != null)
                     {
                         foreach (string help in cmd.Remarks.Split("\n"))
                         {
-                            Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + help);
+                            Context.SendMessage(Context.Channel, Models.IrcColors.Gray + help);
                         }
                     }
                     break;
@@ -67,7 +67,7 @@ namespace fs24bot3
             }
             else
             {
-                userNick = Context.Message.User;
+                userNick = Context.Message.From;
             }
 
             UserOperations usr = new UserOperations(userNick, Context.Connection);
@@ -75,23 +75,23 @@ namespace fs24bot3
             var data = usr.GetUserInfo();
             if (data != null)
             {
-                Context.Socket.SendMessage(Context.Channel, "Статистика: " + data.Nick + " Уровень: " + data.Level + " XP: " + data.Xp + "/" + data.Need);
+                Context.SendMessage(Context.Channel, "Статистика: " + data.Nick + " Уровень: " + data.Level + " XP: " + data.Xp + "/" + data.Need);
                 try
                 {
                     var userTags = usr.GetUserTags();
                     if (userTags.Count > 0)
                     {
-                        Context.Socket.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
+                        Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
                     }
                 }
                 catch (Core.Exceptions.UserNotFoundException)
                 {
-                    Context.Socket.SendMessage(Context.Channel, "Теги: Нет");
+                    Context.SendMessage(Context.Channel, "Теги: Нет");
                 }
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Пользователя не существует (это как вообще? даже тебя что ли не существует?)");
+                Context.SendMessage(Context.Channel, "Пользователя не существует (это как вообще? даже тебя что ли не существует?)");
             }
         }
 
@@ -107,21 +107,21 @@ namespace fs24bot3
                 {
                     Command = "@" + command,
                     Output = output,
-                    Nick = Context.Message.User,
+                    Nick = Context.Message.From,
                 };
                 try
                 {
                     Context.Connection.Insert(commandInsert);
-                    Context.Socket.SendMessage(Context.Channel, "Команда успешно создана");
+                    Context.SendMessage(Context.Channel, "Команда успешно создана");
                 }
                 catch (SQLiteException)
                 {
-                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
                 }
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже суещствует в fs24_bot");
+                Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже суещствует в fs24_bot");
             }
         }
 
@@ -132,16 +132,16 @@ namespace fs24bot3
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            UserOperations usr = new UserOperations(Context.Message.User, Context.Connection);
+            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
-                if (query[0].Nick == Context.Message.User)
+                if (query[0].Nick == Context.Message.From)
                 {
                     switch (action)
                     {
                         case "add":
                             Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output + "||" + value, commandConcat);
-                            Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+                            Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
                             break;
                         case "del":
                             var outputlist = query[0].Output.Split("||").ToList();
@@ -152,11 +152,11 @@ namespace fs24bot3
                                 {
                                     outputlist.RemoveAt(val);
                                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
-                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
+                                    Context.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
                                 }
                                 else
                                 {
-                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Максимальное число удаления: " + outputlist.Count);
+                                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Максимальное число удаления: " + outputlist.Count);
                                 }
                             }
                             catch (FormatException)
@@ -164,27 +164,27 @@ namespace fs24bot3
                                 if (outputlist.Remove(value))
                                 {
                                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
-                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
+                                    Context.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
                                 }
                                 else
                                 {
-                                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Такой записи не существует...");
+                                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Такой записи не существует...");
                                 }
                             }
                             break;
                         default:
-                            Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd editout");
+                            Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd editout");
                             break;
                     }
                 }
                 else
                 {
-                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.User}");
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
                 }
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
+                Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
             }
         }
 
@@ -195,22 +195,22 @@ namespace fs24bot3
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            UserOperations usr = new UserOperations(Context.Message.User, Context.Connection);
+            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
-                if (query[0].Nick == Context.Message.User)
+                if (query[0].Nick == Context.Message.From)
                 {
                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
-                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
                 }
                 else
                 {
-                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.User}");
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
                 }
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
+                Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
             }
         }
 
@@ -219,25 +219,25 @@ namespace fs24bot3
         public void CustomCmdRem(string command)
         {
             var commandConcat = "@" + command;
-            UserOperations usr = new UserOperations(Context.Message.User, Context.Connection);
+            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
                 var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
                 if (query > 0)
                 {
-                    Context.Socket.SendMessage(Context.Channel, "Команда удалена!");
+                    Context.SendMessage(Context.Channel, "Команда удалена!");
                 }
             }
             else
             {
-                var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Message.User)).Delete();
+                var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Message.From)).Delete();
                 if (query > 0)
                 {
-                    Context.Socket.SendMessage(Context.Channel, "Команда удалена!");
+                    Context.SendMessage(Context.Channel, "Команда удалена!");
                 }
                 else
                 {
-                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Этого не произошло....");
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Этого не произошло....");
                 }
             }
         }
@@ -247,7 +247,7 @@ namespace fs24bot3
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndel - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
         public void AddTag(string action, string tagname, int ircolor = 1)
         {
-            var user = new UserOperations(Context.Message.User, Context.Connection, Context.Socket, Context.Message);
+            var user = new UserOperations(Context.Message.From, Context.Connection);
 
             switch (action)
             {
@@ -259,12 +259,12 @@ namespace fs24bot3
                             TagName = tagname,
                             Color = ircolor.ToString(),
                             TagCount = 0,
-                            Username = Context.Message.User
+                            Username = Context.Message.From
                         };
 
                         Context.Connection.Insert(tag);
 
-                        Context.Socket.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{Models.IrcColors.Reset} успешно добавлен!");
+                        Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{Models.IrcColors.Reset} успешно добавлен!");
                     }
                     else
                     {
@@ -273,18 +273,18 @@ namespace fs24bot3
                     break;
                 case "del":
                     var tagDel = new Core.TagsUtils(tagname, Context.Connection);
-                    if (tagDel.GetTagByName().Username == Context.Message.User)
+                    if (tagDel.GetTagByName().Username == Context.Message.From)
                     {
                         Context.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);
-                        Context.Socket.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
+                        Context.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
                     }
                     else
                     {
-                        Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Message.User}");
+                        Context.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Message.From}");
                     }
                     break;
                 default:
-                    Context.Socket.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd addtag");
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd addtag");
                     break;
             }
         }
@@ -297,11 +297,11 @@ namespace fs24bot3
 
             if (user.AddTag(tagname, 1))
             {
-                Context.Socket.SendMessage(Context.Channel, $"Тег {tagname} добавлен пользователю {destination}");
+                Context.SendMessage(Context.Channel, $"Тег {tagname} добавлен пользователю {destination}");
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
+                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
         }
 
@@ -315,7 +315,7 @@ namespace fs24bot3
             {
                 tags.Add(tag);
             }
-            Context.Socket.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
+            Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
         }
     }
 }   

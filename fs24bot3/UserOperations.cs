@@ -13,16 +13,12 @@ namespace fs24bot3
     {
         public string Username;
         public SQLiteConnection Connect;
-        IrcClientCore.Irc Socket;
-        IrcClientCore.Message Message;
 
 
-        public UserOperations(string username, SQLiteConnection connection, IrcClientCore.Irc socket = null, IrcClientCore.Message message = null)
+        public UserOperations(string username, SQLiteConnection connection)
         {
             Username = username;
             Connect = connection;
-            Socket = socket;
-            Message = message;
         }
 
 

@@ -29,54 +29,67 @@ namespace fs24bot3
 
             string searchDataTemp = response.Substring(response.IndexOf(startString) + startString.Length - 1);
             string searchData = searchDataTemp.Substring(0, searchDataTemp.IndexOf(stopString) + 1);
-
-            MailSearch.RootObject items = JsonConvert.DeserializeObject<MailSearch.RootObject>(searchData);
-
-            Log.Information("@MS: Antirobot-blocked?: {0}", items.antirobot.blocked);
-
-            if (!items.antirobot.blocked)
+            
+            var settings = new JsonSerializerSettings
             {
-                if (items.serp.results.Count > 0)
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            };
+
+            try
+            {
+                MailSearch.RootObject items = JsonConvert.DeserializeObject<MailSearch.RootObject>(searchData, settings);
+
+                Log.Information("@MS: Antirobot-blocked?: {0}", items.antirobot.blocked);
+
+                if (!items.antirobot.blocked)
                 {
-                    foreach (var item in items.serp.results)
+                    if (items.serp.results.Count > 0)
                     {
-                        if (!item.is_porno)
+                        foreach (var item in items.serp.results)
                         {
-                            StringBuilder searchResult = new StringBuilder(item.title);
-                            searchResult.Replace("<b>", IrcColors.Bold);
-                            searchResult.Replace("</b>", IrcColors.Reset);
+                            if (!item.is_porno)
+                            {
+                                StringBuilder searchResult = new StringBuilder(item.title);
+                                searchResult.Replace("<b>", IrcColors.Bold);
+                                searchResult.Replace("</b>", IrcColors.Reset);
 
-                            StringBuilder descResult = new StringBuilder(item.passage);
-                            descResult.Replace("<b>", IrcColors.Bold);
-                            descResult.Replace("</b>", IrcColors.Reset);
+                                StringBuilder descResult = new StringBuilder(item.passage);
+                                descResult.Replace("<b>", IrcColors.Bold);
+                                descResult.Replace("</b>", IrcColors.Reset);
 
 
-                            HtmlDocument doc = new HtmlDocument();
+                                HtmlDocument doc = new HtmlDocument();
 
-                            doc.LoadHtml(descResult.ToString());
+                                doc.LoadHtml(descResult.ToString());
 
-                            string desc = doc.DocumentNode.InnerText;
+                                string desc = doc.DocumentNode.InnerText;
 
-                            string url = item.url;
+                                string url = item.url;
 
-                            Context.Socket.SendMessage(Context.Channel, searchResult.ToString() + Models.IrcColors.Green + " // " + url);
-                            Context.Socket.SendMessage(Context.Channel, desc);
-                            break;
+                                Context.SendMessage(Context.Channel, searchResult.ToString() + Models.IrcColors.Green + " // " + url);
+                                Context.SendMessage(Context.Channel, desc);
+                                break;
+                            }
+                            else
+                            {
+                                continue;
+                            }
                         }
-                        else
-                        {
-                            continue;
-                        }
+                    }
+                    else
+                    {
+                        Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено");
                     }
                 }
                 else
                 {
-                    Context.Socket.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено");
+                    Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
                 }
             }
-            else
+            catch (JsonReaderException)
             {
-                Context.Socket.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
             }
         }
 
@@ -102,12 +115,12 @@ namespace fs24bot3
 
             if (jsonOutput.output != null)
             {
-                Context.Socket.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
+                Context.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
                 Context.SendMultiLineMessage(jsonOutput.output);
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+                Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
             }
         }
 
@@ -132,11 +145,11 @@ namespace fs24bot3
 
             if (translatedOutput.text != null)
             {
-                Context.Socket.SendMessage(Context.Channel, translatedOutput.text[0] + "(translate.yandex.ru) " + translatedOutput.lang);
+                Context.SendMessage(Context.Channel, translatedOutput.text[0] + "(translate.yandex.ru) " + translatedOutput.lang);
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+                Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
             }
         }
 
@@ -160,7 +173,7 @@ namespace fs24bot3
             }
             else
             {
-                Context.Socket.SendMessage(Context.Channel, "Instumental");
+                Context.SendMessage(Context.Channel, "Instumental");
             }
         }
     }
