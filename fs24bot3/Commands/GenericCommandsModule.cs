@@ -1,15 +1,9 @@
-﻿using HtmlAgilityPack;
-using IrcClientCore;
-using Newtonsoft.Json;
-using Qmmands;
-using Qmmands.Delegates;
+﻿using Qmmands;
 using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 
 namespace fs24bot3
 {
@@ -118,6 +112,7 @@ namespace fs24bot3
                 try
                 {
                     Context.Connection.Insert(commandInsert);
+                    Context.Socket.SendMessage(Context.Channel, "Команда успешно создана");
                 }
                 catch (SQLiteException)
                 {

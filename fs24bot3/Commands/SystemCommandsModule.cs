@@ -66,6 +66,14 @@ namespace fs24bot3
             Context.Socket.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
         }
 
+        [Command("swchannel")]
+        [Checks.CheckAdmin]
+        public void SwitchCh(string channel)
+        {
+            Program.SwitchChannel(channel);
+            Context.Socket.SendMessage(Context.Channel, "Канал переключен!");
+        }
+
         [Command("ignore")]
         [Checks.CheckAdmin]
         public void Ignore(string action, [Remainder] string username)
