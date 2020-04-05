@@ -52,7 +52,7 @@ namespace fs24bot3
             section.contents = data;
             section.syntax = "autodetect";
 
-            paste.description = "xz";
+            paste.description = "A paste pasted by fs24_bot";
 
             paste.sections.Add(section);
 

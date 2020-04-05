@@ -40,7 +40,11 @@ namespace fs24bot3
                 }
                 catch (SQLiteException)
                 {
-                    Log.Verbose("Item aready addede: {0}", item.Name);
+                    Log.Verbose("Item aready addeded: {0}", item.Name);
+                }
+                catch (Exception)
+                {
+                    Log.Verbose("пиздец я хз чё вообще произошло");
                 }
             }
             Log.Information("done");

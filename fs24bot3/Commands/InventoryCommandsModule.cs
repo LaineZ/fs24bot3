@@ -122,11 +122,31 @@ namespace fs24bot3
 
 
         [Command("wrench")]
-        [Description("Топ по предматам, по стандарту показывает топ по деньгам")]
+        [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
         public void Wrench(string username)
         {
-            UserOperations user = new UserOperations(username, Context.Connection);
-            var userinfo = user.GetUserInfo();
+            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+
+            if (user.RemItemFromInv("wrench", 1))
+            {
+                UserOperations userDest = new UserOperations(username, Context.Connection);
+                var takeItems = userDest.GetInventory();
+
+                var rand = new Random();
+
+                if (rand.Next(0, 1) == 0)
+                {
+                   int indexItem = rand.Next(takeItems.Count);
+                   int itemCount = rand.Next(1, takeItems[indexItem].ItemCount);
+                   user.AddItemToInv(takeItems[indexItem].Item, itemCount);
+                   userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
+                   Context.SendMessage(Context.Channel, $"Вы кинули гаечные ключ в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{takeItems[indexItem].ItemCount}");
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, "Вы не попали...");
+                }   
+            }
         }
     }
 }
