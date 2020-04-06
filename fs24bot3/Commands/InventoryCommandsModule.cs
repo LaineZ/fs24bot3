@@ -127,7 +127,7 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
-            if (user.RemItemFromInv("wrench", 1))
+            if (user.RemItemFromInv(Shop.getItem("money").Name, 1))
             {
                 UserOperations userDest = new UserOperations(username, Context.Connection);
                 var takeItems = userDest.GetInventory();
