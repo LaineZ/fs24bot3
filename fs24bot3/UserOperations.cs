@@ -73,7 +73,7 @@ namespace fs24bot3
             {
                 foreach (var item in query)
                 {
-                    if (item.Item == Shop.getItem("money").Name && item.ItemCount >= count)
+                    if (item.Item == Shop.getItem(name).Name && item.ItemCount >= count)
                     {
                         Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, itemname, Username);
                         return true;

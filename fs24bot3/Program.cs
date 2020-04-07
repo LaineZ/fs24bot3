@@ -121,9 +121,19 @@ namespace fs24bot3
 
         }
 
-        private static void Client_OnRawDataReceived(Client client, string rawData)
+        private static async void Client_OnRawDataReceived(Client client, string rawData)
         {
             Log.Information(rawData);
+            var ircMessage = new ParsedIRCMessage(rawData);
+            switch (ircMessage.Command)
+            {
+                case "KICK":
+                    Log.Warning("I've got kick from {0} rejoining...", ircMessage.Prefix);
+                    await client.SendRaw("JOIN " + Configuration.channel);
+                    break;
+                default:
+                    break;
+            }
         }
 
         private static readonly CommandService _service = new CommandService();

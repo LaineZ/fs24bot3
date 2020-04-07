@@ -25,6 +25,7 @@ namespace fs24bot3
         {
 
             int page = 0;
+            int limit = 1;
 
             string[] queryOptions = query.Split(" ");
             List<string> queryText = new List<string>();
@@ -42,6 +43,10 @@ namespace fs24bot3
                 {
                     string[] options = queryOptions[i].Split(":");
                     exclude.Add(options[1].ToLower());
+                }
+                else if (queryOptions[i].Contains("multi:on"))
+                {
+                    limit = 5;
                 }
                 else
                 {
@@ -73,7 +78,7 @@ namespace fs24bot3
                 {
                     if (items.serp.results.Count > 0)
                     {
-                        bool found = false;
+                        int results = 0;
 
                         foreach (var item in items.serp.results)
                         {
@@ -100,9 +105,9 @@ namespace fs24bot3
                                 if (match == null)
                                 {
                                     Context.SendMessage(Context.Channel, searchResult.ToString() + IrcColors.Green + " // " + url);
-                                    Context.SendMessage(Context.Channel, desc);
-                                    found = true;
-                                    break;
+                                    if (limit <= 1) { Context.SendMessage(Context.Channel, desc); }
+                                    results++;
+                                    if (results == limit) { break; }
                                 }
                             }
                             else
@@ -111,7 +116,7 @@ namespace fs24bot3
                             }
                         }
 
-                        if (!found)
+                        if (results == 0)
                         {
                             Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено по вашим опциям поиска...");
                         }

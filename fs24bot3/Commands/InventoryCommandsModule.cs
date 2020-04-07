@@ -56,7 +56,7 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
-            if (user.RemItemFromInv(Shop.getItem(itemname).Name, count))
+            if (user.RemItemFromInv(itemname, count))
             {
                 // tin
                 int sellprice = (int)Math.Floor((decimal)(Shop.getItem(itemname).Price * count) / 2);
