@@ -1,12 +1,15 @@
-﻿using fs24bot3.Models;
+﻿using CommandLine;
+using fs24bot3.Models;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3
 {
@@ -22,7 +25,34 @@ namespace fs24bot3
         public async void MailSearch([Remainder] string query)
         {
 
-            string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query);
+            string response = "";
+
+            int page = 0;
+
+            string[] queryOptions = query.Split(" ");
+            List<string> queryText = new List<string>();
+            List<string> exclude = new List<string>();
+
+            for (int i = 0; i < queryOptions.Length; i++)
+            {
+
+                if (queryOptions[i].Contains("page:"))
+                {
+                    string[] options = queryOptions[i].Split(":");
+                    page = int.Parse(options[1]);
+                }
+                else if (queryOptions[i].Contains("exclude:"))
+                {
+                    string[] options = queryOptions[i].Split(":");
+                    exclude.Add(options[1].ToLower());
+                }
+                else
+                {
+                    queryText.Add(queryOptions[i]);
+                }
+            }
+
+            response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + page);
 
             string startString = "go.dataJson = {";
             string stopString = "};";
@@ -46,9 +76,11 @@ namespace fs24bot3
                 {
                     if (items.serp.results.Count > 0)
                     {
+                        bool found = false;
+
                         foreach (var item in items.serp.results)
                         {
-                            if (!item.is_porno)
+                            if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
                                 StringBuilder searchResult = new StringBuilder(item.title);
                                 searchResult.Replace("<b>", IrcColors.Bold);
@@ -66,15 +98,25 @@ namespace fs24bot3
                                 string desc = doc.DocumentNode.InnerText;
 
                                 string url = item.url;
+                                var match = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x));
 
-                                Context.SendMessage(Context.Channel, searchResult.ToString() + Models.IrcColors.Green + " // " + url);
-                                Context.SendMessage(Context.Channel, desc);
-                                break;
+                                if (match == null)
+                                {
+                                    Context.SendMessage(Context.Channel, searchResult.ToString() + IrcColors.Green + " // " + url);
+                                    Context.SendMessage(Context.Channel, desc);
+                                    found = true;
+                                    break;
+                                }
                             }
                             else
                             {
                                 continue;
                             }
+                        }
+
+                        if (!found)
+                        {
+                            Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено по вашим опциям поиска...");
                         }
                     }
                     else

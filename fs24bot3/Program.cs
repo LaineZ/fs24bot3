@@ -67,10 +67,10 @@ namespace fs24bot3
 
         private async static void Client_OnWelcome(Client client, IRCMessageEventArgs<RplWelcomeMessage> e)
         {
-            client.SendRaw("JOIN " + Configuration.channel);
+            await client.SendRaw("JOIN " + Configuration.channel);
         }
 
-        private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<NetIRC.Messages.PrivMsgMessage> e)
+        private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
             Log.Verbose(e.IRCMessage.From);
             var query = connection.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
@@ -112,7 +112,7 @@ namespace fs24bot3
                     IResult result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
                     if (result is FailedResult failedResult)
                     {
-                        Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
+                        await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
                         if (!(result is CommandNotFoundResult _))
                         {
                             await client.SendAsync( new PrivMsgMessage(e.IRCMessage.To, failedResult.Reason + " command line: " + output));
