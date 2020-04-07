@@ -76,7 +76,7 @@ namespace fs24bot3
                         {"network", "irc.esper.net"},
                         {"channel", "#gentoo" },
                         {"reconnect", true },
-                        {"port", 6697 },
+                        {"port", 6667 },
                         {"ssl", true },
                         {"ignore_ssl", true },
                         {"nickserv_pass", "zxcvbnM1" },

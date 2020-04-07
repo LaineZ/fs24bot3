@@ -1,5 +1,4 @@
-﻿using CommandLine;
-using fs24bot3.Models;
+﻿using fs24bot3.Models;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Qmmands;
@@ -24,8 +23,6 @@ namespace fs24bot3
         [Description("Поиск@Mail.ru")]
         public async void MailSearch([Remainder] string query)
         {
-
-            string response = "";
 
             int page = 0;
 
@@ -52,7 +49,7 @@ namespace fs24bot3
                 }
             }
 
-            response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + page);
+            string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + page);
 
             string startString = "go.dataJson = {";
             string stopString = "};";
