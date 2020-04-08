@@ -76,6 +76,8 @@ namespace fs24bot3
                     if (item.Item == Shop.getItem(name).Name && item.ItemCount >= count)
                     {
                         Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, itemname, Username);
+                        // clening up items with 0
+                        Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
                         return true;
                     }
                 }
