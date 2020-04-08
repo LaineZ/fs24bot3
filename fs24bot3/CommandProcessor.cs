@@ -37,7 +37,10 @@ namespace fs24bot3
                 int count = 0;
                 foreach (string outputstr in content.Split("\n"))
                 {
-                    await Client.SendAsync(new PrivMsgMessage(this.Channel, this.Message.From + ": " + outputstr));
+                    if (!string.IsNullOrWhiteSpace(outputstr))
+                    {
+                        await Client.SendAsync(new PrivMsgMessage(this.Channel, this.Message.From + ": " + outputstr));
+                    }
                     count++;
                     if (count > 4)
                     {

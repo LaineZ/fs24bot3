@@ -21,6 +21,8 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍺 Пиво", Price = 200, Sellable = true, Slug = "beer" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 200, Sellable = true, Slug = "wine" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ФРАНЦУНСКОЕ]", Price = 200, Sellable = true, Slug = "winef" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ГРУЗИНСКОЕ]", Price = 200, Sellable = true, Slug = "wineg" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔧 Гаечный ключ", Price = 300, Sellable = true, Slug = "wrench" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🛠 Гаечный ключ и молоток", Price = 400, Sellable = true, Slug = "wrenchadv" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔊 Мониторные колонки", Price = 320, Sellable = true, Slug = "speaker" });
@@ -56,7 +58,7 @@ namespace fs24bot3
             throw new NotImplementedException();
         }
 
-        public static void Update(SQLite.SQLiteConnection connect)
+        public static void Update(SQLiteConnection connect)
         {
             foreach (var shopItem in ShopItems)
             {
@@ -100,7 +102,7 @@ namespace fs24bot3
                 }
             }
 
-            throw new Exception("Item with name: " + name + " not found!");
+          throw new Exception("Item with name: " + name + " not found!");
         }
     }
 }

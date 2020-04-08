@@ -70,5 +70,17 @@ namespace fs24bot3.Models
             [PrimaryKey]
             public string Username { get; set; }
         }
+
+        internal class LyricsCache
+        {
+            [Column("track")]
+            public string Track { get; set; }
+            [Column("artist")]
+            public string Artist { get; set; }
+            [Column("lyrics")]
+            public string Lyrics { get; set; }
+            [Column("addedby")]
+            public string AddedBy { get; set; }
+        }
     }
 }

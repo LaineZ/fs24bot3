@@ -7,6 +7,7 @@ using NetIRC;
 using System.Threading.Tasks;
 using NetIRC.Connection;
 using NetIRC.Messages;
+using System.Threading;
 
 namespace fs24bot3
 {
@@ -38,8 +39,8 @@ namespace fs24bot3
 
             // creating ultimate inventory by @Fingercomp
             connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
+            connection.Execute("CREATE TABLE IF NOT EXISTS LyricsCache (track TEXT, artist TEXT, lyrics TEXT, addedby TEXT, PRIMARY KEY (track, artist))");
 
-            
 
             _service.AddModule<GenericCommandsModule>();
             _service.AddModule<SystemCommandModule>();
@@ -53,6 +54,14 @@ namespace fs24bot3
                 client.EventHub.RplWelcome += Client_OnWelcome;
                 Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
                 Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
+                (new Thread(() => {
+                    Log.Information("Thread started!");
+                    while (true)
+                    {
+                        Thread.Sleep(2000);
+                        Shop.Update(connection);
+                    }
+                })).Start();
 
                 try
                 {
@@ -75,49 +84,67 @@ namespace fs24bot3
             Log.Verbose(e.IRCMessage.From);
             var query = connection.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
 
-                    if (query.Count() <= 0)
+            if (query.Count() <= 0)
+            {
+                Log.Warning("User {0} not found in database", e.IRCMessage.From);
+
+
+
+                var user = new Models.SQL.UserStats()
+                {
+                    Nick = e.IRCMessage.From,
+                    Admin = 0,
+                    AdminPassword = "changeme",
+                    Level = 1,
+                    Xp = 0,
+                    Need = 300,
+                };
+
+                connection.Insert(user);
+            }
+            else
+            {
+                UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
+                bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length + 1);
+                if (newLevel)
+                {
+                    var random = new Random();
+                    int index = random.Next(Shop.ShopItems.Count);
+                    usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
+                }
+            }
+
+            if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
+                return;
+
+            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
+            switch (result)
+            {
+                case ChecksFailedResult err:
+                    var errStr = new StringBuilder();
+
+                    foreach (var (check, error) in err.FailedChecks)
                     {
-                        Log.Warning("User {0} not found in database", e.IRCMessage.From);
-
-
-
-                        var user = new Models.SQL.UserStats()
-                        {
-                            Nick = e.IRCMessage.From,
-                            Admin = 0,
-                            AdminPassword = "changeme",
-                            Level = 1,
-                            Xp = 0,
-                            Need = 300,
-                        };
-
-                        connection.Insert(user);
+                        errStr.Append(error.Reason);
                     }
-                    else
-                    {
-                        UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
-                        bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length + 1);
-                        if (newLevel)
-                        {
-                            var random = new Random();
-                            int index = random.Next(Shop.ShopItems.Count);
-                            usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                            await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
-                        }
-                    }
-
-                    if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
-                        return;
-
-                    IResult result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
-                    if (result is FailedResult failedResult)
-                    {
-                        await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
-                        if (!(result is CommandNotFoundResult _))
-                        {
-                            await client.SendAsync( new PrivMsgMessage(e.IRCMessage.To, failedResult.Reason + " command line: " + output));
-                         }       
-                    }
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Требования не выполнены: {errStr.ToString()}"));
+                    break;
+                case TypeParseFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}`"));
+                    break;
+                case ArgumentParseFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка парсера: `{err.Reason}`"));
+                    break;
+                case OverloadsFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
+                    break;
+                case CommandNotFoundResult _:
+                    break;
+                case ExecutionFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка при выполнении команды: {err.Reason}: `{err.Exception.Message}`"));
+                    break;
+            }
 
         }
 

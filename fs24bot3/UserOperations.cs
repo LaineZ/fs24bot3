@@ -13,12 +13,14 @@ namespace fs24bot3
     {
         public string Username;
         public SQLiteConnection Connect;
+        public CommandProcessor.CustomCommandContext Ctx;
 
 
-        public UserOperations(string username, SQLiteConnection connection)
+        public UserOperations(string username, SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
         {
             Username = username;
             Connect = connection;
+            Ctx = ctx;
         }
 
 
@@ -78,9 +80,17 @@ namespace fs24bot3
                         Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, itemname, Username);
                         // clening up items with 0
                         Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
+                        if (Ctx != null)
+                        {
+                            Ctx.SendMessage(Ctx.Channel, $" {Shop.getItem(name).Name} -{count} За использование данной команды");
+                        }
                         return true;
                     }
                 }
+            }
+            if (Ctx != null)
+            {
+                Ctx.SendMessage(Ctx.Channel, $"Недостаточно {Shop.getItem(name).Name} x{count}");
             }
             return false;
         }

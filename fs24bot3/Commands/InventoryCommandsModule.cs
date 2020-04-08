@@ -41,8 +41,9 @@ namespace fs24bot3
 
             if (sucessfully)
             {
+                user.AddItemToInv(itemname, count);
                 Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.getItem(itemname).Name + " за " + buyprice + " денег");
-                Shop.getItem(itemname).Price += 25;
+                Shop.getItem(itemname).Price += 5;
             }
             else
             {
@@ -56,7 +57,7 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
-            if (user.RemItemFromInv(itemname, count))
+            if (user.RemItemFromInv(itemname, count) && Shop.getItem(itemname).Sellable)
             {
                 // tin
                 int sellprice = (int)Math.Floor((decimal)(Shop.getItem(itemname).Price * count) / 2);
@@ -67,6 +68,28 @@ namespace fs24bot3
             {
                 Context.SendMessage(Context.Channel, "Вы не можете это продать!");
             }
+        }
+
+        [Command("sellall")]
+        [Description("Продать весь товар")]
+        public void SellAll()
+        {
+            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+
+            var inv = user.GetInventory();
+
+            int totalPrice = 0;
+
+            foreach (var item in inv)
+            {
+                if (Shop.getItem(item.Item).Sellable && user.RemItemFromInv(Shop.getItem(item.Item).Slug, item.ItemCount))
+                {
+                    totalPrice += (int)Math.Floor((decimal)(Shop.getItem(item.Item).Price * item.ItemCount) / 2);
+                }
+            }
+
+            user.AddItemToInv("money", totalPrice);
+            Context.SendMessage(Context.Channel, $"Вы продали всё! За {totalPrice} денег!");
         }
 
         [Command("transfer")]
@@ -125,27 +148,34 @@ namespace fs24bot3
         [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
         public void Wrench(string username)
         {
-            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
-
-            if (user.RemItemFromInv(Shop.getItem("money").Name, 1))
+            try
             {
-                UserOperations userDest = new UserOperations(username, Context.Connection);
-                var takeItems = userDest.GetInventory();
+                UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
-                var rand = new Random();
-
-                if (rand.Next(0, 1) == 0)
+                if (user.RemItemFromInv(Shop.getItem("money").Name, 1))
                 {
-                   int indexItem = rand.Next(takeItems.Count);
-                   int itemCount = rand.Next(1, takeItems[indexItem].ItemCount);
-                   user.AddItemToInv(takeItems[indexItem].Item, itemCount);
-                   userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
-                   Context.SendMessage(Context.Channel, $"Вы кинули гаечные ключ в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{takeItems[indexItem].ItemCount}");
+                    UserOperations userDest = new UserOperations(username, Context.Connection);
+                    var takeItems = userDest.GetInventory();
+
+                    var rand = new Random();
+
+                    if (rand.Next(0, 1) == 0)
+                    {
+                        int indexItem = rand.Next(takeItems.Count);
+                        int itemCount = rand.Next(1, takeItems[indexItem].ItemCount);
+                        user.AddItemToInv(takeItems[indexItem].Item, itemCount);
+                        userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
+                        Context.SendMessage(Context.Channel, $"Вы кинули гаечные ключ в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount}");
+                    }
+                    else
+                    {
+                        Context.SendMessage(Context.Channel, "Вы не попали...");
+                    }
                 }
-                else
-                {
-                    Context.SendMessage(Context.Channel, "Вы не попали...");
-                }   
+            }
+            catch (Core.Exceptions.UserNotFoundException)
+            {
+                Context.SendMessage(Context.Channel, $"Вы кинули гаечные ключ в пользователя {username} при этом он потерял себя");
             }
         }
     }

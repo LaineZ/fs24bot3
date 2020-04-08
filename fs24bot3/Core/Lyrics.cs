@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using SQLite;
 
 namespace fs24bot3.Core
 {
@@ -13,11 +14,13 @@ namespace fs24bot3.Core
     {
         public string Artist;
         public string Track;
+        public SQLiteConnection Connection;
 
-        public Lyrics(string artist, string track)
+        public Lyrics(string artist, string track, SQLiteConnection connect)
         {
             Artist = artist;
             Track = track;
+            Connection = connect;
         }
 
         private string Retry(string rule, HtmlDocument doc)
@@ -76,14 +79,42 @@ namespace fs24bot3.Core
 
         public async Task<string> GetLyrics()
         {
+            var query = Connection.Table<Models.SQL.LyricsCache>().Where(v => v.Artist.ToLower().Equals(Artist.ToLower()) && v.Track.ToLower().Equals(Track.ToLower())).ToList();
+
+            if (query.Count > 0)
+            {
+                Log.Information("Lyrics: Using cached");
+                return query[0].Lyrics;
+            }
+            Log.Information("Lyrics: Using internet");
             (string lyrics, bool redirect) = await GetLyricsInternal(Artist + ":" + Track);
             if (!redirect)
             {
+                var lyricsToCache = new Models.SQL.LyricsCache()
+                {
+                    AddedBy = null,
+                    Artist = Artist,
+                    Track = Track,
+                    Lyrics = lyrics
+                };
+
+                Connection.Insert(lyricsToCache);
                 return lyrics;
             }
             else
             {
                 (string lyricsFixed, bool _) = await GetLyricsInternal(lyrics);
+
+                var lyricsToCache = new Models.SQL.LyricsCache()
+                {
+                    AddedBy = null,
+                    Artist = Artist,
+                    Track = Track,
+                    Lyrics = lyricsFixed
+                };
+
+                Connection.Insert(lyricsToCache);
+
                 return lyricsFixed;
             }
         }
