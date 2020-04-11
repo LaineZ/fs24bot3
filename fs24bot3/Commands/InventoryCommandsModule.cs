@@ -117,17 +117,17 @@ namespace fs24bot3
             var top = new List<(string Name, int Count)>();
 
             var query = Context.Connection.Table<Models.SQL.UserStats>();
-            /*
+            
             foreach (var users in query)
             {
-                var userinfo = Context.Connection.GetWithChildren<Models.SQL.UserStats>(Context.Message.From);
-                int itemToCount = userinfo.Inv.FindIndex(item => item.Name.Equals(Shop.getItem(itemname).Name));
-                if (itemToCount >= 0)
+                var user = new UserOperations(users.Nick, Context.Connection);
+                var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.getItem(itemname).Name));
+                if (itemToCount != null)
                 {
-                    top.Add((userinfo.Nick, userinfo.Inv[itemToCount].Count));
+                    top.Add((users.Nick, itemToCount.ItemCount));
                 }
             }
-            */
+            
             var result = top.OrderByDescending(p => p.Count).ToList();
 
             if (result.Count > 4)

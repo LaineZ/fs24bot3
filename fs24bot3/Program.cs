@@ -25,7 +25,6 @@ namespace fs24bot3
             .MinimumLevel.Verbose()
             .CreateLogger();
             Console.OutputEncoding = Encoding.Unicode;
-
             Log.Information("fs24_bot3 has started");
 
             if (File.Exists("fscache.sqlite"))
@@ -59,11 +58,12 @@ namespace fs24bot3
             _service.AddModule<InventoryCommandsModule>();
             _service.AddModule<InternetCommandsModule>();
 
-            using (var client = new Client(new User(Configuration.name, "NetIRC"), new TcpClientConnection()))
+            using (var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection()))
             {
                 client.OnRawDataReceived += Client_OnRawDataReceived;
                 client.EventHub.PrivMsg += EventHub_PrivMsg;
                 client.EventHub.RplWelcome += Client_OnWelcome;
+                
                 Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
                 Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
                 (new Thread(() => {
@@ -160,6 +160,7 @@ namespace fs24bot3
                     break;
                 case ExecutionFailedResult err:
                     await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка при выполнении команды: {err.Reason}: `{err.Exception.Message}`"));
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
                     break;
             }
 

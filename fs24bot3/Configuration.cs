@@ -101,10 +101,10 @@ namespace fs24bot3
             }
             else
             {
+                Log.Information("Loading configuration from {0}", System.Reflection.Assembly.GetExecutingAssembly().Location);
                 string configFile = File.ReadAllText("settings.toml");
                 var config = Toml.Parse(configFile);
                 var table = config.ToModel();
-
                 name = (string)((TomlTable)table["irc"])["name"];
                 network = (string)((TomlTable)table["irc"])["network"];
                 channel = (string)((TomlTable)table["irc"])["channel"];
@@ -118,7 +118,7 @@ namespace fs24bot3
                 jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
                 pastebinKey = (string)((TomlTable)table["services"])["pastebin_key"];
                 yandexTrKey = (string)((TomlTable)table["services"])["yandex_translate_key"];
-                Log.Information("configuration loaded");
+                Log.Information("Configuration loaded!");
             }
         }
      }

@@ -1,7 +1,9 @@
 ﻿using Qmmands;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace fs24bot3
 {
@@ -35,6 +37,39 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, "Мусор вывезли!");
         }
 
+        [Command("htppcache")]
+        [Checks.CheckAdmin]
+        [Description("Вывоз мусора")]
+        
+        public void CacheStatus(string option = "status")
+        {
+            SQLiteConnection cache = new SQLiteConnection("fscache.sqlite");
+
+            switch (option)
+            {
+                case "status":
+                    var query = cache.Table<Models.SQL.HttpCache>().Count();
+                    FileInfo fi = new FileInfo("fscache.sqlite");
+                    Context.SendMessage(Context.Channel, $"Число записей: {query} Размер базы: {fi.Length / 1024} KB");
+                    break;
+            }
+        }
+
+        [Command("updconfig")]
+        [Checks.CheckAdmin]
+        [Description("Обновление файла конфигурации")]
+        public void LoadConfig()
+        {
+            try
+            {
+                Configuration.LoadConfiguration();
+                Context.SendMessage(Context.Channel, "Конфигурация успешно загружена");
+            }
+            catch (Exception e)
+            {
+                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}Конфигурацию не удалось загрузить {e.Message}");
+            }
+        }
 
         [Command("give")]
         [Checks.CheckAdmin]
