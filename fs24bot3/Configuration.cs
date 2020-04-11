@@ -15,7 +15,7 @@ namespace fs24bot3
         public static bool reconnect;
         public static long port;
         public static bool ssl;
-        public static bool ignoreSSL;
+        public static bool cacheing;
         public static string nickservPass;
 
         public static string jdoodleClientID;
@@ -39,7 +39,7 @@ namespace fs24bot3
                         {"reconnect", reconnect },
                         {"port", port },
                         {"ssl", ssl },
-                        {"ignore_ssl", ignoreSSL },
+                        {"caching", cacheing },
                         {"nickserv_pass", nickservPass },
                     }
                 },
@@ -78,7 +78,7 @@ namespace fs24bot3
                         {"reconnect", true },
                         {"port", 6667 },
                         {"ssl", true },
-                        {"ignore_ssl", true },
+                        {"caching", true },
                         {"nickserv_pass", "zxcvbnM1" },
                         {"ignore", new string[] { "hubblest", "brote", "ayumi`" } }
                     }
@@ -111,7 +111,7 @@ namespace fs24bot3
                 reconnect = (bool)((TomlTable)table["irc"])["reconnect"];
                 port = (long)((TomlTable)table["irc"])["port"];
                 ssl = (bool)((TomlTable)table["irc"])["ssl"];
-                ignoreSSL = (bool)((TomlTable)table["irc"])["ignore_ssl"];
+                cacheing = (bool)((TomlTable)table["irc"])["caching"];
                 nickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
 
                 jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];

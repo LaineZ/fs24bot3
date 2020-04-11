@@ -8,12 +8,15 @@ using System.Threading.Tasks;
 using NetIRC.Connection;
 using NetIRC.Messages;
 using System.Threading;
+using fs24bot3.Models;
+using System.IO;
 
 namespace fs24bot3
 {
     class Program
     {
-        private static SQLiteConnection connection;
+        private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
+        private static SQLiteConnection CacheConnection;
 
         static void Main(string[] args)
         {
@@ -25,15 +28,24 @@ namespace fs24bot3
 
             Log.Information("fs24_bot3 has started");
 
-            Configuration.LoadConfiguration();
+            if (File.Exists("fscache.sqlite"))
+            {
+                Log.Information("Cleaning up cache!");
+                File.Delete("fscache.sqlite");
+            }
 
-            connection = new SQLiteConnection("fsdb.sqlite");
-            connection.CreateTable<Models.SQL.UserStats>();
-            connection.CreateTable<Models.SQL.CustomUserCommands>();
-            connection.CreateTable<Models.SQL.Tag>();
-            connection.CreateTable<Models.SQL.Item>();
-            connection.CreateTable<Models.SQL.Tags>();
-            connection.CreateTable<Models.SQL.Ignore>();
+            CacheConnection = new SQLiteConnection("fscache.sqlite");
+
+            Configuration.LoadConfiguration();
+            connection.CreateTable<SQL.UserStats>();
+            connection.CreateTable<SQL.CustomUserCommands>();
+            connection.CreateTable<SQL.Tag>();
+            connection.CreateTable<SQL.Item>();
+            connection.CreateTable<SQL.Tags>();
+            connection.CreateTable<SQL.Ignore>();
+            CacheConnection.CreateTable<SQL.HttpCache>();
+            CacheConnection.Close();
+            CacheConnection.Dispose();
 
             Shop.Init(connection);
 
@@ -82,7 +94,7 @@ namespace fs24bot3
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
             Log.Verbose(e.IRCMessage.From);
-            var query = connection.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
+            var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
 
             if (query.Count() <= 0)
             {
@@ -90,7 +102,7 @@ namespace fs24bot3
 
 
 
-                var user = new Models.SQL.UserStats()
+                var user = new SQL.UserStats()
                 {
                     Nick = e.IRCMessage.From,
                     Admin = 0,
@@ -118,7 +130,12 @@ namespace fs24bot3
             if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
                 return;
 
-            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
+            DateTime firstTime = DateTime.Now;
+            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, CacheConnection));
+            DateTime elapsed = DateTime.Now;
+
+            Log.Verbose("Perf: {0} ms", elapsed.Subtract(firstTime).TotalMilliseconds);
+
             switch (result)
             {
                 case ChecksFailedResult err:
@@ -157,6 +174,7 @@ namespace fs24bot3
                 case "KICK":
                     Log.Warning("I've got kick from {0} rejoining...", ircMessage.Prefix);
                     await client.SendRaw("JOIN " + Configuration.channel);
+                    await client.SendAsync(new PrivMsgMessage(Configuration.channel, "За что?"));
                     break;
                 default:
                     break;

@@ -14,17 +14,24 @@ namespace fs24bot3
         {
             public PrivMsgMessage Message { get; }
             public NetIRC.Client Client { get; }
-            readonly HttpTools http = new HttpTools();
+            public SQLiteConnection CacheConnection;
 
             public string Channel => Message.To;
+
+            public SQLiteConnection CacheConnetion;
+
             public SQLiteConnection Connection;
 
+            HttpTools http = new HttpTools();
+
+
             // Pass your service provider to the base command context.
-            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, SQLiteConnection connectCache, IServiceProvider provider = null) : base(provider)
             {
                 Message = message;
                 Client = client;
                 Connection = connection;
+                CacheConnection = connectCache;
             }
             // created just for compatibilty
             public async void SendMessage(string channel, string message)

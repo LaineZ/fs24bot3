@@ -3,6 +3,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace fs24bot3
             string[] queryOptions = query.Split(" ");
             List<string> queryText = new List<string>();
             List<string> exclude = new List<string>();
+            string site = "";
 
             for (int i = 0; i < queryOptions.Length; i++)
             {
@@ -44,6 +46,11 @@ namespace fs24bot3
                     string[] options = queryOptions[i].Split(":");
                     exclude.Add(options[1].ToLower());
                 }
+                else if (queryOptions[i].Contains("site:"))
+                {
+                    string[] options = queryOptions[i].Split(":");
+                    site = options[1].ToLower();
+                }
                 else if (queryOptions[i].Contains("multi:on"))
                 {
                     limit = 5;
@@ -54,7 +61,7 @@ namespace fs24bot3
                 }
             }
 
-            string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + page);
+            string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + page + "&site=" + site);
 
             string startString = "go.dataJson = {";
             string stopString = "};";
