@@ -72,7 +72,7 @@ namespace fs24bot3
                     }
                     else
                     {
-                        Log.Verbose("Incresing price for {0}", shopItem.Name);
+                        //Log.Verbose("Incresing price for {0}", shopItem.Name);
                         shopItem.Price += 1;
                     }
                 }
