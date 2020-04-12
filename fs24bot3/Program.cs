@@ -95,14 +95,11 @@ namespace fs24bot3
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
-            Log.Verbose(e.IRCMessage.From);
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
 
-            if (query.Count() <= 0)
+            if (query.Count() <= 0 && e.IRCMessage.From != Configuration.name)
             {
                 Log.Warning("User {0} not found in database", e.IRCMessage.From);
-
-
 
                 var user = new SQL.UserStats()
                 {

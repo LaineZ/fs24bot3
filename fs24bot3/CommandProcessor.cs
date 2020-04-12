@@ -16,7 +16,7 @@ namespace fs24bot3
             public NetIRC.Client Client { get; }
             public SQLiteConnection CacheConnection;
 
-            public string Channel => Message.To;
+            public string Channel;
 
             public SQLiteConnection CacheConnetion;
 
@@ -32,11 +32,19 @@ namespace fs24bot3
                 Client = client;
                 Connection = connection;
                 CacheConnection = connectCache;
+
+                if (Message.To == Configuration.name)
+                {
+                    Channel = Message.From;
+                }
+                else
+                {
+                    Channel = Message.To;
+                }
             }
             // created just for compatibilty
             public void SendMessage(string channel, string message)
             {
-
                Core.MessageUtils.SplitMessage(message, 480)
                     .ForEach(async msg => await Client.SendAsync(new PrivMsgMessage(channel, msg)));
             }
