@@ -57,6 +57,7 @@ namespace fs24bot3
             _service.AddModule<SystemCommandModule>();
             _service.AddModule<InventoryCommandsModule>();
             _service.AddModule<InternetCommandsModule>();
+            _service.AddModule<NetstalkingCommandsModule>();
 
             using (var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection()))
             {

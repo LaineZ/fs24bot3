@@ -39,8 +39,6 @@ namespace fs24bot3
 
         [Command("htppcache")]
         [Checks.CheckAdmin]
-        [Description("Вывоз мусора")]
-        
         public void CacheStatus(string option = "status")
         {
             SQLiteConnection cache = new SQLiteConnection("fscache.sqlite");

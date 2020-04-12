@@ -34,9 +34,11 @@ namespace fs24bot3
                 CacheConnection = connectCache;
             }
             // created just for compatibilty
-            public async void SendMessage(string channel, string message)
+            public void SendMessage(string channel, string message)
             {
-                await Client.SendAsync(new PrivMsgMessage(channel, message));
+
+               Core.MessageUtils.SplitMessage(message, 480)
+                    .ForEach(async msg => await Client.SendAsync(new PrivMsgMessage(channel, msg)));
             }
 
             public async void SendMultiLineMessage(string content)
