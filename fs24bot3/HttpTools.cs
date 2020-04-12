@@ -44,7 +44,14 @@ namespace fs24bot3
             });
             try
             {
-                Connection.Insert(new Models.SQL.HttpCache() { URL = url, Output = responseText });
+                if (Configuration.cacheing)
+                {
+                    Connection.Insert(new Models.SQL.HttpCache() { URL = url, Output = responseText });
+                }
+                else
+                {
+                    Log.Verbose("Caching is disabled");
+                }
             }
             catch (SQLiteException e)
             {
