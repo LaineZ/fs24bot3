@@ -90,6 +90,7 @@ namespace fs24bot3
         private async static void Client_OnWelcome(Client client, IRCMessageEventArgs<RplWelcomeMessage> e)
         {
             await client.SendRaw("JOIN " + Configuration.channel);
+            await client.SendAsync(new PrivMsgMessage("NickServ", "identify " + Configuration.nickservPass));
         }
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
@@ -158,6 +159,7 @@ namespace fs24bot3
                     await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
                     break;
                 case CommandNotFoundResult _:
+                    await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
                     break;
                 case ExecutionFailedResult err:
                     await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка при выполнении команды: {err.Reason}: `{err.Exception.Message}`"));
