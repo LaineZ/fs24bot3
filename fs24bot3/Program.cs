@@ -96,10 +96,10 @@ namespace fs24bot3
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
-            var queryIfExt = connection.Table<Models.SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From));
+            var queryIfExt = connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
 
 
-            if (queryIfExt == null)
+            if (queryIfExt <= 0)
             {
                 if (query.Count() <= 0 && e.IRCMessage.From != Configuration.name)
                 {

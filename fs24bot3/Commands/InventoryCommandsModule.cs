@@ -150,9 +150,9 @@ namespace fs24bot3
         {
             try
             {
-                UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+                UserOperations user = new UserOperations(Context.Message.From, Context.Connection, Context);
 
-                if (user.RemItemFromInv(Shop.getItem("money").Name, 1))
+                if (user.RemItemFromInv(Shop.getItem("wrench").Name, 1))
                 {
                     UserOperations userDest = new UserOperations(username, Context.Connection);
                     var takeItems = userDest.GetInventory();
