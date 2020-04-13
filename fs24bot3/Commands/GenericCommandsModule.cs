@@ -137,9 +137,9 @@ namespace fs24bot3
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
-            if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
+            if (query.Any() && query[0].Command == commandConcat)
             {
-                if (query[0].Nick == Context.Message.From)
+                if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
                 {
                     switch (action)
                     {
