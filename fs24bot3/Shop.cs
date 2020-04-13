@@ -15,7 +15,7 @@ namespace fs24bot3
         public static int PaydaysCount;
         private static Random rand;
 
-        public static void Init(SQLite.SQLiteConnection connect)
+        public static void Init(SQLiteConnection connect)
         {
             Log.Information("loading shop...");
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
@@ -65,7 +65,7 @@ namespace fs24bot3
                 int check = rand.Next(0, 10);
                 if (check == 5)
                 {
-                    if (shopItem.Price >= 1000)
+                    if (shopItem.Price >= rand.Next(1000, 5000))
                     {
                         Log.Verbose("Descreaseing price for {0}", shopItem.Name);
                         shopItem.Price -= 5;
@@ -95,7 +95,7 @@ namespace fs24bot3
         {
             foreach (var item in ShopItems)
             {
-                Log.Verbose("items: {0} {1} need: {2}", item.Name, item.Slug, name);
+                //Log.Verbose("items: {0} {1} need: {2}", item.Name, item.Slug, name);
                 if (item.Name == name || item.Slug == name)
                 {
                     return item;

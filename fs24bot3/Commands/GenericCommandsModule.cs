@@ -100,28 +100,32 @@ namespace fs24bot3
         [Remarks("Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду")]
         public void CustomCmdRegister(string command, [Remainder] string output)
         {
-            var commandIntenral = Service.GetAllCommands().Where(x => x.Name.Equals(command));
-            if (!commandIntenral.Any())
+            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+            if (usr.RemItemFromInv("money", 10000))
             {
-                var commandInsert = new Models.SQL.CustomUserCommands()
+                var commandIntenral = Service.GetAllCommands().Where(x => x.Name.Equals(command));
+                if (!commandIntenral.Any())
                 {
-                    Command = "@" + command,
-                    Output = output,
-                    Nick = Context.Message.From,
-                };
-                try
-                {
-                    Context.Connection.Insert(commandInsert);
-                    Context.SendMessage(Context.Channel, "Команда успешно создана");
+                    var commandInsert = new Models.SQL.CustomUserCommands()
+                    {
+                        Command = "@" + command,
+                        Output = output,
+                        Nick = Context.Message.From,
+                    };
+                    try
+                    {
+                        Context.Connection.Insert(commandInsert);
+                        Context.SendMessage(Context.Channel, "Команда успешно создана");
+                    }
+                    catch (SQLiteException)
+                    {
+                        Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
+                    }
                 }
-                catch (SQLiteException)
+                else
                 {
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже суещствует в fs24_bot");
                 }
-            }
-            else
-            {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже суещствует в fs24_bot");
             }
         }
 
@@ -198,7 +202,7 @@ namespace fs24bot3
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
-                if (query[0].Nick == Context.Message.From)
+                if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
                 {
                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
                     Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");

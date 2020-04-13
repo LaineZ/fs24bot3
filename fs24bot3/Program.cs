@@ -71,7 +71,7 @@ namespace fs24bot3
                     Log.Information("Thread started!");
                     while (true)
                     {
-                        Thread.Sleep(2000);
+                        Thread.Sleep(5000);
                         Shop.Update(connection);
                     }
                 })).Start();
