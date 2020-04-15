@@ -153,21 +153,9 @@ namespace fs24bot3
 
         [Command("vksearch", "vks", "groups")]
         [Description("Поиск душевных групп в ВК")]
-        public async void VkGroups(int count = 5, int rangemin = 100, int rangemax = 32900000, int minmembers = 2)
+        public async void VkGroups(int count = 99, int rangemin = 100, int rangemax = 32900000, int minmembers = 2)
         {
-
-            var api = new VkApi();
-
-            api.Authorize(new ApiAuthParams
-            {
-                ApplicationId = ulong.Parse(Configuration.vkApiId),
-                Login = Configuration.vkLogin,
-                Password = Configuration.vkPassword,
-                Settings = Settings.All,
-            });
-           
-
-            if (count > 0 && count < 100)
+            if (count > 0 && count < 151)
             {
                 Random random = new Random();
                 List<string> vkg = new List<string>();
@@ -177,7 +165,7 @@ namespace fs24bot3
                     vkg.Add(random.Next(rangemin, rangemax).ToString());
                 }
 
-                var groups = await api.Groups.GetByIdAsync(vkg, null, GroupsFields.All);
+                var groups = await Context.VKApi.Groups.GetByIdAsync(vkg, null, GroupsFields.All);
 
                 vkg.Clear();
 

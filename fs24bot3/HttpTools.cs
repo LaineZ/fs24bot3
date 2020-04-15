@@ -63,21 +63,28 @@ namespace fs24bot3
 
         public async Task<string> UploadToTrashbin(string data)
         {
-            HttpClient client = new HttpClient();
-
-            HttpContent c = new StringContent(data, Encoding.UTF8);
-
-            var response = await client.PostAsync(Configuration.trashbinUrl + "/add", c);
-
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            if (int.TryParse(responseString, out _))
+            try
             {
-                return Configuration.trashbinUrl + "/" + responseString;
+                HttpClient client = new HttpClient();
+
+                HttpContent c = new StringContent(data, Encoding.UTF8);
+
+                var response = await client.PostAsync(Configuration.trashbinUrl + "/add", c);
+
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                if (int.TryParse(responseString, out _))
+                {
+                    return Configuration.trashbinUrl + "/" + responseString;
+                }
+                else
+                {
+                    return responseString + " Статус код: " + response.StatusCode;
+                }
             }
-            else
+            catch (Exception)
             {
-                return responseString + " Статус код: " + response.StatusCode;
+                return "Сервер недоступен for some reason: " + Configuration.trashbinUrl;
             }
         }
            

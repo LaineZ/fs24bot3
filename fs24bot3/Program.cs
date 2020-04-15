@@ -10,6 +10,9 @@ using NetIRC.Messages;
 using System.Threading;
 using fs24bot3.Models;
 using System.IO;
+using VkNet;
+using VkNet.Model;
+using VkNet.Enums.Filters;
 
 namespace fs24bot3
 {
@@ -17,6 +20,7 @@ namespace fs24bot3
     {
         private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
         private static SQLiteConnection CacheConnection;
+        private static VkApi vk;
 
         static void Main(string[] args)
         {
@@ -59,12 +63,24 @@ namespace fs24bot3
             _service.AddModule<InternetCommandsModule>();
             _service.AddModule<NetstalkingCommandsModule>();
 
-            using (var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection()))
+
+            Log.Information("Logging with vkapi...");
+            vk = new VkApi();
+
+            vk.Authorize(new ApiAuthParams
+            {
+                ApplicationId = ulong.Parse(Configuration.vkApiId),
+                Login = Configuration.vkLogin,
+                Password = Configuration.vkPassword,
+                Settings = Settings.All,
+            });
+
+            using (var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection()))
             {
                 client.OnRawDataReceived += Client_OnRawDataReceived;
                 client.EventHub.PrivMsg += EventHub_PrivMsg;
                 client.EventHub.RplWelcome += Client_OnWelcome;
-                
+
                 Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
                 Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
                 (new Thread(() => {
@@ -134,7 +150,7 @@ namespace fs24bot3
                     return;
 
                 DateTime firstTime = DateTime.Now;
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, CacheConnection));
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, CacheConnection, vk));
                 DateTime elapsed = DateTime.Now;
 
                 Log.Verbose("Perf: {0} ms", elapsed.Subtract(firstTime).TotalMilliseconds);
