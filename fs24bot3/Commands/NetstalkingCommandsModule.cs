@@ -182,13 +182,20 @@ namespace fs24bot3
                 vkg.Clear();
 
 
-                List<(string Name, string Url)> vkgs = new List<(string, string)>();
+                List<(string Name, string Url, string Img)> vkgs = new List<(string, string, string)>();
 
                 foreach (var group in groups)
                 {
                     if (group.MembersCount > minmembers && group.IsClosed == VkNet.Enums.GroupPublicity.Public)
                     {
-                        vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id));
+                        try
+                        {
+                            vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: group.Photo200.AbsoluteUri));
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: "https://gitlab.com/uploads/-/system/user/avatar/2374023/avatar.png"));
+                        }
                     }
                 }
 
@@ -196,7 +203,7 @@ namespace fs24bot3
                 {
                     Context.SendMessage(Context.Channel, string.Join(" ", vkgs.Take(5).Select(x => x.Name + " // " + x.Url)));
                     Context.SendMessage(Context.Channel, await http.UploadToTrashbin(
-                        string.Join("<br>", vkgs.Select(x => $"<a href=\"{x.Url}\">{x.Name}</a>"))));
+                        string.Join("<br>", vkgs.Select(x => $"<img width=100 height=100 src=\"{x.Img}\"><a href=\"{x.Url}\">{x.Name}</a>"))));
                 }
                 else
                 {
