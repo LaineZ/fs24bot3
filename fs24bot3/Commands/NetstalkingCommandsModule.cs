@@ -9,7 +9,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using VkNet.Model.RequestParams;
 using System.Text.RegularExpressions;
+using VkNet;
+using VkNet.Enums.Filters;
+using VkNet.Model;
 
 namespace fs24bot3
 {
@@ -144,6 +148,64 @@ namespace fs24bot3
             catch (JsonReaderException)
             {
                 Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
+            }
+        }
+
+        [Command("vksearch", "vks", "groups")]
+        [Description("Поиск душевных групп в ВК")]
+        public async void VkGroups(int count = 5, int rangemin = 100, int rangemax = 32900000, int minmembers = 2)
+        {
+
+            var api = new VkApi();
+
+            api.Authorize(new ApiAuthParams
+            {
+                ApplicationId = ulong.Parse(Configuration.vkApiId),
+                Login = Configuration.vkLogin,
+                Password = Configuration.vkPassword,
+                Settings = Settings.All,
+            });
+           
+
+            if (count > 0 && count < 100)
+            {
+                Random random = new Random();
+                List<string> vkg = new List<string>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    vkg.Add(random.Next(rangemin, rangemax).ToString());
+                }
+
+                var groups = await api.Groups.GetByIdAsync(vkg, null, GroupsFields.All);
+
+                vkg.Clear();
+
+
+                List<(string Name, string Url)> vkgs = new List<(string, string)>();
+
+                foreach (var group in groups)
+                {
+                    if (group.MembersCount > minmembers && group.IsClosed == VkNet.Enums.GroupPublicity.Public)
+                    {
+                        vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id));
+                    }
+                }
+
+                if (vkgs.Count > 8)
+                {
+                    Context.SendMessage(Context.Channel, string.Join(" ", vkgs.Take(5).Select(x => x.Name + " // " + x.Url)));
+                    Context.SendMessage(Context.Channel, await http.UploadToTrashbin(
+                        string.Join("<br>", vkgs.Select(x => $"<a href=\"{x.Url}\">{x.Name}</a>"))));
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, string.Join(" ", vkg));
+                }
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, "капец ты математик");
             }
         }
     }

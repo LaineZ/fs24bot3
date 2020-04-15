@@ -19,6 +19,7 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.6.292" />
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
     <PackageReference Include="Tomlyn" Version="0.1.2" />
+    <PackageReference Include="VkNet" Version="1.51.0" />
   </ItemGroup>
 
 </Project>

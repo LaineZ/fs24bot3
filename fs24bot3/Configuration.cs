@@ -22,6 +22,10 @@ namespace fs24bot3
         public static string jdoodleClientSecret;
         public static string pastebinKey;
         public static string yandexTrKey;
+        public static string vkApiId;
+        public static string vkLogin;
+        public static string vkPassword;
+        public static string trashbinUrl;
 
         public static void SaveConfiguration()
         {
@@ -52,6 +56,10 @@ namespace fs24bot3
                         {"jdoodle_client_secret", jdoodleClientSecret},
                         {"pastebin_key", pastebinKey },
                         {"yandex_translate_key", yandexTrKey },
+                        {"vk_api_key", vkApiId},
+                        {"vk_login", vkLogin },
+                        {"vk_password", vkPassword },
+                        {"trashbin_url", trashbinUrl },
                     }
                 }
             }
@@ -74,7 +82,7 @@ namespace fs24bot3
                     {
                         {"name", "djmadest123"},
                         {"network", "irc.esper.net"},
-                        {"channel", "#gentoo" },
+                        {"channel", "#fl-studio" },
                         {"reconnect", true },
                         {"port", 6667 },
                         {"ssl", true },
@@ -92,6 +100,10 @@ namespace fs24bot3
                         {"jdoodle_client_secret", "0"},
                         {"pastebin_key", "#cc.ru" },
                         {"yandex_translate_key", "0" },
+                        {"vk_api_key", "0"},
+                        {"vk_login", "0" },
+                        {"vk_password", "0" },
+                        {"trashbin_url", "http://127.0.0.1:8000" },
                     }
                 }
             }
@@ -118,6 +130,10 @@ namespace fs24bot3
                 jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
                 pastebinKey = (string)((TomlTable)table["services"])["pastebin_key"];
                 yandexTrKey = (string)((TomlTable)table["services"])["yandex_translate_key"];
+                vkApiId = (string)((TomlTable)table["services"])["vk_api_key"];
+                vkLogin = (string)((TomlTable)table["services"])["vk_login"];
+                vkPassword = (string)((TomlTable)table["services"])["vk_password"];
+                trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
                 Log.Information("Configuration loaded!");
             }
         }
