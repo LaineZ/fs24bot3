@@ -155,7 +155,7 @@ namespace fs24bot3
         [Description("Поиск душевных групп в ВК")]
         public async void VkGroups(int count = 99, int rangemin = 100, int rangemax = 32900000, int minmembers = 2)
         {
-            if (count > 0 && count < 151)
+            if (count > 0 && count < 151 && rangemin < rangemax)
             {
                 Random random = new Random();
                 List<string> vkg = new List<string>();
