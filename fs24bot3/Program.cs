@@ -67,6 +67,8 @@ namespace fs24bot3
             Log.Information("Logging with vkapi...");
             vk = new VkApi();
 
+            try
+            {
             vk.Authorize(new ApiAuthParams
             {
                 ApplicationId = ulong.Parse(Configuration.vkApiId),
@@ -74,6 +76,11 @@ namespace fs24bot3
                 Password = Configuration.vkPassword,
                 Settings = Settings.All,
             });
+            }
+            catch (Exception)
+            {
+                Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry...");
+            }
 
             using (var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection()))
             {

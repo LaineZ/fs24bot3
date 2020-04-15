@@ -38,6 +38,7 @@ namespace fs24bot3
             string[] queryOptions = query.Split(" ");
             List<string> queryText = new List<string>();
             List<string> exclude = new List<string>();
+            List<string> include = new List<string>();
             string site = "";
 
             for (int i = 0; i < queryOptions.Length; i++)
@@ -52,6 +53,11 @@ namespace fs24bot3
                 {
                     string[] options = queryOptions[i].Split(":");
                     exclude.Add(options[1].ToLower());
+                }
+                else if (queryOptions[i].Contains("include:"))
+                {
+                    string[] options = queryOptions[i].Split(":");
+                    include.Add(options[1].ToLower());
                 }
                 else if (queryOptions[i].Contains("site:"))
                 {
@@ -96,7 +102,7 @@ namespace fs24bot3
 
                         foreach (var item in items.serp.results)
                         {
-                            if (!item.is_porno && item.title != null && item.title.Length > 0)
+                            if (!item.is_porno && item.title != null && item.title.Length > 0 && item.url.Length > 0)
                             {
                                 StringBuilder searchResult = new StringBuilder(item.title);
                                 searchResult.Replace("<b>", IrcColors.Bold);
@@ -115,8 +121,9 @@ namespace fs24bot3
 
                                 string url = item.url;
                                 var match = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x));
+                                var matchInc = include.FirstOrDefault(x => item.title.ToLower().Contains(x));
 
-                                if (match == null)
+                                if (match == null || matchInc != null)
                                 {
                                     Context.SendMessage(Context.Channel, searchResult.ToString() + IrcColors.Green + " // " + url);
                                     if (limit <= 1) { Context.SendMessage(Context.Channel, desc); }
