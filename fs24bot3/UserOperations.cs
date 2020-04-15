@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using Serilog;
 using SQLite;
 using System.Linq;
-using SQLiteNetExtensions.Extensions;
 
 namespace fs24bot3
 {

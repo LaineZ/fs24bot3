@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Qmmands;
-using SQLiteNetExtensions.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
