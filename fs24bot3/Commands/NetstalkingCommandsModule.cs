@@ -38,7 +38,6 @@ namespace fs24bot3
             string[] queryOptions = query.Split(" ");
             List<string> queryText = new List<string>();
             List<string> exclude = new List<string>();
-            List<string> include = new List<string>();
             string site = "";
 
             for (int i = 0; i < queryOptions.Length; i++)
@@ -53,11 +52,6 @@ namespace fs24bot3
                 {
                     string[] options = queryOptions[i].Split(":");
                     exclude.Add(options[1].ToLower());
-                }
-                else if (queryOptions[i].Contains("include:"))
-                {
-                    string[] options = queryOptions[i].Split(":");
-                    include.Add(options[1].ToLower());
                 }
                 else if (queryOptions[i].Contains("site:"))
                 {
@@ -102,7 +96,7 @@ namespace fs24bot3
 
                         foreach (var item in items.serp.results)
                         {
-                            if (!item.is_porno && item.title != null && item.title.Length > 0 && item.url.Length > 0)
+                            if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
                                 StringBuilder searchResult = new StringBuilder(item.title);
                                 searchResult.Replace("<b>", IrcColors.Bold);
@@ -121,9 +115,8 @@ namespace fs24bot3
 
                                 string url = item.url;
                                 var match = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x));
-                                var matchInc = include.FirstOrDefault(x => item.title.ToLower().Contains(x));
 
-                                if (match == null || matchInc != null)
+                                if (match == null)
                                 {
                                     Context.SendMessage(Context.Channel, searchResult.ToString() + IrcColors.Green + " // " + url);
                                     if (limit <= 1) { Context.SendMessage(Context.Channel, desc); }
@@ -172,37 +165,44 @@ namespace fs24bot3
                     vkg.Add(random.Next(rangemin, rangemax).ToString());
                 }
 
-                var groups = await Context.VKApi.Groups.GetByIdAsync(vkg, null, GroupsFields.All);
-
-                vkg.Clear();
-
-
-                List<(string Name, string Url, string Img)> vkgs = new List<(string, string, string)>();
-
-                foreach (var group in groups)
+                try
                 {
-                    if (group.MembersCount > minmembers && group.IsClosed == VkNet.Enums.GroupPublicity.Public)
+                    var groups = await Context.VKApi.Groups.GetByIdAsync(vkg, null, GroupsFields.All);
+
+                    vkg.Clear();
+
+                    List<(string Name, string Url, string Img)> vkgs = new List<(string, string, string)>();
+
+                    foreach (var group in groups)
                     {
-                        try
+                        if (group.MembersCount > minmembers && group.IsClosed == VkNet.Enums.GroupPublicity.Public)
                         {
-                            vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: group.Photo200.AbsoluteUri));
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: "https://gitlab.com/uploads/-/system/user/avatar/2374023/avatar.png"));
+                            try
+                            {
+                                vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: group.Photo200.AbsoluteUri));
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: "https://gitlab.com/uploads/-/system/user/avatar/2374023/avatar.png"));
+                            }
                         }
                     }
-                }
 
-                if (vkgs.Count > 8)
-                {
-                    Context.SendMessage(Context.Channel, string.Join(" ", vkgs.Take(5).Select(x => x.Name + " // " + x.Url)));
-                    Context.SendMessage(Context.Channel, await http.UploadToTrashbin(
-                        string.Join("<br>", vkgs.Select(x => $"<img width=100 height=100 src=\"{x.Img}\"><a href=\"{x.Url}\">{x.Name}</a>"))));
+                    if (vkgs.Count > 8)
+                    {
+                        Context.SendMessage(Context.Channel, string.Join(" ", vkgs.Take(5).Select(x => x.Name + " // " + x.Url)));
+                        Context.SendMessage(Context.Channel, await http.UploadToTrashbin(
+                            string.Join("<br>", vkgs.Select(x => $"<img width=100 height=100 src=\"{x.Img}\"><a href=\"{x.Url}\">{x.Name}</a>"))));
+                    }
+                    else
+                    {
+                        Context.SendMessage(Context.Channel, string.Join(" ", vkg));
+                    }
                 }
-                else
+                catch (Exception)
                 {
-                    Context.SendMessage(Context.Channel, string.Join(" ", vkg));
+                    Log.Warning("VK Session is not invalid... retrying login");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK: Попробуйте использовать команду ЕЩЕ РАЗ");
                 }
             }
             else
