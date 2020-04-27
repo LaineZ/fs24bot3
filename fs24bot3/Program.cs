@@ -174,7 +174,7 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Требования не выполнены: {errStr.ToString()}"));
                         break;
                     case TypeParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}`"));
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.ToString()}` вы же ввели `{err.Value.GetType().ToString()}`"));
                         break;
                     case ArgumentParseFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка парсера: `{err.Reason}`"));

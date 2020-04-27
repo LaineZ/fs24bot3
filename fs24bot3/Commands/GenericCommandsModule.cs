@@ -22,10 +22,15 @@ namespace fs24bot3
             var cmds = Service.GetAllCommands();
             string commandsOutput;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
-            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"{string.Join(' ', x.Checks)} @{x.Name} {string.Join(' ', x.Parameters)} - {x.Description}")) + "\nМагазин:\n" + string.Join("\n", shop.Select(x => $"[{x.Slug}] {x.Name}: Цена: {x.Price}"));
+            var customCommands = Context.Connection.Table<Models.SQL.CustomUserCommands>().ToList();
+            commandsOutput = "<pre>" + string.Join('\n', Service.GetAllCommands().Select(x => $"{string.Join(' ', x.Checks)} @{x.Name} {string.Join(' ', x.Parameters)} - {x.Description}"))
+                + "\nМагазин:\n" +
+                string.Join("\n", shop.Select(x => $"[{x.Slug}] {x.Name}: Цена: {x.Price}")) +
+                "\nКастом команды:\n" +
+                string.Join("\n", customCommands.Select(x => $"{x.Command}")) + "</pre>";
             try
             {
-                string link = await http.UploadToPastebin(commandsOutput);
+                string link = await http.UploadToTrashbin(commandsOutput);
                 Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
             }
             catch (NullReferenceException)
@@ -189,6 +194,36 @@ namespace fs24bot3
             else
             {
                 Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
+            }
+        }
+
+
+        [Command("cmdown")]
+        [Checks.CheckAdmin]
+        [Description("Сменить владельца команды")]
+        public void CmdOwn(string command, string nick)
+        {
+            Context.Connection.Execute("UPDATE CustomUserCommands SET Nick = ? WHERE Command = ?", nick, command);
+            Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+        }
+
+        [Command("cmdinfo")]
+        [Checks.CheckAdmin]
+        [Description("Сменить владельца команды")]
+        public void CmdInfo(string command)
+        {
+            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
+            if (query.Count > 0)
+            {
+                Context.SendMessage(Context.Channel, Models.IrcColors.Blue + $"Команда @{query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов");
+                if (query[0].Nick.Length <= 0)
+                {
+                    Context.SendMessage(Context.Channel, Models.IrcColors.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");
+                }
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, "Команды не существует");
             }
         }
 

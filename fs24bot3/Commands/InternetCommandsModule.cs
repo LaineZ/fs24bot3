@@ -56,8 +56,15 @@ namespace fs24bot3
         [Remarks("Параметр lang нужно вводить в формате 'sourcelang-translatelang' или 'traslatelang' в данном случае переводчик попытается догадаться с какого языка пытаются перевести\nВсе языки вводятся по стандарту ISO-639-1 посмотреть можно здесь: https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")]
         public async void Translate(string lang, [Remainder] string text)
         {
-            var translatedOutput = await Core.Transalator.Translate(lang, text);
-            Context.SendMessage(Context.Channel, translatedOutput.text[0] + "(translate.yandex.ru) " + translatedOutput.lang);
+            try
+            {
+                var translatedOutput = await Core.Transalator.Translate(lang, text);
+                Context.SendMessage(Context.Channel, translatedOutput.text[0] + "(translate.yandex.ru) " + translatedOutput.lang);
+            }
+            catch (Exception)
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст....");
+            }
         }
 
         [Command("lyrics", "lyr")]
