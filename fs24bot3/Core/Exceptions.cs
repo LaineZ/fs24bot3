@@ -16,5 +16,16 @@ namespace fs24bot3.Core
                 }
             }
         }
+
+        public class SearchError : Exception
+        {
+            public override string Message
+            {
+                get
+                {
+                    return "Search error occured!";
+                }
+            }
+        }
     }
 }
