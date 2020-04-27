@@ -54,7 +54,7 @@ namespace fs24bot3
                     string[] options = queryOptions[i].Split(":");
                     page = int.Parse(options[1]);
                 }
-                if (queryOptions[i].Contains("maxpage:"))
+                if (queryOptions[i].Contains("max:"))
                 {
                     string[] options = queryOptions[i].Split(":");
                     maxpage = int.Parse(options[1]);
@@ -66,7 +66,14 @@ namespace fs24bot3
                 }
                 else if (queryOptions[i].Contains("fullmatch:on"))
                 {
-                    fullmatch = true;
+                    if (exclude.Count > 0 || include.Count > 0)
+                    {
+                        fullmatch = true;
+                    }
+                    else
+                    {
+                        Context.SendMessage(Context.Channel, $"{IrcColors.Yellow}{IrcColors.Bold}Внимание:{IrcColors.Reset}при включенном fullmatch правила include, exclude не учитываются!");
+                    }
                 }
                 else if (queryOptions[i].Contains("include:"))
                 {
@@ -91,10 +98,13 @@ namespace fs24bot3
 
             for (int i = page; i < maxpage; i++)
             {
+                Log.Verbose("Foring {0}", i);
                 if (searchResults.Count >= limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + i + "&site=" + site);
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + i * 10 + "&site=" + site);
                 var items = Core.MailSearchDecoder.PerformDecode(response);
-                if (items != null && !items.antirobot.blocked)
+                if (items == null) { continue; }
+                
+                if (!items.antirobot.blocked)
                 {
                     Log.Information("@MS: Antirobot-blocked?: {0}", items.antirobot.blocked);
                     if (items.serp.results.Count > 0)
@@ -104,7 +114,8 @@ namespace fs24bot3
                             if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
                                 var excludeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x));
-                                var includeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x));
+                                var includeMatch = include.FirstOrDefault(x => item.title.ToLower().Contains(x));
+
                                 if (fullmatch)
                                 {
                                     if (item.title.Contains(string.Join(" ", queryText)) || item.title.Contains(string.Join(" ", queryText)))
@@ -118,13 +129,17 @@ namespace fs24bot3
                                 }
                                 else
                                 {
-                                    if (exclude.Count <= 0 || includeMatch != null)
+                                    if (exclude.Count > 0)
                                     {
-                                        searchResults.Add(item);
+                                        if (excludeMatch != null)
+                                        {
+                                            // exclude results
+                                            continue;
+                                        }
                                     }
                                     else
                                     {
-                                        if (exclude.Count <= 0 || excludeMatch != null)
+                                        if (include.Count <= 0 || includeMatch != null)
                                         {
                                             searchResults.Add(item);
                                         }
@@ -146,29 +161,47 @@ namespace fs24bot3
                 if (errors != MailErrors.SearchError.None) { break; }
             }
 
-            if (errors == MailErrors.SearchError.None && searchResults.Count > 0)
+            if (searchResults.Count <= 0)
             {
-                searchResults.RemoveRange(searchResults.Count - 1, limit);
+                errors = MailErrors.SearchError.NotFound;
+            }
 
-                foreach (var item in searchResults)
-                {
-                    StringBuilder searchResult = new StringBuilder(item.title);
-                    searchResult.Replace("<b>", IrcColors.Bold);
-                    searchResult.Replace("</b>", IrcColors.Reset);
+            switch (errors)
+            {
+                case MailErrors.SearchError.Banned:
+                    Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                    break;
+                case MailErrors.SearchError.NotFound:
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено попробуйте изменить опции поиска");
+                    break;
+                case MailErrors.SearchError.UnknownError:
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
+                    break;
+                default:
+                    if (errors == MailErrors.SearchError.None && searchResults.Count > 0)
+                    {
+                        foreach (var item in searchResults.Take(limit))
+                        {
+                            StringBuilder searchResult = new StringBuilder(item.title);
+                            searchResult.Replace("<b>", IrcColors.Bold);
+                            searchResult.Replace("</b>", IrcColors.Reset);
 
-                    StringBuilder descResult = new StringBuilder(item.passage);
-                    descResult.Replace("<b>", IrcColors.Bold);
-                    descResult.Replace("</b>", IrcColors.Reset);
+                            StringBuilder descResult = new StringBuilder(item.passage);
+                            descResult.Replace("<b>", IrcColors.Bold);
+                            descResult.Replace("</b>", IrcColors.Reset);
 
 
-                    HtmlDocument doc = new HtmlDocument();
+                            HtmlDocument doc = new HtmlDocument();
 
-                    doc.LoadHtml(descResult.ToString());
+                            doc.LoadHtml(descResult.ToString());
 
-                    string desc = doc.DocumentNode.InnerText;
+                            string desc = doc.DocumentNode.InnerText;
 
-                    Context.SendMessage(Context.Channel, searchResult.ToString() + IrcColors.Green + " // " + item.url);
-                }
+                            Context.SendMessage(Context.Channel, searchResult.ToString() + IrcColors.Green + " // " + item.url);
+                            if (limit <= 1) { Context.SendMessage(Context.Channel, desc); }
+                        }
+                    }
+                    break;
             }
         }
 
