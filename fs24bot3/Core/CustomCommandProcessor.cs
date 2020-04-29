@@ -21,14 +21,22 @@ namespace fs24bot3.Core
                 var query = connect.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
                 foreach (var cmd in query)
                 {
-                    Log.Verbose("Command found: {0}", cmd.Command);
-                    argsArray.RemoveAt(0);
+                    //Log.Verbose("Command found: {0}", cmd.Command);
+                    argsArray.RemoveAt(0); // removing command name
                     string argsString = string.Join(" ", argsArray);
 
                     string[] outputs = cmd.Output.Split("||");
+                    uint index = 0;
 
-                    Random random = new Random();
-                    int index = random.Next(outputs.Length);
+                    if (uint.TryParse(argsString, out uint result))
+                    {
+                        index = result;
+                    }
+                    else
+                    {
+                        Random random = new Random();
+                        index = (uint)random.Next(outputs.Length);
+                    }
 
                     StringBuilder argsFinal = new StringBuilder(outputs[index]);
                     argsFinal.Replace("#USERINPUT", argsString);

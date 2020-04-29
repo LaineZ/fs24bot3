@@ -27,8 +27,9 @@ namespace fs24bot3
         [Command("ms", "search")]
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
         [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`\n" +
-            "Параметры: page:Number - Искать на странице (иногда глючит, если не находит - попробуйте большее число, раз так в 10)\n" +
-            "exclude:word - Исключить запросы с словом word; site:URL - Поиск по адресу сайта; multi:on - Мульти вывод (сразу 5 результатов)")]
+            "Параметры: page:Number - Искать на странице (иногда глючит, если не находит - попробуйте большее число, раз так в 10); max:Number - Максимальная глубина поиска;\n" +
+            "exclude:word - Исключить запросы с словом word; include:word - Показывать результаты которые точно содержат word;" + 
+            "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса (при этом опции include, exclude теряют смысл); multi:on - Мульти вывод (сразу 5 результатов)")]
         public async void MailSearch([Remainder] string query)
         {
 
@@ -48,50 +49,61 @@ namespace fs24bot3
 
             for (int i = 0; i < queryOptions.Length; i++)
             {
-
-                if (queryOptions[i].Contains("page:"))
+                try
                 {
-                    string[] options = queryOptions[i].Split(":");
-                    page = int.Parse(options[1]);
-                }
-                if (queryOptions[i].Contains("max:"))
-                {
-                    string[] options = queryOptions[i].Split(":");
-                    maxpage = int.Parse(options[1]);
-                }
-                else if (queryOptions[i].Contains("exclude:"))
-                {
-                    string[] options = queryOptions[i].Split(":");
-                    exclude.Add(options[1].ToLower());
-                }
-                else if (queryOptions[i].Contains("fullmatch:on"))
-                {
-                    if (exclude.Count > 0 || include.Count > 0)
+                    if (queryOptions[i].Contains("page:"))
                     {
-                        fullmatch = true;
+                        string[] options = queryOptions[i].Split(":");
+                        page = int.Parse(options[1]);
+                    }
+                    if (queryOptions[i].Contains("max:"))
+                    {
+                        string[] options = queryOptions[i].Split(":");
+                        maxpage = int.Parse(options[1]);
+                    }
+                    else if (queryOptions[i].Contains("exclude:"))
+                    {
+                        string[] options = queryOptions[i].Split(":");
+                        exclude.Add(options[1].ToLower());
+                    }
+                    else if (queryOptions[i].Contains("fullmatch:on"))
+                    {
+                        if (exclude.Count <= 0 || include.Count <= 0)
+                        {
+                            fullmatch = true;
+                        }
+                        else
+                        {
+                            Context.SendMessage(Context.Channel, $"{IrcColors.Yellow}{IrcColors.Bold}Внимание:{IrcColors.Reset}при включенном fullmatch правила include, exclude не учитываются!");
+                            Context.SendMessage(Context.Channel, query);
+                            Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]))}^ fullmatch имеет высший приоритет посравнению с другими опциями фильтрации");
+                        }
+                    }
+                    else if (queryOptions[i].Contains("include:"))
+                    {
+                        string[] options = queryOptions[i].Split(":");
+                        include.Add(options[1].ToLower());
+                    }
+                    else if (queryOptions[i].Contains("site:"))
+                    {
+                        string[] options = queryOptions[i].Split(":");
+                        site = options[1].ToLower();
+                    }
+                    else if (queryOptions[i].Contains("multi:on"))
+                    {
+                        limit = 5;
                     }
                     else
                     {
-                        Context.SendMessage(Context.Channel, $"{IrcColors.Yellow}{IrcColors.Bold}Внимание:{IrcColors.Reset}при включенном fullmatch правила include, exclude не учитываются!");
+                        queryText.Add(queryOptions[i]);
                     }
                 }
-                else if (queryOptions[i].Contains("include:"))
+                catch (FormatException)
                 {
-                    string[] options = queryOptions[i].Split(":");
-                    include.Add(options[1].ToLower());
-                }
-                else if (queryOptions[i].Contains("site:"))
-                {
-                    string[] options = queryOptions[i].Split(":");
-                    site = options[1].ToLower();
-                }
-                else if (queryOptions[i].Contains("multi:on"))
-                {
-                    limit = 5;
-                }
-                else
-                {
-                    queryText.Add(queryOptions[i]);
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}{IrcColors.Bold}ОШИБКА:{IrcColors.Reset} Неверно задан тип");
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}{query}");
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]))}^ ожидалось число");
+                    return;
                 }
             }
             var searchResults = new List<MailSearch.Result>();
@@ -131,10 +143,9 @@ namespace fs24bot3
                                 {
                                     if (exclude.Count > 0)
                                     {
-                                        if (excludeMatch != null)
+                                        if (excludeMatch == null)
                                         {
-                                            // exclude results
-                                            continue;
+                                            searchResults.Add(item);
                                         }
                                     }
                                     else
