@@ -17,7 +17,7 @@ namespace fs24bot3.Core
             {
                 var argsArray = message.Message.Split(" ").ToList();
                 string cmdname = argsArray[0];
-                Log.Verbose("Issused command: {0}", cmdname);
+                //Log.Verbose("Issused command: {0}", cmdname);
                 var query = connect.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
                 foreach (var cmd in query)
                 {
@@ -30,8 +30,13 @@ namespace fs24bot3.Core
 
                     if (uint.TryParse(argsString, out uint result))
                     {
-                        index = result;
-                    }
+                        if (result + 1 >= outputs.Length - 1)
+                        {
+                            await client.SendAsync(new PrivMsgMessage (message.To, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
+                        }
+                        else
+                            index = result + 1;
+                        }
                     else
                     {
                         Random random = new Random();
