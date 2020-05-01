@@ -28,7 +28,7 @@ namespace fs24bot3
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
         [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`\n" +
             "Параметры: page:Number - Искать на странице (иногда глючит, если не находит - попробуйте большее число, раз так в 10); max:Number - Максимальная глубина поиска;\n" +
-            "exclude:word - Исключить запросы с словом word; include:word - Показывать результаты которые точно содержат word;" + 
+            "exclude:word - Исключить запросы с словом word; include:word - Показывать результаты которые точно содержат word;" +
             "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса (при этом опции include, exclude теряют смысл); multi:on - Мульти вывод (сразу 5 результатов)")]
         public async void MailSearch([Remainder] string query)
         {
@@ -66,19 +66,6 @@ namespace fs24bot3
                         string[] options = queryOptions[i].Split(":");
                         exclude.Add(options[1].ToLower());
                     }
-                    else if (queryOptions[i].Contains("fullmatch:on"))
-                    {
-                        if (exclude.Count <= 0 || include.Count <= 0)
-                        {
-                            fullmatch = true;
-                        }
-                        else
-                        {
-                            Context.SendMessage(Context.Channel, $"{IrcColors.Yellow}{IrcColors.Bold}Внимание:{IrcColors.Reset}при включенном fullmatch правила include, exclude не учитываются!");
-                            Context.SendMessage(Context.Channel, query);
-                            Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]))}^ fullmatch имеет высший приоритет посравнению с другими опциями фильтрации");
-                        }
-                    }
                     else if (queryOptions[i].Contains("include:"))
                     {
                         string[] options = queryOptions[i].Split(":");
@@ -92,6 +79,19 @@ namespace fs24bot3
                     else if (queryOptions[i].Contains("multi:on"))
                     {
                         limit = 5;
+                    }
+                    else if (queryOptions[i].Contains("fullmatch:on"))
+                    {
+                        if (exclude.Count <= 0 || include.Count <= 0)
+                        {
+                            fullmatch = true;
+                        }
+                        else
+                        {
+                            Context.SendMessage(Context.Channel, $"{IrcColors.Yellow}{IrcColors.Bold}Внимание:{IrcColors.Reset}при включенном fullmatch правила include, exclude не учитываются!");
+                            Context.SendMessage(Context.Channel, query);
+                            Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]))}^ fullmatch имеет высший приоритет посравнению с другими опциями фильтрации");
+                        }
                     }
                     else
                     {
@@ -115,10 +115,11 @@ namespace fs24bot3
                 string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + i * 10 + "&site=" + site);
                 var items = Core.MailSearchDecoder.PerformDecode(response);
                 if (items == null) { continue; }
-                
+
+                Log.Information("@MS: Antirobot-blocked?: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
+
                 if (!items.antirobot.blocked)
                 {
-                    Log.Information("@MS: Antirobot-blocked?: {0}", items.antirobot.blocked);
                     if (items.serp.results.Count > 0)
                     {
                         foreach (var item in items.serp.results)
@@ -165,9 +166,14 @@ namespace fs24bot3
                     }
                     else
                     {
-                        errors = MailErrors.SearchError.Banned;
+                        errors = MailErrors.SearchError.NotFound;
                         break;
                     }
+                }
+                else
+                {
+                    errors = MailErrors.SearchError.Banned;
+                    break;
                 }
                 if (errors != MailErrors.SearchError.None) { break; }
             }

@@ -99,6 +99,14 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
         }
 
+        [Command("tickrate")]
+        [Checks.CheckAdmin]
+        public void Tickrate(int speed = 5000)
+        {
+            Shop.Tickrate = speed;
+            Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Shop.Tickrate);
+        }
+
         [Command("ignore")]
         [Checks.CheckAdmin]
         public void Ignore(string action, [Remainder] string username)

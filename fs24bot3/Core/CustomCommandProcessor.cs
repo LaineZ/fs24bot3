@@ -30,7 +30,7 @@ namespace fs24bot3.Core
 
                     if (uint.TryParse(argsString, out uint result))
                     {
-                        if (result >= outputs.Length - 1)
+                        if (result >= outputs.Length)
                         {
                             await client.SendAsync(new PrivMsgMessage (message.To, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
                         }

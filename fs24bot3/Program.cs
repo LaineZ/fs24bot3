@@ -94,7 +94,7 @@ namespace fs24bot3
                     Log.Information("Thread started!");
                     while (true)
                     {
-                        Thread.Sleep(5000);
+                        Thread.Sleep(Shop.Tickrate);
                         Shop.Update(connection);
                     }
                 })).Start();
@@ -204,6 +204,7 @@ namespace fs24bot3
             switch (ircMessage.Command)
             {
                 case "KICK":
+                    // TODO: Fix - bot trying rejoin on any channel kicks
                     Log.Warning("I've got kick from {0} rejoining...", ircMessage.Prefix);
                     await client.SendRaw("JOIN " + Configuration.channel);
                     await client.SendAsync(new PrivMsgMessage(Configuration.channel, "За что?"));

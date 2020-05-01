@@ -12,6 +12,11 @@ namespace fs24bot3
     {
         public static List<Models.ItemInventory.Shop> ShopItems = new List<Models.ItemInventory.Shop>();
         public static int PaydaysCount;
+
+        /// <summary>
+        /// Speed of the finiacial operations defalut = 2000 ms
+        /// </summary>
+        public static int Tickrate = 5000;
         private static Random rand;
 
         public static void Init(SQLiteConnection connect)
@@ -52,9 +57,25 @@ namespace fs24bot3
             rand = new Random();
         }
 
-        internal static object GetMoneyAvg(SQLiteConnection connection)
+        internal static double GetMoneyAvg(SQLiteConnection connection)
         {
-            throw new NotImplementedException();
+            List<int> money = new List<int>();   
+
+            var query = connection.Table<Models.SQL.UserStats>();
+            foreach (var users in query)
+            {
+                try
+                {
+                    UserOperations user = new UserOperations(users.Nick, connection);
+                    var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.getItem("money").Name));
+                    money.Add(itemToCount.ItemCount);
+                }
+                catch (NullReferenceException)
+                {
+                    Log.Warning("User {0} have null money that's werid", users.Nick);
+                }
+            }
+            return money.Average();
         }
 
         public static void Update(SQLiteConnection connect)
@@ -64,7 +85,7 @@ namespace fs24bot3
                 int check = rand.Next(0, 10);
                 if (check == 5)
                 {
-                    if (shopItem.Price >= rand.Next(1000, 5000))
+                    if (shopItem.Price >= rand.Next(1000, 15000))
                     {
                         Log.Verbose("Descreaseing price for {0}", shopItem.Name);
                         shopItem.Price -= 5;
@@ -77,7 +98,7 @@ namespace fs24bot3
                 }
             }
             int checkPayday = rand.Next(0, 100);
-            if (checkPayday == 8)
+            if (checkPayday == 8 && GetMoneyAvg(connect) > 500000)
             {
                 Log.Information("Giving payday!");
                 var query = connect.Table<Models.SQL.UserStats>();
