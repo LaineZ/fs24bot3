@@ -49,10 +49,12 @@ namespace fs24bot3
 
             }
             // created just for compatibilty
-            public void SendMessage(string channel, string message)
+            public async void SendMessage(string channel, string message)
             {
-               Core.MessageUtils.SplitMessage(message, 480)
-                    .ForEach(async msg => await Client.SendAsync(new PrivMsgMessage(channel, msg)));
+               foreach (var slice in Core.MessageUtils.SplitMessage(message, 480)) 
+               {
+                   await Client.SendAsync(new PrivMsgMessage(channel, slice));
+               }
             }
 
             public async void SendMultiLineMessage(string content)
