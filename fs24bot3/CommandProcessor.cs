@@ -51,7 +51,7 @@ namespace fs24bot3
             // created just for compatibilty
             public async void SendMessage(string channel, string message)
             {
-               foreach (var slice in Core.MessageUtils.SplitMessage(message, 480)) 
+               foreach (var slice in Core.MessageUtils.SplitMessage2(message, 480)) 
                {
                    await Client.SendAsync(new PrivMsgMessage(channel, slice));
                }
@@ -61,7 +61,7 @@ namespace fs24bot3
             {
                 int count = 0;
                 foreach (string outputstr in content.Split("\n"))
-                {
+                  {
                     if (!string.IsNullOrWhiteSpace(outputstr))
                     {
                         await Client.SendAsync(new PrivMsgMessage(this.Channel, this.Message.From + ": " + outputstr));
