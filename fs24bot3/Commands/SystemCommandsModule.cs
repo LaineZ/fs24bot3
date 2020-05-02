@@ -69,6 +69,14 @@ namespace fs24bot3
             }
         }
 
+
+        [Command("testsplit")]
+        [Checks.CheckAdmin]
+        public void TestSplit(int count = 200, char ch = 'а')
+        {
+            Context.SendMessage(Context.Channel, new string(ch, count));
+        }
+
         [Command("give")]
         [Checks.CheckAdmin]
         public void Give(string username, string item, int count)

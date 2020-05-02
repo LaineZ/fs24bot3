@@ -7,6 +7,15 @@ namespace fs24bot3.Core
 {
     class MessageUtils
     {
+
+        private static String LimitByteLength(String input, Int32 maxLength)
+        {
+            return new String(input
+                .TakeWhile((c, i) =>
+                    Encoding.UTF8.GetByteCount(input.Substring(0, i + 1)) <= maxLength)
+                .ToArray());
+        }
+
         public static List<string> SplitMessage(string value, int chunkLength)
         {
             List<string> splitted = new List<string>();
@@ -22,12 +31,14 @@ namespace fs24bot3.Core
             foreach (var chunk in chunks)
             {
                 string converted = Encoding.UTF8.GetString(chunk, 0, chunk.Length);
-                splitted.Add(converted);
+                splitted.Add(LimitByteLength(converted, chunkLength));
             }
             return splitted;
         }
 
-                /// <summary>Returns a string array that contains the substrings in this string that are seperated a given fixed length.</summary>
+
+
+        /// <summary>Returns a string array that contains the substrings in this string that are seperated a given fixed length.</summary>
         /// <param name="s">This string object.</param>
         /// <param name="length">Size of each substring.
         ///     <para>CASE: length &gt; 0 , RESULT: String is split from left to right.</para>
@@ -48,7 +59,7 @@ namespace fs24bot3.Core
             int lengthAbs = Math.Abs(length);
 
             if (str == null || str.LengthInTextElements == 0 || lengthAbs == 0 || str.LengthInTextElements <= lengthAbs)
-                return new string[] { str.ToString() };
+                return new string[] { LimitByteLength(str.String, length) };
 
             string[] array = new string[(str.LengthInTextElements % lengthAbs == 0 ? str.LengthInTextElements / lengthAbs: (str.LengthInTextElements / lengthAbs) + 1)];
 
@@ -57,7 +68,7 @@ namespace fs24bot3.Core
                     array[iArray] = str.SubstringByTextElements(iStr, (str.LengthInTextElements - iStr < lengthAbs ? str.LengthInTextElements - iStr : lengthAbs));
             else // if (length < 0)
                 for (int iStr = str.LengthInTextElements - 1, iArray = array.Length - 1; iStr >= 0 && iArray >= 0; iStr -= lengthAbs, iArray--)
-                    array[iArray] = str.SubstringByTextElements((iStr - lengthAbs < 0 ? 0 : iStr - lengthAbs + 1), (iStr - lengthAbs < 0 ? iStr + 1 : lengthAbs));
+                    array[iArray] = LimitByteLength(str.SubstringByTextElements((iStr - lengthAbs < 0 ? 0 : iStr - lengthAbs + 1), (iStr - lengthAbs < 0 ? iStr + 1 : lengthAbs)), length);
 
             return array;
         }
