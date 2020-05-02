@@ -27,11 +27,12 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 200, Sellable = true, Slug = "wine" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ФРАНЦУНСКОЕ]", Price = 200, Sellable = true, Slug = "winef" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ГРУЗИНСКОЕ]", Price = 200, Sellable = true, Slug = "wineg" });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔧 Гаечный ключ", Price = 300, Sellable = true, Slug = "wrench" });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🛠 Гаечный ключ и молоток", Price = 400, Sellable = true, Slug = "wrenchadv" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔧 Гаечный ключ", Price = 3000, Sellable = true, Slug = "wrench" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🛠 Гаечный ключ и молоток", Price = 5000, Sellable = true, Slug = "wrenchadv" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔊 Мониторные колонки", Price = 320, Sellable = true, Slug = "speaker" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎛 PIONEER DJ", Price = 320, Sellable = true, Slug = "dj" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎹 Native Instruments Komplete Kontrol S88", Price = 600, Sellable = true, Slug = "midikey" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 5000, Sellable = true, Slug = "wall" });
 
             foreach (var item in ShopItems)
             {
@@ -93,7 +94,7 @@ namespace fs24bot3
                     else
                     {
                         //Log.Verbose("Incresing price for {0}", shopItem.Name);
-                        shopItem.Price += 1;
+                        shopItem.Price += rand.Next(1, 5);
                     }
                 }
             }

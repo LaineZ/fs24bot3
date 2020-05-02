@@ -1,15 +1,9 @@
 ﻿using fs24bot3.Models;
-using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Qmmands;
-using Serilog;
-using SQLite;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace fs24bot3
 {

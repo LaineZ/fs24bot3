@@ -158,7 +158,7 @@ namespace fs24bot3
 
                     var rand = new Random();
 
-                    if (rand.Next(0, 1) == 0)
+                    if (rand.Next(0, 10) == 0 && username != Context.Message.From)
                     {
                         int indexItem = rand.Next(takeItems.Count);
                         int itemCount = rand.Next(1, takeItems[indexItem].ItemCount);
