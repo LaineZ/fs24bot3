@@ -1,4 +1,6 @@
 ﻿using Qmmands;
+using Serilog.Core;
+using Serilog.Events;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -17,8 +19,8 @@ namespace fs24bot3
         public void Version()
         {
             var os = Environment.OSVersion;
-            Context.SendMessage(Context.Channel, String.Format("NET: {0} Система: {1} Версия: {2}",
-                Environment.Version.ToString(), os.Platform, os.VersionString));
+            Context.SendMessage(Context.Channel, String.Format(".NET Core: {0} Система: {1}",
+                Environment.Version.ToString(), os.VersionString));
         }
 
         [Command("me")]
@@ -113,6 +115,15 @@ namespace fs24bot3
         {
             Shop.Tickrate = speed;
             Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Shop.Tickrate);
+        }
+
+        [Command("loggerlevel")]
+        [Checks.CheckAdmin]
+        public void Tickrate(string level = "Verbose")
+        {
+            Enum.TryParse(level, out LogEventLevel lvlToSet);
+            Configuration.LoggerSw.MinimumLevel = lvlToSet;
+            Context.SendMessage(Context.Channel, $"Установлен уровень лога `{level}`");
         }
 
         [Command("ignore")]

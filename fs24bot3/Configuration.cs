@@ -4,6 +4,8 @@ using Tomlyn;
 using Tomlyn.Model;
 using Tomlyn.Syntax;
 using System.Collections.Generic;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace fs24bot3
 {
@@ -26,6 +28,8 @@ namespace fs24bot3
         public static string vkLogin;
         public static string vkPassword;
         public static string trashbinUrl;
+
+        public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
 
         public static void SaveConfiguration()
         {
@@ -69,6 +73,7 @@ namespace fs24bot3
 
         public static void LoadConfiguration()
         {
+            LoggerSw.MinimumLevel = LogEventLevel.Verbose;
             if (!File.Exists("settings.toml"))
             {
                 Log.Warning("unable to load configuraion file: creating new");

@@ -26,7 +26,7 @@ namespace fs24bot3
         {
             Log.Logger = new LoggerConfiguration()
             .WriteTo.ColoredConsole()
-            .MinimumLevel.Verbose()
+            .MinimumLevel.ControlledBy(Configuration.LoggerSw)
             .CreateLogger();
             Console.OutputEncoding = Encoding.Unicode;
             Log.Information("fs24_bot3 has started");

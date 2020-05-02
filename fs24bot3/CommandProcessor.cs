@@ -48,20 +48,12 @@ namespace fs24bot3
                 }
 
             }
-            // created just for compatibilty
+            
             public async void SendMessage(string channel, string message)
             {
-                // this check will make because if message len < 480 this function return incorrect values
-                if (Encoding.Unicode.GetByteCount(message) > 449)
+                foreach (var slice in Core.MessageUtils.SplitMessage(message, 450))
                 {
-                    foreach (var slice in Core.MessageUtils.SplitMessage(message, 449))
-                    {
-                        await Client.SendAsync(new PrivMsgMessage(channel, slice));
-                    }
-                }
-                else
-                {
-                    await Client.SendAsync(new PrivMsgMessage(channel, message));
+                    await Client.SendAsync(new PrivMsgMessage(channel, slice));
                 }
             }
 
