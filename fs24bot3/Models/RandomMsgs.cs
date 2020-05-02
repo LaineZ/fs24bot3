@@ -21,6 +21,15 @@ namespace fs24bot3.Models
         };
 
 
+        public static readonly List<string> MissMessages = new List<string>
+        {
+            "Вы не попали",
+            "Вы не удержали гаечный ключ в руках...",
+            "Вы промахнулись и не попали...",
+            "Да все..."
+        };
+
+
         public static string GetRandomMessage(List<string> list)
         {
             var random = new Random();

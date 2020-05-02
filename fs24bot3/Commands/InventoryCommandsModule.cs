@@ -116,17 +116,13 @@ namespace fs24bot3
             var top = new List<(string Name, int Count)>();
 
             var query = Context.Connection.Table<Models.SQL.UserStats>();
-            
+
             foreach (var users in query)
             {
                 var user = new UserOperations(users.Nick, Context.Connection);
-                var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.getItem(itemname).Name));
-                if (itemToCount != null)
-                {
-                    top.Add((users.Nick, itemToCount.ItemCount));
-                }
+                top.Add((users.Nick, user.CountItem(itemname)));
             }
-            
+
             var result = top.OrderByDescending(p => p.Count).ToList();
 
             if (result.Count > 4)
@@ -145,31 +141,45 @@ namespace fs24bot3
 
         [Command("wrench")]
         [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
+        [Remarks("Стройте укрепления чтобы не получить гаечный ключ в лицо!!!")]
         public void Wrench(string username)
         {
             try
             {
-                UserOperations user = new UserOperations(Context.Message.From, Context.Connection, Context);
+                UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+                int dmg = 0;
 
-                if (user.RemItemFromInv(Shop.getItem("wrench").Name, 1))
+
+                if (user.RemItemFromInv(Shop.getItem("wrenchadv").Name, 1))
                 {
-                    UserOperations userDest = new UserOperations(username, Context.Connection);
-                    var takeItems = userDest.GetInventory();
-
-                    var rand = new Random();
-
-                    if (rand.Next(0, 10) == 0 && username != Context.Message.From)
+                    dmg = 4;
+                }
+                else
+                {
+                    // trying with default wrench - if not found just end the command
+                    // defalut wrench deals 0 damage bonus
+                    if (!user.RemItemFromInv(Shop.getItem("wrench").Name, 1))
                     {
-                        int indexItem = rand.Next(takeItems.Count);
-                        int itemCount = rand.Next(1, takeItems[indexItem].ItemCount);
-                        user.AddItemToInv(takeItems[indexItem].Item, itemCount);
-                        userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
-                        Context.SendMessage(Context.Channel, $"Вы кинули гаечные ключ в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount}");
+                        Context.SendMessage(Context.Channel, $"У вас нету {Shop.getItem("wrench").Name} или {Shop.getItem("wrenchadv").Name}");
+                        return;
                     }
-                    else
-                    {
-                        Context.SendMessage(Context.Channel, "Вы не попали...");
-                    }
+                }
+                UserOperations userDest = new UserOperations(username, Context.Connection);
+                var takeItems = userDest.GetInventory();
+
+                var rand = new Random();
+
+                if (rand.Next(0, 5 + userDest.CountItem("wall") - dmg) == 0 && username != Context.Message.From)
+                {
+                    int indexItem = rand.Next(takeItems.Count);
+                    int itemCount = rand.Next(1, takeItems[indexItem].ItemCount);
+                    user.AddItemToInv(takeItems[indexItem].Item, itemCount);
+                    userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
+                    Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount}");
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, Models.RandomMsgs.GetRandomMessage(Models.RandomMsgs.MissMessages));
                 }
             }
             catch (Core.Exceptions.UserNotFoundException)

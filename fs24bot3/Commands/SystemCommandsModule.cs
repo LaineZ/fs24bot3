@@ -12,20 +12,20 @@ namespace fs24bot3
 
         public CommandService Service { get; set; }
 
-        [Command("version")]
-        [Description("Версия проги")]
+        [Command("info")]
+        [Description("Информация о боте")]
         public void Version()
         {
             var os = Environment.OSVersion;
-            Context.SendMessage(Context.Channel, String.Format("NET: {0} Система: {1} Версия: {2} Версия системы: {3}",
-                Environment.Version.ToString(), os.Platform, os.VersionString, os.Version));
+            Context.SendMessage(Context.Channel, String.Format("NET: {0} Система: {1} Версия: {2}",
+                Environment.Version.ToString(), os.Platform, os.VersionString));
         }
 
         [Command("me")]
         [Description("Макроэкономические показатели")]
         public void Economy()
         {
-            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount.ToString()} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)}");
+            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount.ToString()} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Частота выполнения Shop.Update() {Shop.Tickrate} ms");
         }
 
         [Command("gc")]

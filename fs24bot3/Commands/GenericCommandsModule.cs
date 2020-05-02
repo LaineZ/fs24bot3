@@ -45,7 +45,7 @@ namespace fs24bot3
         {
             foreach (var cmd in Service.GetAllCommands())
             {
-                if (cmd.Name == command)
+                if (cmd.Name == command && cmd.Aliases.Contains(command))
                 {
                     Context.SendMessage(Context.Channel,
                         cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters) + " - " + cmd.Description);
@@ -53,7 +53,7 @@ namespace fs24bot3
                     {
                         foreach (string help in cmd.Remarks.Split("\n"))
                         {
-                            Context.SendMessage(Context.Channel, Models.IrcColors.Gray + help);
+                            Context.SendMessage(Context.Channel, Models.IrcColors.Green + help);
                         }
                     }
                     break;
@@ -357,4 +357,4 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
         }
     }
-}   
+}

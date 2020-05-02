@@ -17,6 +17,10 @@ namespace fs24bot3
         /// Speed of the finiacial operations defalut = 2000 ms
         /// </summary>
         public static int Tickrate = 5000;
+        /// <summary>
+        /// Tickrate speed - using for @performance command
+        /// </summary>
+        public static TimeSpan TickSpeed;
         private static Random rand;
 
         public static void Init(SQLiteConnection connect)
@@ -32,7 +36,7 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔊 Мониторные колонки", Price = 320, Sellable = true, Slug = "speaker" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎛 PIONEER DJ", Price = 320, Sellable = true, Slug = "dj" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎹 Native Instruments Komplete Kontrol S88", Price = 600, Sellable = true, Slug = "midikey" });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 5000, Sellable = true, Slug = "wall" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 15000, Sellable = true, Slug = "wall" });
 
             foreach (var item in ShopItems)
             {
@@ -81,6 +85,7 @@ namespace fs24bot3
 
         public static void Update(SQLiteConnection connect)
         {
+            DateTime start = DateTime.Now;
             foreach (var shopItem in ShopItems)
             {
                 int check = rand.Next(0, 10);
@@ -110,6 +115,8 @@ namespace fs24bot3
                 }
                 PaydaysCount++;
             }
+            DateTime elapsed = DateTime.Now;
+            TickSpeed = elapsed.Subtract(start);
         }
 
         public static Models.ItemInventory.Shop getItem(string name)

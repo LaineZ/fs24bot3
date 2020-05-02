@@ -94,6 +94,28 @@ namespace fs24bot3
             return false;
         }
 
+
+        public int CountItem(string itemname)
+        {
+            // full qualified item name
+            var itemFullName = Shop.getItem(itemname).Name;
+
+            var query = Connect.Table<Models.SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName)).ToList();
+            if (query.Count > 0)
+            {
+                foreach (var item in query)
+                {
+                    if (item.Item == itemFullName)
+                    {
+                        Log.Verbose("Counting item {0} x{1}", itemFullName, item.ItemCount);
+                        return item.ItemCount;
+                    }
+                }
+            }
+            Log.Verbose("Count item failed!");
+            return 0;
+        }
+
         public List<Models.SQL.Inventory> GetInventory()
         {
             List<Models.SQL.Inventory> inv = new List<Models.SQL.Inventory>();
