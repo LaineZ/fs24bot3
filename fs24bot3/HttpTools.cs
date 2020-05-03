@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace fs24bot3
@@ -18,14 +19,19 @@ namespace fs24bot3
 
         public async Task<String> MakeRequestAsync(String url)
         {
-
-            var query = Connection.Table<Models.SQL.HttpCache>().Where(v => v.URL.Equals(url));
-
-            foreach (var output in query)
+            try
             {
-                return output.Output;
-            }
+                var query = Connection.Table<Models.SQL.HttpCache>().Where(v => v.URL.Equals(url));
 
+                foreach (var output in query)
+                {
+                    return output.Output;
+                }
+            }
+            catch (SQLiteException e)
+            {
+                Log.Warning("Cannot access to cache database: {0}", e.Message);
+            }
 
             String responseText = await Task.Run(() =>
             {
@@ -42,21 +48,24 @@ namespace fs24bot3
                     return null;
                 }
             });
-            try
+            (new Thread(() =>
             {
-                if (Configuration.cacheing)
+                try
                 {
-                    Connection.Insert(new Models.SQL.HttpCache() { URL = url, Output = responseText });
+                    if (Configuration.cacheing)
+                    {
+                        Connection.Insert(new Models.SQL.HttpCache() { URL = url, Output = responseText });
+                    }
+                    else
+                    {
+                        Log.Verbose("Caching is disabled");
+                    }
                 }
-                else
+                catch (SQLiteException e)
                 {
-                    Log.Verbose("Caching is disabled");
+                    Log.Warning("Http caching failed because: {0}", e.Message);
                 }
-            }
-            catch (SQLiteException e)
-            {
-                Log.Warning("Http caching failed because: {0}", e.Message);
-            }
+            })).Start();
 
             return responseText;
         }
@@ -66,7 +75,6 @@ namespace fs24bot3
             try
             {
                 HttpClient client = new HttpClient();
-
                 HttpContent c = new StringContent(data, Encoding.UTF8);
 
                 var response = await client.PostAsync(Configuration.trashbinUrl + "/add", c);
@@ -87,7 +95,7 @@ namespace fs24bot3
                 return "Сервер недоступен for some reason: " + Configuration.trashbinUrl;
             }
         }
-           
+
 
         public async Task<String> UploadToPastebin(string data)
         {

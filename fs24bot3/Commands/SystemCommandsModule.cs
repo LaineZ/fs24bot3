@@ -96,7 +96,7 @@ namespace fs24bot3
             UserOperations sql = new UserOperations(username, Context.Connection);
 
             sql.IncreaseXp(count);
-            Context.SendMessage(Context.Channel, "Вы установили " +  count + " xp пользователю " + username);
+            Context.SendMessage(Context.Channel, "Вы установили " + count + " xp пользователю " + username);
         }
 
         [Command("level")]

@@ -36,7 +36,7 @@ namespace fs24bot3
             // search options
             int page = 0;
             int limit = 1;
-            int maxpage = 5;
+            int maxpage = 10;
             bool fullmatch = false;
             string site = "";
 
