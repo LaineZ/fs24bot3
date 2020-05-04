@@ -51,7 +51,7 @@ namespace fs24bot3
                 }
                 catch (SQLiteException)
                 {
-                    Log.Verbose("Item aready addeded: {0}", item.Name);
+                    Log.Verbose("Item aready added: {0}", item.Name);
                 }
                 catch (Exception)
                 {
@@ -72,7 +72,7 @@ namespace fs24bot3
                 try
                 {
                     UserOperations user = new UserOperations(users.Nick, connection);
-                    var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.getItem("money").Name));
+                    var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.GetItem("money").Name));
                     money.Add(itemToCount.ItemCount);
                 }
                 catch (NullReferenceException)
@@ -112,14 +112,19 @@ namespace fs24bot3
                 {
                     UserOperations user = new UserOperations(users.Nick, connect);
                     user.AddItemToInv("money", user.GetUserInfo().Level);
+                    if (rand.Next(0, 2) == 1 && user.RemItemFromInv("wall", 1)) 
+                    {
+                        Log.Information("Breaking wall for {0}", users.Nick);
+                    }
                 }
                 PaydaysCount++;
+
             }
             DateTime elapsed = DateTime.Now;
             TickSpeed = elapsed.Subtract(start);
         }
 
-        public static Models.ItemInventory.Shop getItem(string name)
+        public static Models.ItemInventory.Shop GetItem(string name)
         {
             foreach (var item in ShopItems)
             {

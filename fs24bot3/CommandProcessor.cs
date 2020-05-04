@@ -24,8 +24,7 @@ namespace fs24bot3
             public SQLiteConnection CacheConnetion;
 
             public SQLiteConnection Connection;
-
-            HttpTools http = new HttpTools();
+            readonly HttpTools http = new HttpTools();
 
             public VkApi VKApi;
 

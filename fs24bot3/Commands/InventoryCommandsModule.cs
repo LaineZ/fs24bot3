@@ -34,15 +34,15 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
-            int buyprice = Shop.getItem(itemname).Price * count;
+            int buyprice = Shop.GetItem(itemname).Price * count;
 
             bool sucessfully = user.RemItemFromInv("money", buyprice);
 
             if (sucessfully)
             {
                 user.AddItemToInv(itemname, count);
-                Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.getItem(itemname).Name + " за " + buyprice + " денег");
-                Shop.getItem(itemname).Price += 5;
+                Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.GetItem(itemname).Name + " за " + buyprice + " денег");
+                Shop.GetItem(itemname).Price += 5;
             }
             else
             {
@@ -56,12 +56,12 @@ namespace fs24bot3
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
-            if (user.RemItemFromInv(itemname, count) && Shop.getItem(itemname).Sellable)
+            if (user.RemItemFromInv(itemname, count) && Shop.GetItem(itemname).Sellable)
             {
                 // tin
-                int sellprice = (int)Math.Floor((decimal)(Shop.getItem(itemname).Price * count) / 2);
+                int sellprice = (int)Math.Floor((decimal)(Shop.GetItem(itemname).Price * count) / 2);
                 user.AddItemToInv("money", sellprice);
-                Context.SendMessage(Context.Channel, "Вы успешно продали " + Shop.getItem(itemname).Name + " за " + sellprice + " денег");
+                Context.SendMessage(Context.Channel, "Вы успешно продали " + Shop.GetItem(itemname).Name + " за " + sellprice + " денег");
             }
             else
             {
@@ -81,9 +81,9 @@ namespace fs24bot3
 
             foreach (var item in inv)
             {
-                if (Shop.getItem(item.Item).Sellable && user.RemItemFromInv(Shop.getItem(item.Item).Slug, item.ItemCount))
+                if (Shop.GetItem(item.Item).Sellable && user.RemItemFromInv(Shop.GetItem(item.Item).Slug, item.ItemCount))
                 {
-                    totalPrice += (int)Math.Floor((decimal)(Shop.getItem(item.Item).Price * item.ItemCount) / 2);
+                    totalPrice += (int)Math.Floor((decimal)(Shop.GetItem(item.Item).Price * item.ItemCount) / 2);
                 }
             }
 
@@ -98,10 +98,10 @@ namespace fs24bot3
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
             UserOperations destanation = new UserOperations(destanationNick, Context.Connection);
 
-            if (user.RemItemFromInv(Shop.getItem(itemname).Name, count))
+            if (user.RemItemFromInv(Shop.GetItem(itemname).Name, count))
             {
                 destanation.AddItemToInv(itemname, count);
-                Context.SendMessage(Context.Channel, $"Вы успешно передали {Shop.getItem(itemname).Name} x{count} пользователю {destanationNick}");
+                Context.SendMessage(Context.Channel, $"Вы успешно передали {Shop.GetItem(itemname).Name} x{count} пользователю {destanationNick}");
             }
             else
             {
@@ -130,7 +130,7 @@ namespace fs24bot3
                 result.RemoveRange(4, result.Count - 4);
             }
 
-            Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.getItem(itemname).Name);
+            Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.GetItem(itemname).Name);
 
             foreach (var topuser in result)
             {
@@ -150,7 +150,7 @@ namespace fs24bot3
                 int dmg = 0;
 
 
-                if (user.RemItemFromInv(Shop.getItem("wrenchadv").Name, 1))
+                if (user.RemItemFromInv(Shop.GetItem("wrenchadv").Name, 1))
                 {
                     dmg = 4;
                 }
@@ -158,9 +158,9 @@ namespace fs24bot3
                 {
                     // trying with default wrench - if not found just end the command
                     // defalut wrench deals 0 damage bonus
-                    if (!user.RemItemFromInv(Shop.getItem("wrench").Name, 1))
+                    if (!user.RemItemFromInv(Shop.GetItem("wrench").Name, 1))
                     {
-                        Context.SendMessage(Context.Channel, $"У вас нету {Shop.getItem("wrench").Name} или {Shop.getItem("wrenchadv").Name}");
+                        Context.SendMessage(Context.Channel, $"У вас нету {Shop.GetItem("wrench").Name} или {Shop.GetItem("wrenchadv").Name}");
                         return;
                     }
                 }

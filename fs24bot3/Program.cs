@@ -90,14 +90,14 @@ namespace fs24bot3
 
                 Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
                 Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
-                (new Thread(() => {
+                new Thread(() => {
                     Log.Information("Thread started!");
                     while (true)
                     {
                         Thread.Sleep(Shop.Tickrate);
                         Shop.Update(connection);
                     }
-                })).Start();
+                }).Start();
 
                 try
                 {
@@ -186,7 +186,7 @@ namespace fs24bot3
                         await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
                         break;
                     case ExecutionFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка при выполнении команды: {err.Reason}: `{err.Exception.Message}`"));
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: `{err.Exception.Message}`"));
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
                         break;
                 }
@@ -208,6 +208,9 @@ namespace fs24bot3
                     Log.Warning("I've got kick from {0} rejoining...", ircMessage.Prefix);
                     await client.SendRaw("JOIN " + Configuration.channel);
                     await client.SendAsync(new PrivMsgMessage(Configuration.channel, "За что?"));
+                    break;
+                case "ERROR":
+                    Log.Fatal("Connection closed due to error");
                     break;
                 default:
                     break;

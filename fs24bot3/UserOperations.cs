@@ -54,13 +54,13 @@ namespace fs24bot3
         {
             try
             {
-                Connect.Execute("INSERT INTO Inventory VALUES(?, ?, ?)", Username, Shop.getItem(name).Name, count);
+                Connect.Execute("INSERT INTO Inventory VALUES(?, ?, ?)", Username, Shop.GetItem(name).Name, count);
                 Log.Verbose("Inserting items");
                 return true;
             }
             catch (SQLiteException)
             {
-                Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, Shop.getItem(name).Name, Username);
+                Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, Shop.GetItem(name).Name, Username);
                 Log.Verbose("Updating items {0}", name);
                 return true;
             }
@@ -68,20 +68,20 @@ namespace fs24bot3
 
         public bool RemItemFromInv(string name, int count)
         {
-            string itemname = Shop.getItem(name).Name;
+            string itemname = Shop.GetItem(name).Name;
             var query = Connect.Table<Models.SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemname)).ToList();
             if (query.Count > 0)
             {
                 foreach (var item in query)
                 {
-                    if (item.Item == Shop.getItem(name).Name && item.ItemCount >= count)
+                    if (item.Item == Shop.GetItem(name).Name && item.ItemCount >= count)
                     {
                         Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, itemname, Username);
                         // clening up items with 0
                         Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
                         if (Ctx != null)
                         {
-                            Ctx.SendMessage(Ctx.Channel, $" {Shop.getItem(name).Name} -{count} За использование данной команды");
+                            Ctx.SendMessage(Ctx.Channel, $" {Shop.GetItem(name).Name} -{count} За использование данной команды");
                         }
                         return true;
                     }
@@ -89,7 +89,7 @@ namespace fs24bot3
             }
             if (Ctx != null)
             {
-                Ctx.SendMessage(Ctx.Channel, $"Недостаточно {Shop.getItem(name).Name} x{count}");
+                Ctx.SendMessage(Ctx.Channel, $"Недостаточно {Shop.GetItem(name).Name} x{count}");
             }
             return false;
         }
@@ -98,7 +98,7 @@ namespace fs24bot3
         public int CountItem(string itemname)
         {
             // full qualified item name
-            var itemFullName = Shop.getItem(itemname).Name;
+            var itemFullName = Shop.GetItem(itemname).Name;
 
             var query = Connect.Table<Models.SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName)).ToList();
             if (query.Count > 0)

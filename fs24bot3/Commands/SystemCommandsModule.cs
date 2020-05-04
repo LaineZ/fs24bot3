@@ -86,7 +86,7 @@ namespace fs24bot3
             UserOperations sql = new UserOperations(username, Context.Connection);
 
             sql.AddItemToInv(item, count);
-            Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.getItem(item).Name + " пользователю " + username);
+            Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
         }
 
         [Command("xp")]

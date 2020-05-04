@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Qmmands;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 
@@ -15,17 +16,18 @@ namespace fs24bot3
         readonly HttpTools http = new HttpTools();
 
         [Command("execute", "exec")]
-        [Description("REPL поддерживает полно языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
+        [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
         public async void ExecuteAPI(string lang, [Remainder] string code)
         {
             HttpClient client = new HttpClient();
 
-            APIExec.Input codeData = new APIExec.Input();
-
-            codeData.clientId = Configuration.jdoodleClientID;
-            codeData.clientSecret = Configuration.jdoodleClientSecret;
-            codeData.language = lang;
-            codeData.script = code;
+            APIExec.Input codeData = new APIExec.Input
+            {
+                clientId = Configuration.jdoodleClientID,
+                clientSecret = Configuration.jdoodleClientSecret,
+                language = lang,
+                script = code
+            };
 
             HttpContent c = new StringContent(JsonConvert.SerializeObject(codeData), Encoding.UTF8, "application/json");
 
@@ -42,6 +44,21 @@ namespace fs24bot3
             else
             {
                 Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+            }
+        }
+
+        [Command("executeurl", "execurl")]
+        [Description("Тоже самое что и @exec только работает через URL")]
+        public async void ExecuteAPIUrl(string code, string rawurl)
+        {
+            string response = await http.MakeRequestAsync(rawurl);
+            if (response != null)
+            {
+                ExecuteAPI(code, response);
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =(");   
             }
         }
 

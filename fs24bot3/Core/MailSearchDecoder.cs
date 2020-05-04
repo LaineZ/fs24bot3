@@ -1,9 +1,6 @@
 ﻿using fs24bot3.Models;
 using Newtonsoft.Json;
-using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace fs24bot3.Core
 {
@@ -16,8 +13,6 @@ namespace fs24bot3.Core
 
             string searchDataTemp = code.Substring(code.IndexOf(startString) + startString.Length - 1);
             string searchData = searchDataTemp.Substring(0, searchDataTemp.IndexOf(stopString) + 1);
-
-            var searchResults = new List<MailSearch.Result>();
 
             var settings = new JsonSerializerSettings
             {
