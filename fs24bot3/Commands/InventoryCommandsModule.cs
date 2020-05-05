@@ -139,6 +139,34 @@ namespace fs24bot3
         }
 
 
+        [Command("toplevels", "toplevel", "top")]
+        [Description("Топ по уровню")]
+        public void TopLevels()
+        {
+            var top = new List<(string Name, int Count)>();
+
+            var query = Context.Connection.Table<Models.SQL.UserStats>();
+
+            foreach (var users in query)
+            {
+                top.Add((users.Nick, users.Level));
+            }
+
+            var result = top.OrderByDescending(p => p.Count).ToList();
+
+            if (result.Count > 4)
+            {
+                result.RemoveRange(4, result.Count - 4);
+            }
+
+            Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ ПО УРОВНЮ");
+
+            foreach (var topuser in result)
+            {
+                Context.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
+            }
+        }
+
         [Command("wrench")]
         [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
         [Remarks("Стройте укрепления чтобы не получить гаечный ключ в лицо!!!")]
@@ -146,6 +174,7 @@ namespace fs24bot3
         {
             try
             {
+                // TODO: Refactor
                 UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
                 int dmg = 0;
 
@@ -188,6 +217,55 @@ namespace fs24bot3
             catch (Core.Exceptions.UserNotFoundException)
             {
                 Context.SendMessage(Context.Channel, $"Вы кинули гаечные ключ в пользователя {username} при этом он потерял себя");
+            }
+        }
+
+        [Command("break")]
+        [Description("С определенным шансом позволяет пробить укрепления - требуется пистолет или 💣")]
+        public void Shot(string username)
+        {
+            try
+            {
+                // TODO: Refactor
+                UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+                int dmg = 0;
+
+
+                if (user.RemItemFromInv(Shop.GetItem("bomb").Name, 1))
+                {
+                    dmg = 3;
+                }
+                else
+                {
+                    // trying with pistol - if not found just end the command
+                    // pistol deals 0 damage bonus
+                    if (!user.RemItemFromInv(Shop.GetItem("pistol").Name, 1))
+                    {
+                        Context.SendMessage(Context.Channel, $"У вас нету {Shop.GetItem("pistol").Name} или {Shop.GetItem("bomb").Name}");
+                        return;
+                    }
+                }
+                UserOperations userDest = new UserOperations(username, Context.Connection);
+
+                var rand = new Random();
+
+                if (userDest.CountItem("wall") > 0 && rand.Next(0, 10 - dmg) == 0 && username != Context.Message.From)
+                {
+                    userDest.RemItemFromInv("wall", 1);
+                    Context.SendMessage(Context.Channel, $"Вы атаковали с уроном {dmg + 5} укрепления пользователя {username} и сломали 1 укрепление!");
+                    if (rand.Next(0, 3) == 2) 
+                    {
+                        Context.SendMessage(username, $"Вас атакует {Context.Message.From}!");
+                    }
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, "Вы не попали по укреплению! =(");
+                }
+            }
+            catch (Core.Exceptions.UserNotFoundException)
+            {
+                Context.SendMessage(Context.Channel, $"Вы потеряли себя...");
             }
         }
     }
