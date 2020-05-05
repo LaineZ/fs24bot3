@@ -70,7 +70,62 @@ namespace fs24bot3
             try
             {
                 var translatedOutput = await Core.Transalator.Translate(lang, text);
-                Context.SendMessage(Context.Channel, translatedOutput.text[0] + "(translate.yandex.ru) " + translatedOutput.lang);
+                Context.SendMessage(Context.Channel, translatedOutput.text[0] + " (translate.yandex.ru) " + translatedOutput.lang);
+            }
+            catch (Exception)
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст....");
+            }
+        }
+
+        [Command("trppc", "translateppc")]
+        [Description("Переводчик (ппц), вводи и поражайся")]
+        public async void TranslatePpc([Remainder] string text)
+        {
+            try
+            {
+                var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+
+                if (user.RemItemFromInv("beer", (int)Math.Floor((decimal)text.Length / 3) + 1))
+                {
+                    var translatedOutput = await Core.Transalator.Translate("ru", text);
+
+                    foreach (string lang in new string[] { "ru", "ro-ru", "de-ru", "mn-ru", "ky-ru" })
+                    {
+                        var tr = await Core.Transalator.Translate(lang, translatedOutput.text[0]);
+                        translatedOutput.text[0] = tr.text[0];
+                    }
+
+                    Context.SendMessage(Context.Channel, translatedOutput.text[0] + " (translate.yandex.ru, ппц) ");
+                }
+            }
+            catch (Exception)
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст....");
+            }
+        }
+
+        [Command("trppclite")]
+        [Description("Переводчик (ппц lite)")]
+        public async void TranslatePpc2([Remainder] string text)
+        {
+            try
+            {
+                var splitted = text.Split(" ");
+
+                if (splitted.Length > 15)
+                {
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Royal}У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
+                }
+
+                // Forech statement cannot be modified WHY???????
+                for (int i = 0; i < splitted.Length - 1; i++)
+                {
+                    var tr = await Core.Transalator.Translate("ru", splitted[i]);
+                    splitted[i] = tr.text[0];
+                }
+
+                Context.SendMessage(Context.Channel, string.Join(' ', splitted) + " (translate.yandex.ru, ппц lite edition) ");
             }
             catch (Exception)
             {

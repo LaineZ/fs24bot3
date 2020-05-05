@@ -26,10 +26,10 @@ namespace fs24bot3
 
         [Command("ms", "search")]
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
-        [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`\n" +
+        [Remarks("Запрос разбивается на сам запрос, параметры которые выглядят как `PARAMETR:VALUE` и операторы поиска (+, -)\n" +
             "Параметры: page:Number - Искать на странице (иногда глючит, если не находит - попробуйте большее число, раз так в 10); max:Number - Максимальная глубина поиска;\n" +
-            "exclude:word - Исключить запросы с словом word; include:word - Показывать результаты которые точно содержат word;" +
-            "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса (при этом опции include, exclude теряют смысл); multi:on - Мульти вывод (сразу 5 результатов)")]
+            "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса; multi:on - Мульти вывод (сразу 5 результатов)" +
+            "Операторы поиска: `+` - Включить слово в запрос `-` - Исключить слово из запроса")]
         public async void MailSearch([Remainder] string query)
         {
 
@@ -38,12 +38,10 @@ namespace fs24bot3
             int limit = 1;
             int maxpage = 10;
             bool fullmatch = false;
-            string site = "";
 
             string[] queryOptions = query.Split(" ");
             List<string> queryText = new List<string>();
             List<string> exclude = new List<string>();
-            List<string> include = new List<string>();
             // error message
             MailErrors.SearchError errors = MailErrors.SearchError.None;
 
@@ -61,20 +59,11 @@ namespace fs24bot3
                         string[] options = queryOptions[i].Split(":");
                         maxpage = int.Parse(options[1]);
                     }
-                    else if (queryOptions[i].Contains("exclude:"))
+                    // exclude
+                    else if (queryOptions[i].Contains("-"))
                     {
-                        string[] options = queryOptions[i].Split(":");
+                        string[] options = queryOptions[i].Split("-");
                         exclude.Add(options[1].ToLower());
-                    }
-                    else if (queryOptions[i].Contains("include:"))
-                    {
-                        string[] options = queryOptions[i].Split(":");
-                        include.Add(options[1].ToLower());
-                    }
-                    else if (queryOptions[i].Contains("site:"))
-                    {
-                        string[] options = queryOptions[i].Split(":");
-                        site = options[1].ToLower();
                     }
                     else if (queryOptions[i].Contains("multi:on"))
                     {
@@ -82,16 +71,7 @@ namespace fs24bot3
                     }
                     else if (queryOptions[i].Contains("fullmatch:on"))
                     {
-                        if (exclude.Count <= 0 || include.Count <= 0)
-                        {
-                            fullmatch = true;
-                        }
-                        else
-                        {
-                            Context.SendMessage(Context.Channel, $"{IrcColors.Yellow}{IrcColors.Bold}Внимание:{IrcColors.Reset}при включенном fullmatch правила include, exclude не учитываются!");
-                            Context.SendMessage(Context.Channel, query);
-                            Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]))}^ fullmatch имеет высший приоритет посравнению с другими опциями фильтрации");
-                        }
+                        fullmatch = true;
                     }
                     else
                     {
@@ -112,7 +92,7 @@ namespace fs24bot3
             {
                 Log.Verbose("Foring {0}", i);
                 if (searchResults.Count >= limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + i * 10 + "&site=" + site);
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + i * 10);
                 var items = Core.MailSearchDecoder.PerformDecode(response);
                 if (items == null) { continue; }
 
@@ -127,11 +107,10 @@ namespace fs24bot3
                             if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
                                 var excludeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x));
-                                var includeMatch = include.FirstOrDefault(x => item.title.ToLower().Contains(x));
 
                                 if (fullmatch)
                                 {
-                                    if (item.title.Contains(string.Join(" ", queryText)) || item.title.Contains(string.Join(" ", queryText)))
+                                    if (item.title.Contains(string.Join(" ", queryText)) || item.passage.Contains(string.Join(" ", queryText)))
                                     {
                                         searchResults.Add(item);
                                     }
@@ -142,19 +121,9 @@ namespace fs24bot3
                                 }
                                 else
                                 {
-                                    if (exclude.Count > 0)
+                                    if (excludeMatch == null)
                                     {
-                                        if (excludeMatch == null)
-                                        {
-                                            searchResults.Add(item);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (include.Count <= 0 || includeMatch != null)
-                                        {
-                                            searchResults.Add(item);
-                                        }
+                                        searchResults.Add(item);
                                     }
                                 }
                             }
@@ -254,6 +223,7 @@ namespace fs24bot3
                             }
                             catch (InvalidOperationException)
                             {
+                               // reset avatar
                                 vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: "https://gitlab.com/uploads/-/system/user/avatar/2374023/avatar.png"));
                             }
                         }
