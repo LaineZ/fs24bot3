@@ -92,10 +92,10 @@ namespace fs24bot3
                 int check = rand.Next(0, 10);
                 if (check == 5)
                 {
-                    if (shopItem.Price >= rand.Next(1000, 15000))
+                    if (shopItem.Price >= rand.Next(1000, 100500))
                     {
                         Log.Verbose("Descreaseing price for {0}", shopItem.Name);
-                        shopItem.Price -= 5;
+                        shopItem.Price -= rand.Next(1, 5);
                     }
                     else
                     {
