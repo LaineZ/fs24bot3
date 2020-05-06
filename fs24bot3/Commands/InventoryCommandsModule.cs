@@ -125,14 +125,9 @@ namespace fs24bot3
 
             var result = top.OrderByDescending(p => p.Count).ToList();
 
-            if (result.Count > 4)
-            {
-                result.RemoveRange(4, result.Count - 4);
-            }
-
             Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.GetItem(itemname).Name);
 
-            foreach (var topuser in result)
+            foreach (var topuser in result.Take(5))
             {
                 Context.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
             }
@@ -154,14 +149,9 @@ namespace fs24bot3
 
             var result = top.OrderByDescending(p => p.Count).ToList();
 
-            if (result.Count > 4)
-            {
-                result.RemoveRange(4, result.Count - 4);
-            }
-
             Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ ПО УРОВНЮ");
 
-            foreach (var topuser in result)
+            foreach (var topuser in result.Take(5))
             {
                 Context.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
             }
@@ -253,7 +243,7 @@ namespace fs24bot3
                 {
                     userDest.RemItemFromInv("wall", 1);
                     Context.SendMessage(Context.Channel, $"Вы атаковали с уроном {dmg + 5} укрепления пользователя {username} и сломали 1 укрепление!");
-                    if (rand.Next(0, 3) == 2) 
+                    if (rand.Next(0, 3) == 2)
                     {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From}!");
                     }
