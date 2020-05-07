@@ -86,7 +86,7 @@ namespace fs24bot3
             {
                 var user = new UserOperations(Context.Message.From, Context.Connection, Context);
 
-                if (user.RemItemFromInv("beer", (int)Math.Floor((decimal)text.Length / 3) + 1))
+                if (user.RemItemFromInv("beer", (int)Math.Floor((decimal)text.Length / 8) + 1))
                 {
                     var translatedOutput = await Core.Transalator.Translate("ru", text);
 
@@ -119,7 +119,7 @@ namespace fs24bot3
                 }
 
                 // Forech statement cannot be modified WHY???????
-                for (int i = 0; i < splitted.Length - 1; i++)
+                for (int i = 0; i < splitted.Length; i++)
                 {
                     var tr = await Core.Transalator.Translate("ru", splitted[i]);
                     splitted[i] = tr.text[0];
