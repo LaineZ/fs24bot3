@@ -14,6 +14,8 @@ namespace fs24bot3
         public SQLiteConnection Connect;
         public CommandProcessor.CustomCommandContext Ctx;
 
+        const int XP_MULTIPLER = 150;
+
 
         public UserOperations(string username, SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
         {
@@ -37,7 +39,7 @@ namespace fs24bot3
                 {
                     Connect.Execute("UPDATE UserStats SET Level = Level + 1 WHERE Nick = ?", nick.Nick);
                     Connect.Execute("UPDATE UserStats SET Xp = 0 WHERE Nick = ?", nick.Nick);
-                    Connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", nick.Nick);
+                    Connect.Execute("UPDATE UserStats SET Need = Level * ? WHERE Nick = ?", XP_MULTIPLER, nick.Nick);
                     return true;
                 }
             }
@@ -47,7 +49,7 @@ namespace fs24bot3
         public void SetLevel(int level)
         {
             Connect.Execute("UPDATE UserStats SET Level = ? WHERE Nick = ?", level, Username);
-            Connect.Execute("UPDATE UserStats SET Need = Level * 120 WHERE Nick = ?", Username);
+            Connect.Execute("UPDATE UserStats SET Need = Level * ? WHERE Nick = ?", XP_MULTIPLER, Username);
         }
 
         public bool AddItemToInv(string name, int count)

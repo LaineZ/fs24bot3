@@ -24,7 +24,7 @@ namespace fs24bot3
         [Description("Макроэкономические показатели")]
         public void Economy()
         {
-            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount.ToString()} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Частота выполнения Shop.Update() {Shop.Tickrate} ms");
+            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Частота выполнения Shop.Update() {Shop.Tickrate} ms");
         }
 
         [Command("gc")]
@@ -36,7 +36,7 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, "Мусор вывезли!");
         }
 
-        [Command("htppcache")]
+        [Command("httpcache")]
         [Checks.CheckAdmin]
         public void CacheStatus(string option = "status")
         {
@@ -121,6 +121,19 @@ namespace fs24bot3
             Enum.TryParse(level, out LogEventLevel lvlToSet);
             Configuration.LoggerSw.MinimumLevel = lvlToSet;
             Context.SendMessage(Context.Channel, $"Установлен уровень лога `{level}`");
+        }
+
+        [Command("delete")]
+        [Checks.CheckAdmin]
+        public void DeleteUser(string users)
+        {
+            foreach (var user in users.Split(" "))
+            {
+                Context.Connection.Execute("DELETE FROM UserStats WHERE Nick = ?", user);   
+                Context.Connection.Execute("DELETE FROM Inventory WHERE Nick = ?", user);
+            }
+            Context.Connection.Execute("VACUUM;");
+            Context.SendMessage(Context.Channel, "Данные удалены!");
         }
 
         [Command("ignore")]

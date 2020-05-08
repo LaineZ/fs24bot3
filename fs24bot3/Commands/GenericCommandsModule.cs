@@ -23,11 +23,11 @@ namespace fs24bot3
             string commandsOutput;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
             var customCommands = Context.Connection.Table<Models.SQL.CustomUserCommands>().ToList();
-            commandsOutput = "<pre>" + string.Join('\n', Service.GetAllCommands().Select(x => $"{string.Join(' ', x.Checks)} @{x.Name} {string.Join(' ', x.Parameters)} - {x.Description}"))
-                + "\nМагазин:\n" +
-                string.Join("\n", shop.Select(x => $"[{x.Slug}] {x.Name}: Цена: {x.Price}")) +
-                "\nКастом команды:\n" +
-                string.Join("\n", customCommands.Select(x => $"{x.Command}")) + "</pre>";
+            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"<p style=\"font-family: 'sans-serif';\">{string.Join(' ', x.Checks)} <strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><pre>{x.Description}</pre><hr>"))
+                + "<h3>Магазин:</h3>" +
+                string.Join("\n", shop.Select(x => $"<p style=\"font-family: 'sans-serif';\">[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
+                "<h3>Кастом команды:</h3>" +
+                string.Join("\n", customCommands.Select(x => $"<p>{x.Command}</p>"));
             try
             {
                 string link = await http.UploadToTrashbin(commandsOutput);
@@ -43,12 +43,12 @@ namespace fs24bot3
         [Description("Помощь по команде")]
         public void HelpСmd(string command)
         {
-            foreach (var cmd in Service.GetAllCommands())
+            foreach (Command cmd in Service.GetAllCommands())
             {
-                if (cmd.Name == command && cmd.Aliases.Contains(command))
+                if (cmd.Aliases.Contains(command))
                 {
                     Context.SendMessage(Context.Channel,
-                        cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters) + " - " + cmd.Description);
+                        cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                     if (cmd.Remarks != null)
                     {
                         foreach (string help in cmd.Remarks.Split("\n"))
@@ -213,7 +213,7 @@ namespace fs24bot3
         [Description("Миди ноты")]
         public void Midi(string note, uint oct = 4)
         {
-            String[] noteString = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+            string[] noteString = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
             if (uint.TryParse(note, out uint initialNote))
             {
