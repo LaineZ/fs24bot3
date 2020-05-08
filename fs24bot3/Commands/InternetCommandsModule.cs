@@ -105,9 +105,9 @@ namespace fs24bot3
             }
         }
 
-        [Command("trppclite")]
+        [Command("trppclite", "trl")]
         [Description("Переводчик (ппц lite)")]
-        public async void TranslatePpc2([Remainder] string text)
+        public async void TranslatePpc2(string lang, [Remainder] string text)
         {
             try
             {
@@ -121,7 +121,7 @@ namespace fs24bot3
                 // Forech statement cannot be modified WHY???????
                 for (int i = 0; i < splitted.Length; i++)
                 {
-                    var tr = await Core.Transalator.Translate("ru", splitted[i]);
+                    var tr = await Core.Transalator.Translate(lang, splitted[i]);
                     splitted[i] = tr.text[0];
                 }
 

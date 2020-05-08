@@ -105,7 +105,7 @@ namespace fs24bot3
                 }
             }
             int checkPayday = rand.Next(0, 100);
-            if (checkPayday == 8 && GetMoneyAvg(connect) > 500000)
+            if (checkPayday == 8 && GetMoneyAvg(connect) < 450000)
             {
                 Log.Information("Giving payday!");
                 var query = connect.Table<Models.SQL.UserStats>();
