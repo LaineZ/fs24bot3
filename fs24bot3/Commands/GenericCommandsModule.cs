@@ -228,7 +228,7 @@ namespace fs24bot3
                 {
                     if (noteString[i].ToLower() == note.ToLower())
                     {
-                        uint noteIndex = (12 * oct) + i;
+                        uint noteIndex = (12 * (oct + 1)) + i;
                         Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {Models.IrcColors.Reset}{noteIndex}");
                         break;
                     }
