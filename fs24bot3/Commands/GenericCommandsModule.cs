@@ -209,6 +209,33 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
         }
 
+        [Command("midi")]
+        [Description("Миди ноты")]
+        public void Midi(string note, int oct = 4)
+        {
+            String[] noteString = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+
+            if (int.TryParse(note, out int initialNote))
+            {
+                int octave = (initialNote / 12) - 1;
+                int noteIndex = (initialNote % 12);
+                string noteName = noteString[noteIndex];
+                Context.SendMessage(Context.Channel, $"MIDI: {note} = {Models.IrcColors.Reset}{noteName}{octave}");
+            }
+            else
+            {
+                for (int i = 0; i < noteString.Length; i++)
+                {
+                    if (noteString[i].ToLower() == note.ToLower())
+                    {
+                        int noteIndex = 12 * ((i + 1) * (oct + 1));
+                        Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {Models.IrcColors.Reset}{noteIndex}");
+                        break;
+                    }
+                }
+            }
+        }
+
         [Command("cmdinfo")]
         [Checks.CheckAdmin]
         [Description("Сменить владельца команды")]
