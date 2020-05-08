@@ -1,19 +1,12 @@
 ﻿using fs24bot3.Models;
 using HtmlAgilityPack;
-using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
-using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
-using VkNet.Model.RequestParams;
-using System.Text.RegularExpressions;
-using VkNet;
 using VkNet.Enums.Filters;
-using VkNet.Model;
 
 namespace fs24bot3
 {
@@ -27,7 +20,7 @@ namespace fs24bot3
         [Command("ms", "search")]
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
         [Remarks("Запрос разбивается на сам запрос, параметры которые выглядят как `PARAMETR:VALUE` и операторы поиска (+, -)\n" +
-            "Параметры: page:Number - Искать на странице (иногда глючит, если не находит - попробуйте большее число, раз так в 10); max:Number - Максимальная глубина поиска;\n" +
+            "page:Number - Страница поиска; max:Number - Максимальная глубина поиска;\n" +
             "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса; multi:on - Мульти вывод (сразу 5 результатов)" +
             "Операторы поиска: `+` - Включить слово в запрос `-` - Исключить слово из запроса")]
         public async void MailSearch([Remainder] string query)

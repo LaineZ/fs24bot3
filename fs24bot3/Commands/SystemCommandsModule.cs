@@ -1,10 +1,7 @@
 ﻿using Qmmands;
-using Serilog.Core;
 using Serilog.Events;
 using SQLite;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 namespace fs24bot3
@@ -119,7 +116,7 @@ namespace fs24bot3
 
         [Command("loggerlevel")]
         [Checks.CheckAdmin]
-        public void Tickrate(string level = "Verbose")
+        public void LoggerLevel(string level = "Verbose")
         {
             Enum.TryParse(level, out LogEventLevel lvlToSet);
             Configuration.LoggerSw.MinimumLevel = lvlToSet;

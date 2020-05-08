@@ -53,9 +53,11 @@ namespace fs24bot3
                     {
                         foreach (string help in cmd.Remarks.Split("\n"))
                         {
-                            Context.SendMessage(Context.Channel, Models.IrcColors.Green + help);
+                            Context.SendMessage(Context.Channel, Models.IrcColors.Bold + help);
                         }
                     }
+
+                    Context.SendMessage(Context.Channel, $"{Models.IrcColors.Bold}Алиасы: {Models.IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
                     break;
                 }
             }
@@ -80,7 +82,7 @@ namespace fs24bot3
             var data = usr.GetUserInfo();
             if (data != null)
             {
-                Context.SendMessage(Context.Channel, "Статистика: " + data.Nick + " Уровень: " + data.Level + " XP: " + data.Xp + "/" + data.Need);
+                Context.SendMessage(Context.Channel, $"Статистика: {data.Nick} Уровень: {data.Level} XP: {data.Xp} / {data.Need}");
                 try
                 {
                     var userTags = usr.GetUserTags();
