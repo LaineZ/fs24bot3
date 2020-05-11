@@ -113,7 +113,7 @@ namespace fs24bot3
                 {
                     UserOperations user = new UserOperations(users.Nick, connect);
                     user.AddItemToInv("money", user.GetUserInfo().Level);
-                    if (rand.Next(0, 2) == 1 && user.RemItemFromInv("wall", 1)) 
+                    if (rand.Next(0, 5) == 1 && user.RemItemFromInv("wall", 1)) 
                     {
                         Log.Information("Breaking wall for {0}", users.Nick);
                     }

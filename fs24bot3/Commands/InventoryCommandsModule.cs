@@ -191,11 +191,11 @@ namespace fs24bot3
                 if (rand.Next(0, 5 + userDest.CountItem("wall") - dmg) == 0 && username != Context.Message.From)
                 {
                     int indexItem = rand.Next(takeItems.Count);
-                    int itemCount = rand.Next(1, takeItems[indexItem].ItemCount);
+                    int itemCount = rand.Next(1, takeItems[indexItem].ItemCount / 10);
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
                     Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount}");
-                    if (rand.Next(0, 3) == 2) {
+                    if (rand.Next(0, 5) == 2) {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
                     }
                 }
