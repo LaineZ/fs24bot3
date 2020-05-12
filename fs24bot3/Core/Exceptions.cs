@@ -12,7 +12,7 @@ namespace fs24bot3.Core
             {
                 get
                 {
-                    return "User not found!";
+                    return "Пользователь не найден!";
                 }
             }
         }
@@ -23,7 +23,18 @@ namespace fs24bot3.Core
             {
                 get
                 {
-                    return "Search error occured!";
+                    return "Произошла ошибка поиска!";
+                }
+            }
+        }
+
+        public class RodError : Exception
+        {
+            public override string Message
+            {
+                get
+                {
+                    return "У вас нет такой удочки!";
                 }
             }
         }

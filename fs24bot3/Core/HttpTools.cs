@@ -106,15 +106,17 @@ namespace fs24bot3
             };
 
 
-            Models.PastebinUpload.RootObject paste = new Models.PastebinUpload.RootObject();
+            Models.PastebinUpload.RootObject paste = new Models.PastebinUpload.RootObject
+            {
+                sections = new List<Models.PastebinUpload.Section>()
+            };
 
-            paste.sections = new List<Models.PastebinUpload.Section>();
-
-            var section = new Models.PastebinUpload.Section();
-
-            section.name = "fs24 paste";
-            section.contents = data;
-            section.syntax = "autodetect";
+            var section = new Models.PastebinUpload.Section
+            {
+                name = "fs24 paste",
+                contents = data,
+                syntax = "autodetect"
+            };
 
             paste.description = "A paste pasted by fs24_bot";
 

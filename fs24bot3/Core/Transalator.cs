@@ -16,8 +16,10 @@ namespace fs24bot3.Core
             HttpClient client = new HttpClient();
 
 
-            var formVariables = new List<KeyValuePair<string, string>>();
-            formVariables.Add(new KeyValuePair<string, string>("text", text));
+            var formVariables = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("text", text)
+            };
             var formContent = new FormUrlEncodedContent(formVariables);
 
             var response = await client.PostAsync("https://translate.yandex.net/api/v1.5/tr.json/translate?lang=" + lang + "&key=" + Configuration.yandexTrKey, formContent);

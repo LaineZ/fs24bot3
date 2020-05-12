@@ -89,5 +89,23 @@ namespace fs24bot3.Models
             public string URL { get; set; }
             public string Output { get; set; }
         }
+
+        internal class UserFishingRods
+        {
+            [PrimaryKey]
+            public string Username { get; set; }
+            public string RodName { get; set; }
+            public int RodDurabillity { get; set; }
+        }
+
+        internal class FishingRods
+        {
+            [PrimaryKey]
+            public string RodName { get; set; }
+            public int RodDurabillity { get; set; }
+            public int FishingLine { get; set; }
+            public int HookSize { get; set; }
+            public int Price { get; set; }
+        }
     }
 }

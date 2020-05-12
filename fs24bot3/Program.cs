@@ -46,6 +46,8 @@ namespace fs24bot3
             connection.CreateTable<SQL.Item>();
             connection.CreateTable<SQL.Tags>();
             connection.CreateTable<SQL.Ignore>();
+            connection.CreateTable<SQL.FishingRods>();
+            connection.CreateTable<SQL.UserFishingRods>();
             CacheConnection.CreateTable<SQL.HttpCache>();
             CacheConnection.Close();
             CacheConnection.Dispose();
@@ -54,6 +56,7 @@ namespace fs24bot3
 
             // creating ultimate inventory by @Fingercomp
             connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
+            
             connection.Execute("CREATE TABLE IF NOT EXISTS LyricsCache (track TEXT, artist TEXT, lyrics TEXT, addedby TEXT, PRIMARY KEY (track, artist))");
 
 
@@ -82,31 +85,30 @@ namespace fs24bot3
                 Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry...");
             }
 
-            using (var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection()))
+            using var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
+            client.OnRawDataReceived += Client_OnRawDataReceived;
+            client.EventHub.PrivMsg += EventHub_PrivMsg;
+            client.EventHub.RplWelcome += Client_OnWelcome;
+
+            Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
+            Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
+            new Thread(() =>
             {
-                client.OnRawDataReceived += Client_OnRawDataReceived;
-                client.EventHub.PrivMsg += EventHub_PrivMsg;
-                client.EventHub.RplWelcome += Client_OnWelcome;
-
-                Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
-                Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
-                new Thread(() => {
-                    Log.Information("Thread started!");
-                    while (true)
-                    {
-                        Thread.Sleep(Shop.Tickrate);
-                        Shop.Update(connection);
-                    }
-                }).Start();
-
-                try
+                Log.Information("Thread started!");
+                while (true)
                 {
-                    Console.ReadKey();
+                    Thread.Sleep(Shop.Tickrate);
+                    Shop.Update(connection);
                 }
-                catch (Exception)
-                {
-                    Console.Read();
-                }
+            }).Start();
+
+            try
+            {
+                Console.ReadKey();
+            }
+            catch (Exception)
+            {
+                Console.Read();
             }
         }
 

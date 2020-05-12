@@ -177,6 +177,36 @@ namespace fs24bot3
             }
         }
 
+        public Models.SQL.UserFishingRods GetRod()
+        {
+            var query = Connect.Table<Models.SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).ToList();
+            return query.Count > 0 ? query[0] : null;
+        }
+
+        public bool AddRod(string rodname)
+        {
+            var query = Connect.Table<Models.SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
+
+            if (query.Count > 0)
+            {
+                var userod = GetRod();
+
+                if (userod == null)
+                {
+                    Connect.Insert(new Models.SQL.UserFishingRods { Username = Username, RodName = rodname, RodDurabillity = query[0].RodDurabillity });
+                    return true;
+                }
+                else
+                {
+                    if (userod.RodName != rodname)
+                    {
+                        Connect.Execute("UPDATE UserFishingRods SET RodName = ? AND RodDurabillity = ? WHERE Username = ?", rodname, query[0].RodDurabillity, Username);   
+                    }
+                }
+            }
+            return false;
+        }
+
 
         public bool AddTag(string name, int count)
         {
@@ -229,8 +259,10 @@ namespace fs24bot3
 
                 Log.Verbose("creaing {0} count: {1}", name, count);
 
-                var tagList = new List<Models.SQL.Tag>();
-                tagList.Add(tagInfo.GetTagByName());
+                var tagList = new List<Models.SQL.Tag>
+                {
+                    tagInfo.GetTagByName()
+                };
 
                 var user = new Models.SQL.Tags()
                 {

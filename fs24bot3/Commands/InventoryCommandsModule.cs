@@ -30,7 +30,7 @@ namespace fs24bot3
 
         [Command("buy")]
         [Description("Купить товар")]
-        public void Buy(string itemname, int count)
+        public void Buy(string itemname, int count = 1)
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
@@ -52,7 +52,7 @@ namespace fs24bot3
 
         [Command("sell")]
         [Description("Продать товар")]
-        public void Sell(string itemname, int count)
+        public void Sell(string itemname, int count = 1)
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
@@ -74,9 +74,7 @@ namespace fs24bot3
         public void SellAll()
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
-
             var inv = user.GetInventory();
-
             int totalPrice = 0;
 
             foreach (var item in inv)
