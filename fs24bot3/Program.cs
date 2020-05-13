@@ -189,6 +189,7 @@ namespace fs24bot3
                         bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
                         if (!customSuccess)
                         {
+                            // TODO: FIX
                             var cmdName = e.IRCMessage.Message.TrimEnd().Split(" ")[0].Replace("@", "");
                             var cmdOutput = new StringBuilder();
 

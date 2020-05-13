@@ -21,7 +21,7 @@ namespace fs24bot3
         /// Tickrate speed - using for @performance command
         /// </summary>
         public static TimeSpan TickSpeed;
-        private static Random rand;
+        private static Random Rand;
 
         public static void Init(SQLiteConnection connect)
         {
@@ -39,8 +39,6 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 15000, Sellable = true, Slug = "wall", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔫 Пистолет", Price = 55000, Sellable = true, Slug = "pistol", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Бомба", Price = 95000, Sellable = true, Slug = "bomb", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Бомба", Price = 95000, Sellable = true, Slug = "bomb", Wrenchable = false });
-            // 🎣 
             foreach (var item in ShopItems)
             {
                 var sqlItem = new Models.SQL.Item()
@@ -61,8 +59,14 @@ namespace fs24bot3
                     Log.Verbose("пиздец я хз чё вообще произошло");
                 }
             }
+            Rand = new Random();
+            // 🎣 add 10 fishing rods
+
+            for (int i = 0; i < 10; i++)
+            {
+                connect.Insert(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(5, 10)), Price = Rand.Next(1000, 25000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 55) });
+            }
             Log.Information("done");
-            rand = new Random();
         }
 
         internal static double GetMoneyAvg(SQLiteConnection connection)
@@ -91,22 +95,22 @@ namespace fs24bot3
             DateTime start = DateTime.Now;
             foreach (var shopItem in ShopItems)
             {
-                int check = rand.Next(0, 10);
+                int check = Rand.Next(0, 10);
                 if (check == 5)
                 {
-                    if (shopItem.Price >= rand.Next(1000, 100500))
+                    if (shopItem.Price >= Rand.Next(1000, 100500))
                     {
                         Log.Verbose("Descreaseing price for {0}", shopItem.Name);
-                        shopItem.Price -= rand.Next(1, 5);
+                        shopItem.Price -= Rand.Next(1, 5);
                     }
                     else
                     {
                         //Log.Verbose("Incresing price for {0}", shopItem.Name);
-                        shopItem.Price += rand.Next(1, 5);
+                        shopItem.Price += Rand.Next(1, 5);
                     }
                 }
             }
-            int checkPayday = rand.Next(0, 100);
+            int checkPayday = Rand.Next(0, 100);
             if (checkPayday == 8 && GetMoneyAvg(connect) < 450000)
             {
                 Log.Information("Giving payday!");
@@ -115,7 +119,7 @@ namespace fs24bot3
                 {
                     UserOperations user = new UserOperations(users.Nick, connect);
                     user.AddItemToInv("money", user.GetUserInfo().Level);
-                    if (rand.Next(0, 5) == 1 && user.RemItemFromInv("wall", 1)) 
+                    if (Rand.Next(0, 5) == 1 && user.RemItemFromInv("wall", 1)) 
                     {
                         Log.Information("Breaking wall for {0}", users.Nick);
                     }

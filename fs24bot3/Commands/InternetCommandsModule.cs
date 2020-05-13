@@ -86,7 +86,7 @@ namespace fs24bot3
             {
                 var user = new UserOperations(Context.Message.From, Context.Connection, Context);
 
-                if (user.RemItemFromInv("beer", (int)Math.Floor((decimal)text.Length / 8) + 1))
+                if (user.RemItemFromInv("beer", 1))
                 {
                     var translatedOutput = await Core.Transalator.Translate("ru", text);
 

@@ -177,6 +177,12 @@ namespace fs24bot3
             }
         }
 
+
+        /// <summary>
+        /// Gets user fishing rod
+        /// </summary>
+        /// <returns>Models.SQL.UserFishingRods - if rod found, null if not found </returns>
+
         public Models.SQL.UserFishingRods GetRod()
         {
             var query = Connect.Table<Models.SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).ToList();
