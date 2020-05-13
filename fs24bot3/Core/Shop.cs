@@ -60,9 +60,9 @@ namespace fs24bot3
                 }
             }
             Rand = new Random();
-            // 🎣 add 10 fishing rods
+            // 🎣 add 2 new fishing rods
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 2; i++)
             {
                 connect.Insert(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(5, 10)), Price = Rand.Next(1000, 25000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 55) });
             }

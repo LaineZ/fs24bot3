@@ -66,6 +66,7 @@ namespace fs24bot3
             _service.AddModule<InventoryCommandsModule>();
             _service.AddModule<InternetCommandsModule>();
             _service.AddModule<NetstalkingCommandsModule>();
+            _service.AddModule<FishCommandsModule>();
 
 
             Log.Information("Logging with vkapi...");
