@@ -13,6 +13,7 @@ using System.IO;
 using VkNet;
 using VkNet.Model;
 using VkNet.Enums.Filters;
+using System.Linq;
 
 namespace fs24bot3
 {
@@ -97,7 +98,7 @@ namespace fs24bot3
                 Log.Information("Thread started!");
                 while (true)
                 {
-                    Thread.Sleep(Shop.Tickrate);
+                    Thread.Sleep(Shop.Tickrate) ;
                     Shop.Update(connection);
                 }
             }).Start();
@@ -184,8 +185,20 @@ namespace fs24bot3
                     case OverloadsFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
                         break;
-                    case CommandNotFoundResult _:
-                        await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
+                    case CommandNotFoundResult err:
+                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
+                        if (!customSuccess)
+                        {
+                            var cmdName = e.IRCMessage.Message.TrimEnd().Split(" ")[0].Replace("@", "");
+                            var cmdOutput = new StringBuilder();
+
+                            var cmds = _service.GetAllCommands().ToList().FindAll(x => x.Equals(x.Aliases.ToList().Find(a => a.Contains(cmdName))));
+
+                            if (cmds.Any())
+                            {
+                                await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Команда @{cmdName} не найдена, возможно вы хотели написать это: `{String.Join(" @", cmds.Select(x => x.Name))}`"));
+                            }
+                        }
                         break;
                     case ExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: `{err.Exception.Message}`"));
