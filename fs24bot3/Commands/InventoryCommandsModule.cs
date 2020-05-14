@@ -125,10 +125,17 @@ namespace fs24bot3
 
             Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.GetItem(itemname).Name);
 
-            foreach (var topuser in result.Take(5))
+            foreach (var (Name, Count) in result.Take(5))
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
+                Context.SendMessage(Context.Channel, Models.IrcColors.Bold + Name + ": " + Count);
             }
+        }
+
+        [Command("topmoney")]
+        [Description("Топ по деньгам")]
+        public void TopMoney()
+        {
+            TopItem();
         }
 
 

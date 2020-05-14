@@ -193,23 +193,23 @@ namespace fs24bot3
         {
             var query = Connect.Table<Models.SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
 
-            if (query.Count > 0)
+            if (query.Any())
             {
                 var userod = GetRod();
 
                 if (userod == null)
                 {
+                    Log.Verbose("INSERTING rod {0}", rodname);
                     Connect.Insert(new Models.SQL.UserFishingRods { Username = Username, RodName = rodname, RodDurabillity = query[0].RodDurabillity });
                     return true;
                 }
                 else
                 {
-                    if (userod.RodName != rodname)
-                    {
-                        Connect.Execute("UPDATE UserFishingRods SET RodName = ? AND RodDurabillity = ? WHERE Username = ?", rodname, query[0].RodDurabillity, Username);   
-                    }
+                    Log.Warning("Rod aready exsist  {0}", rodname);
+                    return false;
                 }
             }
+            Log.Warning("Cannot insert rod! {0}", rodname);
             return false;
         }
 

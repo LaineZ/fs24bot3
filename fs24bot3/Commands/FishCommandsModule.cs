@@ -77,7 +77,7 @@ namespace fs24bot3
 
                 if (query.Any())
                 {
-                    Context.SendMessage(Context.Channel, $"🎣 {query[0].RodName} - Прочность: {query[0].RodDurabillity} Размер лески: {query[0].FishingLine} м Крутость поплавка: {query[0].HookSize}");
+                    Context.SendMessage(Context.Channel, $"🎣 {query[0].RodName} - Прочность: {query[0].RodDurabillity} Размер лески: {query[0].FishingLine} м Крутость поплавка: {query[0].HookSize} {Models.IrcColors.Blue}Цена: {query[0].Price}");
                 }
                 else
                 {
