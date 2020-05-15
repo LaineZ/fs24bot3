@@ -39,6 +39,14 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 15000, Sellable = true, Slug = "wall", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔫 Пистолет", Price = 55000, Sellable = true, Slug = "pistol", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Бомба", Price = 95000, Sellable = true, Slug = "bomb", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐍 Червь", Price = 370, Sellable = true, Slug = "worm", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐟 Рыба", Price = 390, Sellable = true, Slug = "fish", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐠 Тропическая рыба", Price = 1570, Sellable = true, Slug = "tfish", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍥 СТРАННАЯ РЫБА", Price = 10000, Sellable = true, Slug = "weirdfishes", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐡 Рыба-фугу", Price = 370, Sellable = true, Slug = "ffish", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎏 Верхоплавки", Price = 270, Sellable = true, Slug = "veriplace", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🦈 Щука", Price = 1000, Sellable = true, Slug = "pike", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐬 Сом", Price = 1200, Sellable = true, Slug = "som", Wrenchable = false });
             foreach (var item in ShopItems)
             {
                 var sqlItem = new Models.SQL.Item()
@@ -62,16 +70,29 @@ namespace fs24bot3
             Rand = new Random();
             // 🎣 add 2 new fishing rods
 
-            for (int i = 0; i < 2; i++)
+            try
             {
-                connect.Insert(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(5, 10)), Price = Rand.Next(1000, 25000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 55) });
+                for (int i = 0; i < 2; i++)
+                {
+                    connect.Insert(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(2, 5)), Price = Rand.Next(1000, 5000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 55) });
+                }
+                // add 4 new spots
+                for (int i = 0; i < 4; i++)
+                {
+                    connect.Insert(new Models.SQL.FishingNests() { Level = Rand.Next(1, 3), FishCount = Rand.Next(10, 100), FishingLineRequired = Rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(Rand.Next(2, 4))});
+                }
             }
+            catch (SQLiteException)
+            {
+                Log.Verbose("Fishing rod aready added!");
+            }
+
             Log.Information("done");
         }
 
         internal static double GetMoneyAvg(SQLiteConnection connection)
         {
-            List<int> money = new List<int>();   
+            List<int> money = new List<int>();
 
             var query = connection.Table<Models.SQL.UserStats>();
             foreach (var users in query)
@@ -119,7 +140,7 @@ namespace fs24bot3
                 {
                     UserOperations user = new UserOperations(users.Nick, connect);
                     user.AddItemToInv("money", user.GetUserInfo().Level);
-                    if (Rand.Next(0, 5) == 1 && user.RemItemFromInv("wall", 1)) 
+                    if (Rand.Next(0, 5) == 1 && user.RemItemFromInv("wall", 1))
                     {
                         Log.Information("Breaking wall for {0}", users.Nick);
                     }
@@ -142,7 +163,7 @@ namespace fs24bot3
                 }
             }
 
-          throw new Exception("Item with name: " + name + " not found!");
+            throw new Exception("Item with name: " + name + " not found!");
         }
     }
 }

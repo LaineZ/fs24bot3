@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using fs24bot3.Models;
 using Newtonsoft.Json;
 using Serilog;
 using SQLite;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace fs24bot3
@@ -27,7 +27,7 @@ namespace fs24bot3
 
         public bool IncreaseXp(int count)
         {
-            var query = Connect.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(Username));
+            var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username));
 
             foreach (var nick in query)
             {
@@ -54,6 +54,8 @@ namespace fs24bot3
 
         public bool AddItemToInv(string name, int count)
         {
+            count = (int)Math.Floor((decimal)count);
+
             try
             {
                 Connect.Execute("INSERT INTO Inventory VALUES(?, ?, ?)", Username, Shop.GetItem(name).Name, count);
@@ -70,8 +72,10 @@ namespace fs24bot3
 
         public bool RemItemFromInv(string name, int count)
         {
+            count = (int)Math.Floor((decimal)count);
+
             string itemname = Shop.GetItem(name).Name;
-            var query = Connect.Table<Models.SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemname)).ToList();
+            var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemname)).ToList();
             if (query.Count > 0)
             {
                 foreach (var item in query)
@@ -102,7 +106,7 @@ namespace fs24bot3
             // full qualified item name
             var itemFullName = Shop.GetItem(itemname).Name;
 
-            var query = Connect.Table<Models.SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName)).ToList();
+            var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName)).ToList();
             if (query.Count > 0)
             {
                 foreach (var item in query)
@@ -118,10 +122,10 @@ namespace fs24bot3
             return 0;
         }
 
-        public List<Models.SQL.Inventory> GetInventory()
+        public List<SQL.Inventory> GetInventory()
         {
-            List<Models.SQL.Inventory> inv = new List<Models.SQL.Inventory>();
-            var query = Connect.Table<Models.SQL.Inventory>().Where(v => v.Nick.Equals(Username)).ToList();
+            List<SQL.Inventory> inv = new List<SQL.Inventory>();
+            var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username)).ToList();
             if (query.Count > 0)
             {
                 foreach (var item in query)
@@ -139,9 +143,9 @@ namespace fs24bot3
             }
         }
 
-        public Models.SQL.UserStats GetUserInfo()
+        public SQL.UserStats GetUserInfo()
         {
-            var query = Connect.Table<Models.SQL.UserStats>().Where(v => v.Nick.Equals(Username)).ToList();
+            var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).ToList();
             if (query.Count > 0)
             {
                 return query[0];
@@ -152,13 +156,13 @@ namespace fs24bot3
             }
         }
 
-        public List<Models.SQL.Tag> GetUserTags()
+        public List<SQL.Tag> GetUserTags()
         {
-            List<Models.SQL.Tag> tags = new List<Models.SQL.Tag>();
-            var query = Connect.Table<Models.SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
+            List<SQL.Tag> tags = new List<SQL.Tag>();
+            var query = Connect.Table<SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
             if (query.Count > 0)
             {
-                var userNick = JsonConvert.DeserializeObject<List<Models.SQL.Tag>>(query[0].JsonTag);
+                var userNick = JsonConvert.DeserializeObject<List<SQL.Tag>>(query[0].JsonTag);
 
                 if (userNick == null)
                 {
@@ -181,17 +185,17 @@ namespace fs24bot3
         /// <summary>
         /// Gets user fishing rod
         /// </summary>
-        /// <returns>Models.SQL.UserFishingRods - if rod found, null if not found </returns>
+        /// <returns>SQL.UserFishingRods - if rod found, null if not found </returns>
 
-        public Models.SQL.UserFishingRods GetRod()
+        public SQL.UserFishingRods GetRod()
         {
-            var query = Connect.Table<Models.SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).ToList();
+            var query = Connect.Table<SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).ToList();
             return query.Count > 0 ? query[0] : null;
         }
 
-        public bool AddRod(string rodname)
+        public FishingError.RodErrors AddRod(string rodname)
         {
-            var query = Connect.Table<Models.SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
+            var query = Connect.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
 
             if (query.Any())
             {
@@ -200,17 +204,56 @@ namespace fs24bot3
                 if (userod == null)
                 {
                     Log.Verbose("INSERTING rod {0}", rodname);
-                    Connect.Insert(new Models.SQL.UserFishingRods { Username = Username, RodName = rodname, RodDurabillity = query[0].RodDurabillity });
-                    return true;
+                    Connect.Insert(new SQL.UserFishingRods { Username = Username, RodName = rodname, RodDurabillity = query[0].RodDurabillity });
+                    return FishingError.RodErrors.RodOk;
                 }
                 else
                 {
-                    Log.Warning("Rod aready exsist  {0}", rodname);
-                    return false;
+                    Log.Warning("Rod aready exsist {0}", rodname);
+                    return FishingError.RodErrors.RodAreadyExists;
                 }
             }
             Log.Warning("Cannot insert rod! {0}", rodname);
-            return false;
+            return FishingError.RodErrors.RodNotFound;
+        }
+
+
+        public (FishingError.RodErrors, SQL.FishingNests) SetNest(string nest)
+        {
+            var query = Connect.Table<SQL.FishingNests>().Where(v => v.Name.Equals(nest)).ToList();
+            if (query.Any())
+            {
+                if (GetRod() != null)
+                {
+                    Connect.Execute("UPDATE UserFishingRods SET Nest = ? WHERE Username = ?", nest, Username);
+                    return (FishingError.RodErrors.RodOk, query[0]);
+                }
+                else
+                {
+                    return (FishingError.RodErrors.RodNotFound, null);
+                }
+            }
+            else
+            {
+                return (FishingError.RodErrors.RodUnknownError, null);
+            }
+        }
+
+        public (FishingError.RodErrors, SQL.UserFishingRods) DelRod()
+        {
+            var userod = GetRod();
+
+            if (userod == null)
+            {
+                Log.Warning("Rod not found for {0}", Username);
+                return (FishingError.RodErrors.RodNotFound, null);
+            }
+            else
+            {
+                Log.Verbose("Rod removed for {0}", Username);
+                Connect.Execute("DELETE FROM UserFishingRods WHERE Username = ?", Username);
+                return (FishingError.RodErrors.RodOk, userod);
+            }
         }
 
 
@@ -225,11 +268,11 @@ namespace fs24bot3
                 return false;
             }
 
-            var query = Connect.Table<Models.SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
+            var query = Connect.Table<SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
 
             if (query.Count > 0)
             {
-                var userTags = JsonConvert.DeserializeObject<List<Models.SQL.Tag>>(query[0].JsonTag);
+                var userTags = JsonConvert.DeserializeObject<List<SQL.Tag>>(query[0].JsonTag);
 
                 bool append = false;
 
@@ -246,7 +289,7 @@ namespace fs24bot3
                 if (!append)
                 {
                     Log.Verbose("creaing {0} count: {1}", name, count);
-                    userTags.Add(new Models.SQL.Tag() { TagName = name, TagCount = count });
+                    userTags.Add(new SQL.Tag() { TagName = name, TagCount = count });
                 }
 
                 Connect.Execute("UPDATE Tags SET JsonTag = ? WHERE Nick = ?", JsonConvert.SerializeObject(userTags).ToString(), Username);
@@ -265,12 +308,12 @@ namespace fs24bot3
 
                 Log.Verbose("creaing {0} count: {1}", name, count);
 
-                var tagList = new List<Models.SQL.Tag>
+                var tagList = new List<SQL.Tag>
                 {
                     tagInfo.GetTagByName()
                 };
 
-                var user = new Models.SQL.Tags()
+                var user = new SQL.Tags()
                 {
                     Username = Username,
                     JsonTag = JsonConvert.SerializeObject(tagList).ToString()

@@ -96,6 +96,7 @@ namespace fs24bot3.Models
             public string Username { get; set; }
             public string RodName { get; set; }
             public int RodDurabillity { get; set; }
+            public string Nest { get; set; }
         }
 
         internal class FishingRods
@@ -106,6 +107,15 @@ namespace fs24bot3.Models
             public int FishingLine { get; set; }
             public int HookSize { get; set; }
             public int Price { get; set; }
+        }
+
+        internal class FishingNests
+        {
+            [PrimaryKey]
+            public string Name { get; set; }
+            public int Level { get; set; }
+            public int FishingLineRequired { get; set; }
+            public int FishCount { get; set; }
         }
     }
 }

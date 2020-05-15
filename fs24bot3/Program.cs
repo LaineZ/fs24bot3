@@ -48,6 +48,7 @@ namespace fs24bot3
             connection.CreateTable<SQL.Tags>();
             connection.CreateTable<SQL.Ignore>();
             connection.CreateTable<SQL.FishingRods>();
+            connection.CreateTable<SQL.FishingNests>();
             connection.CreateTable<SQL.UserFishingRods>();
             CacheConnection.CreateTable<SQL.HttpCache>();
             CacheConnection.Close();
@@ -68,24 +69,7 @@ namespace fs24bot3
             _service.AddModule<NetstalkingCommandsModule>();
             _service.AddModule<FishCommandsModule>();
 
-
-            Log.Information("Logging with vkapi...");
-            vk = new VkApi();
-
-            try
-            {
-            vk.Authorize(new ApiAuthParams
-            {
-                ApplicationId = ulong.Parse(Configuration.vkApiId),
-                Login = Configuration.vkLogin,
-                Password = Configuration.vkPassword,
-                Settings = Settings.All,
-            });
-            }
-            catch (Exception)
-            {
-                Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry...");
-            }
+            vk = new HttpTools().LogInVKAPI();
 
             using var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
             client.OnRawDataReceived += Client_OnRawDataReceived;

@@ -236,6 +236,7 @@ namespace fs24bot3
                 catch (Exception)
                 {
                     Log.Warning("VK Session is not invalid... retrying login");
+                    Context.VKApi = http.LogInVKAPI();
                     Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK: Попробуйте использовать команду ЕЩЕ РАЗ");
                 }
             }

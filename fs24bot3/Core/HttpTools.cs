@@ -9,6 +9,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using VkNet;
+using VkNet.Enums.Filters;
+using VkNet.Model;
 
 namespace fs24bot3
 {
@@ -140,6 +143,30 @@ namespace fs24bot3
             else
             {
                 throw new Exception("Invalid Data supplyed: " + responseString);
+            }
+        }
+
+
+        public VkApi LogInVKAPI()
+        {
+            Log.Information("Logging with vkapi...");
+            var vk = new VkApi();
+
+            try
+            {
+                vk.Authorize(new ApiAuthParams
+                {
+                    ApplicationId = ulong.Parse(Configuration.vkApiId),
+                    Login = Configuration.vkLogin,
+                    Password = Configuration.vkPassword,
+                    Settings = Settings.All,
+                });
+                return vk;
+            }
+            catch (Exception)
+            {
+                Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry...");
+                return vk;
             }
         }
 

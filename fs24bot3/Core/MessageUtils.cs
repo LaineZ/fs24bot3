@@ -37,11 +37,9 @@ namespace fs24bot3.Core
         }
 
 
-        public static string GenerateName(int len)
+        private static string GenerateBaseName(int len, string[] consonants, string[] vowels)
         {
             Random r = new Random();
-            string[] consonants = { "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "l", "n", "p", "q", "r", "s", "sh", "zh", "t", "v", "w", "x" };
-            string[] vowels = { "a", "e", "i", "o", "u", "ae", "y" };
             string Name = "";
             Name += consonants[r.Next(consonants.Length)].ToUpper();
             Name += vowels[r.Next(vowels.Length)];
@@ -57,6 +55,20 @@ namespace fs24bot3.Core
             return Name;
 
 
+        }
+
+
+        public static string GenerateName(int len)
+        {
+            return GenerateBaseName(len, new string[] { "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "l", "n", "p", "q", "r", "s", "sh", "zh", "t", "v", "w", "x" },
+            new string[] { "a", "e", "i", "o", "u", "ae", "y" });
+        }
+
+
+        public static string GenerateNameRus(int len)
+        {
+            return GenerateBaseName(len, new string[] { "б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "р", "с", "т", "ф", "х", "ц", "ч", "ш", "щ" },
+            new string[] { "а", "у", "о", "ы", "и", "э", "я", "ю", "ё", "е" });
         }
     }
 }

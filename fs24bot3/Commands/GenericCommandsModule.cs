@@ -209,6 +209,32 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
         }
 
+        [Command("genname")]
+        [Description("Генератор имен")]
+        public void GenName(bool isRussian = false, int maxlen = 10, int count = 10)
+        {
+            if (count <= 20 && maxlen <= 30)
+            {
+                List<string> names = new List<string>();
+                for (int i = 0; i < count; i++)
+                {
+                    if (!isRussian)
+                    {
+                        names.Add(Core.MessageUtils.GenerateName(maxlen));
+                    }
+                    else
+                    {
+                        names.Add(Core.MessageUtils.GenerateNameRus(maxlen));
+                    }
+                }
+                Context.SendMessage(Context.Channel, string.Join(",", names));
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, Models.IrcColors.Red + "ПРЕВЫШЕН ЛИМИТ!");
+            }
+        }
+
         [Command("midi")]
         [Description("Миди ноты")]
         public void Midi(string note, uint oct = 4)

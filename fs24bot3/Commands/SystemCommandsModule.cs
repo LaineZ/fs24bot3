@@ -1,4 +1,5 @@
-﻿using Qmmands;
+﻿using fs24bot3.Models;
+using Qmmands;
 using Serilog.Events;
 using SQLite;
 using System;
@@ -45,7 +46,7 @@ namespace fs24bot3
             switch (option)
             {
                 case "status":
-                    var query = cache.Table<Models.SQL.HttpCache>().Count();
+                    var query = cache.Table<SQL.HttpCache>().Count();
                     FileInfo fi = new FileInfo("fscache.sqlite");
                     Context.SendMessage(Context.Channel, $"Число записей: {query} Размер базы: {fi.Length / 1024} KB");
                     break;
@@ -64,7 +65,7 @@ namespace fs24bot3
             }
             catch (Exception e)
             {
-                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}Конфигурацию не удалось загрузить {e.Message}");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Конфигурацию не удалось загрузить {e.Message}");
             }
         }
 
@@ -74,6 +75,15 @@ namespace fs24bot3
         public void TestSplit(int count = 200, char ch = 'а')
         {
             Context.SendMessage(Context.Channel, new string(ch, count));
+        }
+
+        [Command("delalluserrods")]
+        [Checks.CheckAdmin]
+        public void RemoveAllRods()
+        {
+            Context.Connection.Execute("DROP TABLE UserFishingRods");
+            Context.Connection.CreateTable<SQL.UserFishingRods>();
+            Context.SendMessage(Context.Channel, "Удочки у пользователей удалены!");
         }
 
         [Command("give")]
@@ -146,7 +156,7 @@ namespace fs24bot3
                 case "add":
                     foreach (var item in usernames)
                     {
-                        var ignr = new Models.SQL.Ignore()
+                        var ignr = new SQL.Ignore()
                         {
                             Username = item
                         };

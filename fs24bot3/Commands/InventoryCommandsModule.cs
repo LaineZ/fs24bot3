@@ -165,7 +165,7 @@ namespace fs24bot3
         [Command("wrench")]
         [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
         [Remarks("Стройте укрепления чтобы не получить гаечный ключ в лицо!!!")]
-        public void Wrench(string username)
+        public void Wrench([Remainder] string username)
         {
             try
             {
@@ -196,11 +196,12 @@ namespace fs24bot3
                 if (rand.Next(0, 5 + userDest.CountItem("wall") - dmg) == 0 && username != Context.Message.From)
                 {
                     int indexItem = rand.Next(takeItems.Count);
-                    int itemCount = rand.Next(1, takeItems[indexItem].ItemCount / 10);
+                    int itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (10 - dmg));
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
-                    Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount}");
-                    if (rand.Next(0, 5) == 2) {
+                    user.IncreaseXp(100);
+                    Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +100 XP");
+                    if (rand.Next(0, 7) == 2) {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
                     }
                 }
@@ -211,7 +212,7 @@ namespace fs24bot3
             }
             catch (Core.Exceptions.UserNotFoundException)
             {
-                Context.SendMessage(Context.Channel, $"Вы кинули гаечные ключ в пользователя {username} при этом он потерял себя");
+                Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ в {username}!");
             }
         }
 
