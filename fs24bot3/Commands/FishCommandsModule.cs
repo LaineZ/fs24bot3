@@ -165,7 +165,8 @@ namespace fs24bot3
 
 
             Random rand = new Random();
-            if (rand.Next(rod.HookSize + rod.FishingLine, 100 - nest.FishCount + nest.Level) == 20)
+            // TODO: Switch to normal
+            if (rand.Next(0, 5) == 2)
             {
                 // TODO: Refactor
                 if (nest.Level == 1)

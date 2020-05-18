@@ -99,7 +99,7 @@ namespace fs24bot3
 
         [Command("testfishing")]
         [Checks.CheckAdmin]
-        public void TestFishing(int numberOfLaunches = 1000, int factor = 20)
+        public void TestFishing(int numberOfLaunches = 1000, int factor = 20, int baseFac = 10)
         {
             var user = new UserOperations(Context.Message.From, Context.Connection, Context);
             var userRod = user.GetRod();
@@ -126,7 +126,7 @@ namespace fs24bot3
             for (int i = 0; i < numberOfLaunches; i++)
             {
                 Random rand = new Random();
-                if (rand.Next(0, 10 - nest.FishCount + nest.Level - rod.HookSize - rod.FishingLine) == factor)
+                if (rand.Next(rod.HookSize, baseFac + nest.Level - rod.HookSize - rod.FishingLine - nest.FishCount) == factor)
                 {
                     catched++;
                 }

@@ -263,14 +263,13 @@ namespace fs24bot3
         }
 
         [Command("cmdinfo")]
-        [Checks.CheckAdmin]
-        [Description("Сменить владельца команды")]
+        [Description("Информация о команде")]
         public void CmdInfo(string command)
         {
-            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
+            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals("@" + command)).ToList();
             if (query.Count > 0)
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Blue + $"Команда @{query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов");
+                Context.SendMessage(Context.Channel, Models.IrcColors.Blue + $"Команда @{query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов, строк - {query[0].Output.Split("||").Length}");
                 if (query[0].Nick.Length <= 0)
                 {
                     Context.SendMessage(Context.Channel, Models.IrcColors.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");

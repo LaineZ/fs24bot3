@@ -75,7 +75,8 @@ namespace fs24bot3
                 {
                     Context.SendMessage(Context.Channel, $"{IrcColors.Red}{IrcColors.Bold}ОШИБКА:{IrcColors.Reset} Неверно задан тип");
                     Context.SendMessage(Context.Channel, $"{IrcColors.Red}{query}");
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]))}^ ожидалось число");
+                    // 5 is page: word offest (in positive side)
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]) + 5)}^ ожидалось число");
                     return;
                 }
             }
@@ -85,13 +86,18 @@ namespace fs24bot3
             {
                 Log.Verbose("Foring {0}", i);
                 if (searchResults.Count >= limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + i * 10);
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + (i * 10));
                 var items = Core.MailSearchDecoder.PerformDecode(response);
                 if (items == null) { continue; }
 
                 Log.Information("@MS: Antirobot-blocked?: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
 
-                if (!items.antirobot.blocked)
+                if (items.antirobot.blocked)
+                {
+                    errors = MailErrors.SearchError.Banned;
+                    break;
+                }
+                else
                 {
                     if (items.serp.results.Count > 0)
                     {
@@ -99,7 +105,7 @@ namespace fs24bot3
                         {
                             if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
-                                var excludeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x));
+                                var excludeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x) || item.passage.ToLower().Contains(x) || item.url.ToLower().Contains(x));
 
                                 if (fullmatch)
                                 {
@@ -132,15 +138,10 @@ namespace fs24bot3
                         break;
                     }
                 }
-                else
-                {
-                    errors = MailErrors.SearchError.Banned;
-                    break;
-                }
                 if (errors != MailErrors.SearchError.None) { break; }
             }
 
-            if (searchResults.Count <= 0)
+            if (searchResults.Count <= 0 && errors != MailErrors.SearchError.Banned)
             {
                 errors = MailErrors.SearchError.NotFound;
             }
@@ -176,7 +177,7 @@ namespace fs24bot3
 
                             string desc = doc.DocumentNode.InnerText;
 
-                            Context.SendMessage(Context.Channel, searchResult.ToString() + IrcColors.Green + " // " + item.url);
+                            Context.SendMessage(Context.Channel, $"{searchResult} {IrcColors.Green} // {item.url}");
                             if (limit <= 1) { Context.SendMessage(Context.Channel, desc); }
                         }
                     }
