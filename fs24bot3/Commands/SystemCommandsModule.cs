@@ -96,6 +96,48 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
         }
 
+
+        [Command("testfishing")]
+        [Checks.CheckAdmin]
+        public void TestFishing(int numberOfLaunches = 1000, int factor = 20)
+        {
+            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            var userRod = user.GetRod();
+
+            if (userRod == null)
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Удочка не найдена");
+                return;
+            }
+
+            if (userRod.Nest == null)
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Место рыбалки не установлено, используйте @nest");
+                return;
+            }
+
+            var rod = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(userRod.RodName)).ToList()[0];
+            var nest = Context.Connection.Table<SQL.FishingNests>().Where(v => v.Name.Equals(userRod.Nest)).ToList()[0];
+
+            int catched = 0;
+            int failed = 0;
+
+
+            for (int i = 0; i < numberOfLaunches; i++)
+            {
+                Random rand = new Random();
+                if (rand.Next(0, 10 - nest.FishCount + nest.Level - rod.HookSize - rod.FishingLine) == factor)
+                {
+                    catched++;
+                }
+                else
+                {
+                    failed++;
+                }
+            }
+            Context.SendMessage(Context.Channel, $"{IrcColors.Gray}ok {catched} failed {failed} {(catched / failed) * 100}%");
+        }
+
         [Command("xp")]
         [Checks.CheckAdmin]
         public void GiveXp(string username, int count)
@@ -104,6 +146,15 @@ namespace fs24bot3
 
             sql.IncreaseXp(count);
             Context.SendMessage(Context.Channel, "Вы установили " + count + " xp пользователю " + username);
+        }
+
+
+        [Command("restartdb", "reinitdb", "refresh", "db")]
+        [Checks.CheckAdmin]
+        public void ReinitDb()
+        {
+            Core.Database.InitDatabase(Context.Connection);
+            Context.SendMessage(Context.Channel, "База данных загружена!");
         }
 
         [Command("level")]

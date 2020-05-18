@@ -20,21 +20,17 @@ namespace fs24bot3
             public SQLiteConnection CacheConnection;
 
             public string Channel;
-
-            public SQLiteConnection CacheConnetion;
-
             public SQLiteConnection Connection;
             readonly HttpTools http = new HttpTools();
 
             public VkApi VKApi;
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, SQLiteConnection connectCache, VkApi api, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, VkApi api, IServiceProvider provider = null) : base(provider)
             {
                 Message = message;
                 Client = client;
                 Connection = connection;
-                CacheConnection = connectCache;
                 VKApi = api;
 
                 if (Message.To == Configuration.name)

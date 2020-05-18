@@ -20,7 +20,6 @@ namespace fs24bot3
     class Program
     {
         private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
-        private static SQLiteConnection CacheConnection;
         private static VkApi vk;
 
         static void Main(string[] args)
@@ -30,7 +29,6 @@ namespace fs24bot3
             .MinimumLevel.ControlledBy(Configuration.LoggerSw)
             .CreateLogger();
             Console.OutputEncoding = Encoding.Unicode;
-            Log.Information("fs24_bot3 has started");
 
             if (File.Exists("fscache.sqlite"))
             {
@@ -38,29 +36,8 @@ namespace fs24bot3
                 File.Delete("fscache.sqlite");
             }
 
-            CacheConnection = new SQLiteConnection("fscache.sqlite");
 
-            Configuration.LoadConfiguration();
-            connection.CreateTable<SQL.UserStats>();
-            connection.CreateTable<SQL.CustomUserCommands>();
-            connection.CreateTable<SQL.Tag>();
-            connection.CreateTable<SQL.Item>();
-            connection.CreateTable<SQL.Tags>();
-            connection.CreateTable<SQL.Ignore>();
-            connection.CreateTable<SQL.FishingRods>();
-            connection.CreateTable<SQL.FishingNests>();
-            connection.CreateTable<SQL.UserFishingRods>();
-            CacheConnection.CreateTable<SQL.HttpCache>();
-            CacheConnection.Close();
-            CacheConnection.Dispose();
-
-            Shop.Init(connection);
-
-            // creating ultimate inventory by @Fingercomp
-            connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
-            
-            connection.Execute("CREATE TABLE IF NOT EXISTS LyricsCache (track TEXT, artist TEXT, lyrics TEXT, addedby TEXT, PRIMARY KEY (track, artist))");
-
+            Core.Database.InitDatabase(connection);
 
             _service.AddModule<GenericCommandsModule>();
             _service.AddModule<SystemCommandModule>();
@@ -145,7 +122,7 @@ namespace fs24bot3
                     return;
 
                 DateTime firstTime = DateTime.Now;
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, CacheConnection, vk));
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, vk));
                 DateTime elapsed = DateTime.Now;
 
                 Log.Verbose("Perf: {0} ms", elapsed.Subtract(firstTime).TotalMilliseconds);

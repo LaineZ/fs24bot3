@@ -160,33 +160,34 @@ namespace fs24bot3
                 return;
             }
 
-            var rod = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(user.GetRod())).ToList()[0];
+            var rod = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(userRod.RodName)).ToList()[0];
             var nest = Context.Connection.Table<SQL.FishingNests>().Where(v => v.Name.Equals(userRod.Nest)).ToList()[0];
 
 
             Random rand = new Random();
-            if (rand.Next(rod.HookSize + rod.FishingLine + rod.RodDurabillity, nest.FishCount * nest.Level) == 5)
+            if (rand.Next(rod.HookSize + rod.FishingLine, 100 - nest.FishCount + nest.Level) == 20)
             {
+                // TODO: Refactor
                 if (nest.Level == 1)
                 {
                     string[] fish = { "fish", "veriplace", "ffish"};
                     string catched = fish[rand.Next(0, fish.Length)];
                     user.AddItemToInv(catched, 1);
-                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched)}!");
+                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
                     ;               }
                 if (nest.Level == 2)
                 {
                     string[] fish = { "fish", "veriplace", "ffish", "pike", "som"};
                     string catched = fish[rand.Next(0, fish.Length)];
                     user.AddItemToInv(catched, 1);
-                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched)}!");
+                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
                 }
                 if (nest.Level == 3)
                 {
                     string[] fish = { "fish", "veriplace", "ffish", "pike", "som", "weirdfishes", "worm", "wrench", "wrenchadv", "dj", "pistol" };
                     string catched = fish[rand.Next(0, fish.Length)];
                     user.AddItemToInv(catched, rand.Next(1, 2));
-                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched)}!");
+                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
                 }
             }
             else
@@ -194,7 +195,7 @@ namespace fs24bot3
                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Рыба сорвалась!");
             }
 
-            Context.Connection.Update(rod.RodDurabillity--);
+            Context.Connection.Execute("UPDATE UserFishingRods SET RodDurabillity = RodDurabillity - 1 WHERE Username = ?", Context.Message.From);
         }
 
         [Command("rodinfo")]
