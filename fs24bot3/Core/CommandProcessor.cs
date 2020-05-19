@@ -64,7 +64,7 @@ namespace fs24bot3
                     count++;
                     if (count > 4)
                     {
-                        string link = await http.UploadToPastebin(content);
+                        string link = await http.UploadToTrashbin(content, "addplain");
                         await Client.SendAsync(new PrivMsgMessage(this.Channel, this.Message.From + ": Полный вывод здесь: " + link));
                         break;
                     }

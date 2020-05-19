@@ -73,14 +73,14 @@ namespace fs24bot3
             return responseText;
         }
 
-        public async Task<string> UploadToTrashbin(string data)
+        public async Task<string> UploadToTrashbin(string data, string route = "add")
         {
             try
             {
                 HttpClient client = new HttpClient();
                 HttpContent c = new StringContent(data, Encoding.UTF8);
 
-                var response = await client.PostAsync(Configuration.trashbinUrl + "/add", c);
+                var response = await client.PostAsync(Configuration.trashbinUrl + "/" + route, c);
 
                 var responseString = await response.Content.ReadAsStringAsync();
 
