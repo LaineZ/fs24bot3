@@ -28,15 +28,9 @@ namespace fs24bot3
                 string.Join("\n", shop.Select(x => $"<p style=\"font-family: 'sans-serif';\">[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
                 "<h3>Кастом команды:</h3>" +
                 string.Join("\n", customCommands.Select(x => $"<p>{x.Command}</p>"));
-            try
-            {
-                string link = await http.UploadToTrashbin(commandsOutput);
-                Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
-            }
-            catch (NullReferenceException)
-            {
-                Context.SendMessage(Context.Channel, "Да блин чё такое link снова null!");
-            }
+
+            string link = await http.UploadToTrashbin(commandsOutput);
+            Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
         }
 
         [Command("helpcmd")]

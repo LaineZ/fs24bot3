@@ -4,6 +4,7 @@ using Serilog.Events;
 using SQLite;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace fs24bot3
 {
@@ -195,6 +196,13 @@ namespace fs24bot3
             }
             Context.Connection.Execute("VACUUM;");
             Context.SendMessage(Context.Channel, "Данные удалены!");
+        }
+
+        [Command("view")]
+        [Checks.CheckAdmin]
+        public void ViewUsers()
+        {
+            Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().ToList().Select(x => $"{x.Nick}")));
         }
 
         [Command("ignore")]
