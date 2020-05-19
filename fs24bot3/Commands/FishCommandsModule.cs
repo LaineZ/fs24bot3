@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Qmmands;
+﻿using Qmmands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +112,7 @@ namespace fs24bot3
                             Context.SendMessage(Context.Channel, $"Установлено место рыбалки {nestname}");
                             break;
                         default:
-                            Context.SendMessage(Context.Channel, $"{IrcColors.Red}Чёто не так причина: {state.Item1.ToString()}... =( =(");
+                            Context.SendMessage(Context.Channel, $"{IrcColors.Red}Чёто не так причина: {state.Item1}... =( =(");
                             break;
                     }
                 }

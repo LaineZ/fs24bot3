@@ -202,7 +202,7 @@ namespace fs24bot3
         [Checks.CheckAdmin]
         public void ViewUsers()
         {
-            Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().ToList().Select(x => $"{x.Nick}")));
+            Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().ToList()));
         }
 
         [Command("ignore")]

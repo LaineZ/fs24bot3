@@ -23,7 +23,7 @@ namespace fs24bot3
             string commandsOutput;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
             var customCommands = Context.Connection.Table<Models.SQL.CustomUserCommands>().ToList();
-            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"<p style=\"font-family: 'sans-serif';\">{string.Join(' ', x.Checks)} <strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><pre>{x.Description}</pre><hr>"))
+            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"<p style=\"font-family: 'sans-serif';\"><strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><pre>{x.Description}</pre><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"))
                 + "<h3>Магазин:</h3>" +
                 string.Join("\n", shop.Select(x => $"<p style=\"font-family: 'sans-serif';\">[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
                 "<h3>Кастом команды:</h3>" +
@@ -102,31 +102,33 @@ namespace fs24bot3
         public void CustomCmdRegister(string command, [Remainder] string output)
         {
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection, Context);
-            if (usr.RemItemFromInv("money", 10000))
+            bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
+
+            if (!commandIntenral)
             {
-                var commandIntenral = Service.GetAllCommands().Where(x => x.Name.Equals(command));
-                if (!commandIntenral.Any())
+                var commandInsert = new Models.SQL.CustomUserCommands()
                 {
-                    var commandInsert = new Models.SQL.CustomUserCommands()
-                    {
-                        Command = "@" + command,
-                        Output = output,
-                        Nick = Context.Message.From,
-                    };
-                    try
+                    Command = "@" + command,
+                    Output = output,
+                    Nick = Context.Message.From,
+                };
+                try
+                {
+                    if (usr.RemItemFromInv("money", 8000))
                     {
                         Context.Connection.Insert(commandInsert);
                         Context.SendMessage(Context.Channel, "Команда успешно создана");
                     }
-                    catch (SQLiteException)
-                    {
-                        Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
-                    }
                 }
-                else
+                catch (SQLiteException)
                 {
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Данная команда уже суещствует в fs24_bot");
+                    usr.AddItemToInv("money", 8000);
+                    Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
                 }
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}Данная команда уже суещствует в fs24_bot!");
             }
         }
 
