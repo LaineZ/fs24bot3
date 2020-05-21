@@ -39,7 +39,7 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 15000, Sellable = true, Slug = "wall", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔫 Пистолет", Price = 55000, Sellable = true, Slug = "pistol", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Бомба", Price = 95000, Sellable = true, Slug = "bomb", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐍 Червь", Price = 370, Sellable = true, Slug = "worm", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐍 Червь", Price = 50, Sellable = true, Slug = "worm", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐟 Рыба", Price = 390, Sellable = true, Slug = "fish", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐠 Тропическая рыба", Price = 1570, Sellable = true, Slug = "tfish", Wrenchable = false });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍥 СТРАННАЯ РЫБА", Price = 10000, Sellable = true, Slug = "weirdfishes", Wrenchable = false });
@@ -127,7 +127,7 @@ namespace fs24bot3
                     else
                     {
                         //Log.Verbose("Incresing price for {0}", shopItem.Name);
-                        shopItem.Price += Rand.Next(1, 5);
+                        shopItem.Price += Rand.Next(1, 2);
                     }
                 }
             }

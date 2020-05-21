@@ -174,7 +174,7 @@ namespace fs24bot3
 
                     string lyricsOut = await lyrics.GetLyrics();
 
-                    if (user.RemItemFromInv("money", 2000 + lyricsOut.Length))
+                    if (user.RemItemFromInv("money", 1200 + lyricsOut.Length))
                     {
                         var resultTranslated = await Core.Transalator.Translate("ru", lyricsOut);
 
@@ -208,7 +208,7 @@ namespace fs24bot3
                     string lyricsOut = await lyrics.GetLyrics();
 
 
-                    if (user.RemItemFromInv("beer", (int)Math.Floor((decimal)lyricsOut.Length / 20)))
+                    if (user.RemItemFromInv("beer", 1))
                     {
                         foreach (string lang in new string[] { "ru", "ro-ru", "de-ru", "mn-ru", "ky-ru" })
                         {
