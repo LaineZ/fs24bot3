@@ -262,10 +262,12 @@ namespace fs24bot3
         [Description("Информация о команде")]
         public void CmdInfo(string command)
         {
-            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals("@" + command)).ToList();
+            // a small workaround for this exception An exception occurred while executing cmdinfo.: `Cannot get SQL for: Add`
+            command = "@" + command;
+            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
             if (query.Count > 0)
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Blue + $"Команда @{query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов, строк - {query[0].Output.Split("||").Length}");
+                Context.SendMessage(Context.Channel, Models.IrcColors.Blue + $"Команда {query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов, строк - {query[0].Output.Split("||").Length}");
                 if (query[0].Nick.Length <= 0)
                 {
                     Context.SendMessage(Context.Channel, Models.IrcColors.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");
