@@ -43,6 +43,7 @@ namespace fs24bot3
                 user.AddItemToInv(itemname, count);
                 Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.GetItem(itemname).Name + " за " + buyprice + " денег");
                 Shop.GetItem(itemname).Price += 5;
+                Shop.Buys++;
             }
             else
             {
@@ -62,6 +63,7 @@ namespace fs24bot3
                 int sellprice = (int)Math.Floor((decimal)(Shop.GetItem(itemname).Price * count) / 2);
                 user.AddItemToInv("money", sellprice);
                 Context.SendMessage(Context.Channel, "Вы успешно продали " + Shop.GetItem(itemname).Name + " за " + sellprice + " денег");
+                Shop.Sells++;
             }
             else
             {

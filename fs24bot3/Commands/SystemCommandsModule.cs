@@ -18,7 +18,7 @@ namespace fs24bot3
         public void Version()
         {
             var os = Environment.OSVersion;
-            Context.SendMessage(Context.Channel, String.Format(".NET Core: {0} Система: {1}",
+            Context.SendMessage(Context.Channel, string.Format(".NET Core: {0} Система: {1}",
                 Environment.Version.ToString(), os.VersionString));
         }
 
@@ -26,7 +26,7 @@ namespace fs24bot3
         [Description("Макроэкономические показатели")]
         public void Economy()
         {
-            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Частота выполнения Shop.Update() {Shop.Tickrate} ms");
+            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Период выполнения Shop.Update() {Shop.Tickrate} ms Покупок/Продаж {Shop.Buys}/{Shop.Sells}");
         }
 
         [Command("gc")]

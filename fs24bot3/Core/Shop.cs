@@ -12,6 +12,8 @@ namespace fs24bot3
     {
         public static List<Models.ItemInventory.Shop> ShopItems = new List<Models.ItemInventory.Shop>();
         public static int PaydaysCount;
+        public static int Sells;
+        public static int Buys;
 
         /// <summary>
         /// Speed of the finiacial operations defalut = 2000 ms
@@ -119,7 +121,7 @@ namespace fs24bot3
                 int check = Rand.Next(0, 10);
                 if (check == 5)
                 {
-                    if (shopItem.Price >= Rand.Next(1000, 100500))
+                    if (shopItem.Price >= Rand.Next(5800, 100500))
                     {
                         Log.Verbose("Descreaseing price for {0}", shopItem.Name);
                         shopItem.Price -= Rand.Next(1, 5);

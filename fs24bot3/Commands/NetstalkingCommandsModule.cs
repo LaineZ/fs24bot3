@@ -158,7 +158,7 @@ namespace fs24bot3
                     Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
                     break;
                 default:
-                    if (errors == MailErrors.SearchError.None && searchResults.Count > 0)
+                    if (searchResults.Count > 0)
                     {
                         foreach (var item in searchResults.Take(limit))
                         {

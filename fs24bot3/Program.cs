@@ -159,7 +159,7 @@ namespace fs24bot3
 
                             if (cmds.Any())
                             {
-                                await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Команда @{cmdName} не найдена, возможно вы хотели написать это: `{String.Join(" @", cmds.Select(x => x.Name))}`"));
+                                await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Команда @{cmdName} не найдена, возможно вы хотели написать это: `{string.Join(" @", cmds.Select(x => x.Name))}`"));
                             }
                         }
                         break;

@@ -128,7 +128,7 @@ namespace fs24bot3
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}Данная команда уже суещствует в fs24_bot!");
+                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}Данная команда уже существует в fs24_bot!");
             }
         }
 
@@ -240,7 +240,7 @@ namespace fs24bot3
             if (uint.TryParse(note, out uint initialNote))
             {
                 uint octave = (initialNote / 12) - 1;
-                uint noteIndex = (initialNote % 12);
+                uint noteIndex = initialNote % 12;
                 string noteName = noteString[noteIndex];
                 Context.SendMessage(Context.Channel, $"MIDI: {note} = {Models.IrcColors.Reset}{noteName}{octave}");
             }
