@@ -52,6 +52,10 @@ namespace fs24bot3
                         string[] options = queryOptions[i].Split(":");
                         maxpage = int.Parse(options[1]);
                     }
+                    if (queryOptions[i].Contains("commongarbage:off"))
+                    {
+                        exclude.AddRange(new List<string>() { "mp3", "музыку", "двач", "2ch" } );
+                    }
                     // exclude
                     else if (queryOptions[i].Contains("-"))
                     {

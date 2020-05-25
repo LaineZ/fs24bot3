@@ -90,6 +90,13 @@ namespace fs24bot3.Models
             public string Output { get; set; }
         }
 
+        internal class UserSearchIgnores
+        {
+            [PrimaryKey]
+            public string Username { get; set; }
+            public string Urls { get; set; }
+        }
+
         internal class UserFishingRods
         {
             [PrimaryKey]

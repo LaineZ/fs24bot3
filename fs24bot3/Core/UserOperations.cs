@@ -217,6 +217,41 @@ namespace fs24bot3
             return FishingError.RodErrors.RodNotFound;
         }
 
+        public string[] GetGarbageSites()
+        {
+            var query = Connect.Table<SQL.UserSearchIgnores>().Where(v => v.Username.Equals(Username)).ToList();
+            if (query.Any())
+            {
+                return query[0].Urls.Split("\n");
+            }
+            return null;
+        }
+
+        public bool SetGarbageSites(string siteName, bool isDelete = false)
+        {
+            string[] sites = GetGarbageSites();
+            if (!isDelete)
+            {
+                if (sites == null)
+                {
+                    var site = new SQL.UserSearchIgnores()
+                    {
+                        Username = Username,
+                        Urls = siteName,
+                    };
+
+                    Connect.Insert(site);
+                    return true;
+                }
+                else
+                {
+                    sites[sites.Length + 1] = siteName;
+                    Connect.Execute("UPDATE UserFishingRods SET Urls = ? WHERE Username = ?", string.Join("\n", sites), Username);
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public (FishingError.RodErrors, SQL.FishingNests) SetNest(string nest)
         {
