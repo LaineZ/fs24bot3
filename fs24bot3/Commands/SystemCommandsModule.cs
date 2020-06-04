@@ -187,12 +187,17 @@ namespace fs24bot3
 
         [Command("delete")]
         [Checks.CheckAdmin]
-        public void DeleteUser(string users)
+        public void DeleteUser(string users, int level = 1)
         {
-            foreach (var user in users.Split(" "))
+            if (users.Length > 0)
             {
-                Context.Connection.Execute("DELETE FROM UserStats WHERE Nick = ?", user);   
-                Context.Connection.Execute("DELETE FROM Inventory WHERE Nick = ?", user);
+                foreach (var user in users.Split(" "))
+                {
+                    Context.Connection.Execute("DELETE FROM UserStats WHERE Nick = ?", user);   
+                    Context.Connection.Execute("DELETE FROM Inventory WHERE Nick = ?", user);
+                }
+            } else {
+                Context.Connection.Execute("DELETE FROM UserStats WHERE Level = ?", level);
             }
             Context.Connection.Execute("VACUUM;");
             Context.SendMessage(Context.Channel, "Данные удалены!");
@@ -202,7 +207,7 @@ namespace fs24bot3
         [Checks.CheckAdmin]
         public void ViewUsers()
         {
-            Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().ToList()));
+            Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
         }
 
         [Command("ignore")]

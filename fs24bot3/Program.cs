@@ -60,7 +60,7 @@ namespace fs24bot3
                 Log.Information("Thread started!");
                 while (true)
                 {
-                    Thread.Sleep(Shop.Tickrate) ;
+                    Thread.Sleep(Shop.Tickrate);
                     Shop.Update(connection);
                 }
             }).Start();
