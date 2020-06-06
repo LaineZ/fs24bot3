@@ -54,7 +54,7 @@ namespace fs24bot3
                     }
                     if (queryOptions[i].Contains("commongarbage:off"))
                     {
-                        exclude.AddRange(new List<string>() { "mp3", "музыку", "двач", "2ch" } );
+                        exclude.AddRange(new List<string>() { "mp3", "музыку", "двач", "2ch" });
                     }
                     // exclude
                     else if (queryOptions[i].Contains("-"))

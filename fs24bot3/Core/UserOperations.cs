@@ -4,6 +4,7 @@ using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace fs24bot3
@@ -27,7 +28,11 @@ namespace fs24bot3
 
         public bool IncreaseXp(int count)
         {
+            var start = Stopwatch.StartNew();
             var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username));
+
+            start.Stop();
+            Log.Information("{0} ms", start.ElapsedMilliseconds);
 
             foreach (var nick in query)
             {
@@ -59,13 +64,13 @@ namespace fs24bot3
             try
             {
                 Connect.Execute("INSERT INTO Inventory VALUES(?, ?, ?)", Username, Shop.GetItem(name).Name, count);
-                Log.Verbose("Inserting items");
+                //Log.Verbose("Inserting items");
                 return true;
             }
             catch (SQLiteException)
             {
                 Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, Shop.GetItem(name).Name, Username);
-                Log.Verbose("Updating items {0}", name);
+                //Log.Verbose("Updating items {0}", name);
                 return true;
             }
         }
@@ -76,6 +81,7 @@ namespace fs24bot3
 
             string itemname = Shop.GetItem(name).Name;
             var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemname)).ToList();
+            
             if (query.Count > 0)
             {
                 foreach (var item in query)

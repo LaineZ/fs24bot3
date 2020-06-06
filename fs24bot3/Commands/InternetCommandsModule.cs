@@ -113,7 +113,7 @@ namespace fs24bot3
             {
                 var splitted = text.Split(" ");
 
-                if (splitted.Length > 15)
+                if (splitted.Length > 35)
                 {
                     Context.SendMessage(Context.Channel, $"{IrcColors.Royal}У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
                 }

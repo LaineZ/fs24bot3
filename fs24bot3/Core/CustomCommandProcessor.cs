@@ -19,6 +19,7 @@ namespace fs24bot3.Core
                 string cmdname = argsArray[0];
                 //Log.Verbose("Issused command: {0}", cmdname);
                 var query = connect.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
+                
                 foreach (var cmd in query)
                 {
                     //Log.Verbose("Command found: {0}", cmd.Command);
@@ -46,7 +47,7 @@ namespace fs24bot3.Core
                     StringBuilder argsFinal = new StringBuilder(outputs[index]);
                     argsFinal.Replace("#USERINPUT", argsString);
                     argsFinal.Replace("#USERNAME", message.From);
-                    await client.SendAsync(new PrivMsgMessage (message.To, argsFinal.ToString()));
+                    await client.SendAsync(new PrivMsgMessage(message.To, argsFinal.ToString()));
                     return true;
                 }
             }

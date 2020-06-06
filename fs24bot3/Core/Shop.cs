@@ -16,7 +16,7 @@ namespace fs24bot3
         public static int Buys;
 
         /// <summary>
-        /// Speed of the finiacial operations defalut = 2000 ms
+        /// Speed of the finiacial operations defalut = 5000 ms
         /// </summary>
         public static int Tickrate = 5000;
         /// <summary>

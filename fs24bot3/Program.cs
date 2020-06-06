@@ -49,6 +49,7 @@ namespace fs24bot3
             vk = new HttpTools().LogInVKAPI();
 
             using var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
+            
             client.OnRawDataReceived += Client_OnRawDataReceived;
             client.EventHub.PrivMsg += EventHub_PrivMsg;
             client.EventHub.RplWelcome += Client_OnWelcome;
@@ -148,20 +149,7 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
                         break;
                     case CommandNotFoundResult err:
-                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
-                        if (!customSuccess)
-                        {
-                            // TODO: FIX
-                            var cmdName = e.IRCMessage.Message.TrimEnd().Split(" ")[0].Replace("@", "");
-                            var cmdOutput = new StringBuilder();
-
-                            var cmds = _service.GetAllCommands().ToList().FindAll(x => x.Equals(x.Aliases.ToList().Find(a => a.Contains(cmdName))));
-
-                            if (cmds.Any())
-                            {
-                                await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Команда @{cmdName} не найдена, возможно вы хотели написать это: `{string.Join(" @", cmds.Select(x => x.Name))}`"));
-                            }
-                        }
+                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);ч
                         break;
                     case ExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: `{err.Exception.Message}`"));
