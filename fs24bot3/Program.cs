@@ -149,7 +149,7 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
                         break;
                     case CommandNotFoundResult err:
-                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);ч
+                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
                         break;
                     case ExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: `{err.Exception.Message}`"));
