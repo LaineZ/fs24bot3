@@ -333,7 +333,7 @@ namespace fs24bot3
                     userTags.Add(new SQL.Tag() { TagName = name, TagCount = count });
                 }
 
-                Connect.Execute("UPDATE Tags SET JsonTag = ? WHERE Nick = ?", JsonConvert.SerializeObject(userTags).ToString(), Username);
+                Connect.Execute("UPDATE Tags SET JsonTag = ? WHERE Username = ?", JsonConvert.SerializeObject(userTags).ToString(), Username);
                 return true;
             }
             else
