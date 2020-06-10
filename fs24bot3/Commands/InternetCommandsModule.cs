@@ -29,21 +29,28 @@ namespace fs24bot3
                 script = code
             };
 
-            HttpContent c = new StringContent(JsonConvert.SerializeObject(codeData), Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("https://api.jdoodle.com/v1/execute", c);
-            var responseString = await response.Content.ReadAsStringAsync();
-            var jsonOutput = JsonConvert.DeserializeObject<APIExec.Output>(responseString);
-
-
-            if (jsonOutput.output != null)
+            try
             {
-                Context.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
-                Context.SendMultiLineMessage(jsonOutput.output);
+                HttpContent c = new StringContent(JsonConvert.SerializeObject(codeData), Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync("https://api.jdoodle.com/v1/execute", c);
+                var responseString = await response.Content.ReadAsStringAsync();
+                var jsonOutput = JsonConvert.DeserializeObject<APIExec.Output>(responseString);
+
+
+                if (jsonOutput.output != null)
+                {
+                    Context.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
+                    Context.SendMultiLineMessage(jsonOutput.output);
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+                }
             }
-            else
+            catch (HttpRequestException)
             {
-                Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не работает короче, блин........");
             }
         }
 
