@@ -36,7 +36,6 @@ namespace fs24bot3
                 File.Delete("fscache.sqlite");
             }
 
-
             Core.Database.InitDatabase(connection);
 
             _service.AddModule<GenericCommandsModule>();

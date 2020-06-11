@@ -185,6 +185,14 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, $"Установлен уровень лога `{level}`");
         }
 
+        [Command("sqlt")]
+        [Checks.CheckAdmin]
+        public void LoggerLevel(bool enabled = true)
+        {
+            Context.Connection.Trace = enabled;
+            Context.SendMessage(Context.Channel, $"SQL логирование `{enabled}`");
+        }
+
         [Command("delete")]
         [Checks.CheckAdmin]
         public void DeleteUser(string users, int level = 1)

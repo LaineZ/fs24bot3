@@ -6,6 +6,7 @@ using NetIRC.Messages;
 using NetIRC.Connection;
 using Serilog;
 using System.Threading.Tasks;
+using fs24bot3.Models;
 
 namespace fs24bot3.Core
 {
@@ -19,7 +20,8 @@ namespace fs24bot3.Core
                 string cmdname = argsArray[0];
                 //Log.Verbose("Issused command: {0}", cmdname);
                 var query = connect.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
-                
+                Random random = new Random();
+
                 foreach (var cmd in query)
                 {
                     //Log.Verbose("Command found: {0}", cmd.Command);
@@ -40,13 +42,16 @@ namespace fs24bot3.Core
                         }
                     else
                     {
-                        Random random = new Random();
                         index = (uint)random.Next(outputs.Length);
                     }
 
                     StringBuilder argsFinal = new StringBuilder(outputs[index]);
+                    var arr = connect.Table<SQL.UserStats>().ToList();
+                    var nick = MessageUtils.AntiHightlight(arr[random.Next(0, arr.Count - 1)].Nick);
+
                     argsFinal.Replace("#USERINPUT", argsString);
                     argsFinal.Replace("#USERNAME", message.From);
+                    argsFinal.Replace("#RNDNICK", nick);
                     await client.SendAsync(new PrivMsgMessage(message.To, argsFinal.ToString()));
                     return true;
                 }

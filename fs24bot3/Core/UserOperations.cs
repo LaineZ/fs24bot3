@@ -82,7 +82,7 @@ namespace fs24bot3
             string itemname = Shop.GetItem(name).Name;
             var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemname)).ToList();
             
-            if (query.Count > 0)
+            if (query.Any())
             {
                 foreach (var item in query)
                 {
@@ -113,13 +113,13 @@ namespace fs24bot3
             var itemFullName = Shop.GetItem(itemname).Name;
 
             var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName)).ToList();
-            if (query.Count > 0)
+            if (query.Any())
             {
                 foreach (var item in query)
                 {
                     if (item.Item == itemFullName)
                     {
-                        Log.Verbose("Counting item {0} x{1}", itemFullName, item.ItemCount);
+                        //Log.Verbose("Counting item {0} x{1}", itemFullName, item.ItemCount);
                         return item.ItemCount;
                     }
                 }
@@ -132,11 +132,11 @@ namespace fs24bot3
         {
             List<SQL.Inventory> inv = new List<SQL.Inventory>();
             var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username)).ToList();
-            if (query.Count > 0)
+            if (query.Any())
             {
                 foreach (var item in query)
                 {
-                    Log.Verbose("INV: Adding {0} with count {1}", item.Item, item.ItemCount);
+                    //Log.Verbose("INV: Adding {0} with count {1}", item.Item, item.ItemCount);
                     inv.Add(item);
                 }
                 Log.Verbose("Inventory queried sucessfully!");
@@ -152,7 +152,7 @@ namespace fs24bot3
         public SQL.UserStats GetUserInfo()
         {
             var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).ToList();
-            if (query.Count > 0)
+            if (query.Any())
             {
                 return query[0];
             }
@@ -166,7 +166,7 @@ namespace fs24bot3
         {
             List<SQL.Tag> tags = new List<SQL.Tag>();
             var query = Connect.Table<SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
-            if (query.Count > 0)
+            if (query.Any())
             {
                 var userNick = JsonConvert.DeserializeObject<List<SQL.Tag>>(query[0].JsonTag);
 
@@ -196,7 +196,7 @@ namespace fs24bot3
         public SQL.UserFishingRods GetRod()
         {
             var query = Connect.Table<SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).ToList();
-            return query.Count > 0 ? query[0] : null;
+            return query.Any() ? query[0] : null;
         }
 
         public FishingError.RodErrors AddRod(string rodname)
@@ -209,7 +209,7 @@ namespace fs24bot3
 
                 if (userod == null)
                 {
-                    Log.Verbose("INSERTING rod {0}", rodname);
+                    //Log.Verbose("INSERTING rod {0}", rodname);
                     Connect.Insert(new SQL.UserFishingRods { Username = Username, RodName = rodname, RodDurabillity = query[0].RodDurabillity });
                     return FishingError.RodErrors.RodOk;
                 }
@@ -311,7 +311,7 @@ namespace fs24bot3
 
             var query = Connect.Table<SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
 
-            if (query.Count > 0)
+            if (query.Any())
             {
                 var userTags = JsonConvert.DeserializeObject<List<SQL.Tag>>(query[0].JsonTag);
 
@@ -322,14 +322,14 @@ namespace fs24bot3
                     if (items.TagName == name)
                     {
                         items.TagCount += count;
-                        Log.Verbose("Appending {0} count: {1}", items.TagName, count);
+                        //Log.Verbose("Appending {0} count: {1}", items.TagName, count);
                         append = true;
                         break;
                     }
                 }
                 if (!append)
                 {
-                    Log.Verbose("creaing {0} count: {1}", name, count);
+                    //Log.Verbose("creaing {0} count: {1}", name, count);
                     userTags.Add(new SQL.Tag() { TagName = name, TagCount = count });
                 }
 

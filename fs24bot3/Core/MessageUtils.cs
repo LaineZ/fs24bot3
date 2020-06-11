@@ -70,5 +70,27 @@ namespace fs24bot3.Core
             return GenerateBaseName(len, new string[] { "б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "р", "с", "т", "ф", "х", "ц", "ч", "ш", "щ" },
             new string[] { "а", "у", "о", "ы", "и", "э", "я", "ю", "ё", "е" });
         }
+
+        public static string AntiHightlight(string input)
+        {
+            StringBuilder inputBuilder = new StringBuilder(input);
+
+            inputBuilder.Replace('а', 'a'); 
+            inputBuilder.Replace('А', 'A'); 
+            inputBuilder.Replace('Н', 'H'); 
+            inputBuilder.Replace('В', 'B'); 
+            inputBuilder.Replace('х', 'x'); 
+            inputBuilder.Replace('Х', 'X'); 
+            inputBuilder.Replace('E', 'E'); 
+            inputBuilder.Replace('р', 'p'); 
+            inputBuilder.Replace('М', 'M');
+            inputBuilder.Replace('К', 'K'); 
+            inputBuilder.Replace('Т', 'T'); 
+            inputBuilder.Replace('В', 'B'); 
+            inputBuilder.Replace('с', 'c'); 
+            inputBuilder.Replace('С', 'C');
+
+            return inputBuilder.ToString();
+        }
     }
 }
