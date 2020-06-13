@@ -12,6 +12,9 @@ namespace fs24bot3.Core
 {
     public static class CustomCommandProcessor
     {
+        private static List<string> Variants = new List<string>();
+        private static string LastCmd;
+
         public async static Task<bool> ProcessCmd(PrivMsgMessage message, NetIRC.Client client, SQLite.SQLiteConnection connect)
         {
             if (message.Message.StartsWith("@"))
@@ -19,8 +22,13 @@ namespace fs24bot3.Core
                 var argsArray = message.Message.Split(" ").ToList();
                 string cmdname = argsArray[0];
                 //Log.Verbose("Issused command: {0}", cmdname);
-                var query = connect.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
-                Random random = new Random();
+                var query = connect.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
+
+                if (LastCmd != cmdname)
+                {
+                    Variants.Clear();
+                    LastCmd = cmdname;
+                }
 
                 foreach (var cmd in query)
                 {
@@ -29,23 +37,41 @@ namespace fs24bot3.Core
                     string argsString = string.Join(" ", argsArray);
 
                     string[] outputs = cmd.Output.Split("||");
-                    uint index = 0;
+                    int index = 0;
 
-                    if (uint.TryParse(argsString, out uint result))
+                    if (!Variants.Any())
                     {
-                        if (result >= outputs.Length)
+                        Variants.AddRange(outputs);
+                    }
+
+                    Random random = new Random();
+
+                    if (int.TryParse(argsString, out int result))
+                    {
+                        if (result >= Variants.Count || result < 0)
                         {
-                            await client.SendAsync(new PrivMsgMessage (message.To, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
+                            await client.SendAsync(new PrivMsgMessage (message.To, $"Учтите в следующий раз, здесь максимум: {Variants.Count}, поэтому показано рандомное сообщение"));
+                            index = random.Next(Variants.Count);
                         }
                         else
                             index = result;
                         }
                     else
                     {
-                        index = (uint)random.Next(outputs.Length);
+                        if (argsString.Any())
+                        {
+                            Log.Verbose("Args string is not empty!");
+                            random = new Random(argsString.GetHashCode());
+                        }
+                        else
+                        {
+                            Variants.RemoveAt(index);
+                        }
+                        index = random.Next(Variants.Count);
                     }
 
-                    StringBuilder argsFinal = new StringBuilder(outputs[index]);
+                    StringBuilder argsFinal = new StringBuilder(Variants[index]);
+
                     var arr = connect.Table<SQL.UserStats>().ToList();
                     var nick = MessageUtils.AntiHightlight(arr[random.Next(0, arr.Count - 1)].Nick);
 
