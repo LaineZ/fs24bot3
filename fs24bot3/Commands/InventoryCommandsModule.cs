@@ -198,7 +198,10 @@ namespace fs24bot3
                 if (rand.Next(0, 5 + userDest.CountItem("wall") - dmg) == 0 && username != Context.Message.From)
                 {
                     int indexItem = rand.Next(takeItems.Count);
-                    int itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (10 - dmg));
+                    int itemCount = 1;
+                    if (takeItems[indexItem].ItemCount / (10 - dmg) > 0) {
+                        itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (10 - dmg));
+                    }
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
                     user.IncreaseXp(100);

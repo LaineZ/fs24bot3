@@ -1,5 +1,6 @@
 ﻿using fs24bot3.Models;
 using Qmmands;
+using Serilog;
 using Serilog.Events;
 using SQLite;
 using System;
@@ -187,10 +188,12 @@ namespace fs24bot3
 
         [Command("sqlt")]
         [Checks.CheckAdmin]
-        public void LoggerLevel(bool enabled = true)
+        public void LoggerLevel(bool enabled = true )
         {
+             Context.Connection.Tracer = new Action<string>(q => { Log.Warning(q); });
             Context.Connection.Trace = enabled;
             Context.SendMessage(Context.Channel, $"SQL логирование `{enabled}`");
+
         }
 
         [Command("delete")]

@@ -28,12 +28,7 @@ namespace fs24bot3
 
         public bool IncreaseXp(int count)
         {
-            var start = Stopwatch.StartNew();
             var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username));
-
-            start.Stop();
-            Log.Information("{0} ms", start.ElapsedMilliseconds);
-
             foreach (var nick in query)
             {
                 Connect.Execute("UPDATE UserStats SET Xp = Xp + ? WHERE Nick = ?", count, nick.Nick);

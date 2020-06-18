@@ -46,9 +46,16 @@ namespace fs24bot3
             
             public async void SendMessage(string channel, string message)
             {
-                foreach (var slice in Core.MessageUtils.SplitMessage(message, 450))
+                if (message.Length > 250)
                 {
-                    await Client.SendAsync(new PrivMsgMessage(channel, slice));
+                    foreach (var slice in Core.MessageUtils.SplitMessage(message, 450))
+                    {
+                        await Client.SendAsync(new PrivMsgMessage(channel, slice));
+                    }
+                }
+                else
+                {
+                    await Client.SendAsync(new PrivMsgMessage(channel, message));
                 }
             }
 
