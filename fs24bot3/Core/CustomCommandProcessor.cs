@@ -18,9 +18,9 @@ namespace fs24bot3.Core
                 var argsArray = message.Message.Split(" ").ToList();
                 string cmdname = argsArray[0];
                 //Log.Verbose("Issused command: {0}", cmdname);
-                var query = connect.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(cmdname));
+                var cmd = connect.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == cmdname);
 
-                foreach (var cmd in query)
+                if (cmd != null)
                 {
                     //Log.Verbose("Command found: {0}", cmd.Command);
                     argsArray.RemoveAt(0); // removing command name
@@ -59,8 +59,8 @@ namespace fs24bot3.Core
                     argsFinal.Replace("#RNDNICK", nick);
                     argsFinal.Replace("#RNG", random.Next(int.MinValue, int.MaxValue).ToString());
                     await client.SendAsync(new PrivMsgMessage(message.To, argsFinal.ToString()));
-                    return true;
                 }
+                return true;
             }
 
             return false;

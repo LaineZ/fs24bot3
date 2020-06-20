@@ -30,12 +30,6 @@ namespace fs24bot3
             .CreateLogger();
             Console.OutputEncoding = Encoding.Unicode;
 
-            if (File.Exists("fscache.sqlite"))
-            {
-                Log.Information("Cleaning up cache!");
-                File.Delete("fscache.sqlite");
-            }
-
             Core.Database.InitDatabase(connection);
 
             _service.AddModule<GenericCommandsModule>();

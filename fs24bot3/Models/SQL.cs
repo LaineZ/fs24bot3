@@ -82,14 +82,6 @@ namespace fs24bot3.Models
             public string AddedBy { get; set; }
         }
 
-        // The next evolution in the world!!!
-        internal class HttpCache
-        {
-            [PrimaryKey]
-            public string URL { get; set; }
-            public string Output { get; set; }
-        }
-
         internal class UserSearchIgnores
         {
             [PrimaryKey]

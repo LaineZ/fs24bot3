@@ -13,8 +13,6 @@ namespace fs24bot3.Core
         public static void InitDatabase(SQLiteConnection connection)
         {
             Log.Information("Initializing databases");
-            var CacheConnection = new SQLiteConnection("fscache.sqlite");
-
             Configuration.LoadConfiguration();
             connection.CreateTable<SQL.UserStats>();
             connection.CreateTable<SQL.CustomUserCommands>();
@@ -25,9 +23,6 @@ namespace fs24bot3.Core
             connection.CreateTable<SQL.FishingRods>();
             connection.CreateTable<SQL.FishingNests>();
             connection.CreateTable<SQL.UserFishingRods>();
-            CacheConnection.CreateTable<SQL.HttpCache>();
-            CacheConnection.Close();
-            CacheConnection.Dispose();
 
             Shop.Init(connection);
 

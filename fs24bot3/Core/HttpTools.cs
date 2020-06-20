@@ -18,24 +18,9 @@ namespace fs24bot3
     class HttpTools
     {
         HttpClient client = new HttpClient();
-        private SQLiteConnection Connection = new SQLiteConnection("fscache.sqlite");
 
         public async Task<String> MakeRequestAsync(String url)
         {
-            try
-            {
-                var query = Connection.Table<Models.SQL.HttpCache>().Where(v => v.URL.Equals(url));
-
-                foreach (var output in query)
-                {
-                    return output.Output;
-                }
-            }
-            catch (SQLiteException e)
-            {
-                Log.Warning("Cannot access to cache database: {0}", e.Message);
-            }
-
             String responseText = await Task.Run(() =>
             {
                 try
@@ -51,24 +36,6 @@ namespace fs24bot3
                     return null;
                 }
             });
-            (new Thread(() =>
-            {
-                try
-                {
-                    if (Configuration.cacheing)
-                    {
-                        Connection.Insert(new Models.SQL.HttpCache() { URL = url, Output = responseText });
-                    }
-                    else
-                    {
-                        Log.Verbose("Caching is disabled");
-                    }
-                }
-                catch (SQLiteException e)
-                {
-                    Log.Warning("Http caching failed because: {0}", e.Message);
-                }
-            })).Start();
 
             return responseText;
         }

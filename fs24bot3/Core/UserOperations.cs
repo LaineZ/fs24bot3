@@ -28,21 +28,19 @@ namespace fs24bot3
 
         public bool IncreaseXp(int count)
         {
-            var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username));
-            foreach (var nick in query)
+            var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
+            Connect.Execute("UPDATE UserStats SET Xp = Xp + ? WHERE Nick = ?", count, nick.Nick);
+
+            Log.Verbose("{4}: Setting level: {0} {1} Current data: {2}/{3}", count, nick.Level, nick.Xp, nick.Need, nick.Nick);
+
+            if (nick.Xp >= nick.Need)
             {
-                Connect.Execute("UPDATE UserStats SET Xp = Xp + ? WHERE Nick = ?", count, nick.Nick);
-
-                Log.Verbose("{4}: Setting level: {0} {1} Current data: {2}/{3}", count, nick.Level, nick.Xp, nick.Need, nick.Nick);
-
-                if (nick.Xp >= nick.Need)
-                {
-                    Connect.Execute("UPDATE UserStats SET Level = Level + 1 WHERE Nick = ?", nick.Nick);
-                    Connect.Execute("UPDATE UserStats SET Xp = 0 WHERE Nick = ?", nick.Nick);
-                    Connect.Execute("UPDATE UserStats SET Need = Level * ? WHERE Nick = ?", XP_MULTIPLER, nick.Nick);
-                    return true;
-                }
+                Connect.Execute("UPDATE UserStats SET Level = Level + 1 WHERE Nick = ?", nick.Nick);
+                Connect.Execute("UPDATE UserStats SET Xp = 0 WHERE Nick = ?", nick.Nick);
+                Connect.Execute("UPDATE UserStats SET Need = Level * ? WHERE Nick = ?", XP_MULTIPLER, nick.Nick);
+                return true;
             }
+
             return false;
         }
 
@@ -52,21 +50,16 @@ namespace fs24bot3
             Connect.Execute("UPDATE UserStats SET Need = Level * ? WHERE Nick = ?", XP_MULTIPLER, Username);
         }
 
-        public bool AddItemToInv(string name, int count)
+        public void AddItemToInv(string name, int count)
         {
             count = (int)Math.Floor((decimal)count);
-
             try
             {
                 Connect.Execute("INSERT INTO Inventory VALUES(?, ?, ?)", Username, Shop.GetItem(name).Name, count);
-                //Log.Verbose("Inserting items");
-                return true;
             }
             catch (SQLiteException)
             {
                 Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, Shop.GetItem(name).Name, Username);
-                //Log.Verbose("Updating items {0}", name);
-                return true;
             }
         }
 
@@ -75,25 +68,20 @@ namespace fs24bot3
             count = (int)Math.Floor((decimal)count);
 
             string itemname = Shop.GetItem(name).Name;
-            var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemname)).ToList();
-            
-            if (query.Any())
+            var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemname));
+
+            if (item != null && item.ItemCount >= count && count > 0)
             {
-                foreach (var item in query)
+                Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, itemname, Username);
+                // clening up items with 0
+                Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
+                if (Ctx != null)
                 {
-                    if (item.Item == Shop.GetItem(name).Name && item.ItemCount >= count)
-                    {
-                        Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, itemname, Username);
-                        // clening up items with 0
-                        Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
-                        if (Ctx != null)
-                        {
-                            Ctx.SendMessage(Ctx.Channel, $" {Shop.GetItem(name).Name} -{count} За использование данной команды");
-                        }
-                        return true;
-                    }
+                    Ctx.SendMessage(Ctx.Channel, $" {Shop.GetItem(name).Name} -{count} За использование данной команды");
                 }
+                return true;
             }
+
             if (Ctx != null)
             {
                 Ctx.SendMessage(Ctx.Channel, $"Недостаточно {Shop.GetItem(name).Name} x{count}");
@@ -125,17 +113,10 @@ namespace fs24bot3
 
         public List<SQL.Inventory> GetInventory()
         {
-            List<SQL.Inventory> inv = new List<SQL.Inventory>();
             var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username)).ToList();
             if (query.Any())
             {
-                foreach (var item in query)
-                {
-                    //Log.Verbose("INV: Adding {0} with count {1}", item.Item, item.ItemCount);
-                    inv.Add(item);
-                }
-                Log.Verbose("Inventory queried sucessfully!");
-                return inv;
+                return query;
             }
             else
             {
@@ -146,10 +127,10 @@ namespace fs24bot3
 
         public SQL.UserStats GetUserInfo()
         {
-            var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).ToList();
-            if (query.Any())
+            var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
+            if (query != null)
             {
-                return query[0];
+                return query;
             }
             else
             {

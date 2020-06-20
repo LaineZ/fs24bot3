@@ -17,7 +17,6 @@ namespace fs24bot3
         {
             public PrivMsgMessage Message { get; }
             public NetIRC.Client Client { get; }
-            public SQLiteConnection CacheConnection;
 
             public string Channel;
             public SQLiteConnection Connection;
