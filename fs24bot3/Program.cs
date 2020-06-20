@@ -11,9 +11,6 @@ using System.Threading;
 using fs24bot3.Models;
 using System.IO;
 using VkNet;
-using VkNet.Model;
-using VkNet.Enums.Filters;
-using System.Linq;
 
 namespace fs24bot3
 {
