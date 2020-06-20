@@ -358,4 +358,4 @@ MigrationBackup/
 .ionide/
 
 *.toml
-*.sqlite
+*.sqlite*

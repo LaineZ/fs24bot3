@@ -42,7 +42,7 @@ namespace fs24bot3
             vk = new HttpTools().LogInVKAPI();
 
             using var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
-            
+
             client.OnRawDataReceived += Client_OnRawDataReceived;
             client.EventHub.PrivMsg += EventHub_PrivMsg;
             client.EventHub.RplWelcome += Client_OnWelcome;
@@ -83,44 +83,10 @@ namespace fs24bot3
 
             if (queryIfExt <= 0)
             {
-                if (query.Count() <= 0 && e.IRCMessage.From != Configuration.name)
-                {
-                    Log.Warning("User {0} not found in database", e.IRCMessage.From);
-
-                    var user = new SQL.UserStats()
-                    {
-                        Nick = e.IRCMessage.From,
-                        Admin = 0,
-                        AdminPassword = "changeme",
-                        Level = 1,
-                        Xp = 0,
-                        Need = 300,
-                    };
-
-                    connection.Insert(user);
-                }
-                else
-                {
-                    UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
-                    bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length + 1);
-                    if (newLevel)
-                    {
-                        var random = new Random();
-                        int index = random.Next(Shop.ShopItems.Count);
-                        usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
-                    }
-                }
-
                 if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
                     return;
 
-                DateTime firstTime = DateTime.Now;
                 var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, vk));
-                DateTime elapsed = DateTime.Now;
-
-                Log.Verbose("Perf: {0} ms", elapsed.Subtract(firstTime).TotalMilliseconds);
-
                 switch (result)
                 {
                     case ChecksFailedResult err:
@@ -148,6 +114,35 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: `{err.Exception.Message}`"));
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
                         break;
+                }
+
+                if (query.Count() <= 0 && e.IRCMessage.From != Configuration.name)
+                {
+                    Log.Warning("User {0} not found in database", e.IRCMessage.From);
+
+                    var user = new SQL.UserStats()
+                    {
+                        Nick = e.IRCMessage.From,
+                        Admin = 0,
+                        AdminPassword = "changeme",
+                        Level = 1,
+                        Xp = 0,
+                        Need = 300,
+                    };
+
+                    connection.Insert(user);
+                }
+                else
+                {
+                    UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
+                    bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length + 1);
+                    if (newLevel)
+                    {
+                        var random = new Random();
+                        int index = random.Next(Shop.ShopItems.Count);
+                        usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
+                    }
                 }
             }
             else
