@@ -233,24 +233,24 @@ namespace fs24bot3
 
         [Command("midi")]
         [Description("Миди ноты")]
-        public void Midi(string note, uint oct = 4)
+        public void Midi(string note, int oct = 4)
         {
             string[] noteString = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
             if (uint.TryParse(note, out uint initialNote))
             {
-                uint octave = (initialNote / 12) - 1;
+                int octave = (int)(initialNote / 12) - 1;
                 uint noteIndex = initialNote % 12;
                 string noteName = noteString[noteIndex];
                 Context.SendMessage(Context.Channel, $"MIDI: {note} = {Models.IrcColors.Reset}{noteName}{octave}");
             }
             else
             {
-                for (uint i = 0; i < noteString.Length; i++)
+                for (int i = 0; i < noteString.Length; i++)
                 {
                     if (noteString[i].ToLower() == note.ToLower())
                     {
-                        uint noteIndex = (12 * (oct + 1)) + i;
+                        int noteIndex = (12 * (oct + 1)) + i;
                         Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {Models.IrcColors.Reset}{noteIndex}");
                         break;
                     }
