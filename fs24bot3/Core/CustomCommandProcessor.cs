@@ -58,6 +58,7 @@ namespace fs24bot3.Core
                     argsFinal.Replace("#USERNAME", message.From);
                     argsFinal.Replace("#RNDNICK", nick);
                     argsFinal.Replace("#RNG", random.Next(int.MinValue, int.MaxValue).ToString());
+
                     await client.SendAsync(new PrivMsgMessage(message.To, argsFinal.ToString()));
                 }
                 return true;
