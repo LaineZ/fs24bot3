@@ -18,6 +18,7 @@ namespace fs24bot3
     class HttpTools
     {
         HttpClient client = new HttpClient();
+        CookieContainer cookies = new CookieContainer();
 
         public async Task<String> MakeRequestAsync(String url)
         {
@@ -26,8 +27,10 @@ namespace fs24bot3
                 try
                 {
                     HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-                    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0";
+                    request.CookieContainer = cookies;
+                    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0";
                     WebResponse response = request.GetResponse();
+
                     Stream responseStream = response.GetResponseStream();
                     return new StreamReader(responseStream).ReadToEnd();
                 }
@@ -65,54 +68,6 @@ namespace fs24bot3
                 return "Сервер недоступен for some reason: " + Configuration.trashbinUrl;
             }
         }
-
-
-        public async Task<String> UploadToPastebin(string data)
-        {
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Ignore
-            };
-
-
-            Models.PastebinUpload.RootObject paste = new Models.PastebinUpload.RootObject
-            {
-                sections = new List<Models.PastebinUpload.Section>()
-            };
-
-            var section = new Models.PastebinUpload.Section
-            {
-                name = "fs24 paste",
-                contents = data,
-                syntax = "autodetect"
-            };
-
-            paste.description = "A paste pasted by fs24_bot";
-
-            paste.sections.Add(section);
-
-            HttpContent c = new StringContent(JsonConvert.SerializeObject(paste), Encoding.UTF8, "application/json");
-
-            client.DefaultRequestHeaders.Add("X-Auth-Token", "al8Pc66kMncvlsUcrveEEMlobZzH8R8sLrF0qpXFq");
-
-            var response = await client.PostAsync("https://api.paste.ee/v1/pastes", c);
-            var responseString = await response.Content.ReadAsStringAsync();
-            var jsonOutput = JsonConvert.DeserializeObject<Models.PastebinUpload.Output>(responseString, settings);
-
-            Console.WriteLine(responseString);
-
-            if (jsonOutput != null)
-            {
-                Console.WriteLine(jsonOutput.link);
-                return jsonOutput.link;
-            }
-            else
-            {
-                throw new Exception("Invalid Data supplyed: " + responseString);
-            }
-        }
-
 
         public VkApi LogInVKAPI()
         {
