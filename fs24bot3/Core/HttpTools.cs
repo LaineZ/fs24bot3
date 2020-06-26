@@ -43,6 +43,27 @@ namespace fs24bot3
             return responseText;
         }
 
+        public async Task<WebResponse> GetResponseAsync(String url)
+        {
+            WebResponse response = await Task.Run(() =>
+            {
+                try
+                {
+                    HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                    request.CookieContainer = cookies;
+                    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0";
+                    return request.GetResponse();
+                }
+                catch (Exception)
+                {
+                    Log.Warning("Request failed to address: {0}", url);
+                    return null;
+                }
+            });
+
+            return response;
+        }
+
         public async Task<string> UploadToTrashbin(string data, string route = "add")
         {
             try
