@@ -250,5 +250,25 @@ namespace fs24bot3
                 Context.SendMessage(Context.Channel, "капец ты математик");
             }
         }
+
+
+        [Command("vkfind", "vs")]
+        [Description("Поиск в ВК")]
+        public async void VkSearch([Remainder] string query)
+        {
+            var parametrs = new VkNet.Model.RequestParams.NewsFeedSearchParams();
+            parametrs.Query = query;
+            parametrs.Count = 1;
+            var found = await Context.VKApi.NewsFeed.SearchAsync(parametrs);
+
+            if (found.TotalCount > 0)
+            {
+                Context.SendMessage(Context.Channel, found.Items[0].Text[..Math.Min(200, found.Items[0].Text.Length)].Replace("\n", " ") + IrcColors.Lime + " // https://vk.com/wall" + found.Items[0].FromId + "_" + found.Items[0].Id); ;
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено...");
+            }
+        }
     }
 }
