@@ -416,7 +416,7 @@ namespace fs24bot3
 
             DateTime dateOut = new DateTime(2020, 12, 22, 17, 26, 12);
             TimeSpan dateIn =  dateOut.Subtract(DateTime.Now);
-            Context.SendMessage(Context.Channel, $"Дата до появления Миши : {dateIn.Days} дней {dateIn.Hours} часов {dateIn.Minutes} минут {dateIn.Seconds} секунд {dateIn.Milliseconds} мс...");
+            Context.SendMessage(Context.Channel, $"Дата до появления Миши : {dateIn.Days / 30} месяцев {dateIn.Days % 30} дней {dateIn.Hours} часов {dateIn.Minutes} минут {dateIn.Seconds} секунд {dateIn.Milliseconds} мс...");
         }
     }
 }

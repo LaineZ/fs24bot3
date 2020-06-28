@@ -53,6 +53,11 @@ namespace fs24bot3
                 {
                     Thread.Sleep(Shop.Tickrate);
                     Shop.Update(connection);
+                    if (Core.HourstatHelper.IRCMessages.Count > 0 && Core.HourstatHelper.IRCMessages[0].Date.Hour < DateTime.Now.Hour)
+                    {
+                        Log.Information("Clean up messages!");
+                        Core.HourstatHelper.IRCMessages.Clear();
+                    }
                 }
             }).Start();
 
@@ -114,6 +119,8 @@ namespace fs24bot3
                 }
 
                 (new Thread(() => {
+                    Core.HourstatHelper.InsertMessage(e.IRCMessage.Message, DateTime.Now);
+
                     if (query.Count() <= 0 && e.IRCMessage.From != Configuration.name)
                     {
                         Log.Warning("User {0} not found in database", e.IRCMessage.From);
