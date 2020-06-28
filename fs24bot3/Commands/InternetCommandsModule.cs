@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Qmmands;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 
@@ -58,14 +59,15 @@ namespace fs24bot3
         [Description("Тоже самое что и @exec только работает через URL")]
         public async void ExecuteAPIUrl(string code, string rawurl)
         {
-            string response = await http.MakeRequestAsync(rawurl);
-            if (response != null)
+            var response = await http.GetResponseAsync(rawurl);
+            if (response != null && response.ContentType == "text/plain")
             {
-                ExecuteAPI(code, response);
+                Stream responseStream = response.GetResponseStream();
+                ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =(");   
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");  
             }
         }
 

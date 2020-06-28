@@ -31,6 +31,7 @@ namespace fs24bot3
             int limit = 1;
             int maxpage = 10;
             bool fullmatch = false;
+            string site = "";
 
             string[] queryOptions = query.Split(" ");
             List<string> queryText = new List<string>();
@@ -66,6 +67,11 @@ namespace fs24bot3
                     {
                         limit = 5;
                     }
+                    else if (queryOptions[i].Contains("site:"))
+                    {
+                        string[] options = queryOptions[i].Split(":");
+                        site = options[1].ToLower();
+                    }
                     else if (queryOptions[i].Contains("fullmatch:on"))
                     {
                         fullmatch = true;
@@ -88,9 +94,9 @@ namespace fs24bot3
 
             for (int i = page; i < maxpage; i++)
             {
-                //Log.Verbose("Foring {0}", i);
+                Log.Verbose("Foring {0}", i);
                 if (searchResults.Count >= limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + (i * 10));
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + ((i + 1) * 10) + "&site=" + site);
                 var items = Core.MailSearchDecoder.PerformDecode(response);
                 if (items == null) { continue; }
 
