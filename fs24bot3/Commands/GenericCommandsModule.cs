@@ -1,8 +1,10 @@
-﻿using Qmmands;
+﻿using fs24bot3.Models;
+using Qmmands;
 using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace fs24bot3
@@ -97,20 +99,22 @@ namespace fs24bot3
         }
 
         [Command("regcmd")]
-        [Description("Регистрация команды (Параметр command вводится без @)")]
-        [Remarks("Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел")]
-        public void CustomCmdRegister(string command, [Remainder] string output)
+        [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: в разработке...")]
+        [Remarks("[IsLua = false] Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел\n[isLua = true] - Lua движок команд")]
+        public void CustomCmdRegister(string command, bool isLua, [Remainder] string output)
         {
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection, Context);
             bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
 
             if (!commandIntenral)
             {
+                int isLuaInt = isLua ? 1 : 0;
                 var commandInsert = new Models.SQL.CustomUserCommands()
                 {
                     Command = "@" + command,
                     Output = output,
                     Nick = Context.Message.From,
+                    IsLua = isLuaInt
                 };
                 try
                 {
@@ -129,6 +133,23 @@ namespace fs24bot3
             else
             {
                 Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}Данная команда уже существует в fs24_bot!");
+            }
+        }
+
+        [Command("regluaurl")]
+        [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: в разработке...")]
+        public async void CustomCmdRegisterUrlAsync(string command, string rawurl)
+        {
+            var response = await http.GetResponseAsync(rawurl);
+            
+            if (response != null && response.ContentType == "text/plain")
+            {
+                Stream responseStream = response.GetResponseStream();
+                CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
             }
         }
 

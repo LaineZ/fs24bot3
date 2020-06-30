@@ -43,6 +43,7 @@ namespace fs24bot3.Models
 
             public string Output { get; set; }
             public string Nick { get; set; }
+            public int IsLua { get; set; }
         }
 
         internal class Tag
