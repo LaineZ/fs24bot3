@@ -108,7 +108,6 @@ namespace fs24bot3.Core
                                             // close lua...
                                             lua.Close();
                                             lua.Dispose();
-                                            GC.Collect();
                                             break;
                                         }
                                     }
@@ -150,7 +149,7 @@ namespace fs24bot3.Core
                         });
                         threadWatch.Start();
 
-                        new Thread(async () =>
+                        new Thread(() =>
                         {
                             while (true)
                             {
@@ -162,7 +161,7 @@ namespace fs24bot3.Core
 
                                     if (memoryUsed > 150)
                                     {
-                                        lua.State.ArgumentError(1, "out of memory");
+                                        lua.State.ArgumentError(1, "out of memory " + memoryUsed + " mb");
                                         break;
                                     }
                                 }
