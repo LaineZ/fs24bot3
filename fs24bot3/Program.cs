@@ -11,6 +11,7 @@ using System.Threading;
 using fs24bot3.Models;
 using System.IO;
 using VkNet;
+using Newtonsoft.Json;
 
 namespace fs24bot3
 {
@@ -18,6 +19,8 @@ namespace fs24bot3
     {
         private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
         private static VkApi vk;
+
+        private static Commits.Commit LastCommit;
 
         static void Main(string[] args)
         {
@@ -46,17 +49,25 @@ namespace fs24bot3
 
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
             Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
-            new Thread(() =>
+            new Thread(async () =>
             {
                 Log.Information("Thread started!");
                 while (true)
                 {
                     Thread.Sleep(Shop.Tickrate);
                     Shop.Update(connection);
-                    if (Core.HourstatHelper.IRCMessages.Count > 0 && Core.HourstatHelper.IRCMessages[0].Date.Hour < DateTime.Now.Hour)
+                    HttpTools httpI = new HttpTools("140bpmdubstep", "esposto");
+                    string responseString = await httpI.MakeRequestAsync("http://95.182.122.116:3000/api/v1/repos/140bpmdubstep/fs24bot3/git/refs/heads/master");
+                    if (responseString != null)
                     {
-                        Log.Information("Clean up messages!");
-                        Core.HourstatHelper.IRCMessages.Clear();
+                        var jsonOutput = JsonConvert.DeserializeObject<Git.Root>(responseString);
+                        responseString = await httpI.MakeRequestAsync(jsonOutput.Object.Url.ToString());
+                        var commit = JsonConvert.DeserializeObject<Commits.Commit>(responseString);
+                        if (commit != LastCommit)
+                        {
+                            LastCommit = commit;
+                            await client.SendAsync(new PrivMsgMessage(Configuration.channel, $"GIT: {LastCommit.Committer}: {LastCommit.CommitCommit.Message} {LastCommit.CommitCommit.Author.Date}"));
+                        }
                     }
                 }
             }).Start();
@@ -118,7 +129,8 @@ namespace fs24bot3
                         break;
                 }
 
-                (new Thread(() => {
+                (new Thread(() =>
+                {
                     Core.HourstatHelper.InsertMessage(e.IRCMessage.Message, DateTime.Now);
 
                     if (query.Count() <= 0 && e.IRCMessage.From != Configuration.name)

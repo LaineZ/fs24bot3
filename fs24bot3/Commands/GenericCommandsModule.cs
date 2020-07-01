@@ -161,7 +161,7 @@ namespace fs24bot3
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
-            if (query.Any() && query[0].Command == commandConcat)
+            if (query.Any() && query[0].Command == commandConcat && query[0].IsLua == 0)
             {
                 if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
                 {
@@ -288,7 +288,7 @@ namespace fs24bot3
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
             if (query.Count > 0)
             {
-                Context.SendMessage(Context.Channel, IrcColors.Blue + $"Команда {query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов, строк - {query[0].Output.Split("||").Length}");
+                Context.SendMessage(Context.Channel, IrcColors.Blue + $"Команда {query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов, строк - {query[0].Output.Split("||").Length} Lua: {query[0].IsLua}");
                 if (query[0].Nick.Length <= 0)
                 {
                     Context.SendMessage(Context.Channel, IrcColors.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");
@@ -313,6 +313,31 @@ namespace fs24bot3
                 if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
                 {
                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
+                    Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
+                }
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует");
+            }
+        }
+
+        [Command("cmdupd")]
+        [Description("Полное обновление вывода команды")]
+        public void LuaUpdCoommand(string command, [Remainder] string newstr)
+        {
+            var commandConcat = "@" + command;
+            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
+            if (query.Any() && query[0].IsLua == 1 && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
+            {
+                if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
+                {
+                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", newstr, commandConcat);
                     Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                 }
                 else

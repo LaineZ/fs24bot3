@@ -72,11 +72,19 @@ namespace fs24bot3.Core
                         lua.State.Encoding = Encoding.UTF8;
 
                         // block danger functions
-                        lua["os"] = null;
+                        lua["os.execute"] = null;
+                        lua["os.exit"] = null;
+                        lua["os.remove"] = null;
+                        lua["os.getenv"] = null;
+                        lua["os.rename"] = null;
+                        lua["os.setlocale"] = null;
+                        lua["os.tmpname"] = null;
+
                         lua["io"] = null;
                         lua["debug"] = null;
                         lua["require"] = null;
                         lua["print"] = null;
+
                         // just a bunch of globals
                         lua["RANDOM_NICK"] = nick;
                         lua["CMD_NAME"] = cmd.Command;
@@ -144,7 +152,7 @@ namespace fs24bot3.Core
 
                         new Thread(() =>
                         {
-                            while (true)
+                            while (thread.IsAlive)
                             {
                                 try
                                 {

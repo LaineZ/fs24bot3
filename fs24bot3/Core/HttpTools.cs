@@ -20,6 +20,13 @@ namespace fs24bot3
         HttpClient client = new HttpClient();
         CookieContainer cookies = new CookieContainer();
 
+        string Password;
+
+        public HttpTools(string login = null, string password = null)
+        {
+            Password = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(login + ":" + password));
+        }
+
         public async Task<String> MakeRequestAsync(String url)
         {
             String responseText = await Task.Run(() =>
@@ -29,13 +36,21 @@ namespace fs24bot3
                     HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
                     request.CookieContainer = cookies;
                     request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0";
+
+                    if (Password != null)
+                    {
+                        Log.Verbose("Using password!");
+                        request.Headers.Add("Authorization", "Basic " + Password);
+                    }
+
                     WebResponse response = request.GetResponse();
 
                     Stream responseStream = response.GetResponseStream();
                     return new StreamReader(responseStream).ReadToEnd();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Log.Warning("Request to address {0} failed: {1}", url, e.Message);
                     return null;
                 }
             });
