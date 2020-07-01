@@ -137,7 +137,7 @@ namespace fs24bot3
         }
 
         [Command("regluaurl")]
-        [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: в разработке...")]
+        [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
         public async void CustomCmdRegisterUrlAsync(string command, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
