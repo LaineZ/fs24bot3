@@ -160,7 +160,6 @@ namespace fs24bot3.Core
                                     if (memoryUsed > 150)
                                     {
                                         lua.State.ArgumentError(1, "out of memory " + memoryUsed + " mb");
-\\
                                         break;
                                     }
                                 }
