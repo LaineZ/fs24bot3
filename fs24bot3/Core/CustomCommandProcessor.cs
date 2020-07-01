@@ -105,9 +105,6 @@ namespace fs24bot3.Core
                                         {
                                             string link = await new HttpTools().UploadToTrashbin(res, "addplain");
                                             await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
-                                            // close lua...
-                                            lua.Close();
-                                            lua.Dispose();
                                             break;
                                         }
                                     }
