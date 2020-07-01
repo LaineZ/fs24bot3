@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using fs24bot3.Models;
 using NLua;
 using System.Threading;
+using System.Diagnostics;
 
 namespace fs24bot3.Core
 {
@@ -67,53 +68,107 @@ namespace fs24bot3.Core
                     }
                     else
                     {
+                        Lua lua = new Lua();
+                        lua.State.Encoding = Encoding.UTF8;
+
+                        // block danger functions
+                        lua["os"] = null;
+                        lua["io"] = null;
+                        lua["debug"] = null;
+                        lua["require"] = null;
+                        lua["print"] = null;
+                        // just a bunch of globals
+                        lua["RANDOM_NICK"] = nick;
+                        lua["CMD_NAME"] = cmd.Command;
+                        lua["CMD_OWNER"] = cmd.Nick;
+                        lua["CMD_ARGS"] = string.Join(" ", argsArray);
+                        LuaFunctions luaFunctions = new LuaFunctions(connect, message.From);
+                        lua["Cmd"] = luaFunctions;
+
                         Thread thread = new Thread(async () =>
                         {
                             try
                             {
-                                using (Lua lua = new Lua())
+                                var res = (string)lua.DoString(cmd.Output)[0];
+                                int count = 0;
+
+                                if (res.Length < 20000)
                                 {
-                                    lua.State.Encoding = Encoding.UTF8;
-
-                                    // block danger functions
-                                    lua["os"] = null;
-                                    lua["io"] = null;
-                                    lua["debug"] = null;
-                                    lua["require"] = null;
-                                    lua["print"] = null;
-                                    // just a bunch of globals
-                                    lua["RANDOM_NICK"] = nick;
-                                    lua["CMD_NAME"] = cmd.Command;
-                                    lua["CMD_OWNER"] = cmd.Nick;
-                                    lua["CMD_ARGS"] = string.Join(" ", argsArray);
-
-
-                                    var res = (string)lua.DoString(cmd.Output)[0];
-
-                                    await client.SendAsync(new PrivMsgMessage(message.To, res));
+                                    foreach (string outputstr in res.Split("\n"))
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(outputstr))
+                                        {
+                                            await client.SendAsync(new PrivMsgMessage(message.To, outputstr[..Math.Min(350, outputstr.Length)]));
+                                        }
+                                        count++;
+                                        if (count > 3)
+                                        {
+                                            string link = await new HttpTools().UploadToTrashbin(res, "addplain");
+                                            await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
+                                            // close lua...
+                                            lua.Close();
+                                            lua.Dispose();
+                                            GC.Collect();
+                                            break;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    string link = await new HttpTools().UploadToTrashbin(res, "addplain");
+                                    await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
+                                    lua.Close();
+                                    lua.Dispose();
+                                    GC.Collect();
                                 }
                             }
                             catch (Exception e)
                             {
                                 await client.SendAsync(new PrivMsgMessage(message.To, $"Ошибка в Lua: {e.Message}"));
+                                lua.Close();
+                                lua.Dispose();
+                                GC.Collect();
                             }
                         });
                         thread.Start();
 
                         // watch thread
+                        Thread threadWatch = new Thread(() =>
+                        {
+                            try
+                            {
+                                Thread.Sleep(10000);
+                                if (thread.IsAlive)
+                                {
+                                    lua.State.ArgumentError(1, "too long without yielding");
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                Log.Information("Lua thread watcher has stopped working...");
+                            }
+                        });
+                        threadWatch.Start();
+
                         new Thread(async () =>
                         {
-                            Thread.Sleep(10000);
-                            if (thread.IsAlive)
+                            while (true)
                             {
-                                await client.SendAsync(new PrivMsgMessage(message.To, $"{cmd.Command}: Слишком долгое время выполнения..."));
                                 try
                                 {
-                                    thread.Abort();
+                                    Thread.Sleep(10);
+                                    Process currentProc = Process.GetCurrentProcess();
+                                    long memoryUsed = currentProc.PrivateMemorySize64 / 1024 / 1024;
+
+                                    if (memoryUsed > 150)
+                                    {
+                                        lua.State.ArgumentError(1, "out of memory");
+                                        break;
+                                    }
                                 }
                                 catch (Exception)
                                 {
-
+                                    Log.Warning("Lua command has ended with out of memory!");
                                 }
                             }
                         }).Start();

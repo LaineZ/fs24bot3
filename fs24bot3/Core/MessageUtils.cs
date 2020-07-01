@@ -15,49 +15,6 @@ namespace fs24bot3.Core
                 .ToArray());
         }
 
-        public static String FindWord(List<string> arr)
-        {
-
-            // Create Dictionary to store word  
-            // and it's frequency  
-            Dictionary<String, int> hs =
-                new Dictionary<String, int>();
-
-            // Iterate through array of words  
-            for (int i = 0; i < arr.Count - 1; i++)
-            {
-                // If word already exist in Dictionary  
-                // then increase it's count by 1  
-                if (hs.ContainsKey(arr[i]))
-                {
-                    hs[arr[i]] = hs[arr[i]] + 1;
-                }
-
-                // Otherwise add word to Dictionary  
-                else
-                {
-                    hs.Add(arr[i], 1);
-                }
-            }
-
-            // Create set to iterate over Dictionary  
-            String key = "";
-            int value = 0;
-
-            foreach (KeyValuePair<String, int> me in hs)
-            {
-                // Check for word having highest frequency  
-                if (me.Value > value)
-                {
-                    value = me.Value;
-                    key = me.Key;
-                }
-            }
-
-            // Return word having highest frequency  
-            return key;
-        }
-
         public static List<string> SplitMessage(string value, int chunkLength)
         {
             List<string> splitted = new List<string>();

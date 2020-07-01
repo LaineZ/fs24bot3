@@ -24,7 +24,7 @@ namespace fs24bot3
             var cmds = Service.GetAllCommands();
             string commandsOutput;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
-            var customCommands = Context.Connection.Table<Models.SQL.CustomUserCommands>().ToList();
+            var customCommands = Context.Connection.Table<SQL.CustomUserCommands>().ToList();
             commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"<p style=\"font-family: 'sans-serif';\"><strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><pre>{x.Description}</pre><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"))
                 + "<h3>Магазин:</h3>" +
                 string.Join("\n", shop.Select(x => $"<p style=\"font-family: 'sans-serif';\">[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
@@ -49,11 +49,11 @@ namespace fs24bot3
                     {
                         foreach (string help in cmd.Remarks.Split("\n"))
                         {
-                            Context.SendMessage(Context.Channel, Models.IrcColors.Bold + help);
+                            Context.SendMessage(Context.Channel, IrcColors.Bold + help);
                         }
                     }
 
-                    Context.SendMessage(Context.Channel, $"{Models.IrcColors.Bold}Алиасы: {Models.IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
                     break;
                 }
             }
@@ -84,7 +84,7 @@ namespace fs24bot3
                     var userTags = usr.GetUserTags();
                     if (userTags.Count > 0)
                     {
-                        Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
+                        Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
                     }
                 }
                 catch (Core.Exceptions.UserNotFoundException)
@@ -99,7 +99,7 @@ namespace fs24bot3
         }
 
         [Command("regcmd")]
-        [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: в разработке...")]
+        [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
         [Remarks("[IsLua = false] Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел\n[isLua = true] - Lua движок команд")]
         public void CustomCmdRegister(string command, bool isLua, [Remainder] string output)
         {
@@ -109,7 +109,7 @@ namespace fs24bot3
             if (!commandIntenral)
             {
                 int isLuaInt = isLua ? 1 : 0;
-                var commandInsert = new Models.SQL.CustomUserCommands()
+                var commandInsert = new SQL.CustomUserCommands()
                 {
                     Command = "@" + command,
                     Output = output,
@@ -127,12 +127,12 @@ namespace fs24bot3
                 catch (SQLiteException)
                 {
                     usr.AddItemToInv("money", 8000);
-                    Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
                 }
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}Данная команда уже существует в fs24_bot!");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Данная команда уже существует в fs24_bot!");
             }
         }
 
@@ -142,7 +142,7 @@ namespace fs24bot3
         {
             var response = await http.GetResponseAsync(rawurl);
             
-            if (response != null && response.ContentType == "text/plain")
+            if (response != null && response.ContentType.Contains("text/plain"))
             {
                 Stream responseStream = response.GetResponseStream();
                 CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
@@ -159,7 +159,7 @@ namespace fs24bot3
         public void CustomCmdEdit(string command, string action, [Remainder] string value)
         {
             var commandConcat = "@" + command;
-            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat)
             {
@@ -169,7 +169,7 @@ namespace fs24bot3
                     {
                         case "add":
                             Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output + "||" + value, commandConcat);
-                            Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+                            Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                             break;
                         case "del":
                             var outputlist = query[0].Output.Split("||").ToList();
@@ -180,11 +180,11 @@ namespace fs24bot3
                                 {
                                     outputlist.RemoveAt(val);
                                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
-                                    Context.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
+                                    Context.SendMessage(Context.Channel, IrcColors.Green + "Команда успешно обновлена!");
                                 }
                                 else
                                 {
-                                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Максимальное число удаления: " + outputlist.Count);
+                                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Максимальное число удаления: " + outputlist.Count);
                                 }
                             }
                             catch (FormatException)
@@ -192,27 +192,27 @@ namespace fs24bot3
                                 if (outputlist.Remove(value))
                                 {
                                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
-                                    Context.SendMessage(Context.Channel, Models.IrcColors.Green + "Команда успешно обновлена!");
+                                    Context.SendMessage(Context.Channel, IrcColors.Green + "Команда успешно обновлена!");
                                 }
                                 else
                                 {
-                                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Такой записи не существует...");
+                                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Такой записи не существует...");
                                 }
                             }
                             break;
                         default:
-                            Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd editout");
+                            Context.SendMessage(Context.Channel, IrcColors.Gray + "Неправильный ввод, введите @helpcmd editout");
                             break;
                     }
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
                 }
             }
             else
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует");
             }
         }
 
@@ -223,7 +223,7 @@ namespace fs24bot3
         public void CmdOwn(string command, string nick)
         {
             Context.Connection.Execute("UPDATE CustomUserCommands SET Nick = ? WHERE Command = ?", nick, command);
-            Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+            Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
         }
 
         [Command("genname")]
@@ -248,7 +248,7 @@ namespace fs24bot3
             }
             else
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Red + "ПРЕВЫШЕН ЛИМИТ!");
+                Context.SendMessage(Context.Channel, IrcColors.Red + "ПРЕВЫШЕН ЛИМИТ!");
             }
         }
 
@@ -263,7 +263,7 @@ namespace fs24bot3
                 int octave = (int)(initialNote / 12) - 1;
                 uint noteIndex = initialNote % 12;
                 string noteName = noteString[noteIndex];
-                Context.SendMessage(Context.Channel, $"MIDI: {note} = {Models.IrcColors.Reset}{noteName}{octave}");
+                Context.SendMessage(Context.Channel, $"MIDI: {note} = {IrcColors.Reset}{noteName}{octave}");
             }
             else
             {
@@ -272,7 +272,7 @@ namespace fs24bot3
                     if (noteString[i].ToLower() == note.ToLower())
                     {
                         int noteIndex = (12 * (oct + 1)) + i;
-                        Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {Models.IrcColors.Reset}{noteIndex}");
+                        Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {IrcColors.Reset}{noteIndex}");
                         break;
                     }
                 }
@@ -285,13 +285,13 @@ namespace fs24bot3
         {
             // a small workaround for this exception An exception occurred while executing cmdinfo.: `Cannot get SQL for: Add`
             command = "@" + command;
-            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
+            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
             if (query.Count > 0)
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Blue + $"Команда {query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов, строк - {query[0].Output.Split("||").Length}");
+                Context.SendMessage(Context.Channel, IrcColors.Blue + $"Команда {query[0].Command} Создал: `{query[0].Nick}` Размер вывода: {query[0].Output.Length} символов, строк - {query[0].Output.Split("||").Length}");
                 if (query[0].Nick.Length <= 0)
                 {
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");
+                    Context.SendMessage(Context.Channel, IrcColors.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");
                 }
             }
             else
@@ -306,23 +306,23 @@ namespace fs24bot3
         public void CustomCmdRepl(string command, string oldstr, string newstr = "")
         {
             var commandConcat = "@" + command;
-            var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
                 if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
                 {
                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Blue + "Команда успешно обновлена!");
+                    Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
                 }
             }
             else
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Команды не существует");
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует");
             }
         }
 
@@ -334,7 +334,7 @@ namespace fs24bot3
             UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
-                var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
+                var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
                 if (query > 0)
                 {
                     Context.SendMessage(Context.Channel, "Команда удалена!");
@@ -342,14 +342,14 @@ namespace fs24bot3
             }
             else
             {
-                var query = Context.Connection.Table<Models.SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Message.From)).Delete();
+                var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Message.From)).Delete();
                 if (query > 0)
                 {
                     Context.SendMessage(Context.Channel, "Команда удалена!");
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Этого не произошло....");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Этого не произошло....");
                 }
             }
         }
@@ -366,7 +366,7 @@ namespace fs24bot3
                 case "add":
                     if (user.RemItemFromInv("money", 1000))
                     {
-                        var tag = new Models.SQL.Tag()
+                        var tag = new SQL.Tag()
                         {
                             TagName = tagname,
                             Color = ircolor.ToString(),
@@ -376,7 +376,7 @@ namespace fs24bot3
 
                         Context.Connection.Insert(tag);
 
-                        Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{Models.IrcColors.Reset} успешно добавлен!");
+                        Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{IrcColors.Reset} успешно добавлен!");
                     }
                     else
                     {
@@ -392,11 +392,11 @@ namespace fs24bot3
                     }
                     else
                     {
-                        Context.SendMessage(Context.Channel, Models.IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Message.From}");
+                        Context.SendMessage(Context.Channel, IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Message.From}");
                     }
                     break;
                 default:
-                    Context.SendMessage(Context.Channel, Models.IrcColors.Gray + "Неправильный ввод, введите @helpcmd addtag");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Неправильный ввод, введите @helpcmd addtag");
                     break;
             }
         }
@@ -413,7 +413,7 @@ namespace fs24bot3
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
         }
 
@@ -421,13 +421,13 @@ namespace fs24bot3
         [Description("Список всех тегов")]
         public void AllTags()
         {
-            List<Models.SQL.Tag> tags = new List<Models.SQL.Tag>();
-            var query = Context.Connection.Table<Models.SQL.Tag>();
+            List<SQL.Tag> tags = new List<SQL.Tag>();
+            var query = Context.Connection.Table<SQL.Tag>();
             foreach (var tag in query)
             {
                 tags.Add(tag);
             }
-            Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{Models.IrcColors.Reset}")));
+            Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
         }
 
         [Command("mishareturn", "blocksuntil", "misha")]
