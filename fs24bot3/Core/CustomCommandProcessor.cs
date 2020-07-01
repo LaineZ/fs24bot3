@@ -118,7 +118,6 @@ namespace fs24bot3.Core
                                     await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
                                     lua.Close();
                                     lua.Dispose();
-                                    GC.Collect();
                                 }
                             }
                             catch (Exception e)
@@ -126,7 +125,6 @@ namespace fs24bot3.Core
                                 await client.SendAsync(new PrivMsgMessage(message.To, $"Ошибка в Lua: {e.Message}"));
                                 lua.Close();
                                 lua.Dispose();
-                                GC.Collect();
                             }
                         });
                         thread.Start();
@@ -162,6 +160,7 @@ namespace fs24bot3.Core
                                     if (memoryUsed > 150)
                                     {
                                         lua.State.ArgumentError(1, "out of memory " + memoryUsed + " mb");
+\\
                                         break;
                                     }
                                 }
