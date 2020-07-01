@@ -113,8 +113,6 @@ namespace fs24bot3.Core
                                 {
                                     string link = await new HttpTools().UploadToTrashbin(res, "addplain");
                                     await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
-                                    lua.Close();
-                                    lua.Dispose();
                                 }
                             }
                             catch (Exception e)
@@ -134,7 +132,7 @@ namespace fs24bot3.Core
                                 Thread.Sleep(10000);
                                 if (thread.IsAlive)
                                 {
-                                    lua.State.ArgumentError(1, "too long without yielding");
+                                    lua.State.Error("too long without yielding");
                                 }
                             }
                             catch (Exception)
@@ -154,9 +152,9 @@ namespace fs24bot3.Core
                                     Process currentProc = Process.GetCurrentProcess();
                                     long memoryUsed = currentProc.PrivateMemorySize64 / 1024 / 1024;
 
-                                    if (memoryUsed > 150)
+                                    if (memoryUsed > 350)
                                     {
-                                        lua.State.ArgumentError(1, "out of memory " + memoryUsed + " mb");
+                                        lua.State.Error("out of memory " + memoryUsed + " mb");
                                         break;
                                     }
                                 }
