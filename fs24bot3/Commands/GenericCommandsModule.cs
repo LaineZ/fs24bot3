@@ -201,7 +201,7 @@ namespace fs24bot3
                             }
                             break;
                         default:
-                            Context.SendMessage(Context.Channel, IrcColors.Gray + "Неправильный ввод, введите @helpcmd editout");
+                            Context.SendMessage(Context.Channel, IrcColors.Gray + "Неправильный ввод, введите @helpcmd cmdout");
                             break;
                     }
                 }
@@ -212,7 +212,7 @@ namespace fs24bot3
             }
             else
             {
-                Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует");
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует или эта команда являктся Lua-командой");
             }
         }
 
