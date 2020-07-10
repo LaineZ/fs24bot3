@@ -56,19 +56,6 @@ namespace fs24bot3
                 {
                     Thread.Sleep(Shop.Tickrate);
                     Shop.Update(connection);
-                    HttpTools httpI = new HttpTools("140bpmdubstep", "esposto");
-                    string responseString = await httpI.MakeRequestAsync("http://95.182.122.116:3000/api/v1/repos/140bpmdubstep/fs24bot3/git/refs/heads/master");
-                    if (responseString != null)
-                    {
-                        var jsonOutput = JsonConvert.DeserializeObject<Git.Root>(responseString);
-                        responseString = await httpI.MakeRequestAsync(jsonOutput.Object.Url.ToString());
-                        var commit = JsonConvert.DeserializeObject<Commits.Commit>(responseString);
-                        if (commit != LastCommit)
-                        {
-                            LastCommit = commit;
-                            await client.SendAsync(new PrivMsgMessage(Configuration.channel, $"GIT: {LastCommit.Committer}: {LastCommit.CommitCommit.Message} {LastCommit.CommitCommit.Author.Date}"));
-                        }
-                    }
                 }
             }).Start();
 
