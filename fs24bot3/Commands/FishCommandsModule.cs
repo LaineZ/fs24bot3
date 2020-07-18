@@ -14,7 +14,7 @@ namespace fs24bot3
 
         [Command("buyrod")]
         [Description("Купить удочочку - если параметр rodname пуст, напишет список удочек")]
-        public void Buyrod(string rodname = "")
+        public async void Buyrod(string rodname = "")
         {
             if (rodname.Any())
             {
@@ -50,8 +50,8 @@ namespace fs24bot3
             else
             {
                 var query = Context.Connection.Table<SQL.FishingRods>().ToList();
-
-                Context.SendMessage(Context.Channel, string.Join(" ", query.Select(x => x.RodName)));
+                string link = await new HttpTools().UploadToTrashbin(string.Join("\n", query.Select(x => $"{x.RodName}\tРазмер лески: {x.FishingLine} Крутость поплавка: {x.HookSize} Цена: {x.Price}")), "addplain");
+                Context.SendMessage(Context.Channel, "Все удочки: " + link);
             }
         }
 
@@ -85,7 +85,7 @@ namespace fs24bot3
         [Command("nest")]
         [Description("Установить место рыбалки - если параметр nestname пуст, напишет список мест")]
         [Remarks("RLF - требуемый размер лески F - количество рыбы")]
-        public void SetNest(string nestname = "")
+        public async void SetNest(string nestname = "")
         {
             var user = new UserOperations(Context.Message.From, Context.Connection, Context);
             string rodname = user.GetRod().RodName;
@@ -124,7 +124,9 @@ namespace fs24bot3
             else
             {
                 var queryFish = Context.Connection.Table<SQL.FishingNests>().ToList();
-                Context.SendMessage(Context.Channel, string.Join(" | ", queryFish.Select(x => $"{x.Name} RFL:{x.FishingLineRequired} F:{x.FishCount} ")));
+
+                string link = await new HttpTools().UploadToTrashbin(string.Join("\n", queryFish.Select(x => $"{x.Name}\tТребуемый уровень удочки:{x.FishingLineRequired}\tКоличество рыбы:{x.FishCount} ")), "addplain");
+                Context.SendMessage(Context.Channel, "Все места для рыбалки: " + link);
             }
         }
 

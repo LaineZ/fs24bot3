@@ -24,6 +24,7 @@ namespace fs24bot3
         /// </summary>
         public static TimeSpan TickSpeed;
         private static Random Rand;
+        public static int MaxCap = 150000;
 
         public static void Init(SQLiteConnection connect)
         {
@@ -134,7 +135,7 @@ namespace fs24bot3
                 }
             }
             int checkPayday = Rand.Next(0, 100);
-            if (checkPayday == 8 && GetMoneyAvg(connect) < 150000)
+            if (checkPayday == 8 && GetMoneyAvg(connect) < MaxCap)
             {
                 Log.Information("Giving payday!");
                 var query = connect.Table<Models.SQL.UserStats>();

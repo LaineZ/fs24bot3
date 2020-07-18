@@ -43,14 +43,10 @@ namespace fs24bot3
             {
                 if (cmd.Aliases.Contains(command))
                 {
-                    Context.SendMessage(Context.Channel,
-                        cmd.Module.Name + ".cs : @" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
+                    Context.SendMessage(Context.Channel, "@" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                     if (cmd.Remarks != null)
                     {
-                        foreach (string help in cmd.Remarks.Split("\n"))
-                        {
-                            Context.SendMessage(Context.Channel, IrcColors.Bold + help);
-                        }
+                        Context.SendMultiLineMessage(IrcColors.Bold + cmd.Remarks);
                     }
 
                     Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");

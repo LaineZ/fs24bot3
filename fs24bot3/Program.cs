@@ -49,7 +49,7 @@ namespace fs24bot3
 
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
             Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
-            new Thread(async () =>
+            new Thread(() =>
             {
                 Log.Information("Thread started!");
                 while (true)

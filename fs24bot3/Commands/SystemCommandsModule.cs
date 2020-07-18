@@ -82,7 +82,6 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
         }
 
-
         [Command("testfishing")]
         [Checks.CheckAdmin]
         public void TestFishing(int numberOfLaunches = 1000, int factor = 20, int baseFac = 10)
@@ -153,6 +152,14 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
         }
 
+        [Command("setcap")]
+        [Checks.CheckAdmin]
+        public void Cap(int cap = 5000)
+        {
+            Shop.MaxCap = cap;
+            Context.SendMessage(Context.Channel, "Установлен лимит невыплаты при: " + Shop.MaxCap);
+        }
+
         [Command("tickrate")]
         [Checks.CheckAdmin]
         public void Tickrate(int speed = 5000)
@@ -160,6 +167,7 @@ namespace fs24bot3
             Shop.Tickrate = speed;
             Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Shop.Tickrate);
         }
+
 
         [Command("loggerlevel")]
         [Checks.CheckAdmin]

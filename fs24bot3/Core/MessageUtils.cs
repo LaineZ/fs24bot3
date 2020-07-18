@@ -86,6 +86,8 @@ namespace fs24bot3.Core
             inputBuilder.Replace('В', 'B'); 
             inputBuilder.Replace('с', 'c'); 
             inputBuilder.Replace('С', 'C');
+            inputBuilder.Replace('О', 'O');
+            inputBuilder.Replace('о', 'o');
 
             return inputBuilder.ToString();
         }
