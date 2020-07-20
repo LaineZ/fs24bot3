@@ -121,9 +121,9 @@ namespace fs24bot3
                 });
                 return vk;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry...");
+                Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry... {0}", e.Message);
                 return vk;
             }
         }

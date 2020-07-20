@@ -20,8 +20,6 @@ namespace fs24bot3
         private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
         private static VkApi vk;
 
-        private static Commits.Commit LastCommit;
-
         static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()

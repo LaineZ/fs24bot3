@@ -20,7 +20,7 @@ namespace fs24bot3
             {
                 var query = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
                 var user = new UserOperations(Context.Message.From, Context.Connection, Context);
-                
+
                 if (query.Any())
                 {
                     if (user.RemItemFromInv("money", query[0].Price))
@@ -167,19 +167,19 @@ namespace fs24bot3
 
             Random rand = new Random();
             // TODO: Switch to normal
-            if (rand.Next(0, 5) == 2)
+            if (rand.Next(0, 3) == 1)
             {
                 // TODO: Refactor
                 if (nest.Level == 1)
                 {
-                    string[] fish = { "fish", "veriplace", "ffish"};
+                    string[] fish = { "fish", "veriplace", "ffish" };
                     string catched = fish[rand.Next(0, fish.Length)];
                     user.AddItemToInv(catched, 1);
                     Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
-                    ;               }
+                }
                 if (nest.Level == 2)
                 {
-                    string[] fish = { "fish", "veriplace", "ffish", "pike", "som"};
+                    string[] fish = { "fish", "veriplace", "ffish", "pike", "som" };
                     string catched = fish[rand.Next(0, fish.Length)];
                     user.AddItemToInv(catched, 1);
                     Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");

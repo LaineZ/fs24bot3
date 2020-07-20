@@ -227,7 +227,7 @@ namespace fs24bot3
                             }
                             catch (InvalidOperationException)
                             {
-                               // reset avatar
+                                // reset avatar
                                 vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: "https://gitlab.com/uploads/-/system/user/avatar/2374023/avatar.png"));
                             }
                         }
@@ -262,18 +262,26 @@ namespace fs24bot3
         [Description("Поиск в ВК")]
         public async void VkSearch([Remainder] string query)
         {
-            var parametrs = new VkNet.Model.RequestParams.NewsFeedSearchParams();
-            parametrs.Query = query;
-            parametrs.Count = 1;
-            var found = await Context.VKApi.NewsFeed.SearchAsync(parametrs);
+            try
+            {
+                var parametrs = new VkNet.Model.RequestParams.NewsFeedSearchParams();
+                parametrs.Query = query;
+                parametrs.Count = 1;
+                var found = await Context.VKApi.NewsFeed.SearchAsync(parametrs);
 
-            if (found.TotalCount > 0)
-            {
-                Context.SendMessage(Context.Channel, found.Items[0].Text[..Math.Min(200, found.Items[0].Text.Length)].Replace("\n", " ") + IrcColors.Lime + " // https://vk.com/wall" + found.Items[0].FromId + "_" + found.Items[0].Id); ;
+                if (found.TotalCount > 0)
+                {
+                    Context.SendMessage(Context.Channel, found.Items[0].Text[..Math.Min(200, found.Items[0].Text.Length)].Replace("\n", " ") + IrcColors.Lime + " // https://vk.com/wall" + found.Items[0].FromId + "_" + found.Items[0].Id); ;
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено...");
+                }
             }
-            else
+            catch (Exception)
             {
-                Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено...");
+                Context.VKApi = http.LogInVKAPI();
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK: Попробуйте использовать команду ЕЩЕ РАЗ");
             }
         }
     }
