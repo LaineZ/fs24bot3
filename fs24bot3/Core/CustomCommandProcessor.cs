@@ -14,7 +14,7 @@ namespace fs24bot3.Core
 {
     public static class CustomCommandProcessor
     {
-        public async static Task<bool> ProcessCmd(PrivMsgMessage message, NetIRC.Client client, SQLite.SQLiteConnection connect)
+        public async static Task<bool> ProcessCmd(PrivMsgMessage message, NetIRC.Client client, SQLite.SQLiteConnection connect, List<PrivMsgMessage> messageBus)
         {
             if (message.Message.StartsWith("@"))
             {
@@ -90,7 +90,7 @@ namespace fs24bot3.Core
                         lua["CMD_NAME"] = cmd.Command;
                         lua["CMD_OWNER"] = cmd.Nick;
                         lua["CMD_ARGS"] = string.Join(" ", argsArray);
-                        LuaFunctions luaFunctions = new LuaFunctions(connect, message.From);
+                        LuaFunctions luaFunctions = new LuaFunctions(connect, message.From, messageBus);
                         lua["Cmd"] = luaFunctions;
 
                         Thread thread = new Thread(async () =>

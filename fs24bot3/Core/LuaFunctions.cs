@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using fs24bot3.Models;
+using NetIRC.Messages;
 using Serilog;
 using SQLite;
 
@@ -12,11 +13,13 @@ namespace fs24bot3.Core
     {
         private SQLiteConnection Connection;
         private string Caller;
+        private List<PrivMsgMessage> MessageBus;
 
-        public LuaFunctions(SQLiteConnection connection, string caller)
+        public LuaFunctions(SQLiteConnection connection, string caller, List<PrivMsgMessage> messageBus)
         {
            Connection = connection;
            Caller = caller;
+           MessageBus = messageBus;
         }
 
         public string[] GetCommandOutput(string input, string command)
@@ -36,6 +39,11 @@ namespace fs24bot3.Core
             Log.Verbose("OUTPUT: {0}", argsFinal.ToString());
 
             return argsFinal.ToString().Split("||");
+        }
+
+        public PrivMsgMessage[] GetMessageBus()
+        {
+            return MessageBus.ToArray();
         }
     }
 }

@@ -12,6 +12,7 @@ using fs24bot3.Models;
 using System.IO;
 using VkNet;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace fs24bot3
 {
@@ -19,6 +20,7 @@ namespace fs24bot3
     {
         private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
         private static VkApi vk;
+        private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
 
         static void Main(string[] args)
         {
@@ -75,6 +77,15 @@ namespace fs24bot3
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
+            if (MessageBus.Count < 1000)
+            {
+                MessageBus.Add(e.IRCMessage);
+            }
+            else
+            {
+                MessageBus.Clear();
+            }
+
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
             var queryIfExt = connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
 
@@ -106,7 +117,7 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
                         break;
                     case CommandNotFoundResult err:
-                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection);
+                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection, MessageBus);
                         break;
                     case ExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: `{err.Exception.Message}`"));
