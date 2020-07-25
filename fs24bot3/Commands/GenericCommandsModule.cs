@@ -123,7 +123,7 @@ namespace fs24bot3
                 catch (SQLiteException)
                 {
                     usr.AddItemToInv("money", 8000);
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте @editcmd");
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте @cmdout");
                 }
             }
             else

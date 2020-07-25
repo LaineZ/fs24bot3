@@ -25,12 +25,12 @@ namespace fs24bot3
             "Операторы поиска: `+` - Включить слово в запрос `-` - Исключить слово из запроса")]
         public async void MailSearch([Remainder] string query)
         {
-
             // search options
             int page = 0;
             int limit = 1;
             int maxpage = 10;
             bool fullmatch = false;
+            bool random = false;
             string site = "";
 
             string[] queryOptions = query.Split(" ");
@@ -48,11 +48,13 @@ namespace fs24bot3
                         string[] options = queryOptions[i].Split(":");
                         page = int.Parse(options[1]);
                     }
+
                     if (queryOptions[i].Contains("max:"))
                     {
                         string[] options = queryOptions[i].Split(":");
                         maxpage = int.Parse(options[1]);
                     }
+
                     if (queryOptions[i].Contains("commongarbage:off"))
                     {
                         exclude.AddRange(new List<string>() { "mp3", "музыку", "двач", "2ch" });
@@ -61,7 +63,11 @@ namespace fs24bot3
                     else if (queryOptions[i].Contains("-"))
                     {
                         string[] options = queryOptions[i].Split("-");
-                        exclude.Add(options[1].ToLower());
+                        // do not add to exclude if user just wrote a '-'
+                        if (options[1].Length > 0)
+                        {
+                            exclude.Add(options[1].ToLower());
+                        }
                     }
                     else if (queryOptions[i].Contains("multi:on"))
                     {
@@ -74,7 +80,11 @@ namespace fs24bot3
                     }
                     else if (queryOptions[i].Contains("fullmatch:on"))
                     {
-                        fullmatch = true;
+                        fullmatch = queryOptions[i].Contains("fullmatch:on");
+                    }
+                    else if (queryOptions[i].Contains("random:on"))
+                    {
+                        random = true;
                     }
                     else
                     {
@@ -170,25 +180,19 @@ namespace fs24bot3
                 default:
                     if (searchResults.Count > 0)
                     {
-                        foreach (var item in searchResults.Take(limit))
+                        if (!random)
                         {
-                            StringBuilder searchResult = new StringBuilder(item.title);
-                            searchResult.Replace("<b>", IrcColors.Bold);
-                            searchResult.Replace("</b>", IrcColors.Reset);
-
-                            StringBuilder descResult = new StringBuilder(item.passage);
-                            descResult.Replace("<b>", IrcColors.Bold);
-                            descResult.Replace("</b>", IrcColors.Reset);
-
-
-                            HtmlDocument doc = new HtmlDocument();
-
-                            doc.LoadHtml(descResult.ToString());
-
-                            string desc = doc.DocumentNode.InnerText;
-
-                            Context.SendMessage(Context.Channel, $"{searchResult} {IrcColors.Green} // {item.url}");
-                            if (limit <= 1) { Context.SendMessage(Context.Channel, desc); }
+                            foreach (var item in searchResults.Take(limit))
+                            {
+                                Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.title)}{IrcColors.Green} // {item.url}");
+                                if (limit <= 1) { Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.passage)); }
+                            }
+                        }
+                        else
+                        {
+                            var rand = new Random().Next(0, searchResults.Count - 1);
+                            Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(searchResults[rand].title)}{IrcColors.Green} // {searchResults[rand].url}");
+                            if (limit <= 1) { Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(searchResults[rand].passage)); }
                         }
                     }
                     break;

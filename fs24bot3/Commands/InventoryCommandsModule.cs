@@ -206,8 +206,16 @@ namespace fs24bot3
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
                     user.IncreaseXp(100);
                     Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +100 XP");
-                    if (rand.Next(0, 7) == 2) {
+                    if (rand.Next(0, 7) == 2)
+                    {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
+                    }
+                    else
+                    {
+                        if (rand.Next(0, 1) == 1 || userDest.RemItemFromInv("speaker", 1))
+                        {
+                            Context.SendMessage(username, $"Вас атакует {Context.Message.From} гаечными ключами! Вы потеряли {takeItems[indexItem].Item} x{itemCount}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
+                        }
                     }
                 }
                 else

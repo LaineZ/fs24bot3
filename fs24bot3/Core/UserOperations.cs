@@ -63,6 +63,13 @@ namespace fs24bot3
             }
         }
 
+
+        /// <summary>
+        /// Removes item from inventory
+        /// </summary>
+        /// <param name="name">Item slug</param>
+        /// <param name="count">Count</param>
+        /// <returns>Success of removing</returns>
         public bool RemItemFromInv(string name, int count)
         {
             count = (int)Math.Floor((decimal)count);

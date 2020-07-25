@@ -1,6 +1,8 @@
 ﻿using fs24bot3.Models;
+using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
+using System.Text;
 
 namespace fs24bot3.Core
 {
@@ -28,6 +30,19 @@ namespace fs24bot3.Core
             {
                 return null;
             }
+        }
+
+        public static string BoldToIrc(string input)
+        {
+            StringBuilder textResult = new StringBuilder(input);
+            textResult.Replace("<b>", IrcColors.Bold);
+            textResult.Replace("</b>", IrcColors.Reset);
+
+            HtmlDocument doc = new HtmlDocument();
+
+            doc.LoadHtml(textResult.ToString());
+
+            return doc.DocumentNode.InnerText;
         }
     }
 }

@@ -6,6 +6,7 @@ using SQLite;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3
 {
@@ -80,6 +81,26 @@ namespace fs24bot3
 
             sql.AddItemToInv(item, count);
             Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
+        }
+
+
+        [Command("joinch")]
+        [Checks.CheckAdmin]
+        public async void JoinChannel(string channel)
+        {
+            Context.SendMessage(Context.Channel, $"Зашел на: {channel}");
+            await Context.Client.SendRaw("JOIN " + channel);
+            Context.SendMessage(channel, $"Всем перепривет с вами {Configuration.name}");
+        }
+
+
+        [Command("partch")]
+        [Checks.CheckAdmin]
+        public async void PartChannel(string channel)
+        {
+            Context.SendMessage(channel, "Простите я ухожу, всем пока...");
+            await Context.Client.SendRaw("PART " + channel);
+            Context.SendMessage(Context.Channel, $"Вышел из: {channel}");
         }
 
         [Command("testfishing")]

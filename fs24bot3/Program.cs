@@ -48,6 +48,7 @@ namespace fs24bot3
             client.EventHub.RplWelcome += Client_OnWelcome;
 
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
+
             Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
             new Thread(() =>
             {
@@ -180,7 +181,8 @@ namespace fs24bot3
                     }
                     break;
                 case "ERROR":
-                    Log.Fatal("Connection closed due to error");
+                    Log.Error("Connection closed due to error... Reconnecting");
+                    await Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
                     break;
                 default:
                     break;
