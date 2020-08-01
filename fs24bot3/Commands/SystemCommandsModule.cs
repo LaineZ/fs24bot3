@@ -40,6 +40,19 @@ namespace fs24bot3
             Context.SendMessage(Context.Channel, "Мусор вывезли!");
         }
 
+
+        [Command("giveall")]
+        [Checks.CheckAdmin]
+        public void Giveall(string username)
+        {
+            var user = new UserOperations(username, Context.Connection);
+            foreach (var item in Shop.ShopItems)
+            {
+                user.AddItemToInv(item.Slug, 1);
+            }
+            Context.SendMessage(Context.Channel, "Вы выдали себе все предметы!");
+        }
+
         [Command("updconfig")]
         [Checks.CheckAdmin]
         [Description("Обновление файла конфигурации")]

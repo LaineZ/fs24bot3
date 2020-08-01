@@ -101,21 +101,8 @@ namespace fs24bot3
         {
             // full qualified item name
             var itemFullName = Shop.GetItem(itemname).Name;
-
-            var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName)).ToList();
-            if (query.Any())
-            {
-                foreach (var item in query)
-                {
-                    if (item.Item == itemFullName)
-                    {
-                        //Log.Verbose("Counting item {0} x{1}", itemFullName, item.ItemCount);
-                        return item.ItemCount;
-                    }
-                }
-            }
-            Log.Verbose("Count item failed!");
-            return 0;
+            var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName));
+            return item.ItemCount;
         }
 
         public List<SQL.Inventory> GetInventory()

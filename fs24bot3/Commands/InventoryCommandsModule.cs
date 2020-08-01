@@ -199,9 +199,11 @@ namespace fs24bot3
                 {
                     int indexItem = rand.Next(takeItems.Count);
                     int itemCount = 1;
+
                     if (takeItems[indexItem].ItemCount / (10 - dmg) > 0) {
                         itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (10 - dmg));
                     }
+                    
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
                     user.IncreaseXp(100);
