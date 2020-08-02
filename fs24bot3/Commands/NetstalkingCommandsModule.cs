@@ -268,9 +268,11 @@ namespace fs24bot3
         {
             try
             {
-                var parametrs = new VkNet.Model.RequestParams.NewsFeedSearchParams();
-                parametrs.Query = query;
-                parametrs.Count = 1;
+                var parametrs = new VkNet.Model.RequestParams.NewsFeedSearchParams
+                {
+                    Query = query,
+                    Count = 1
+                };
                 var found = await Context.VKApi.NewsFeed.SearchAsync(parametrs);
 
                 if (found.TotalCount > 0)

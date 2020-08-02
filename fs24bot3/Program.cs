@@ -19,10 +19,9 @@ namespace fs24bot3
     class Program
     {
         private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
-        private static VkApi vk;
         private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
 
-        static void Main(string[] args)
+        static void Main()
         {
             Log.Logger = new LoggerConfiguration()
             .WriteTo.ColoredConsole()
@@ -38,9 +37,7 @@ namespace fs24bot3
             _service.AddModule<InternetCommandsModule>();
             _service.AddModule<NetstalkingCommandsModule>();
             _service.AddModule<FishCommandsModule>();
-
-            vk = new HttpTools().LogInVKAPI();
-
+            
             using var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
@@ -96,7 +93,7 @@ namespace fs24bot3
                 if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
                     return;
 
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, vk));
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
                 switch (result)
                 {
                     case ChecksFailedResult err:
@@ -180,6 +177,8 @@ namespace fs24bot3
                     break;
                 case "ERROR":
                     Log.Error("Connection closed due to error... Reconnecting");
+                    client.Dispose();
+                    client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
                     await Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
                     break;
                 default:

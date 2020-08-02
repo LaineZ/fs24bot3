@@ -21,6 +21,7 @@ namespace fs24bot3
         CookieContainer cookies = new CookieContainer();
 
         string Password;
+        int VkTries = 0;
 
         public HttpTools(string login = null, string password = null)
         {
@@ -112,6 +113,12 @@ namespace fs24bot3
 
             try
             {
+                if (VkTries > 5)
+                {
+                    // throw exception if tries exceed
+                    throw new Exception();
+                }
+
                 vk.Authorize(new ApiAuthParams
                 {
                     ApplicationId = ulong.Parse(Configuration.vkApiId),
@@ -124,6 +131,7 @@ namespace fs24bot3
             catch (Exception e)
             {
                 Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry... {0}", e.Message);
+                VkTries++;
                 return vk;
             }
         }

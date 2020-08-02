@@ -8,6 +8,7 @@ using NetIRC.Connection;
 using VkNet;
 using VkNet.Enums.Filters;
 using VkNet.Model;
+using System.Threading;
 
 namespace fs24bot3
 {
@@ -25,12 +26,17 @@ namespace fs24bot3
             public VkApi VKApi;
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, VkApi api, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, IServiceProvider provider = null) : base(provider)
             {
                 Message = message;
                 Client = client;
                 Connection = connection;
-                VKApi = api;
+
+                // TODO: Fix
+                if (VKApi == null)
+                {
+                    VKApi = http.LogInVKAPI();
+                }
 
                 if (Message.To == Configuration.name)
                 {
