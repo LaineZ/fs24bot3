@@ -31,25 +31,25 @@ namespace fs24bot3
             Log.Information("loading shop...");
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍺 Пиво", Price = 100, Sellable = true, Slug = "beer" });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 150, Sellable = true, Slug = "wine", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ФРАНЦУНСКОЕ]", Price = 150, Sellable = true, Slug = "winef", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ГРУЗИНСКОЕ]", Price = 150, Sellable = true, Slug = "wineg", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔧 Гаечный ключ", Price = 3000, Sellable = true, Slug = "wrench", Wrenchable = true, WrDamage = 0 });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🛠 Гаечный ключ и молоток", Price = 5000, Sellable = true, Slug = "wrenchadv", Wrenchable = true, WrDamage = 5 });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔊 Мониторные колонки", Price = 320, Sellable = true, Slug = "speaker", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎛 PIONEER DJ", Price = 320, Sellable = true, Slug = "dj", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎹 Native Instruments Komplete Kontrol S88", Price = 600, Sellable = true, Slug = "midikey", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 15000, Sellable = true, Slug = "wall", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔫 Пистолет", Price = 5500, Sellable = true, Slug = "pistol", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Бомба", Price = 9500, Sellable = true, Slug = "bomb", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐍 Червь", Price = 50, Sellable = true, Slug = "worm", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐟 Рыба", Price = 390, Sellable = true, Slug = "fish", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐠 Тропическая рыба", Price = 1570, Sellable = true, Slug = "tfish", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍥 СТРАННАЯ РЫБА", Price = 10000, Sellable = true, Slug = "weirdfishes", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐡 Рыба-фугу", Price = 370, Sellable = true, Slug = "ffish", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎏 Верхоплавки", Price = 270, Sellable = true, Slug = "veriplace", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🦈 Щука", Price = 1000, Sellable = true, Slug = "pike", Wrenchable = false });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐬 Сом", Price = 1200, Sellable = true, Slug = "som", Wrenchable = false });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 150, Sellable = true, Slug = "wine" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ФРАНЦУНСКОЕ]", Price = 150, Sellable = true, Slug = "winef" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ГРУЗИНСКОЕ]", Price = 150, Sellable = true, Slug = "wineg" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔧 Гаечный ключ", Price = 3000, Sellable = true, Slug = "wrench", Type = Models.ItemInventory.ItemType.WrenchWeapon, Damage = 0 });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🛠 Гаечный ключ и молоток", Price = 5000, Sellable = true, Slug = "wrenchadv", Type = Models.ItemInventory.ItemType.WrenchWeapon, Damage = 5 });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔊 Мониторные колонки", Price = 320, Sellable = true, Slug = "speaker" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎛 PIONEER DJ", Price = 320, Sellable = true, Slug = "dj" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎹 Native Instruments Komplete Kontrol S88", Price = 600, Sellable = true, Slug = "midikey" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 15000, Sellable = true, Slug = "wall" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔫 Пистолет", Price = 5500, Sellable = true, Slug = "pistol", Type = Models.ItemInventory.ItemType.WallDestroyer, Damage = 5 });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Бомба", Price = 9500, Sellable = true, Slug = "bomb", Type = Models.ItemInventory.ItemType.WallDestroyer, Damage = 10 });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐍 Червь", Price = 50, Sellable = true, Slug = "worm" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐟 Рыба", Price = 390, Sellable = true, Slug = "fish" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐠 Тропическая рыба", Price = 1570, Sellable = true, Slug = "tfish" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍥 СТРАННАЯ РЫБА", Price = 10000, Sellable = true, Slug = "weirdfishes" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐡 Рыба-фугу", Price = 370, Sellable = true, Slug = "ffish" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎏 Верхоплавки", Price = 270, Sellable = true, Slug = "veriplace" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🦈 Щука", Price = 1000, Sellable = true, Slug = "pike" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐬 Сом", Price = 1200, Sellable = true, Slug = "som" });
             foreach (var item in ShopItems)
             {
                 var sqlItem = new Models.SQL.Item()
@@ -81,7 +81,7 @@ namespace fs24bot3
                 // add 2 new spots
                 for (int i = 0; i < 2; i++)
                 {
-                    connect.Insert(new Models.SQL.FishingNests() { Level = Rand.Next(1, 3), FishCount = Rand.Next(1, 20), FishingLineRequired = Rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(Rand.Next(2, 4))});
+                    connect.Insert(new Models.SQL.FishingNests() { Level = Rand.Next(1, 3), FishCount = Rand.Next(1, 20), FishingLineRequired = Rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(Rand.Next(2, 4)) });
                 }
             }
             catch (SQLiteException)

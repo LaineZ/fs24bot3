@@ -190,6 +190,7 @@ namespace fs24bot3
                         return;
                     }
                 }
+
                 UserOperations userDest = new UserOperations(username, Context.Connection);
                 var takeItems = userDest.GetInventory();
 

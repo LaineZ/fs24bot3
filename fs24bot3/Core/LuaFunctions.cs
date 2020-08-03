@@ -11,7 +11,7 @@ namespace fs24bot3.Core
 {
     public class LuaFunctions
     {
-        private SQLiteConnection Connection;
+        private readonly SQLiteConnection Connection;
         private string Caller;
         private List<PrivMsgMessage> MessageBus;
 

@@ -7,8 +7,9 @@ namespace fs24bot3.Models
 {
     public class ItemInventory
     {
-        public enum ItemTypes {
+        public enum ItemType {
             WrenchWeapon,
+            WallDestroyer,
             Basic
         }
 
@@ -18,8 +19,8 @@ namespace fs24bot3.Models
             public int Price { get; set; }
             public string Slug { get; set; }
             public bool Sellable { get; set; }
-            public bool Wrenchable {get; set; }
-            public int WrDamage { get; set; } 
+            public ItemType Type { get; set; }
+            public int Damage { get; set; } 
         }
     }
 }

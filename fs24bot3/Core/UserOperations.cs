@@ -102,7 +102,7 @@ namespace fs24bot3
             // full qualified item name
             var itemFullName = Shop.GetItem(itemname).Name;
             var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName));
-            return item.ItemCount;
+            return item == null ? 0 : item.ItemCount;
         }
 
         public List<SQL.Inventory> GetInventory()

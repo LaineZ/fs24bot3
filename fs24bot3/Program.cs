@@ -18,7 +18,7 @@ namespace fs24bot3
 {
     class Program
     {
-        private static SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
+        private static readonly SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
         private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
         private static VkApi vk;
 

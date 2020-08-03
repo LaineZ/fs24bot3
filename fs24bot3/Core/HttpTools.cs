@@ -17,8 +17,8 @@ namespace fs24bot3
 {
     class HttpTools
     {
-        HttpClient client = new HttpClient();
-        CookieContainer cookies = new CookieContainer();
+        private readonly HttpClient client = new HttpClient();
+        readonly CookieContainer cookies = new CookieContainer();
 
         string Password;
         int VkTries = 0;

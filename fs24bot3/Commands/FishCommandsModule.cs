@@ -36,7 +36,7 @@ namespace fs24bot3
                                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}У вас уже есть какая-то удочка, введите @sellrod чтобы продать текущую удочку");
                                 break;
                             default:
-                                Context.SendMessage(Context.Channel, $"{IrcColors.Red}Чёто не так причина: {rodState.ToString()}... Деньги возвращены");
+                                Context.SendMessage(Context.Channel, $"{IrcColors.Red}Чёто не так причина: {rodState}... Деньги возвращены");
                                 user.AddItemToInv("money", query[0].Price);
                                 break;
                         }
@@ -77,7 +77,7 @@ namespace fs24bot3
                     Context.SendMessage(Context.Channel, $"{IrcColors.Green}Вы продали свою удочку {rodState.Item2.RodName} за {price} денег");
                     break;
                 default:
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}Чёто не так причина: {rodState.ToString()}... =( =(");
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}Чёто не так причина: {rodState}... =( =(");
                     break;
             }
         }
