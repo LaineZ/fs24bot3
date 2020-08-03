@@ -107,7 +107,7 @@ namespace fs24bot3
                 }
                 catch (NullReferenceException)
                 {
-                    Log.Warning("User {0} have null money that's werid", users.Nick);
+                    Log.Verbose("User {0} have null money", users.Nick);
                 }
             }
             return money.Average();

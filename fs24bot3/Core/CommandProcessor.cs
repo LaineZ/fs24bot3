@@ -26,17 +26,12 @@ namespace fs24bot3
             public VkApi VKApi;
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, VkApi vk, IServiceProvider provider = null) : base(provider)
             {
                 Message = message;
                 Client = client;
                 Connection = connection;
-
-                // TODO: Fix
-                if (VKApi == null)
-                {
-                    VKApi = http.LogInVKAPI();
-                }
+                VKApi = vk;
 
                 if (Message.To == Configuration.name)
                 {

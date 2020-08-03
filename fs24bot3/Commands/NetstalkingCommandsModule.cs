@@ -172,7 +172,7 @@ namespace fs24bot3
                     Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
                     break;
                 case MailErrors.SearchError.NotFound:
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено попробуйте изменить опции поиска");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
                     break;
                 case MailErrors.SearchError.UnknownError:
                     Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
@@ -250,9 +250,7 @@ namespace fs24bot3
                 }
                 catch (Exception)
                 {
-                    Log.Warning("VK Session is not invalid... retrying login");
-                    Context.VKApi = http.LogInVKAPI();
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK: Попробуйте использовать команду ЕЩЕ РАЗ");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK, не знаю почему......................................");
                 }
             }
             else
@@ -286,8 +284,7 @@ namespace fs24bot3
             }
             catch (Exception)
             {
-                Context.VKApi = http.LogInVKAPI();
-                Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK: Попробуйте использовать команду ЕЩЕ РАЗ");
+                Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK, не знаю почему......................................");
             }
         }
     }
