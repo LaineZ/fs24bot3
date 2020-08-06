@@ -44,6 +44,20 @@ namespace fs24bot3
             return false;
         }
 
+
+        public void SetLastMessage()
+        {
+            Connect.Execute("UPDATE UserStats SET LastMsg = ? WHERE Nick = ?", (int)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(), Username);
+        }
+
+        public DateTime GetLastMessage()
+        {
+            var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
+            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddSeconds(nick.LastMsg).ToLocalTime();
+            return dtDateTime;
+        }
+
         public void SetLevel(int level)
         {
             Connect.Execute("UPDATE UserStats SET Level = ? WHERE Nick = ?", level, Username);

@@ -133,19 +133,32 @@ namespace fs24bot3
                     }
                 }
             }
+
             int checkPayday = Rand.Next(0, 100);
             if (checkPayday == 8 && GetMoneyAvg(connect) < MaxCap)
             {
-                Log.Information("Giving payday!");
+                Log.Information("Giving payday/taxes!");
                 var query = connect.Table<Models.SQL.UserStats>();
                 foreach (var users in query)
                 {
                     UserOperations user = new UserOperations(users.Nick, connect);
-                    user.AddItemToInv("money", user.GetUserInfo().Level);
-                    if (Rand.Next(0, 5) == 1 && user.RemItemFromInv("wall", 1))
+                    if (Rand.Next(0, 10) == 1 && user.RemItemFromInv("wall", 1))
                     {
                         Log.Information("Breaking wall for {0}", users.Nick);
                     }
+
+                    var subst = DateTime.Now.Subtract(user.GetLastMessage()).TotalHours;
+
+                    if (subst > 10)
+                    {
+                        Log.Information("Tax fine for user: {0}", user.Username);
+                        user.RemItemFromInv("money", user.GetUserInfo().Level * Rand.Next(1, 2));
+                    }
+                    else
+                    {
+                        user.AddItemToInv("money", user.GetUserInfo().Level);
+                    }
+
                 }
                 PaydaysCount++;
 

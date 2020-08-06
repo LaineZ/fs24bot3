@@ -12,12 +12,13 @@ namespace fs24bot3.Models
         {
             [PrimaryKey]
             public string Nick { get; set; }
-
             public int Level { get; set; }
             public int Xp { get; set; }
             public int Need { get; set; }
             public int Admin { get; set; }
             public string AdminPassword { get; set; }
+
+            public int LastMsg { get; set; }
         }
 
         // ultimate table 99999
