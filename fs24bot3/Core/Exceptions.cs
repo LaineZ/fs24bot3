@@ -17,6 +17,18 @@ namespace fs24bot3.Core
             }
         }
 
+
+        public class TypeNotFoundException : Exception
+        {
+            public override string Message
+            {
+                get
+                {
+                    return "Предмет с данным типом не найден!";
+                }
+            }
+        }
+
         public class SearchError : Exception
         {
             public override string Message

@@ -28,7 +28,11 @@ namespace fs24bot3
             .WriteTo.ColoredConsole()
             .MinimumLevel.ControlledBy(Configuration.LoggerSw)
             .CreateLogger();
-            Console.OutputEncoding = Encoding.Unicode;
+
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                Console.OutputEncoding = Encoding.Unicode;
+            }
 
             Core.Database.InitDatabase(connection);
 
@@ -171,8 +175,8 @@ namespace fs24bot3
                         bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection, MessageBus);
                         break;
                     case ExecutionFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: `{err.Exception.Message}`"));
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{err.Reason}: {err.Exception.Message}"));
+                        //await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
                         break;
                 }
             }

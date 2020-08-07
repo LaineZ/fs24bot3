@@ -173,22 +173,26 @@ namespace fs24bot3
             {
                 // TODO: Refactor
                 UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+
+                var allWrenches = user.GetInventory().Where(x => Shop.GetItem(x.Item).Type.Equals(Models.ItemInventory.ItemType.WrenchWeapon));
                 int dmg = 0;
 
+                var best = allWrenches.Aggregate((i1, i2) => Shop.GetItem(i1.Item).Damage > Shop.GetItem(i2.Item).Damage ? i1 : i2);
 
-                if (user.RemItemFromInv(Shop.GetItem("wrenchadv").Name, 1))
+                // selects best wrench type
+                if (allWrenches.Any() && best != null)
                 {
-                    dmg = 4;
+                    dmg = Shop.GetItem(best.Item).Damage;
+                    if (!user.RemItemFromInv(best.Item, 1))
+                    {
+                        Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас нет никакого гаечного ключа!");
+                        return;
+                    }
                 }
                 else
                 {
-                    // trying with default wrench - if not found just end the command
-                    // defalut wrench deals 0 damage bonus
-                    if (!user.RemItemFromInv(Shop.GetItem("wrench").Name, 1))
-                    {
-                        Context.SendMessage(Context.Channel, $"У вас нету {Shop.GetItem("wrench").Name} или {Shop.GetItem("wrenchadv").Name}");
-                        return;
-                    }
+                    Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас нет никакого гаечного ключа!");
+                    return;
                 }
 
                 UserOperations userDest = new UserOperations(username, Context.Connection);
