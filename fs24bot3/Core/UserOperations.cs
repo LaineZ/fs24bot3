@@ -133,14 +133,14 @@ namespace fs24bot3
             }
         }
 
-        public List<SQL.Inventory> GetItemsByType(Models.ItemInventory.ItemType itType)
+        public List<SQL.Inventory> GetItemsByType(ItemInventory.ItemType itType)
         {
             var inv = GetInventory();
 
             if (inv != null)
             {
-                var allItems = inv.Where(x => Shop.GetItem(x.Item).Type.Equals(itType));
-                return allItems.ToList();
+                var allItems = inv.FindAll(x => Shop.GetItem(x.Item).Type == itType);
+                return allItems;
             }
             else
             {

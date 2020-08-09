@@ -174,20 +174,14 @@ namespace fs24bot3
                 // TODO: Refactor
                 UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
 
-                var allWrenches = user.GetInventory().Where(x => Shop.GetItem(x.Item).Type.Equals(Models.ItemInventory.ItemType.WrenchWeapon));
+                var allWrenches = user.GetItemsByType(Models.ItemInventory.ItemType.WrenchWeapon);
                 int dmg = 0;
 
                 var best = allWrenches.Aggregate((i1, i2) => Shop.GetItem(i1.Item).Damage > Shop.GetItem(i2.Item).Damage ? i1 : i2);
 
-                // selects best wrench type
-                if (allWrenches.Any() && best != null)
+                if (user.RemItemFromInv(best.Item, 1))
                 {
                     dmg = Shop.GetItem(best.Item).Damage;
-                    if (!user.RemItemFromInv(best.Item, 1))
-                    {
-                        Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас нет никакого гаечного ключа!");
-                        return;
-                    }
                 }
                 else
                 {
@@ -212,7 +206,7 @@ namespace fs24bot3
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
                     user.IncreaseXp(100);
-                    Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +100 XP");
+                    Context.SendMessage(Context.Channel, $"Вы кинули {best.Item} с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +100 XP");
                     if (rand.Next(0, 7) == 2)
                     {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
@@ -233,6 +227,10 @@ namespace fs24bot3
             catch (Core.Exceptions.UserNotFoundException)
             {
                 Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ в {username}!");
+            }
+            catch (InvalidOperationException)
+            {
+                Context.SendMessage(Context.Channel, $"У вас нету гаечных ключей!");
             }
         }
 
