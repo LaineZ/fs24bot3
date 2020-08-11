@@ -171,21 +171,31 @@ namespace fs24bot3
         {
             try
             {
-                // TODO: Refactor
                 UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
-
-                var allWrenches = user.GetItemsByType(Models.ItemInventory.ItemType.WrenchWeapon);
                 int dmg = 0;
+                string wrname = String.Empty;
 
-                var best = allWrenches.Aggregate((i1, i2) => Shop.GetItem(i1.Item).Damage > Shop.GetItem(i2.Item).Damage ? i1 : i2);
-
-                if (user.RemItemFromInv(best.Item, 1))
+                List<(string, int)> wrenches = new List<(string, int)>() 
                 {
-                    dmg = Shop.GetItem(best.Item).Damage;
+                    // Wrench damage. Sorted in ascend order by damage
+                    ("wrenchadv", 10),
+                    ("wrench", 5),
+                };
+
+                foreach ((string wrench, int wrdmg) in wrenches)
+                {
+                    if (user.RemItemFromInv(wrench, 1))
+                    {
+                        dmg = wrdmg;
+                        wrname = Shop.GetItem(wrench).Name;
+                        break;
+                    }
                 }
-                else
+
+                // wrench not found...... 😥
+                if (dmg == 0)
                 {
-                    Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас нет никакого гаечного ключа!");
+                    Context.SendMessage(Context.Channel, $"У вас нету гаечных ключей!");
                     return;
                 }
 
@@ -194,19 +204,23 @@ namespace fs24bot3
 
                 var rand = new Random();
 
-                if (rand.Next(0, 5 + userDest.CountItem("wall") - dmg) == 0 && username != Context.Message.From)
+                if (rand.Next(0, 10 + userDest.CountItem("wall") - dmg) == 0 && username != Context.Message.From)
                 {
                     int indexItem = rand.Next(takeItems.Count);
                     int itemCount = 1;
 
-                    if (takeItems[indexItem].ItemCount / (10 - dmg) > 0) {
-                        itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (10 - dmg));
+                    if (takeItems[indexItem].ItemCount / (15 - dmg) > 0) {
+                        itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (15 - dmg));
                     }
                     
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
-                    user.IncreaseXp(100);
-                    Context.SendMessage(Context.Channel, $"Вы кинули {best.Item} с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +100 XP");
+
+                    int xp = rand.Next(100, 500 + user.GetUserInfo().Level);
+
+                    user.IncreaseXp(xp);
+
+                    Context.SendMessage(Context.Channel, $"Вы кинули {wrname} с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +{xp} XP");
                     if (rand.Next(0, 7) == 2)
                     {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
@@ -227,10 +241,6 @@ namespace fs24bot3
             catch (Core.Exceptions.UserNotFoundException)
             {
                 Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ в {username}!");
-            }
-            catch (InvalidOperationException)
-            {
-                Context.SendMessage(Context.Channel, $"У вас нету гаечных ключей!");
             }
         }
 

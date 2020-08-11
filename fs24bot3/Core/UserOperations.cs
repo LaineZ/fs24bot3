@@ -133,21 +133,6 @@ namespace fs24bot3
             }
         }
 
-        public List<SQL.Inventory> GetItemsByType(ItemInventory.ItemType itType)
-        {
-            var inv = GetInventory();
-
-            if (inv != null)
-            {
-                var allItems = inv.FindAll(x => Shop.GetItem(x.Item).Type == itType);
-                return allItems;
-            }
-            else
-            {
-                throw new Core.Exceptions.TypeNotFoundException();
-            }
-        }
-
         public SQL.UserStats GetUserInfo()
         {
             var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
