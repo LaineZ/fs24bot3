@@ -220,7 +220,7 @@ namespace fs24bot3
                     break;
                 case "ERROR":
                     Log.Error("Connection closed due to error... Reconnecting");
-                    client.Dispose();
+                    //client.Dispose();
                     client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
                     await Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
                     break;

@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json;
-using Qmmands;
+﻿using Qmmands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace fs24bot3
 {
@@ -251,33 +249,41 @@ namespace fs24bot3
         {
             try
             {
-                // TODO: Refactor
                 UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
                 int dmg = 0;
+                string brname = String.Empty;
 
+                List<(string, int)> wrenches = new List<(string, int)>() 
+                {
+                    // Walls damage. Sorted in ascend order by damage
+                    ("bomb", 8),
+                    ("pistol", 6),
+                };
 
-                if (user.RemItemFromInv(Shop.GetItem("bomb").Name, 1))
+                foreach ((string wrench, int wrdmg) in wrenches)
                 {
-                    dmg = 3;
-                }
-                else
-                {
-                    // trying with pistol - if not found just end the command
-                    // pistol deals 0 damage bonus
-                    if (!user.RemItemFromInv(Shop.GetItem("pistol").Name, 1))
+                    if (user.RemItemFromInv(wrench, 1))
                     {
-                        Context.SendMessage(Context.Channel, $"У вас нету {Shop.GetItem("pistol").Name} или {Shop.GetItem("bomb").Name}");
-                        return;
+                        dmg = wrdmg;
+                        brname = Shop.GetItem(wrench).Name;
+                        break;
                     }
                 }
-                UserOperations userDest = new UserOperations(username, Context.Connection);
 
+                // destroy item not found...... 😥
+                if (dmg == 0)
+                {
+                    Context.SendMessage(Context.Channel, $"У вас нету пистолета или бомбы!");
+                    return;
+                }
+
+                UserOperations userDest = new UserOperations(username, Context.Connection);
                 var rand = new Random();
 
                 if (userDest.CountItem("wall") > 0 && rand.Next(0, 10 - dmg) == 0 && username != Context.Message.From)
                 {
                     userDest.RemItemFromInv("wall", 1);
-                    Context.SendMessage(Context.Channel, $"Вы атаковали с уроном {dmg + 5} укрепления пользователя {username} и сломали 1 укрепление!");
+                    Context.SendMessage(Context.Channel, $"Вы атаковали с помощью {brname} уроном {dmg} укрепления пользователя {username} и сломали 1 укрепление!");
                     if (rand.Next(0, 3) == 2)
                     {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From}!");
@@ -285,7 +291,7 @@ namespace fs24bot3
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, "Вы не попали по укреплению! =(");
+                    Context.SendMessage(Context.Channel, "Вы не попали по укреплению или их вообще нет!");
                 }
             }
             catch (Core.Exceptions.UserNotFoundException)
