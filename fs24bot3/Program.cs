@@ -98,7 +98,7 @@ namespace fs24bot3
 
                 for (int i = 0; i < rand.Next(1, 5); i++)
                 {
-                    if (lyrics.Length > baseoffset + i) { outputmsg += lyrics[baseoffset + i].Trim(); }
+                    if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
                 }
 
                 await client.SendAsync(new PrivMsgMessage(Configuration.channel, outputmsg));

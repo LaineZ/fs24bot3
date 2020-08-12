@@ -178,8 +178,9 @@ namespace fs24bot3
                 List<(string, int)> wrenches = new List<(string, int)>() 
                 {
                     // Wrench damage. Sorted in ascend order by damage
-                    ("wrenchadv", 10),
-                    ("wrench", 5),
+                    ("wrenchadv", 8),
+                    ("hammer", 5),
+                    ("wrench", 3),
                 };
 
                 foreach ((string wrench, int wrdmg) in wrenches)
@@ -220,7 +221,7 @@ namespace fs24bot3
 
                     user.IncreaseXp(xp);
 
-                    Context.SendMessage(Context.Channel, $"Вы кинули {wrname} с уроном {dmg + 5} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +{xp} XP");
+                    Context.SendMessage(Context.Channel, $"Вы кинули {wrname} с уроном {dmg} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +{xp} XP");
                     if (rand.Next(0, 7) == 2)
                     {
                         Context.SendMessage(username, $"Вас атакует {Context.Message.From} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
