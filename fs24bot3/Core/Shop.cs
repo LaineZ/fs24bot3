@@ -18,7 +18,7 @@ namespace fs24bot3
         /// <summary>
         /// Speed of the finiacial operations defalut = 5000 ms
         /// </summary>
-        public static int Tickrate = 5000;
+        public static int Tickrate = 15000;
         /// <summary>
         /// Tickrate speed - using for @performance command
         /// </summary>

@@ -98,8 +98,8 @@ namespace fs24bot3
                 if (user.RemItemFromInv("beer", 1))
                 {
                     var translatedOutput = await Core.Transalator.Translate("ru", text);
-
-                    foreach (string lang in new string[] { "ru", "ro-ru", "de-ru", "mn-ru", "ky-ru" })
+                    
+                    foreach (string lang in new string[] { "ru", "ro", "de", "mn", "ky", "cs", "ru" })
                     {
                         var tr = await Core.Transalator.Translate(lang, translatedOutput.text[0]);
                         translatedOutput.text[0] = tr.text[0];
