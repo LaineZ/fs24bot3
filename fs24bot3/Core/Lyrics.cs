@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Web;
 using SQLite;
+using fs24bot3.Models;
 
 namespace fs24bot3.Core
 {
@@ -18,6 +19,11 @@ namespace fs24bot3.Core
         {
             Artist = artist;
             Track = track;
+            Connection = connect;
+        }
+
+        public Lyrics(SQLiteConnection connect)
+        {
             Connection = connect;
         }
 
@@ -75,9 +81,23 @@ namespace fs24bot3.Core
             throw new Exception("Lyrics not found!");
         }
 
+
+        public string GetRandomCachedLyric()
+        {
+            var query = Connection.Table<SQL.LyricsCache>().ToList();
+
+            if (query.Count > 0)
+            {
+                Random rand = new Random();
+                return query[rand.Next(0, query.Count - 1)].Lyrics;
+            }
+            
+            throw new Exception("Lyrics not found!");
+        }
+
         public async Task<string> GetLyrics()
         {
-            var query = Connection.Table<Models.SQL.LyricsCache>().Where(v => v.Artist.ToLower().Equals(Artist.ToLower()) && v.Track.ToLower().Equals(Track.ToLower())).ToList();
+            var query = Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.ToLower().Equals(Artist.ToLower()) && v.Track.ToLower().Equals(Track.ToLower())).ToList();
 
             if (query.Count > 0)
             {

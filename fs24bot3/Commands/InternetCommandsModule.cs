@@ -4,8 +4,10 @@ using Qmmands;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3
 {
@@ -15,6 +17,9 @@ namespace fs24bot3
         public CommandService Service { get; set; }
 
         readonly HttpTools http = new HttpTools();
+
+        private string SongameString = String.Empty;
+        private int SongameTries = 5;
 
         [Command("execute", "exec")]
         [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
@@ -67,7 +72,51 @@ namespace fs24bot3
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");  
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+            }
+        }
+
+        [Command("songame", "songg", "sg")]
+        [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
+        public async void Songame(string translated = "")
+        {
+            List<string> lyric = new Core.Lyrics(Context.Connection).GetRandomCachedLyric().Split("\n").ToList();
+
+            foreach (string line in lyric)
+            {
+                if (line.Length > 10 && Regex.IsMatch(line, @"^[a-zA-Z]+$"))
+                {
+                    SongameString = line.ToLower().Replace(",", "");
+                    break;
+                }
+            }
+
+            SongameTries = 5;
+
+            if (translated.Length == 0)
+            {
+                Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {SongameString} попыток: {SongameTries}");
+            }
+            else
+            {
+                if (!Regex.IsMatch(translated, @"^[a-zA-Z]+$"))
+                {
+                    var translatedOutput = await Core.Transalator.Translate("ru-en", translated);
+
+                    if (translatedOutput.text[0].ToLower() == SongameString)
+                    {
+                        int reward = 100 * SongameTries;
+                        Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
+                    }
+                    else
+                    {
+                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {SongameString} | {translatedOutput.text[0].ToLower()}");
+                    }
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
+                }
             }
         }
 
@@ -98,7 +147,7 @@ namespace fs24bot3
                 if (user.RemItemFromInv("beer", 1))
                 {
                     var translatedOutput = await Core.Transalator.Translate("ru", text);
-                    
+
                     foreach (string lang in new string[] { "ru", "ro", "de", "mn", "ky", "cs", "ru" })
                     {
                         var tr = await Core.Transalator.Translate(lang, translatedOutput.text[0]);
@@ -146,7 +195,6 @@ namespace fs24bot3
         [Description("Текст песни")]
         public async void Lyrics([Remainder] string song)
         {
-
             var data = song.Split(" - ");
             if (data.Length > 0)
             {

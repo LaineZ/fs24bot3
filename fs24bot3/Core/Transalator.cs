@@ -14,8 +14,6 @@ namespace fs24bot3.Core
         public async static Task<YandexTranslate.RootObject> Translate(string lang, string text)
         {
             HttpClient client = new HttpClient();
-
-
             var formVariables = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("text", text)
