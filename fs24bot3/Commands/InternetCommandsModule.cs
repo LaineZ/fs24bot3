@@ -80,18 +80,28 @@ namespace fs24bot3
         [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
         public async void Songame(string translated = "")
         {
-            List<string> lyric = new Core.Lyrics(Context.Connection).GetRandomCachedLyric().Split("\n").ToList();
 
-            foreach (string line in lyric)
+            while (SongameString.Length == 0)
             {
-                if (line.Length > 10 && Regex.IsMatch(line, @"^[a-zA-Z]+$"))
+                var query = Context.Connection.Table<SQL.LyricsCache>().ToList();
+                if (query.Count > 0)
                 {
-                    SongameString = line.ToLower().Replace(",", "");
-                    break;
+                    Random rand = new Random();
+                    string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+
+                    foreach (string line in lyrics)
+                    {
+                        if (line.Length > 10 && Regex.IsMatch(line, @"^[a-zA-Z]+$"))
+                        {
+                            SongameString = line.ToLower().Replace(",", "");
+                            break;
+                        }
+                    }
+
                 }
+                SongameTries = 5;
             }
 
-            SongameTries = 5;
 
             if (translated.Length == 0)
             {
@@ -107,10 +117,13 @@ namespace fs24bot3
                     {
                         int reward = 100 * SongameTries;
                         Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
+                        // reset the game
+                        SongameString = "";
                     }
                     else
                     {
                         Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {SongameString} | {translatedOutput.text[0].ToLower()}");
+                        SongameTries--;
                     }
                 }
                 else

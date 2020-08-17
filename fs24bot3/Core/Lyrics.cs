@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Web;
 using SQLite;
 using fs24bot3.Models;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace fs24bot3.Core
 {
@@ -13,17 +15,12 @@ namespace fs24bot3.Core
     {
         public string Artist;
         public string Track;
-        public SQLiteConnection Connection;
+        private SQLiteConnection Connection;
 
         public Lyrics(string artist, string track, SQLiteConnection connect)
         {
             Artist = artist;
             Track = track;
-            Connection = connect;
-        }
-
-        public Lyrics(SQLiteConnection connect)
-        {
             Connection = connect;
         }
 
@@ -81,20 +78,6 @@ namespace fs24bot3.Core
             throw new Exception("Lyrics not found!");
         }
 
-
-        public string GetRandomCachedLyric()
-        {
-            var query = Connection.Table<SQL.LyricsCache>().ToList();
-
-            if (query.Count > 0)
-            {
-                Random rand = new Random();
-                return query[rand.Next(0, query.Count - 1)].Lyrics;
-            }
-            
-            throw new Exception("Lyrics not found!");
-        }
-
         public async Task<string> GetLyrics()
         {
             var query = Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.ToLower().Equals(Artist.ToLower()) && v.Track.ToLower().Equals(Track.ToLower())).ToList();
@@ -108,7 +91,7 @@ namespace fs24bot3.Core
             (string lyrics, bool redirect) = await GetLyricsInternal(Artist + ":" + Track);
             if (!redirect)
             {
-                var lyricsToCache = new Models.SQL.LyricsCache()
+                var lyricsToCache = new SQL.LyricsCache()
                 {
                     AddedBy = null,
                     Artist = Artist,
@@ -123,7 +106,7 @@ namespace fs24bot3.Core
             {
                 (string lyricsFixed, bool _) = await GetLyricsInternal(lyrics);
 
-                var lyricsToCache = new Models.SQL.LyricsCache()
+                var lyricsToCache = new SQL.LyricsCache()
                 {
                     AddedBy = null,
                     Artist = Artist,
