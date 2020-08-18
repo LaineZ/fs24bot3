@@ -16,13 +16,10 @@ namespace fs24bot3
         public static string channel;
         public static bool reconnect;
         public static long port;
-        public static bool ssl;
         public static string nickservPass;
 
         public static string jdoodleClientID;
         public static string jdoodleClientSecret;
-        public static string pastebinKey;
-        public static string yandexTrKey;
         public static string vkApiId;
         public static string vkLogin;
         public static string vkPassword;
@@ -45,7 +42,6 @@ namespace fs24bot3
                         {"channel", channel },
                         {"reconnect", reconnect },
                         {"port", port },
-                        {"ssl", ssl },
                         {"nickserv_pass", nickservPass },
                     }
                 },
@@ -56,8 +52,6 @@ namespace fs24bot3
                     {
                         {"jdoodle_client_id", jdoodleClientID},
                         {"jdoodle_client_secret", jdoodleClientSecret},
-                        {"pastebin_key", pastebinKey },
-                        {"yandex_translate_key", yandexTrKey },
                         {"vk_api_key", vkApiId},
                         {"vk_login", vkLogin },
                         {"vk_password", vkPassword },
@@ -88,9 +82,7 @@ namespace fs24bot3
                         {"channel", "#fl-studio" },
                         {"reconnect", true },
                         {"port", 6667 },
-                        {"ssl", true },
                         {"nickserv_pass", "zxcvbnM1" },
-                        {"ignore", new string[] { "hubblest", "brote", "ayumi`" } }
                     }
                 },
 
@@ -124,13 +116,10 @@ namespace fs24bot3
                 channel = (string)((TomlTable)table["irc"])["channel"];
                 reconnect = (bool)((TomlTable)table["irc"])["reconnect"];
                 port = (long)((TomlTable)table["irc"])["port"];
-                ssl = (bool)((TomlTable)table["irc"])["ssl"];
                 nickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
 
                 jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
                 jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
-                pastebinKey = (string)((TomlTable)table["services"])["pastebin_key"];
-                yandexTrKey = (string)((TomlTable)table["services"])["yandex_translate_key"];
                 vkApiId = (string)((TomlTable)table["services"])["vk_api_key"];
                 vkLogin = (string)((TomlTable)table["services"])["vk_login"];
                 vkPassword = (string)((TomlTable)table["services"])["vk_password"];

@@ -85,9 +85,7 @@ namespace fs24bot3
             await client.SendRaw("JOIN " + Configuration.channel);
             await client.SendAsync(new PrivMsgMessage("NickServ", "identify " + Configuration.nickservPass));
 
-
             // send some random track lyrics on joining =)
-            // TODO: Refactor
             var query = connection.Table<SQL.LyricsCache>().ToList();
 
             if (query.Count > 0)
@@ -103,7 +101,6 @@ namespace fs24bot3
                 }
 
                 await client.SendAsync(new PrivMsgMessage(Configuration.channel, outputmsg));
-
             }
         }
 

@@ -458,7 +458,29 @@ namespace fs24bot3
 
             DateTime dateOut = new DateTime(2020, 12, 22, 17, 26, 12);
             TimeSpan dateIn =  dateOut.Subtract(DateTime.Now);
-            Context.SendMessage(Context.Channel, $"Дата до появления Миши : {dateIn.Days / 30} месяцев {dateIn.Days % 30} дней {dateIn.Hours} часов {dateIn.Minutes} минут {dateIn.Seconds} секунд {dateIn.Milliseconds} мс...");
+            Context.SendMessage(Context.Channel, $"До появления Миши осталось: {dateIn.Days / 30} месяцев {dateIn.Days % 30} дней {dateIn.Hours} часов {dateIn.Minutes} минут {dateIn.Seconds} секунд {dateIn.Milliseconds} мс...");
+        }
+
+        [Command("rndl", "randomlyrics")]
+        [Description("Рандомная песня")]
+        public void RandomSong()
+        {
+            var query = Context.Connection.Table<SQL.LyricsCache>().ToList();
+
+            if (query.Count > 0)
+            {
+                Random rand = new Random();
+                string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+                int baseoffset = rand.Next(0, lyrics.Length - 1);
+                string outputmsg = "";
+
+                for (int i = 0; i < rand.Next(1, 5); i++)
+                {
+                    if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
+                }
+
+                Context.SendMessage(Context.Channel, outputmsg);
+            }
         }
     }
 }
