@@ -13,7 +13,6 @@ namespace fs24bot3.Checks
 
         public override ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
-
             var context = _ as CommandProcessor.CustomCommandContext;
 
             UserOperations usr = new UserOperations(context.Message.From, context.Connection);

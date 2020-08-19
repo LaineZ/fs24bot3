@@ -28,16 +28,12 @@ namespace fs24bot3
         {
             string[] langs = input.Split("-");
 
-            string from = langs[0];
-            string to = "auto-detect"; // auto detection
+            string from = "auto-detect";
+            string to = langs[0]; // auto detection
 
             if (input.Contains("-"))
             {
-                to = langs[1];
-            }
-            else
-            {
-                to = input;
+                from = langs[1];
             }
 
             return (from, to);
@@ -231,7 +227,6 @@ namespace fs24bot3
         [Description("Текст песни (Перевод)")]
         public async void LyricsTr([Remainder] string song)
         {
-
             var user = new UserOperations(Context.Message.From, Context.Connection, Context);
 
             var data = song.Split(" - ");
