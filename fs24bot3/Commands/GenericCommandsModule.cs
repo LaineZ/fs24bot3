@@ -137,15 +137,21 @@ namespace fs24bot3
         public async void CustomCmdRegisterUrlAsync(string command, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
-            
-            if (response != null && response.ContentType.Contains("text/plain"))
+            if (response != null)
             {
-                Stream responseStream = response.GetResponseStream();
-                CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
+                if (response.ContentType == "text/plain")
+                {
+                    Stream responseStream = response.GetResponseStream();
+                    CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+                }
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
             }
         }
 
