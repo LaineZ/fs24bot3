@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3
 {
@@ -51,6 +52,77 @@ namespace fs24bot3
 
                     Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
                     break;
+                }
+            }
+        }
+
+        [Command("songame", "songg", "sg")]
+        [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
+        public async void Songame([Remainder] string translated = "")
+        {
+            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+
+            if (Shop.SongameTries <= 0)
+            {
+                Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
+                Shop.SongameString = "";
+                Shop.SongameTries = 5;
+                user.AddItemToInv("money", 1000);
+                return;
+            }
+            Random rand = new Random();
+            //var query = Context.Connection.Table<SQL.LyricsCache>().ToList();
+            List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
+            if (Shop.SongameString.Length == 0)
+            {
+                while (Shop.SongameString.Length == 0)
+                {
+                    if (query.Count > 0)
+                    {
+                        string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+
+                        foreach (string line in lyrics)
+                        {
+                            if (line.Length > 10 && Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
+                            {
+                                Shop.SongameString = line.ToLower();
+                                break;
+                            }
+                        }
+
+                    }
+                    Shop.SongameTries = 5;
+                }
+            }
+
+
+            if (translated.Length == 0)
+            {
+                Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {Shop.SongameString} попыток: {Shop.SongameTries}");
+            }
+            else
+            {
+                if (!Regex.IsMatch(translated, @"^([A-Za-z\s]*)$"))
+                {
+                    var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
+
+                    if (translatedOutput.text.ToString().ToLower() == Shop.SongameString)
+                    {
+                        int reward = 400 * Shop.SongameTries;
+                        user.AddItemToInv("money", reward);
+                        Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
+                        // reset the game
+                        Shop.SongameString = "";
+                    }
+                    else
+                    {
+                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {translatedOutput.text.ToString().ToLower()}");
+                        Shop.SongameTries--;
+                    }
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
                 }
             }
         }
