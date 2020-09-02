@@ -67,11 +67,10 @@ namespace fs24bot3
                 Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
                 Shop.SongameString = "";
                 Shop.SongameTries = 5;
-                user.AddItemToInv("money", 1000);
+                user.RemItemFromInv("money", 1000);
                 return;
             }
             Random rand = new Random();
-            //var query = Context.Connection.Table<SQL.LyricsCache>().ToList();
             List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
             if (Shop.SongameString.Length == 0)
             {
@@ -85,7 +84,7 @@ namespace fs24bot3
                         {
                             if (line.Length > 10 && Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
                             {
-                                Shop.SongameString = line.ToLower();
+                                Shop.SongameString = line.ToLower().Trim();
                                 break;
                             }
                         }
