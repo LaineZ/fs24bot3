@@ -105,7 +105,7 @@ namespace fs24bot3
                 {
                     var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
 
-                    if (translatedOutput.text.ToString().ToLower() == Shop.SongameString)
+                    if (translatedOutput.text.ToString().ToLower().Trim() == Shop.SongameString)
                     {
                         int reward = 400 * Shop.SongameTries;
                         user.AddItemToInv("money", reward);
