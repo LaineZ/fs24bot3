@@ -107,7 +107,7 @@ namespace fs24bot3
 
                     if (translatedOutput.text.ToString().ToLower().Trim() == Shop.SongameString)
                     {
-                        int reward = 400 * Shop.SongameTries;
+                        int reward = 450 * Shop.SongameTries;
                         user.AddItemToInv("money", reward);
                         Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
                         // reset the game
@@ -513,6 +513,15 @@ namespace fs24bot3
             {
                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
+        }
+
+        [Command("seen")]
+        [Description("Когда последний раз пользователь писал сообщени")]
+        public void LastSeen(string destination)
+        {
+            var user = new UserOperations(destination, Context.Connection);
+            TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
+            Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {date.Days} дн. {date.Hours} час. {date.Minutes} мин. {date.Seconds} сек. назад");
         }
 
         [Command("tags")]
