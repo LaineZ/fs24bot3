@@ -521,7 +521,15 @@ namespace fs24bot3
         {
             var user = new UserOperations(destination, Context.Connection);
             TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
-            Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {date.Days} дн. {date.Hours} час. {date.Minutes} мин. {date.Seconds} сек. назад");
+            if (date.Days < 1000)
+            {
+                Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {date.Days} дн. {date.Hours} час. {date.Minutes} мин. {date.Seconds} сек. назад");
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, $"Я уже не помню как выглядит {destination}... Даже не помню когда я его видел");
+            }
+
         }
 
         [Command("tags")]
