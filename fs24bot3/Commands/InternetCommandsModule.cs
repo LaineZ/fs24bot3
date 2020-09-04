@@ -28,9 +28,11 @@ namespace fs24bot3
             string from = "auto-detect";
             string to = langs[0]; // auto detection
 
+            // manual
             if (input.Contains("-"))
             {
-                from = langs[1];
+                to = langs[1];
+                from = langs[0];
             }
 
             return (from, to);
