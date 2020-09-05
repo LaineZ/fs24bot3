@@ -22,25 +22,20 @@ namespace fs24bot3
 
         readonly HttpTools http = new HttpTools();
 
-        //private string SongameString = String.Empty;
-        //private int SongameTries = 5;
-
         // TODO: Turn back @trppc/@dmlyrics command
 
         private (string, string) ParseLang(string input)
         {
             string[] langs = input.Split("-");
 
-            string from = langs[0];
-            string to = "auto-detect"; // auto detection
+            string from = "auto-detect";
+            string to = langs[0]; // auto detection
 
+            // manual
             if (input.Contains("-"))
             {
                 to = langs[1];
-            }
-            else
-            {
-                to = input;
+                from = langs[0];
             }
 
             return (from, to);
@@ -90,72 +85,23 @@ namespace fs24bot3
         public async void ExecuteAPIUrl(string code, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
-            if (response != null && response.ContentType == "text/plain")
+            if (response != null)
             {
-                Stream responseStream = response.GetResponseStream();
-                ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
+                if (response.ContentType == "text/plain")
+                {
+                    Stream responseStream = response.GetResponseStream();
+                    ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+                }
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
             }
         }
-
-        //[Command("songame", "songg", "sg")]
-        //[Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
-        //public async void Songame(string translated = "")
-        //{
-        //    Random rand = new Random();
-        //    while (SongameString.Length == 0)
-        //    {
-        //        var ObjectIDList = await database.QueryAsync<Object>("SELECT * FORM");
-        //        if (query.Count > 0)
-        //        {
-        //            string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
-
-        //            foreach (string line in lyrics)
-        //            {
-        //                if (line.Length > 10 && Regex.IsMatch(line, @"^[a-zA-Z]+$"))
-        //                {
-        //                    SongameString = line.ToLower().Replace(",", "");
-        //                    break;
-        //                }
-        //            }
-
-        //        }
-        //        SongameTries = 5;
-        //    }
-
-
-        //    if (translated.Length == 0)
-        //    {
-        //        Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {SongameString} попыток: {SongameTries}");
-        //    }
-        //    else
-        //    {
-        //        if (!Regex.IsMatch(translated, @"^[a-zA-Z]+$"))
-        //        {
-        //            var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
-
-        //            if (translatedOutput.text.ToLower() == SongameString)
-        //            {
-        //                int reward = 100 * SongameTries;
-        //                Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
-        //                // reset the game
-        //                SongameString = "";
-        //            }
-        //            else
-        //            {
-        //                Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {SongameString} | {translatedOutput.text[0].ToLower()}");
-        //                SongameTries--;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
-        //        }
-        //    }
-        //}
 
         [Command("tr", "translate")]
         [Description("Переводчик")]
@@ -265,7 +211,6 @@ namespace fs24bot3
         [Description("Текст песни (Перевод)")]
         public async void LyricsTr([Remainder] string song)
         {
-
             var user = new UserOperations(Context.Message.From, Context.Connection, Context);
 
             var data = song.Split(" - ");

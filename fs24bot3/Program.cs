@@ -63,7 +63,6 @@ namespace fs24bot3
                     Shop.Update(connection);
                 }
             }).Start();
-
             try
             {
                 Console.ReadKey();
@@ -191,8 +190,8 @@ namespace fs24bot3
                         bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection, MessageBus);
                         break;
                     case ExecutionFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{Models.IrcColors.Red}Ошибка: {err.Exception.Message}"));
-                        //await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
                         break;
                 }
             }

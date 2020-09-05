@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3
 {
@@ -51,6 +52,76 @@ namespace fs24bot3
 
                     Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
                     break;
+                }
+            }
+        }
+
+        [Command("songame", "songg", "sg")]
+        [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
+        public async void Songame([Remainder] string translated = "")
+        {
+            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+
+            if (Shop.SongameTries <= 0)
+            {
+                Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
+                Shop.SongameString = "";
+                Shop.SongameTries = 5;
+                user.RemItemFromInv("money", 1000);
+                return;
+            }
+            Random rand = new Random();
+            List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
+            if (Shop.SongameString.Length == 0)
+            {
+                while (Shop.SongameString.Length == 0)
+                {
+                    if (query.Count > 0)
+                    {
+                        string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+
+                        foreach (string line in lyrics)
+                        {
+                            if (line.Length > 10 && Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
+                            {
+                                Shop.SongameString = line.ToLower().Trim();
+                                break;
+                            }
+                        }
+
+                    }
+                    Shop.SongameTries = 5;
+                }
+            }
+
+
+            if (translated.Length == 0)
+            {
+                Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {Shop.SongameString} попыток: {Shop.SongameTries}");
+            }
+            else
+            {
+                if (!Regex.IsMatch(translated, @"^([A-Za-z\s]*)$"))
+                {
+                    var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
+
+                    if (translatedOutput.text.ToString().ToLower().Trim() == Shop.SongameString)
+                    {
+                        int reward = 450 * Shop.SongameTries;
+                        user.AddItemToInv("money", reward);
+                        Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
+                        // reset the game
+                        Shop.SongameString = "";
+                    }
+                    else
+                    {
+                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {translatedOutput.text.ToString().ToLower()}");
+                        Shop.SongameTries--;
+                    }
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
                 }
             }
         }
@@ -137,15 +208,21 @@ namespace fs24bot3
         public async void CustomCmdRegisterUrlAsync(string command, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
-            
-            if (response != null && response.ContentType.Contains("text/plain"))
+            if (response != null)
             {
-                Stream responseStream = response.GetResponseStream();
-                CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
+                if (response.ContentType == "text/plain")
+                {
+                    Stream responseStream = response.GetResponseStream();
+                    CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+                }
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
             }
         }
 
@@ -436,6 +513,23 @@ namespace fs24bot3
             {
                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
+        }
+
+        [Command("seen")]
+        [Description("Когда последний раз пользователь писал сообщени")]
+        public void LastSeen(string destination)
+        {
+            var user = new UserOperations(destination, Context.Connection);
+            TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
+            if (date.Days < 1000)
+            {
+                Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {date.Days} дн. {date.Hours} час. {date.Minutes} мин. {date.Seconds} сек. назад");
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, $"Я уже не помню как выглядит {destination}... Даже не помню когда я его видел");
+            }
+
         }
 
         [Command("tags")]

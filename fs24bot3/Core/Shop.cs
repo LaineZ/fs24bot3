@@ -25,6 +25,9 @@ namespace fs24bot3
         public static TimeSpan TickSpeed;
         private static Random Rand;
         public static int MaxCap = 150000;
+        // TOOD: Refactor
+        public static string SongameString = String.Empty;
+        public static int SongameTries = 5;
 
         public static void Init(SQLiteConnection connect)
         {

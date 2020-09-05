@@ -11,14 +11,21 @@ namespace fs24bot3
         public CommandService Service { get; set; }
 
         [Command("inv", "inventory")]
-        [Description("Инвентарь")]
-        public void Userstat()
+        [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд @buy/@sell/@transfer и других")]
+        public void Userstat(bool useSlugs = false)
         {
             var userop = new UserOperations(Context.Message.From, Context.Connection);
             var userInv = userop.GetInventory();
             if (userInv != null && userInv.Count > 0)
             {
-                Context.SendMessage(Context.Channel, Context.Message.From + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
+                if (!useSlugs)
+                {
+                    Context.SendMessage(Context.Channel, Context.Message.From + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, Context.Message.From + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Shop.GetItem(x.Item).Slug}) x{x.ItemCount}")));
+                }
             }
             else
             {
@@ -256,8 +263,8 @@ namespace fs24bot3
                 List<(string, int)> wrenches = new List<(string, int)>() 
                 {
                     // Walls damage. Sorted in ascend order by damage
-                    ("bomb", 8),
-                    ("pistol", 6),
+                    ("bomb", 9),
+                    ("pistol", 7),
                 };
 
                 foreach ((string wrench, int wrdmg) in wrenches)
