@@ -9,6 +9,9 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using SQLite;
+using HtmlAgilityPack;
+using Serilog;
+using System.Web;
 
 namespace fs24bot3
 {
@@ -169,6 +172,37 @@ namespace fs24bot3
             catch (Exception e)
             {
                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( {e.Message}");
+            }
+        }
+
+        [Command("whrand", "whowrand", "howrand")]
+        public async void WikiHowRand()
+        {
+            var resp = await new HttpTools().GetResponseAsync("https://ru.wikihow.com/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:Randomizer");
+
+            Context.SendMessage(Context.Channel, resp.ResponseUri.ToString());
+
+        }
+
+        [Command("wh", "wikihow")]
+        public async void WikiHow([Remainder] string query)
+        {
+            var web = new HtmlWeb();
+            var doc = await web.LoadFromWebAsync("https://ru.wikihow.com/wikiHowTo?search=" + query);
+            HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//a[@class=\"result_link\"]");
+            if (divContainer != null)
+            {
+                foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//br"))
+                    node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
+
+                foreach (var node in divContainer)
+                {
+                    Log.Verbose(node.InnerText);
+                    string hrefValue = node.GetAttributeValue("href", string.Empty);
+                    var title = node.SelectSingleNode("//div[@class=\"result\"]").SelectSingleNode("//div[@class=\"result_title\"]");
+                    Context.SendMessage(Context.Channel, $"{title.InnerText} // {hrefValue}");
+                    break;
+                }
             }
         }
 
