@@ -32,7 +32,8 @@ namespace fs24bot3
 
             if (input.Contains("-"))
             {
-                from = langs[1];
+                from = langs[0];
+                to = langs[1];
             }
 
             return (from, to);

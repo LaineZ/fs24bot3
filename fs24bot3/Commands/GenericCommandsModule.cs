@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace fs24bot3
@@ -72,6 +73,9 @@ namespace fs24bot3
             }
             Random rand = new Random();
             List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
+
+            string[] art = new string[] {"the", "are", "  ", ",", ".", "!", "?"};
+
             if (Shop.SongameString.Length == 0)
             {
                 while (Shop.SongameString.Length == 0)
@@ -82,9 +86,17 @@ namespace fs24bot3
 
                         foreach (string line in lyrics)
                         {
-                            if (line.Length > 10 && Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
+                            if (Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
                             {
-                                Shop.SongameString = line.ToLower().Trim();
+
+                                StringBuilder input = new StringBuilder(line);
+
+                                foreach (string word in art)
+                                {
+                                    input.Replace(word, "");
+                                }
+
+                                Shop.SongameString = input.ToString().ToLower().Trim();
                                 break;
                             }
                         }
