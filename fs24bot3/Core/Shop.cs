@@ -35,7 +35,7 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍺 Пиво", Price = 100, Sellable = true, Slug = "beer" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 150, Sellable = true, Slug = "wine" });
-            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ФРАНЦУНСКОЕ]", Price = 150, Sellable = true, Slug = "winef" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ФРАНЦУЗСКОЕ]", Price = 150, Sellable = true, Slug = "winef" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [ГРУЗИНСКОЕ]", Price = 150, Sellable = true, Slug = "wineg" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔧 Гаечный ключ", Price = 3000, Sellable = true, Slug = "wrench", });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🛠 Гаечный ключ и молоток", Price = 5000, Sellable = true, Slug = "wrenchadv" });
