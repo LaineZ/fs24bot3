@@ -109,7 +109,7 @@ namespace fs24bot3.Core
                                             await client.SendAsync(new PrivMsgMessage(message.To, outputstr[..Math.Min(350, outputstr.Length)]));
                                         }
                                         count++;
-                                        if (count > 3)
+                                        if (count > 5)
                                         {
                                             string link = await new HttpTools().UploadToTrashbin(res, "addplain");
                                             await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
@@ -140,7 +140,7 @@ namespace fs24bot3.Core
                                 Thread.Sleep(10000);
                                 if (thread.IsAlive)
                                 {
-                                    lua.State.Error("too long without yielding");
+                                    lua.State.Error("too long run time (10 seconds)");
                                 }
                             }
                             catch (Exception)
