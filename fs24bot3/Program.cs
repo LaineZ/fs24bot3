@@ -49,8 +49,6 @@ namespace fs24bot3
             client.EventHub.PrivMsg += EventHub_PrivMsg;
             client.EventHub.RplWelcome += Client_OnWelcome;
 
-            vk.OnTokenExpires += Vk_OnTokenExpires;
-
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
 
             Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
@@ -71,12 +69,6 @@ namespace fs24bot3
             {
                 Console.Read();
             }
-        }
-
-        private static void Vk_OnTokenExpires(VkApi sender)
-        {
-            Log.Warning("Session expired, relogging...");
-            vk = new HttpTools().LogInVKAPI();
         }
 
         private async static void Client_OnWelcome(Client client, IRCMessageEventArgs<RplWelcomeMessage> e)
@@ -122,82 +114,62 @@ namespace fs24bot3
             {
                 (new Thread(() =>
                 {
-                    if (query.Count() <= 0 && e.IRCMessage.From != Configuration.name)
+                    if (e.IRCMessage.To != Configuration.name)
                     {
-                        Log.Warning("User {0} not found in database", e.IRCMessage.From);
-
-                        var user = new SQL.UserStats()
+                        UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
+                        usr.SetLastMessage();
+                        bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length * (new Random().Next(1, 3)) + 1);
+                        if (newLevel)
                         {
-                            Nick = e.IRCMessage.From,
-                            Admin = 0,
-                            AdminPassword = "changeme",
-                            Level = 1,
-                            Xp = 0,
-                            Need = 300,
-                            LastMsg = (int)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(),
-                        };
-
-                        connection.Insert(user);
+                            var random = new Random();
+                            int index = random.Next(Shop.ShopItems.Count);
+                            usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
+                            client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
+                        }
                     }
                     else
                     {
-                        if (e.IRCMessage.To != Configuration.name)
-                        {
-                            UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
-                            usr.SetLastMessage();
-                            bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length * (new Random().Next(1, 3)) + 1);
-                            if (newLevel)
-                            {
-                                var random = new Random();
-                                int index = random.Next(Shop.ShopItems.Count);
-                                usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                                client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
-                            }
-                        }
-                        else
-                        {
-                            Log.Verbose("Message sent in PM, Level increasing IGNORED!!!");
-                        }
+                        Log.Verbose("Message was sent in PM, Level increasing IGNORED!!!");
                     }
                 })).Start();
-
-
-                if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
-                    return;
-
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, vk));
-                switch (result)
-                {
-                    case ChecksFailedResult err:
-                        var errStr = new StringBuilder();
-
-                        foreach (var (check, error) in err.FailedChecks)
-                        {
-                            errStr.Append(error.Reason);
-                        }
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Требования не выполнены: {errStr}"));
-                        break;
-                    case TypeParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
-                        break;
-                    case ArgumentParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка парсера: `{err.Reason}`"));
-                        break;
-                    case OverloadsFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
-                        break;
-                    case CommandNotFoundResult err:
-                        bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection, MessageBus);
-                        break;
-                    case ExecutionFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
-                        break;
-                }
             }
             else
             {
                 Log.Verbose("User tried send message but it ignored!");
+            }
+
+
+            if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
+                return;
+
+            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, vk));
+            switch (result)
+            {
+                case ChecksFailedResult err:
+                    var errStr = new StringBuilder();
+
+                    foreach (var (check, error) in err.FailedChecks)
+                    {
+                        errStr.Append(error.Reason);
+                    }
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Требования не выполнены: {errStr}"));
+                    break;
+                case TypeParseFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
+                    break;
+                case ArgumentParseFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка парсера: `{err.Reason}`"));
+                    break;
+                case OverloadsFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
+                    break;
+                case CommandNotFoundResult err:
+                    bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection, MessageBus);
+                    break;
+                case ExecutionFailedResult err:
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
+                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
+                    break;
             }
         }
 

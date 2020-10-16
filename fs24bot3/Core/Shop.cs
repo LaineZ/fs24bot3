@@ -138,7 +138,7 @@ namespace fs24bot3
                 }
             }
 
-            int checkPayday = Rand.Next(0, 100);
+            int checkPayday = Rand.Next(0, 10);
             if (checkPayday == 8 && GetMoneyAvg(connect) < MaxCap)
             {
                 Log.Information("Giving payday/taxes!");

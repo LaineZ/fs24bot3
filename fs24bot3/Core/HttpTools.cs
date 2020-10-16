@@ -19,14 +19,7 @@ namespace fs24bot3
     {
         private readonly HttpClient client = new HttpClient();
         readonly CookieContainer cookies = new CookieContainer();
-
-        string Password;
         int VkTries = 0;
-
-        public HttpTools(string login = null, string password = null)
-        {
-            Password = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(login + ":" + password));
-        }
 
         public async Task<String> MakeRequestAsync(String url)
         {
@@ -37,12 +30,6 @@ namespace fs24bot3
                     HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
                     request.CookieContainer = cookies;
                     request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0";
-
-                    if (Password != null)
-                    {
-                        Log.Verbose("Using password!");
-                        request.Headers.Add("Authorization", "Basic " + Password);
-                    }
 
                     WebResponse response = request.GetResponse();
 

@@ -23,6 +23,26 @@ namespace fs24bot3
             Username = username;
             Connect = connection;
             Ctx = ctx;
+
+            int query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).Count();
+
+            if (query <= 0 && createUser)
+            {
+                Log.Warning("User {0} not found in database", Username);
+
+                var user = new SQL.UserStats()
+                {
+                    Nick = Username,
+                    Admin = 0,
+                    AdminPassword = "changeme",
+                    Level = 1,
+                    Xp = 0,
+                    Need = 300,
+                    LastMsg = (int)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(),
+                };
+
+                connection.Insert(user);
+            }
         }
 
 
