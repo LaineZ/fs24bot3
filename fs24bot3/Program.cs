@@ -20,6 +20,26 @@ namespace fs24bot3
         private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
         private static VkApi vk;
 
+        static async void RandomLyics(Client client)
+        {
+            var query = connection.Table<SQL.LyricsCache>().ToList();
+
+            if (query.Count > 0)
+            {
+                Random rand = new Random();
+                string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+                int baseoffset = rand.Next(0, lyrics.Length - 1);
+                string outputmsg = "";
+
+                for (int i = 0; i < rand.Next(1, 5); i++)
+                {
+                    if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
+                }
+
+                await client.SendAsync(new PrivMsgMessage(Configuration.channel, outputmsg));
+            }
+        }
+
         static void Main()
         {
             Log.Logger = new LoggerConfiguration()
@@ -42,7 +62,6 @@ namespace fs24bot3
             _service.AddModule<FishCommandsModule>();
 
             vk = new HttpTools().LogInVKAPI();
-
             using var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
@@ -75,24 +94,7 @@ namespace fs24bot3
         {
             await client.SendRaw("JOIN " + Configuration.channel);
             await client.SendAsync(new PrivMsgMessage("NickServ", "identify " + Configuration.nickservPass));
-
-            // send some random track lyrics on joining =)
-            var query = connection.Table<SQL.LyricsCache>().ToList();
-
-            if (query.Count > 0)
-            {
-                Random rand = new Random();
-                string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
-                int baseoffset = rand.Next(0, lyrics.Length - 1);
-                string outputmsg = "";
-
-                for (int i = 0; i < rand.Next(1, 5); i++)
-                {
-                    if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
-                }
-
-                await client.SendAsync(new PrivMsgMessage(Configuration.channel, outputmsg));
-            }
+            RandomLyics(client);
         }
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
@@ -189,7 +191,6 @@ namespace fs24bot3
                     break;
                 case "ERROR":
                     Log.Error("Connection closed due to error... Reconnecting");
-                    //client.Dispose();
                     client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
                     await Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
                     break;

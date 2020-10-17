@@ -72,37 +72,10 @@ namespace fs24bot3.Core
                         Log.Information("Trying get lyrics with type: {0} got: {1}", variants, retryRedirect);
                         return await GetLyricsInternal(retryRedirect);
                     }
-                    else
-                    {
-                        return await GetLyricsShareInternal();
-                    }
                 }
             }
 
             throw new Exception("Lyrics not found! (lyricwiki)");
-        }
-
-
-        private async Task<(string, bool)> GetLyricsShareInternal()
-        {
-            var web = new HtmlWeb();
-            var doc = await web.LoadFromWebAsync("http://lyricshare.net/ru/" + Artist.Replace(" ", "-") + "/" + Track.Replace(" ", "-"));
-            HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class='textpesnidiv']");
-            if (divContainer != null)
-            {
-                foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//br"))
-                    node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
-
-                foreach (var node in divContainer)
-                {
-                    Log.Verbose(node.InnerText);
-                    StringWriter lyricsWriter = new StringWriter();
-                    HttpUtility.HtmlDecode(node.InnerText, lyricsWriter);
-                    return (lyricsWriter.ToString(), false);
-                }
-            }
-
-            throw new Exception("Lyrics not found! (lyricshare)");
         }
 
         public async Task<string> GetLyrics()

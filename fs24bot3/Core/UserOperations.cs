@@ -26,7 +26,7 @@ namespace fs24bot3
 
             int query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).Count();
 
-            if (query <= 0 && createUser)
+            if (query <= 0)
             {
                 Log.Warning("User {0} not found in database", Username);
 
