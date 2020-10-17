@@ -24,6 +24,14 @@ namespace fs24bot3
                 Environment.Version.ToString(), os.VersionString));
         }
 
+        [Command("rsgame")]
+        [Checks.CheckAdmin]
+        public void ResetGame()
+        {
+            Shop.SongameString = "";
+            Context.SendMessage(Context.Channel, "Игра перезагружена!");
+        }
+
         [Command("me")]
         [Description("Макроэкономические показатели")]
         public void Economy()

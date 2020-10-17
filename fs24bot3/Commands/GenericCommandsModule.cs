@@ -74,7 +74,7 @@ namespace fs24bot3
             Random rand = new Random();
             List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
 
-            string[] art = new string[] {"the", "are", "  ", ",", ".", "!", "?"};
+            string[] art = new string[] {"the", "are", ",", ".", "!", "?", "a ", "an "};
 
             if (Shop.SongameString.Length == 0)
             {
@@ -93,10 +93,11 @@ namespace fs24bot3
 
                                 foreach (string word in art)
                                 {
-                                    input.Replace(word, "");
+                                    input.Replace(word, " ");
                                 }
-
-                                Shop.SongameString = input.ToString().ToLower().Trim();
+                                // remove double spaces
+                                Regex regex = new Regex("[ ]{2,}");
+                                Shop.SongameString = regex.Replace(input.ToString().ToLower().Trim(), " ");
                                 break;
                             }
                         }
@@ -117,7 +118,7 @@ namespace fs24bot3
                 {
                     var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
 
-                    if (translatedOutput.text.ToString().ToLower().Trim() == Shop.SongameString)
+                    if (translatedOutput.text.ToString().ToLower().Trim().Replace(".", "") == Shop.SongameString)
                     {
                         int reward = 450 * Shop.SongameTries;
                         user.AddItemToInv("money", reward);
@@ -127,7 +128,7 @@ namespace fs24bot3
                     }
                     else
                     {
-                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {translatedOutput.text.ToString().ToLower()}");
+                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {translatedOutput.text.ToString().ToLower().Replace(".", "")}");
                         Shop.SongameTries--;
                     }
                 }
