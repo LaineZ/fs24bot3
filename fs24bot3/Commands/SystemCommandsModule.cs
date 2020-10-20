@@ -36,7 +36,7 @@ namespace fs24bot3
         [Description("Макроэкономические показатели")]
         public void Economy()
         {
-            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {Shop.GetMoneyAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Период выполнения Shop.Update() {Shop.Tickrate} ms Покупок/Продаж {Shop.Buys}/{Shop.Sells}");
+            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {Shop.GetItemAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Период выполнения Shop.Update() {Shop.Tickrate} ms Покупок/Продаж {Shop.Buys}/{Shop.Sells}");
         }
 
         [Command("gc")]
@@ -196,7 +196,7 @@ namespace fs24bot3
 
         [Command("setcap")]
         [Checks.CheckAdmin]
-        public void Cap(int cap = 5000)
+        public void Cap(int cap)
         {
             Shop.MaxCap = cap;
             Context.SendMessage(Context.Channel, "Установлен лимит невыплаты при: " + Shop.MaxCap);
@@ -222,9 +222,9 @@ namespace fs24bot3
 
         [Command("sqlt")]
         [Checks.CheckAdmin]
-        public void LoggerLevel(bool enabled = true )
+        public void LoggerLevel(bool enabled = true)
         {
-             Context.Connection.Tracer = new Action<string>(q => { Log.Warning(q); });
+            Context.Connection.Tracer = new Action<string>(q => { Log.Warning(q); });
             Context.Connection.Trace = enabled;
             Context.SendMessage(Context.Channel, $"SQL логирование `{enabled}`");
 
@@ -238,10 +238,12 @@ namespace fs24bot3
             {
                 foreach (var user in users.Split(" "))
                 {
-                    Context.Connection.Execute("DELETE FROM UserStats WHERE Nick = ?", user);   
+                    Context.Connection.Execute("DELETE FROM UserStats WHERE Nick = ?", user);
                     Context.Connection.Execute("DELETE FROM Inventory WHERE Nick = ?", user);
                 }
-            } else {
+            }
+            else
+            {
                 Context.Connection.Execute("DELETE FROM UserStats WHERE Level = ?", level);
             }
             Context.Connection.Execute("VACUUM;");

@@ -37,6 +37,16 @@ namespace fs24bot3.Models
             public int ItemCount { get; set; }
         }
 
+
+        internal class UserShop
+        {
+            public string Nick { get; set; }
+            public string Item { get; set; }
+            [Column("Count")]
+            public int ItemCount { get; set; }
+            public int ItemPrice {get; set; }
+        }
+
         internal class CustomUserCommands
         {
             [PrimaryKey]

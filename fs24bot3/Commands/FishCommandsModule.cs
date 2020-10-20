@@ -139,7 +139,7 @@ namespace fs24bot3
 
             if (userRod == null)
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Удочка не найдена");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Удочка не найдена @buyrod");
                 return;
             }
 
@@ -167,30 +167,27 @@ namespace fs24bot3
 
             Random rand = new Random();
             // TODO: Switch to normal
-            if (rand.Next(0, 3) == 1)
+            if (rand.Next(0, 2) == 1)
             {
                 // TODO: Refactor
+                string[] fish = new string[15];
+
                 if (nest.Level == 1)
                 {
-                    string[] fish = { "fish", "veriplace", "ffish" };
-                    string catched = fish[rand.Next(0, fish.Length)];
-                    user.AddItemToInv(catched, 1);
-                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
+                    fish = new string[] { "fish", "veriplace", "ffish" };
                 }
                 if (nest.Level == 2)
                 {
-                    string[] fish = { "fish", "veriplace", "ffish", "pike", "som" };
-                    string catched = fish[rand.Next(0, fish.Length)];
-                    user.AddItemToInv(catched, 1);
-                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
+                    fish = new string[] { "fish", "veriplace", "ffish", "pike", "som" };
                 }
                 if (nest.Level == 3)
                 {
-                    string[] fish = { "fish", "veriplace", "ffish", "pike", "som", "weirdfishes", "worm", "wrench", "wrenchadv", "dj", "pistol" };
-                    string catched = fish[rand.Next(0, fish.Length)];
-                    user.AddItemToInv(catched, rand.Next(1, 2));
-                    Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
+                    fish = new string[] { "fish", "veriplace", "ffish", "pike", "som", "weirdfishes", "worm", "wrench", "wrenchadv"};
                 }
+
+                string catched = fish[rand.Next(0, fish.Length)];
+                user.AddItemToInv(catched, 1);
+                Context.SendMessage(Context.Channel, $"Вы поймали {Shop.GetItem(catched).Name}!");
             }
             else
             {

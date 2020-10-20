@@ -148,8 +148,8 @@ namespace fs24bot3
             }
             else
             {
-                Log.Warning("Cannot query inventory!");
-                return null;
+                Log.Warning(Username + ": Cannot query inventory!");
+                return new List<SQL.Inventory>();
             }
         }
 

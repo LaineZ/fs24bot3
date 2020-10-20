@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Serilog;
+using fs24bot3.Models;
 
 namespace fs24bot3
 {
@@ -54,6 +56,33 @@ namespace fs24bot3
             {
                 Context.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
             }
+        }
+
+
+        [Command("craft")]
+        [Description("Скрафтить предмет. Рецепты никто не знает...")]
+        public void Craft(string itemname, int count = 1)
+        {
+            UserOperations user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            Random rand = new Random(itemname.GetHashCode() + count);
+            int itemPrec = (int)Math.Floor(1000 - (Shop.GetItem(itemname).Price * rand.Next() * Shop.GetItemAvg(Context.Connection, itemname) * count));
+
+            if (user.RemItemFromInv(itemname, count))
+            {
+                foreach (var item in Shop.ShopItems)
+                {
+                    int itemPrecCr = (int)Math.Floor(1000 - (item.Price * rand.Next() * Shop.GetItemAvg(Context.Connection, item.Slug) * count));
+
+                    if (itemPrec > itemPrecCr)
+                    {
+                        Context.SendMessage(Context.Channel, $"Вы скрафтили {item.Name}!");
+                        user.AddItemToInv(item.Slug, 1);
+                        return;
+                    }
+                }
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Вы ничего не смогли скрафтить! =(");
+            }
+            Log.Verbose(itemPrec + ":" + itemname);
         }
 
         [Command("sell")]

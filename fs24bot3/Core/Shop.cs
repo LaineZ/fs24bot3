@@ -96,25 +96,21 @@ namespace fs24bot3
             Log.Information("Done loading preparing shop!");
         }
 
-        internal static double GetMoneyAvg(SQLiteConnection connection)
+        internal static double GetItemAvg(SQLiteConnection connection, string itemname = "money")
         {
             List<int> money = new List<int>();
 
             var query = connection.Table<Models.SQL.UserStats>();
             foreach (var users in query)
             {
-                try
+                UserOperations user = new UserOperations(users.Nick, connection);
+                var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.GetItem(itemname).Name));
+                if (itemToCount != null)
                 {
-                    UserOperations user = new UserOperations(users.Nick, connection);
-                    var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.GetItem("money").Name));
                     money.Add(itemToCount.ItemCount);
                 }
-                catch (NullReferenceException)
-                {
-                    Log.Verbose("User {0} have null money", users.Nick);
-                }
             }
-            return money.Average();
+            return money.Any() ? money.Average() : 0;
         }
 
         public static void Update(SQLiteConnection connect)
@@ -139,7 +135,7 @@ namespace fs24bot3
             }
 
             int checkPayday = Rand.Next(0, 10);
-            if (checkPayday == 8 && GetMoneyAvg(connect) < MaxCap)
+            if (checkPayday == 8 && GetItemAvg(connect) < MaxCap)
             {
                 Log.Information("Giving payday/taxes!");
                 var query = connect.Table<Models.SQL.UserStats>();
