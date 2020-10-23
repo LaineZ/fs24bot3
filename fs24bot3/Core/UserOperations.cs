@@ -196,11 +196,10 @@ namespace fs24bot3
         /// Gets user fishing rod
         /// </summary>
         /// <returns>SQL.UserFishingRods - if rod found, null if not found </returns>
-
         public SQL.UserFishingRods GetRod()
         {
-            var query = Connect.Table<SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).ToList();
-            return query.Any() ? query[0] : null;
+            var query = Connect.Table<SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).FirstOrDefault();
+            return query;
         }
 
         public FishingError.RodErrors AddRod(string rodname)
@@ -229,23 +228,20 @@ namespace fs24bot3
 
         public (FishingError.RodErrors, SQL.FishingNests) SetNest(string nest)
         {
-            var query = Connect.Table<SQL.FishingNests>().Where(v => v.Name.Equals(nest)).ToList();
-            if (query.Any())
+            var query = Connect.Table<SQL.FishingNests>().Where(v => v.Name.Equals(nest)).FirstOrDefault();
+            if (query != null)
             {
                 if (GetRod() != null)
                 {
                     Connect.Execute("UPDATE UserFishingRods SET Nest = ? WHERE Username = ?", nest, Username);
-                    return (FishingError.RodErrors.RodOk, query[0]);
+                    return (FishingError.RodErrors.RodOk, query);
                 }
                 else
                 {
                     return (FishingError.RodErrors.RodNotFound, null);
                 }
             }
-            else
-            {
-                return (FishingError.RodErrors.RodUnknownError, null);
-            }
+            return (FishingError.RodErrors.RodUnknownError, null);
         }
 
         public (FishingError.RodErrors, SQL.UserFishingRods) DelRod()

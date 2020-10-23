@@ -89,7 +89,7 @@ namespace fs24bot3
         {
             var user = new UserOperations(Context.Message.From, Context.Connection, Context);
             string rodname = user.GetRod().RodName;
-            var query = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList()[0];
+            var query = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).FirstOrDefault();
 
             if (nestname.Any())
             {
@@ -101,20 +101,25 @@ namespace fs24bot3
 
                 var state = user.SetNest(nestname);
 
-                if (state.Item2.FishingLineRequired <= user.GetRod().RodDurabillity)
+                if (state.Item2 == null)
                 {
                     switch (state.Item1)
                     {
                         case FishingError.RodErrors.RodNotFound:
                             Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Удочка не найдена");
                             break;
-                        case FishingError.RodErrors.RodOk:
-                            Context.SendMessage(Context.Channel, $"Установлено место рыбалки {nestname}");
-                            break;
-                        default:
-                            Context.SendMessage(Context.Channel, $"{IrcColors.Red}Чёто не так причина: {state.Item1}... =( =(");
+                        case FishingError.RodErrors.RodUnknownError:
+                            Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Такого места для рыбалки не сущесвует");
                             break;
                     }
+
+                    return;
+                }
+
+                // TODO: Fix
+                if (state.Item2.FishingLineRequired <= user.GetRod().RodDurabillity)
+                {
+                    Context.SendMessage(Context.Channel, $"Установлено место рыбалки {nestname}");
                 }
                 else
                 {
@@ -182,7 +187,7 @@ namespace fs24bot3
                 }
                 if (nest.Level == 3)
                 {
-                    fish = new string[] { "fish", "veriplace", "ffish", "pike", "som", "weirdfishes", "worm", "wrench", "wrenchadv"};
+                    fish = new string[] { "fish", "veriplace", "ffish", "pike", "som", "weirdfishes", "worm", "wrench", "wrenchadv" };
                 }
 
                 string catched = fish[rand.Next(0, fish.Length)];
