@@ -29,6 +29,16 @@ namespace fs24bot3.Models
         }
 
 
+        internal class ScriptStorage
+        {
+            [PrimaryKey]
+            public string Command { get; set; }
+            public string Nick { get; set; }
+            public string Data { get; set; }
+        }
+
+
+
         internal class Inventory
         {
             public string Nick { get; set; }

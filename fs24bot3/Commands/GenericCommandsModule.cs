@@ -448,6 +448,7 @@ namespace fs24bot3
                 var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
                 if (query > 0)
                 {
+                    Context.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(commandConcat)).Delete();
                     Context.SendMessage(Context.Channel, "Команда удалена!");
                 }
             }
@@ -456,6 +457,7 @@ namespace fs24bot3
                 var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Message.From)).Delete();
                 if (query > 0)
                 {
+                    Context.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(commandConcat)).Delete();
                     Context.SendMessage(Context.Channel, "Команда удалена!");
                 }
                 else

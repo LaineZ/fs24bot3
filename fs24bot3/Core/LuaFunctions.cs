@@ -12,14 +12,16 @@ namespace fs24bot3.Core
     public class LuaFunctions
     {
         private readonly SQLiteConnection Connection;
-        private string Caller;
-        private List<PrivMsgMessage> MessageBus;
+        private string Caller { get; set; }
+        private List<PrivMsgMessage> MessageBus { get; set; }
+        private string Command { get; set; }
 
-        public LuaFunctions(SQLiteConnection connection, string caller, List<PrivMsgMessage> messageBus)
+        public LuaFunctions(SQLiteConnection connection, string caller, string commandname, List<PrivMsgMessage> messageBus)
         {
-           Connection = connection;
-           Caller = caller;
-           MessageBus = messageBus;
+            Connection = connection;
+            Caller = caller;
+            MessageBus = messageBus;
+            Command = commandname;
         }
 
         public string[] GetCommandOutput(string input, string command)
@@ -39,6 +41,45 @@ namespace fs24bot3.Core
             Log.Verbose("OUTPUT: {0}", argsFinal.ToString());
 
             return argsFinal.ToString().Split("||");
+        }
+
+        public string GetLocalStorage()
+        {
+            var query = Connection.Table<SQL.ScriptStorage>().Where(v => v.Nick.Equals(Caller) && v.Command == Command);
+
+            if (query.Any())
+            {
+                return query.First().Data;
+            }
+            
+            return null;
+        }
+
+        public bool SetLocalStorage(string data)
+        {
+            if (Encoding.Unicode.GetByteCount(data) < 1024)
+            {
+                Connection.Insert(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = data });
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool AppendLocalStorage(string data)
+        {
+            string totalData = GetLocalStorage() + data;
+            if (Encoding.Unicode.GetByteCount(totalData) < 1024)
+            {
+                Connection.Insert(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = totalData });
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public PrivMsgMessage[] GetMessageBus()

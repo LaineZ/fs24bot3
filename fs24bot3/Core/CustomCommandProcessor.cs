@@ -90,7 +90,7 @@ namespace fs24bot3.Core
                         lua["CMD_NAME"] = cmd.Command;
                         lua["CMD_OWNER"] = cmd.Nick;
                         lua["CMD_ARGS"] = string.Join(" ", argsArray);
-                        LuaFunctions luaFunctions = new LuaFunctions(connect, message.From, messageBus);
+                        LuaFunctions luaFunctions = new LuaFunctions(connect, message.From, cmd.Command, messageBus);
                         lua["Cmd"] = luaFunctions;
 
                         Thread thread = new Thread(async () =>
