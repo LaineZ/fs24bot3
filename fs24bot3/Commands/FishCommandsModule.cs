@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using fs24bot3.Models;
 
-namespace fs24bot3
+namespace fs24bot3.Commands
 {
     public sealed class FishCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {

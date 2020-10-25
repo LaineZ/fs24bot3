@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using VkNet.Enums.Filters;
 
-namespace fs24bot3
+namespace fs24bot3.Commands
 {
     public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {

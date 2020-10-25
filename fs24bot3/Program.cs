@@ -11,6 +11,7 @@ using System.Threading;
 using fs24bot3.Models;
 using VkNet;
 using System.Collections.Generic;
+using fs24bot3.Commands;
 
 namespace fs24bot3
 {
@@ -60,6 +61,7 @@ namespace fs24bot3
             _service.AddModule<InternetCommandsModule>();
             _service.AddModule<NetstalkingCommandsModule>();
             _service.AddModule<FishCommandsModule>();
+            _service.AddModule<CustomCommandsModule>();
 
             vk = new HttpTools().LogInVKAPI();
             using var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());

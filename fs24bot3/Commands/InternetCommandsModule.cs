@@ -12,7 +12,7 @@ using SQLite;
 using HtmlAgilityPack;
 using Serilog;
 
-namespace fs24bot3
+namespace fs24bot3.Commands
 {
     public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {

@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace fs24bot3
+namespace fs24bot3.Commands
 {
     public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
@@ -259,12 +259,12 @@ namespace fs24bot3
 
         [Command("ignore")]
         [Checks.CheckAdmin]
-        public void Ignore(string action, [Remainder] string username)
+        public void Ignore(CommandToggles.CommandEdit action, [Remainder] string username)
         {
             var usernames = username.Split(" ");
             switch (action)
             {
-                case "add":
+                case CommandToggles.CommandEdit.Add:
                     foreach (var item in usernames)
                     {
                         var ignr = new SQL.Ignore()
@@ -275,14 +275,12 @@ namespace fs24bot3
                     }
                     Context.SendMessage(Context.Channel, $"Пользователь(и) {username} добавлен(ы) в игнор!");
                     break;
-                case "del":
+                case CommandToggles.CommandEdit.Delete:
                     foreach (var item in usernames)
                     {
                         Context.Connection.Execute("DELETE FROM Ignore WHERE Username = ?", item);
                     }
                     Context.SendMessage(Context.Channel, $"Пользователь(и) {username} удален(ы) из игнора!");
-                    break;
-                default:
                     break;
             }
         }

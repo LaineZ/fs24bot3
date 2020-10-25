@@ -5,7 +5,7 @@ using System.Linq;
 using Serilog;
 using fs24bot3.Models;
 
-namespace fs24bot3
+namespace fs24bot3.Commands
 {
     public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
