@@ -58,32 +58,46 @@ namespace fs24bot3.Commands
             }
         }
 
-
+        /*
         [Command("craft")]
         [Description("Скрафтить предмет. Рецепты никто не знает...")]
-        public void Craft(string itemname, int count = 1)
+        public void Craft([Remainder] string itemnames)
         {
-            UserOperations user = new UserOperations(Context.Message.From, Context.Connection, Context);
-            Random rand = new Random(itemname.GetHashCode() + count);
-            int itemPrec = (int)Math.Floor(1000 - (Shop.GetItem(itemname).Price * rand.Next() * Shop.GetItemAvg(Context.Connection, itemname) * count));
+            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+            Random rand = new Random(itemnames.GetHashCode());
 
-            if (user.RemItemFromInv(itemname, count))
+            var itemnamesArray = itemnames.Split(" ");
+
+            double itemPrec = 0;
+
+            foreach (var itemname in itemnamesArray)
             {
-                foreach (var item in Shop.ShopItems)
+                if (user.RemItemFromInv(itemname, 1))
                 {
-                    int itemPrecCr = (int)Math.Floor(1000 - (item.Price * rand.Next() * Shop.GetItemAvg(Context.Connection, item.Slug) * count));
-
-                    if (itemPrec > itemPrecCr)
+                    foreach (var item in Shop.ShopItems)
                     {
-                        Context.SendMessage(Context.Channel, $"Вы скрафтили {item.Name}!");
-                        user.AddItemToInv(item.Slug, 1);
-                        return;
+                        itemPrec += item.Price + rand.Next() / Shop.GetItemAvg(Context.Connection, item.Slug);
                     }
                 }
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Вы ничего не смогли скрафтить! =(");
+                Log.Verbose(itemPrec + ":" + itemname);
             }
-            Log.Verbose(itemPrec + ":" + itemname);
+
+            foreach (var item in Shop.ShopItems)
+            {
+                double itemPrecCr = item.Price + rand.Next() / Shop.GetItemAvg(Context.Connection, item.Slug);
+
+                if (itemPrec > itemPrecCr)
+                {
+                    int count = rand.Next(1, 4);
+                    Context.SendMessage(Context.Channel, $"Вы скрафтили {item.Name} x{count}!");
+                    user.AddItemToInv(item.Slug, count);
+                    return;
+                }
+            }
+
+            Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Вы ничего не смогли скрафтить! =(");
         }
+        */
 
         [Command("sell")]
         [Description("Продать товар")]
