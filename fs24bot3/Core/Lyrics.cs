@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 using System.Web;
 using SQLite;
 using fs24bot3.Models;
-using System.Linq;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http;
 
 namespace fs24bot3.Core
 {
