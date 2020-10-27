@@ -8,6 +8,10 @@ using SQLite;
 using fs24bot3.Models;
 using System.Linq;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using Genius;
 
 namespace fs24bot3.Core
 {
@@ -19,104 +23,56 @@ namespace fs24bot3.Core
 
         public Lyrics(string artist, string track, SQLiteConnection connect)
         {
-            Artist = artist;
-            Track = track;
+            Artist = artist.Replace(" ", "-");
+            Track = track.Replace(" ", "-");
             Connection = connect;
-        }
-
-        private string Retry(string rule, HtmlDocument doc)
-        {
-            HtmlNodeCollection retry = doc.DocumentNode.SelectNodes(rule);
-            if (retry != null)
-            {
-                foreach (var node in retry)
-                {
-                    Log.Verbose(node.InnerText);
-                    StringWriter lyricsWriter = new StringWriter();
-                    HttpUtility.HtmlDecode(node.InnerText, lyricsWriter);
-                    return lyricsWriter.ToString();
-                }
-            }
-            return null;
-        }
-
-        private async Task<(string, bool)> GetLyricsInternal(string url)
-        {
-            var web = new HtmlWeb();
-            var doc = await web.LoadFromWebAsync("https://lyrics.fandom.com/wiki/" + url);
-            HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class='lyricbox']");
-            if (divContainer != null)
-            {
-                foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//br"))
-                    node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
-
-                foreach (var node in divContainer)
-                {
-                    Log.Verbose(node.InnerText);
-                    StringWriter lyricsWriter = new StringWriter();
-                    HttpUtility.HtmlDecode(node.InnerText, lyricsWriter);
-                    return (lyricsWriter.ToString(), false);
-                }
-            }
-
-            else
-            {
-                // "//ul[@class='redirectText']"
-                string retryRedirect;
-                string[] retryVariants = { "//ul[@class='redirectText']", "//span[@class='alternative-suggestion']/a" };
-                foreach (string variants in retryVariants)
-                {
-                    retryRedirect = Retry(variants, doc);
-                    if (retryRedirect != null)
-                    {
-                        Log.Information("Trying get lyrics with type: {0} got: {1}", variants, retryRedirect);
-                        return await GetLyricsInternal(retryRedirect);
-                    }
-                }
-            }
-
-            throw new Exception("Lyrics not found! (lyricwiki)");
         }
 
         public async Task<string> GetLyrics()
         {
-            var query = Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.ToLower().Equals(Artist.ToLower()) && v.Track.ToLower().Equals(Track.ToLower())).ToList();
-
-            if (query.Count > 0)
+            var query = Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.ToLower().Equals(Artist.ToLower()) && v.Track.ToLower().Equals(Track.ToLower())).FirstOrDefault();
+            if (query != null)
             {
-                Log.Information("Lyrics: Using cached");
-                return query[0].Lyrics;
-            }
-            Log.Information("Lyrics: Using internet");
-            (string lyrics, bool redirect) = await GetLyricsInternal(Artist + ":" + Track);
-            if (!redirect)
-            {
-                var lyricsToCache = new SQL.LyricsCache()
-                {
-                    AddedBy = null,
-                    Artist = Artist,
-                    Track = Track,
-                    Lyrics = lyrics
-                };
-
-                Connection.Insert(lyricsToCache);
-                return lyrics;
+                Log.Verbose("Use cached lyrics");
+                return query.Lyrics;
             }
             else
             {
-                (string lyricsFixed, bool _) = await GetLyricsInternal(lyrics);
+                Log.Verbose("Using internet");
+                string lyric = "";
+                var web = new HtmlWeb();
+                var doc = await web.LoadFromWebAsync("https://genius.com/" + Artist + "-" + Track  + "-lyrics");
+                HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]");
+                if (divContainer != null)
+                {
+                    foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//br"))
+                        node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
+
+                    foreach (var node in divContainer)
+                    {
+                        Log.Verbose(node.InnerText);
+                        StringWriter writer = new StringWriter();
+
+                        HttpUtility.HtmlDecode(node.InnerText, writer);
+
+                        lyric += writer.ToString();
+                    }
+                }
+                else
+                {
+                    throw new Exception("Lyrics not found!");
+                }
 
                 var lyricsToCache = new SQL.LyricsCache()
                 {
                     AddedBy = null,
                     Artist = Artist,
                     Track = Track,
-                    Lyrics = lyricsFixed
+                    Lyrics = lyric
                 };
-
                 Connection.Insert(lyricsToCache);
 
-                return lyricsFixed;
+                return lyric;
             }
         }
     }

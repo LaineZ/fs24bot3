@@ -24,6 +24,7 @@ namespace fs24bot3
         public static string vkLogin;
         public static string vkPassword;
         public static string trashbinUrl;
+        public static string geniusToken;
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
 
@@ -56,6 +57,7 @@ namespace fs24bot3
                         {"vk_login", vkLogin },
                         {"vk_password", vkPassword },
                         {"trashbin_url", trashbinUrl },
+                        {"genius_token", geniusToken },
                     }
                 }
             }
@@ -97,6 +99,7 @@ namespace fs24bot3
                         {"vk_api_key", "0"},
                         {"vk_login", "0" },
                         {"vk_password", "0" },
+                        {"genius_token", "0"},
                         {"trashbin_url", "http://127.0.0.1:8000" },
                     }
                 }
@@ -124,6 +127,7 @@ namespace fs24bot3
                 vkLogin = (string)((TomlTable)table["services"])["vk_login"];
                 vkPassword = (string)((TomlTable)table["services"])["vk_password"];
                 trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
+                geniusToken = (string)((TomlTable)table["services"])["genius_token"];
                 Log.Information("Configuration loaded!");
             }
         }

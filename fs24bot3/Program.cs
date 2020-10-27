@@ -44,7 +44,7 @@ namespace fs24bot3
         static void Main()
         {
             Log.Logger = new LoggerConfiguration()
-            .WriteTo.ColoredConsole()
+            .WriteTo.Console()
             .MinimumLevel.ControlledBy(Configuration.LoggerSw)
             .CreateLogger();
 
