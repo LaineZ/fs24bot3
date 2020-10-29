@@ -84,6 +84,18 @@ namespace fs24bot3
             Connect.Execute("UPDATE UserStats SET Need = Level * ? WHERE Nick = ?", XP_MULTIPLER, Username);
         }
 
+        public void AddRemind(TimeSpan time, string title)
+        {
+            var remind = new SQL.Reminds()
+            {
+                Nick = Username,
+                Message = title,
+                RemindDate = (int)((DateTimeOffset)DateTime.Now.Add(time)).ToUnixTimeSeconds(),
+            };
+
+            Connect.Insert(remind);
+        }
+
         public void AddItemToInv(string name, int count)
         {
             count = (int)Math.Floor((decimal)count);

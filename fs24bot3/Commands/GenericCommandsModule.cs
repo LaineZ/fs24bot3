@@ -56,6 +56,39 @@ namespace fs24bot3.Commands
             }
         }
 
+        [Command("remind", "in")]
+        [Description("Напоминание")]
+        public void Remind(string time, string message = "Remind!")
+        {
+            // sorry for this idk how to make more coolest code!!!!
+            double totalSecs = 0;
+            foreach (var part in time.Split(','))
+            {
+                switch (part[^1])
+                {
+                    case 'y':
+                        totalSecs += 31556926 * int.Parse(part.Trim('y'));
+                        break;
+                    case 'h':
+                        totalSecs += 3600 * int.Parse(part.Trim('h'));
+                        break;
+                    case 'm':
+                        totalSecs += 60 * int.Parse(part.Trim('m'));
+                        break;
+                    case 's':
+                        totalSecs += 1 * int.Parse(part.Trim('s'));
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
+            var user = new UserOperations(Context.Message.From, Context.Connection);
+            user.AddRemind(ts, message);
+            Context.SendMessage(Context.Channel, $"Напоминание через {ts}({time}) создано!");
+        }
+
         [Command("songame", "songg", "sg")]
         [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
         public async void Songame([Remainder] string translated = "")
@@ -73,7 +106,7 @@ namespace fs24bot3.Commands
             Random rand = new Random();
             List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
 
-            string[] art = new string[] {"the", "are", ",", ".", "!", "?", "a ", "an "};
+            string[] art = new string[] { "the", "are", ",", ".", "!", "?", "a ", "an " };
 
             if (Shop.SongameString.Length == 0)
             {
@@ -326,7 +359,7 @@ namespace fs24bot3.Commands
         {
 
             DateTime dateOut = new DateTime(2020, 12, 22, 17, 26, 12);
-            TimeSpan dateIn =  dateOut.Subtract(DateTime.Now);
+            TimeSpan dateIn = dateOut.Subtract(DateTime.Now);
             Context.SendMessage(Context.Channel, $"До появления Миши осталось: {dateIn.Days / 30} месяцев {dateIn.Days % 30} дней {dateIn.Hours} часов {dateIn.Minutes} минут {dateIn.Seconds} секунд {dateIn.Milliseconds} мс...");
         }
 

@@ -37,7 +37,13 @@ namespace fs24bot3.Models
             public string Data { get; set; }
         }
 
-
+        internal class Reminds
+        {
+            [PrimaryKey]
+            public int RemindDate { get; set; }
+            public string Nick { get; set; }
+            public string Message { get; set; }
+        }
 
         internal class Inventory
         {

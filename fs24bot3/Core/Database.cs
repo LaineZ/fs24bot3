@@ -20,6 +20,7 @@ namespace fs24bot3.Core
             connection.CreateTable<SQL.FishingNests>();
             connection.CreateTable<SQL.UserFishingRods>();
             connection.CreateTable<SQL.ScriptStorage>();
+            connection.CreateTable<SQL.Reminds>();
 
             Shop.Init(connection);
 

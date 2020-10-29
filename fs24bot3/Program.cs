@@ -82,6 +82,28 @@ namespace fs24bot3
                     Shop.Update(connection);
                 }
             }).Start();
+
+            new Thread(async () =>
+            {
+                Log.Information("Reminds thread started!");
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    var query = connection.Table<SQL.Reminds>();
+
+                    foreach (var item in query)
+                    {
+                        DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                        dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
+                        if (dtDateTime >= DateTime.Now)
+                        {
+                            await client.SendAsync(new PrivMsgMessage("NickServ", $"{item.Nick}: {item.Message}!"));
+                            connection.Delete(item);
+                        }
+                        
+                    }
+                }
+            }).Start();
             try
             {
                 Console.ReadKey();
