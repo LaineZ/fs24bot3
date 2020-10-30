@@ -1,11 +1,9 @@
 ﻿using fs24bot3.Models;
-using HtmlAgilityPack;
 using Qmmands;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using VkNet.Enums.Filters;
 
 namespace fs24bot3.Commands

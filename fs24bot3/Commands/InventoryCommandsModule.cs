@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Serilog;
 using fs24bot3.Models;
 
 namespace fs24bot3.Commands
@@ -18,7 +17,7 @@ namespace fs24bot3.Commands
         {
             var userop = new UserOperations(Context.Message.From, Context.Connection);
             var userInv = userop.GetInventory();
-            if (userInv != null && userInv.Count > 0)
+            if (userInv.Count > 0)
             {
                 if (!useSlugs)
                 {
@@ -31,7 +30,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{Models.IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
             }
         }
 
@@ -57,47 +56,6 @@ namespace fs24bot3.Commands
                 Context.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
             }
         }
-
-        /*
-        [Command("craft")]
-        [Description("Скрафтить предмет. Рецепты никто не знает...")]
-        public void Craft([Remainder] string itemnames)
-        {
-            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
-            Random rand = new Random(itemnames.GetHashCode());
-
-            var itemnamesArray = itemnames.Split(" ");
-
-            double itemPrec = 0;
-
-            foreach (var itemname in itemnamesArray)
-            {
-                if (user.RemItemFromInv(itemname, 1))
-                {
-                    foreach (var item in Shop.ShopItems)
-                    {
-                        itemPrec += item.Price + rand.Next() / Shop.GetItemAvg(Context.Connection, item.Slug);
-                    }
-                }
-                Log.Verbose(itemPrec + ":" + itemname);
-            }
-
-            foreach (var item in Shop.ShopItems)
-            {
-                double itemPrecCr = item.Price + rand.Next() / Shop.GetItemAvg(Context.Connection, item.Slug);
-
-                if (itemPrec > itemPrecCr)
-                {
-                    int count = rand.Next(1, 4);
-                    Context.SendMessage(Context.Channel, $"Вы скрафтили {item.Name} x{count}!");
-                    user.AddItemToInv(item.Slug, count);
-                    return;
-                }
-            }
-
-            Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Вы ничего не смогли скрафтить! =(");
-        }
-        */
 
         [Command("sell")]
         [Description("Продать товар")]
@@ -163,7 +121,7 @@ namespace fs24bot3.Commands
         {
             var top = new List<(string Name, int Count)>();
 
-            var query = Context.Connection.Table<Models.SQL.UserStats>();
+            var query = Context.Connection.Table<SQL.UserStats>();
 
             foreach (var users in query)
             {
@@ -177,7 +135,7 @@ namespace fs24bot3.Commands
 
             foreach (var (Name, Count) in result.Take(5))
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Bold + Name + ": " + Count);
+                Context.SendMessage(Context.Channel, IrcColors.Bold + Name + ": " + Count);
             }
         }
 
@@ -195,7 +153,7 @@ namespace fs24bot3.Commands
         {
             var top = new List<(string Name, int Count)>();
 
-            var query = Context.Connection.Table<Models.SQL.UserStats>();
+            var query = Context.Connection.Table<SQL.UserStats>();
 
             foreach (var users in query)
             {
@@ -208,7 +166,7 @@ namespace fs24bot3.Commands
 
             foreach (var topuser in result.Take(5))
             {
-                Context.SendMessage(Context.Channel, Models.IrcColors.Bold + topuser.Name + ": " + topuser.Count);
+                Context.SendMessage(Context.Channel, IrcColors.Bold + topuser.Name + ": " + topuser.Count);
             }
         }
 
@@ -221,14 +179,15 @@ namespace fs24bot3.Commands
             {
                 UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
                 int dmg = 0;
-                string wrname = String.Empty;
+                string wrname = string.Empty;
 
-                List<(string, int)> wrenches = new List<(string, int)>() 
+                List<(string, int)> wrenches = new List<(string, int)>()
                 {
                     // Wrench damage. Sorted in ascend order by damage
                     ("wrenchadv", 8),
                     ("hammer", 5),
                     ("wrench", 3),
+                    ("dj", 1)
                 };
 
                 foreach ((string wrench, int wrdmg) in wrenches)
@@ -244,7 +203,7 @@ namespace fs24bot3.Commands
                 // wrench not found...... 😥
                 if (dmg == 0)
                 {
-                    Context.SendMessage(Context.Channel, $"У вас нету гаечных ключей!");
+                    Context.SendMessage(Context.Channel, $"У вас нету: {string.Join(" или ", wrenches.Select(x => Shop.GetItem(x.Item1).Name))}");
                     return;
                 }
 
@@ -258,10 +217,11 @@ namespace fs24bot3.Commands
                     int indexItem = rand.Next(takeItems.Count);
                     int itemCount = 1;
 
-                    if (takeItems[indexItem].ItemCount / (15 - dmg) > 0) {
+                    if (takeItems[indexItem].ItemCount / (15 - dmg) > 0)
+                    {
                         itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (15 - dmg));
                     }
-                    
+
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
                     userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
 
@@ -284,7 +244,7 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, Models.RandomMsgs.GetRandomMessage(Models.RandomMsgs.MissMessages));
+                    Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.MissMessages));
                 }
             }
             catch (Core.Exceptions.UserNotFoundException)
@@ -303,7 +263,7 @@ namespace fs24bot3.Commands
                 int dmg = 0;
                 string brname = String.Empty;
 
-                List<(string, int)> wrenches = new List<(string, int)>() 
+                List<(string, int)> wrenches = new List<(string, int)>()
                 {
                     // Walls damage. Sorted in ascend order by damage
                     ("bomb", 9),

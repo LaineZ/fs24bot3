@@ -2,11 +2,8 @@
 using Qmmands;
 using Serilog;
 using Serilog.Events;
-using SQLite;
 using System;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -31,6 +28,15 @@ namespace fs24bot3.Commands
             Shop.SongameString = "";
             Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
+
+        [Command("quit", "exit")]
+        [Checks.CheckAdmin]
+        [Description("Выход")]
+        public void Exit()
+        {
+            Environment.Exit(0);
+        }
+
 
         [Command("me")]
         [Description("Макроэкономические показатели")]

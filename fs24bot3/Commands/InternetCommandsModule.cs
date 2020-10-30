@@ -2,13 +2,10 @@
 using Newtonsoft.Json;
 using Qmmands;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
-using SQLite;
 using HtmlAgilityPack;
 using Serilog;
 
