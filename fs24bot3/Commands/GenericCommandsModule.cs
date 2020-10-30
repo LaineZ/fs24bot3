@@ -57,26 +57,29 @@ namespace fs24bot3.Commands
         }
 
         [Command("remind", "in")]
-        [Description("Напоминание")]
-        public void Remind(string time, string message = "Remind!")
+        [Description("Напоминание. time вводится в формате 1m;30s (1 минута и 30 секунд = 90 секунд)")]
+        public void Remind(string time = "1m", [Remainder] string message = "Remind")
         {
             // sorry for this idk how to make more coolest code!!!!
             double totalSecs = 0;
-            foreach (var part in time.Split(','))
+            foreach (var part in time.Split(';'))
             {
                 switch (part[^1])
                 {
                     case 'y':
-                        totalSecs += 31556926 * int.Parse(part.Trim('y'));
+                        totalSecs += 31556926 * uint.Parse(part.Trim('y'));
+                        break;
+                    case 'd':
+                        totalSecs += 86400 * uint.Parse(part.Trim('d'));
                         break;
                     case 'h':
-                        totalSecs += 3600 * int.Parse(part.Trim('h'));
+                        totalSecs += 3600 * uint.Parse(part.Trim('h'));
                         break;
                     case 'm':
-                        totalSecs += 60 * int.Parse(part.Trim('m'));
+                        totalSecs += 60 * uint.Parse(part.Trim('m'));
                         break;
                     case 's':
-                        totalSecs += 1 * int.Parse(part.Trim('s'));
+                        totalSecs += 1 * uint.Parse(part.Trim('s'));
                         break;
                     default:
                         break;
@@ -86,7 +89,7 @@ namespace fs24bot3.Commands
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
             var user = new UserOperations(Context.Message.From, Context.Connection);
             user.AddRemind(ts, message);
-            Context.SendMessage(Context.Channel, $"Напоминание через {ts}({time}) создано!");
+            Context.SendMessage(Context.Channel, $"{message} через ({time})!");
         }
 
         [Command("songame", "songg", "sg")]

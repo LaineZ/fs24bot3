@@ -95,9 +95,9 @@ namespace fs24bot3
                     {
                         DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                         dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
-                        if (dtDateTime >= DateTime.Now)
+                        if (dtDateTime <= DateTime.Now)
                         {
-                            await client.SendAsync(new PrivMsgMessage("NickServ", $"{item.Nick}: {item.Message}!"));
+                            await client.SendAsync(new PrivMsgMessage(Configuration.channel, $"{item.Nick}: {item.Message}!"));
                             connection.Delete(item);
                         }
                         
@@ -129,7 +129,7 @@ namespace fs24bot3
             }
             else
             {
-                MessageBus.Clear();
+                MessageBus.RemoveAt(0);
             }
 
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
