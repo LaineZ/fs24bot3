@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using HtmlAgilityPack;
 using Serilog;
+using System.Collections.Generic;
 
 namespace fs24bot3.Commands
 {
@@ -232,6 +233,56 @@ namespace fs24bot3.Commands
             else
             {
                 Context.SendMessage(Context.Channel, "Instumental");
+            }
+        }
+
+        [Command("u", "unicode")]
+        public async void FindUnicode(string query)
+        {
+            string definedCodePoints = await http.MakeRequestAsync("http://unicode.org/Public/UNIDATA/UnicodeData.txt");
+            StringReader reader = new StringReader(definedCodePoints);
+            UTF8Encoding encoder = new UTF8Encoding();
+            List<string> output = new List<string>();
+            while (true)
+            {
+                string line = reader.ReadLine();
+
+                if (line == null) break;
+
+                var props = line.Split(";");
+
+                int codePoint = Convert.ToInt32(props[0], 16);
+                if (codePoint >= 0xD800 && codePoint <= 0xDFFF)
+                {
+                    //surrogate boundary; not valid codePoint, but listed in the document
+                }
+                else
+                {
+                    string utf16 = char.ConvertFromUtf32(codePoint);
+                    byte[] utf8 = encoder.GetBytes(utf16);
+
+                    string name = props[1];
+                    string hexcode = "0x" + props[0];
+
+                    if (name == "<control>")
+                    {
+                        name = props[10];
+                    }
+
+                    if (query.ToLower().Contains(name.ToLower()) || query == encoder.GetString(utf8))
+                    {
+                        output.Add($"{encoder.GetString(utf8)} {IrcColors.Green}({name}, {hexcode})");
+                    }
+                }
+            }
+
+            if (output.Any())
+            {
+                Context.SendMessage(Context.Channel, string.Join(", ", output));
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Red}{RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages)}");
             }
         }
     }

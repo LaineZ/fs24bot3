@@ -1,4 +1,8 @@
-﻿using fs24bot3.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using fs24bot3.Models;
 using Serilog;
 using SQLite;
 
@@ -21,6 +25,7 @@ namespace fs24bot3.Core
             connection.CreateTable<SQL.UserFishingRods>();
             connection.CreateTable<SQL.ScriptStorage>();
             connection.CreateTable<SQL.Reminds>();
+            connection.CreateTable<SQL.UtfCharacters>();
 
             Shop.Init(connection);
 

@@ -60,7 +60,7 @@ namespace fs24bot3.Models
             public string Item { get; set; }
             [Column("Count")]
             public int ItemCount { get; set; }
-            public int ItemPrice {get; set; }
+            public int ItemPrice { get; set; }
         }
 
         internal class CustomUserCommands
@@ -129,6 +129,15 @@ namespace fs24bot3.Models
             public int Price { get; set; }
         }
 
+
+        internal class UtfCharacters
+        {
+            [PrimaryKey]
+            public string HexCode { get; set; }
+            public string Name { get; set; }
+            public string Symbol { get; set; }
+        }
+        
         internal class FishingNests
         {
             [PrimaryKey]
