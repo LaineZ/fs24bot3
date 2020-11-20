@@ -60,14 +60,14 @@ namespace fs24bot3.Commands
             var response = await http.GetResponseAsync(rawurl);
             if (response != null)
             {
-                if (response.ContentType == "text/plain")
+                if (response.ContentType.Contains("text/plain"))
                 {
                     Stream responseStream = response.GetResponseStream();
                     CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
                 }
             }
             else
