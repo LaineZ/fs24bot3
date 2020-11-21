@@ -73,15 +73,6 @@ namespace fs24bot3
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
 
             Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
-            new Thread(() =>
-            {
-                Log.Information("Thread started!");
-                while (true)
-                {
-                    Thread.Sleep(Shop.Tickrate);
-                    Shop.Update(connection);
-                }
-            }).Start();
 
             new Thread(async () =>
             {
@@ -100,17 +91,16 @@ namespace fs24bot3
                             await client.SendAsync(new PrivMsgMessage(Configuration.channel, $"{item.Nick}: {item.Message}!"));
                             connection.Delete(item);
                         }
-                        
+
                     }
                 }
             }).Start();
-            try
+
+            Log.Information("Running in loop!");
+            while (true)
             {
-                Console.ReadKey();
-            }
-            catch (Exception)
-            {
-                Console.Read();
+                Thread.Sleep(Shop.Tickrate);
+                Shop.Update(connection);
             }
         }
 
@@ -138,13 +128,13 @@ namespace fs24bot3
 
             if (queryIfExt <= 0)
             {
-                (new Thread(() =>
+                new Thread(() =>
                 {
                     if (e.IRCMessage.To != Configuration.name)
                     {
                         UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
                         usr.SetLastMessage();
-                        bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length * (new Random().Next(1, 3)) + 1);
+                        bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length * new Random().Next(1, 3) + 1);
                         if (newLevel)
                         {
                             var random = new Random();
@@ -157,7 +147,7 @@ namespace fs24bot3
                     {
                         Log.Verbose("Message was sent in PM, Level increasing IGNORED!!!");
                     }
-                })).Start();
+                }).Start();
             }
             else
             {

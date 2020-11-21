@@ -84,11 +84,13 @@ namespace fs24bot3.Commands
         }
 
 
-        [Command("testsplit")]
+        [Command("updbot")]
         [Checks.CheckAdmin]
-        public void TestSplit(int count = 200, char ch = 'а')
+        [Description("Обновление бота")]
+        public void Recompile()
         {
-            Context.SendMessage(Context.Channel, new string(ch, count));
+            Context.SendMessage(Context.Channel, "Запускаю скрипт...");
+            
         }
 
         [Command("delalluserrods")]
@@ -128,47 +130,6 @@ namespace fs24bot3.Commands
             Context.SendMessage(channel, "Простите я ухожу, всем пока...");
             await Context.Client.SendRaw("PART " + channel);
             Context.SendMessage(Context.Channel, $"Вышел из: {channel}");
-        }
-
-        [Command("testfishing")]
-        [Checks.CheckAdmin]
-        public void TestFishing(int numberOfLaunches = 1000, int factor = 20, int baseFac = 10)
-        {
-            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
-            var userRod = user.GetRod();
-
-            if (userRod == null)
-            {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Удочка не найдена");
-                return;
-            }
-
-            if (userRod.Nest == null)
-            {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Место рыбалки не установлено, используйте @nest");
-                return;
-            }
-
-            var rod = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(userRod.RodName)).ToList()[0];
-            var nest = Context.Connection.Table<SQL.FishingNests>().Where(v => v.Name.Equals(userRod.Nest)).ToList()[0];
-
-            int catched = 0;
-            int failed = 0;
-
-
-            for (int i = 0; i < numberOfLaunches; i++)
-            {
-                Random rand = new Random();
-                if (rand.Next(rod.HookSize, baseFac + nest.Level - rod.HookSize - rod.FishingLine - nest.FishCount) == factor)
-                {
-                    catched++;
-                }
-                else
-                {
-                    failed++;
-                }
-            }
-            Context.SendMessage(Context.Channel, $"{IrcColors.Gray}ok {catched} failed {failed} {(catched / failed) * 100}%");
         }
 
         [Command("xp")]
