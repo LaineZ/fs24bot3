@@ -78,24 +78,17 @@ namespace fs24bot3.Commands
 
         [Command("executeurl", "execurl")]
         [Description("Тоже самое что и @exec только работает через URL")]
-        public async void ExecuteAPIUrl(string code, string rawurl)
+        public async void ExecuteAPIUrl(string lang, string rawurl)
         {
-            var response = await http.GetResponseAsync(rawurl);
-            if (response != null)
+            string resp = await http.GetTextPlainResponse(rawurl);
+
+            if (resp != null)
             {
-                if (response.ContentType == "text/plain")
-                {
-                    Stream responseStream = response.GetResponseStream();
-                    ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
-                }
-                else
-                {
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ =( {response.ContentType}");
-                }
+                ExecuteAPI(lang, resp);
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+                
             }
         }
 

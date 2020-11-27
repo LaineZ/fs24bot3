@@ -23,8 +23,13 @@ namespace fs24bot3
             Username = username;
             Connect = connection;
             Ctx = ctx;
+        }
 
-            int query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).Count();
+
+
+        public void CreateAccountIfNotExist()
+        {
+            int query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).Count();
 
             if (query <= 0)
             {
@@ -41,7 +46,7 @@ namespace fs24bot3
                     LastMsg = (int)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(),
                 };
 
-                connection.Insert(user);
+                Connect.Insert(user);
             }
         }
 
