@@ -133,6 +133,7 @@ namespace fs24bot3
                     if (e.IRCMessage.To != Configuration.name)
                     {
                         UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
+                        usr.CreateAccountIfNotExist();
                         usr.SetLastMessage();
                         bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length * new Random().Next(1, 3) + 1);
                         if (newLevel)
