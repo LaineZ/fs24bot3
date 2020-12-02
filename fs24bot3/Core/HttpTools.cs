@@ -93,6 +93,20 @@ namespace fs24bot3
             }
         }
 
+        public async Task<string> GetTextPlainResponse(string rawurl)
+        {
+            var response = await GetResponseAsync(rawurl);
+            if (response != null)
+            {
+                if (response.ContentType == "text/plain")
+                {
+                    Stream responseStream = response.GetResponseStream();
+                    return new StreamReader(responseStream).ReadToEnd();
+                }
+            }
+            return null;
+        }
+
         public VkApi LogInVKAPI()
         {
             Log.Information("Logging with vkapi...");

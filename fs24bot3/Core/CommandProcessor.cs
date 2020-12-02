@@ -9,6 +9,7 @@ using VkNet;
 using VkNet.Enums.Filters;
 using VkNet.Model;
 using System.Threading;
+using fs24bot3.Models;
 
 namespace fs24bot3
 {
@@ -43,7 +44,7 @@ namespace fs24bot3
                 }
 
             }
-            
+
             public async void SendMessage(string channel, string message)
             {
                 if (message.Length > 250)
@@ -59,11 +60,22 @@ namespace fs24bot3
                 }
             }
 
+
+            public void SendSadMessage(string channel, string message)
+            {
+                SendMessage(channel, IrcColors.Gray + message);
+            }
+
+            public void SendErrorMessage(string channel, string message)
+            {
+                SendMessage(channel, IrcColors.Gray + message);
+            }
+
             public async void SendMultiLineMessage(string content)
             {
                 int count = 0;
                 foreach (string outputstr in content.Split("\n"))
-                  {
+                {
                     if (!string.IsNullOrWhiteSpace(outputstr))
                     {
                         await Client.SendAsync(new PrivMsgMessage(this.Channel, this.Message.From + ": " + outputstr));
