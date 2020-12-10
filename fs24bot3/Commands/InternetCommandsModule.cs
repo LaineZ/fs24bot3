@@ -117,8 +117,29 @@ namespace fs24bot3.Commands
             }
         }
 
+        [Command("trppc")]
+        [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в @tr")]
+        public async void TranslatePpc([Remainder] string text)
+        {
+            var usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+            if (usr.RemItemFromInv("beer", 1))
+            {
+                string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
+                string translated = text;
+
+                foreach (var tr in translations)
+                {
+                    var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
+                    translated = translatorResponse.text;
+                }
+
+                Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
+            }
+
+        }
+
         [Command("trppclite", "trl")]
-        [Description("Переводчик (ппц lite)")]
+        [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в @tr")]
         public async void TranslatePpc2(string lang, [Remainder] string text)
         {
 
@@ -140,7 +161,7 @@ namespace fs24bot3.Commands
                     splitted[i] = tr.text;
                 }
 
-                Context.SendMessage(Context.Channel, string.Join(' ', splitted) + " (bing.com/translator, ппц lite edition) ");
+                Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + " (bing.com/translator, ппц lite edition) ");
             }
             catch (Exception)
             {

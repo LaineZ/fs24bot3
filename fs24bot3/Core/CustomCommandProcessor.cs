@@ -40,10 +40,10 @@ namespace fs24bot3.Core
 
                         if (int.TryParse(argsString, out int result))
                         {
-                            if (result > outputs.Length || result < 0)
+                            if (result > outputs.Length - 1 || result < 0)
                             {
                                 await client.SendAsync(new PrivMsgMessage(message.To, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
-                                index = random.Next(outputs.Length);
+                                index = random.Next(outputs.Length - 1);
                             }
                             else
                                 index = result;

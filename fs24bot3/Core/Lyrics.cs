@@ -35,7 +35,7 @@ namespace fs24bot3.Core
                 Log.Verbose("Using internet");
                 string lyric = "";
                 var web = new HtmlWeb();
-                var doc = await web.LoadFromWebAsync("https://genius.com/" + Artist + "-" + Track  + "-lyrics");
+                var doc = await web.LoadFromWebAsync("https://genius.com/" + Artist + "-" + Track + "-lyrics");
                 HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]");
                 if (divContainer != null)
                 {
