@@ -135,7 +135,6 @@ namespace fs24bot3.Commands
 
                 Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
             }
-
         }
 
         [Command("trppclite", "trl")]
@@ -166,6 +165,43 @@ namespace fs24bot3.Commands
             catch (Exception)
             {
                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст....");
+            }
+        }
+
+        [Command("dmlyrics", "dmlyr")]
+        [Description("Текст песни (ппц)")]
+        public async void LyricsPpc([Remainder] string song)
+        {
+            var data = song.Split(" - ");
+            if (data.Length > 0)
+            {
+                try
+                {
+                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.Connection);
+                    string translated = await lyrics.GetLyrics();
+                    var usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+
+                    if (usr.RemItemFromInv("beer", 1))
+                    {
+                        string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
+
+                        foreach (var tr in translations)
+                        {
+                            var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
+                            translated = translatorResponse.text;
+                        }
+
+                        Context.SendMultiLineMessage(translated);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Context.SendMultiLineMessage("Ошибка при получении слов: " + e.Message);
+                }
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, "Instumental");
             }
         }
 
