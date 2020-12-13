@@ -252,5 +252,51 @@ namespace fs24bot3.Commands
                 }
             }
         }
+
+        [Command("dellrc", "deletelyrics", "removelyrics", "remlyr", "dellyr")]
+        [Description("Удалить свои слова из базы бота: параметр song должен быть в формате `artist - trackname`")]
+        public void CustomLyrRem([Remainder] string song)
+        {
+            var data = song.Split(" - ");
+            string artist;
+            string track;
+
+            if (data.Length <= 1)
+            {
+                Context.SendErrorMessage(Context.Channel, "Недопустмый синтаксис команды: параметр song должен быть в формате `artist - trackname`!");
+                return;
+            }
+            else
+            {
+                artist = data[0].Replace(" ", "-");
+                track = data[1].Replace(" ", "-");
+            }
+
+            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
+            if (usr.GetUserInfo().Admin == 2)
+            {
+                var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track)).Delete();
+                if (query > 0)
+                {
+                    Context.SendMessage(Context.Channel, "Песня удалена!");
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Этого не произошло....");
+                }
+            }
+            else
+            {
+                var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track) && v.AddedBy.Equals(Context.Message.From)).Delete();
+                if (query > 0)
+                {
+                    Context.SendMessage(Context.Channel, "Песня удалена!");
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Этого не произошло....");
+                }
+            }
+        }
     }
 }

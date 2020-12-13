@@ -9,6 +9,7 @@ using System.Text;
 using HtmlAgilityPack;
 using Serilog;
 using System.Collections.Generic;
+using SQLite;
 
 namespace fs24bot3.Commands
 {
@@ -87,6 +88,70 @@ namespace fs24bot3.Commands
                 {
                     Stream responseStream = response.GetResponseStream();
                     ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
+                }
+                else
+                {
+                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
+                }
+            }
+            else
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+            }
+        }
+
+
+        [Command("addlyrics", "addlyr")]
+        [Description("Добавить свои слова в базу бота: параметр song должен быть в формате `artist - trackname`")]
+        public async void Addlyrics(string rawurl, [Remainder] string song)
+        {
+            var data = song.Split(" - ");
+            string artist;
+            string track;
+
+            if (data.Length <= 1)
+            {
+                Context.SendErrorMessage(Context.Channel, "Недопустмый синтаксис команды: параметр song должен быть в формате `artist - trackname`!");
+                return;
+            }
+            else
+            {
+                artist = data[0].Replace(" ", "-");
+                track = data[1].Replace(" ", "-");
+            }
+
+            var response = await http.GetResponseAsync(rawurl);
+            if (response != null)
+            {
+                if (response.ContentType.Contains("text/plain"))
+                {
+                    Stream responseStream = response.GetResponseStream();
+                    string lyricData = new StreamReader(responseStream).ReadToEnd();
+
+                    var lyric = new SQL.LyricsCache()
+                    {
+                        AddedBy = Context.Message.From,
+                        Lyrics = lyricData,
+                        // TODO: fix that
+                        Artist = artist,
+                        Track = track
+                    };
+
+                    var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+
+                    try
+                    {
+                        if (user.RemItemFromInv("money", 2000))
+                        {
+                            Context.Connection.Insert(lyric);
+                            Context.SendErrorMessage(Context.Channel, "Добавлено!");
+                        }
+                    }
+                    catch (SQLiteException)
+                    {
+                        Context.SendErrorMessage(Context.Channel, "[ДЕНЬГИ ВОЗВРАЩЕНЫ] Такая песня уже существует в базе!");
+                        user.AddItemToInv("monney", 2000);
+                    }
                 }
                 else
                 {
