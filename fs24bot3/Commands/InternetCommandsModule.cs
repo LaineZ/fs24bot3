@@ -10,6 +10,7 @@ using HtmlAgilityPack;
 using Serilog;
 using System.Collections.Generic;
 using SQLite;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -19,8 +20,6 @@ namespace fs24bot3.Commands
         public CommandService Service { get; set; }
 
         readonly HttpTools http = new HttpTools();
-
-        // TODO: Turn back @trppc/@dmlyrics command
 
         private (string, string) ParseLang(string input)
         {
@@ -36,6 +35,33 @@ namespace fs24bot3.Commands
             }
 
             return (from, to);
+        }
+
+        private async void AITranslate(string lang, string chars, uint max)
+        {
+            try
+            {
+                string rndWord = "";
+                Random rnd = new Random();
+
+                if (max > 351)
+                {
+                    Context.SendMessage(Context.Channel, $"Сбрасываю на 200, вообще максимум 350... А ты чёт ппц психанул {max}!");
+                    max = 200;
+                }
+
+                for (uint i = 0; i < rnd.Next(10, (int)max); i++)
+                {
+                    rndWord += chars[rnd.Next(0, chars.Length - 1)];
+                }
+
+                var translatedOutput = await Core.Transalator.Translate(rndWord, lang, "ru");
+                Context.SendMessage(Context.Channel, translatedOutput.text.ToString());
+            }
+            catch (Exception e)
+            {
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( {e.Message}");
+            }
         }
 
         [Command("execute", "exec")]
@@ -161,6 +187,26 @@ namespace fs24bot3.Commands
             else
             {
                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+            }
+        }
+
+        [Command("aigen", "gensent", "ppc")]
+        public void GenAI(uint max = 200)
+        {
+            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            if (user.RemItemFromInv("beer", 1))
+            {
+                AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
+            }
+        }
+
+        [Command("aigen2", "gensent2", "ppc2")]
+        public void GenAI2(uint max = 200)
+        {
+            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            if (user.RemItemFromInv("beer", 1))
+            {
+                AITranslate("he", "קראטוןםפשדגכעיחלךףזסבהנמצת ", max);
             }
         }
 
