@@ -12,21 +12,34 @@ using System.Diagnostics;
 
 namespace fs24bot3.Core
 {
-    public static class CustomCommandProcessor
+    public class CustomCommandProcessor
     {
-        public async static Task<bool> ProcessCmd(PrivMsgMessage message, NetIRC.Client client, SQLite.SQLiteConnection connect, List<PrivMsgMessage> messageBus)
+        private NetIRC.Client Client { get; }
+        private SQLite.SQLiteConnection Connect { get; }
+        private List<PrivMsgMessage> MessageBus { get; }
+
+        public CustomCommandProcessor(NetIRC.Client client, SQLite.SQLiteConnection connect, List<PrivMsgMessage> messageBus)
+        {
+            Client = client;
+            Connect = connect;
+            MessageBus = messageBus;
+            Log.Information("Custom command processor enabled!");
+        }
+
+
+        public async Task<bool> ProcessCmd(PrivMsgMessage message)
         {
             if (message.Message.StartsWith("@"))
             {
                 var argsArray = message.Message.Split(" ").ToList();
                 string cmdname = argsArray[0];
                 //Log.Verbose("Issused command: {0}", cmdname);
-                var cmd = connect.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == cmdname);
+                var cmd = Connect.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == cmdname);
 
                 if (cmd != null)
                 {
                     Random random = new Random();
-                    var arr = connect.Table<SQL.UserStats>().ToList();
+                    var arr = Connect.Table<SQL.UserStats>().ToList();
                     var nick = MessageUtils.AntiHightlight(arr[random.Next(0, arr.Count - 1)].Nick);
                     argsArray.RemoveAt(0); // removing command name
 
@@ -42,11 +55,13 @@ namespace fs24bot3.Core
                         {
                             if (result > outputs.Length - 1 || result < 0)
                             {
-                                await client.SendAsync(new PrivMsgMessage(message.To, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
+                                await Client.SendAsync(new PrivMsgMessage(message.To, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
                                 index = random.Next(outputs.Length - 1);
                             }
                             else
+                            {
                                 index = result;
+                            }
                         }
                         else
                         {
@@ -64,7 +79,7 @@ namespace fs24bot3.Core
                         argsFinal.Replace("#RNDNICK", nick);
                         argsFinal.Replace("#RNG", random.Next(int.MinValue, int.MaxValue).ToString());
 
-                        await client.SendAsync(new PrivMsgMessage(message.To, argsFinal.ToString()));
+                        await Client.SendAsync(new PrivMsgMessage(message.To, argsFinal.ToString()));
                     }
                     else
                     {
@@ -92,7 +107,7 @@ namespace fs24bot3.Core
                         lua["CMD_NAME"] = cmd.Command;
                         lua["CMD_OWNER"] = cmd.Nick;
                         lua["CMD_ARGS"] = string.Join(" ", argsArray);
-                        LuaFunctions luaFunctions = new LuaFunctions(connect, message.From, cmd.Command, messageBus);
+                        LuaFunctions luaFunctions = new LuaFunctions(Connect, message.From, cmd.Command, MessageBus);
                         lua["Cmd"] = luaFunctions;
 
                         Thread thread = new Thread(async () =>
@@ -108,13 +123,13 @@ namespace fs24bot3.Core
                                     {
                                         if (!string.IsNullOrWhiteSpace(outputstr))
                                         {
-                                            await client.SendAsync(new PrivMsgMessage(message.To, outputstr[..Math.Min(350, outputstr.Length)]));
+                                            await Client.SendAsync(new PrivMsgMessage(message.To, outputstr[..Math.Min(350, outputstr.Length)]));
                                         }
                                         count++;
                                         if (count > 5)
                                         {
                                             string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                                            await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
+                                            await Client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
                                             break;
                                         }
                                     }
@@ -122,12 +137,12 @@ namespace fs24bot3.Core
                                 else
                                 {
                                     string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                                    await client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
+                                    await Client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
                                 }
                             }
                             catch (Exception e)
                             {
-                                await client.SendAsync(new PrivMsgMessage(message.To, $"Ошибка в Lua: {e.Message}"));
+                                await Client.SendAsync(new PrivMsgMessage(message.To, $"Ошибка в Lua: {e.Message}"));
                                 lua.Close();
                                 lua.Dispose();
                             }

@@ -356,16 +356,6 @@ namespace fs24bot3.Commands
             Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
         }
 
-        [Command("mishareturn", "blocksuntil", "misha")]
-        [Description("КОГДА ОМСК БУДЕТ СНОВА ЗАБЛОКИРОВАН?")]
-        public void MishaReturn()
-        {
-
-            DateTime dateOut = new DateTime(2020, 12, 22, 17, 26, 12);
-            TimeSpan dateIn = dateOut.Subtract(DateTime.Now);
-            Context.SendMessage(Context.Channel, $"До появления Миши осталось: {dateIn.Days / 30} месяцев {dateIn.Days % 30} дней {dateIn.Hours} часов {dateIn.Minutes} минут {dateIn.Seconds} секунд {dateIn.Milliseconds} мс...");
-        }
-
         [Command("rndl", "randomlyrics")]
         [Description("Рандомная песня")]
         public void RandomSong()

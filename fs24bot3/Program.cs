@@ -20,6 +20,7 @@ namespace fs24bot3
         private static readonly SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
         private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
         private static VkApi vk;
+        private static Core.CustomCommandProcessor CustomCommandProcessor;
 
         static async void RandomLyics(Client client)
         {
@@ -95,6 +96,8 @@ namespace fs24bot3
                     }
                 }
             }).Start();
+
+            CustomCommandProcessor = new Core.CustomCommandProcessor(client, connection, MessageBus);
 
             Log.Information("Running in loop!");
             while (true)
@@ -181,7 +184,7 @@ namespace fs24bot3
                     await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
                     break;
                 case CommandNotFoundResult err:
-                    bool customSuccess = await Core.CustomCommandProcessor.ProcessCmd(e.IRCMessage, client, connection, MessageBus);
+                    bool customSuccess = await CustomCommandProcessor.ProcessCmd(e.IRCMessage);
                     break;
                 case ExecutionFailedResult err:
                     await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
@@ -205,9 +208,8 @@ namespace fs24bot3
                     }
                     break;
                 case "ERROR":
-                    Log.Error("Connection closed due to error... Reconnecting");
-                    client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
-                    await Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
+                    Log.Error("Connection closed due to error... Exiting");
+                    Environment.Exit(1);
                     break;
                 default:
                     break;

@@ -165,6 +165,18 @@ namespace fs24bot3.Commands
                     string url = await http.UploadToTrashbin(query.Output, "addplain");
                     Context.SendMessage(Context.Channel, $"Исходник команды: {url}");
                 }
+                else
+                {
+                    string output = "";
+                    string[] splitted = query.Output.Split("||");
+
+                    for (int i = 0; i < splitted.Length - 1; i++)
+                    {
+                        output += $"[{i}]: {splitted[i]}\n";
+                    }
+                    string url = await http.UploadToTrashbin(output, "addplain");
+                    Context.SendMessage(Context.Channel, $"Исходник команды: {url}");
+                }
             }
             else
             {
