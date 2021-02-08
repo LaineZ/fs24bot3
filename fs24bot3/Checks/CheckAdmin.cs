@@ -17,5 +17,10 @@ namespace fs24bot3.Checks
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful("Это команда только для админов!");
         }
+
+        public override string ToString()
+        {
+            return "Права администратора";
+        }
     }
 }

@@ -12,12 +12,12 @@ namespace fs24bot3.Commands
 
         public CommandService Service { get; set; }
 
-        [Command("info")]
+        [Command("info", "about", "credits")]
         [Description("Информация о боте")]
         public void Version()
         {
             var os = Environment.OSVersion;
-            Context.SendMessage(Context.Channel, string.Format(".NET Core: {0} Система: {1}",
+            Context.SendMessage(Context.Channel, string.Format("fs24_bot3 Версия: 8.02.2021 | .NET Core: {0} Система: {1}",
                 Environment.Version.ToString(), os.VersionString));
         }
 
@@ -83,16 +83,6 @@ namespace fs24bot3.Commands
             }
         }
 
-
-        [Command("updbot")]
-        [Checks.CheckAdmin]
-        [Description("Обновление бота")]
-        public void Recompile()
-        {
-            Context.SendMessage(Context.Channel, "Запускаю скрипт...");
-            
-        }
-
         [Command("delalluserrods")]
         [Checks.CheckAdmin]
         public void RemoveAllRods()
@@ -111,7 +101,6 @@ namespace fs24bot3.Commands
             sql.AddItemToInv(item, count);
             Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
         }
-
 
         [Command("joinch")]
         [Checks.CheckAdmin]
