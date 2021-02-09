@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Web;
 using SQLite;
 using fs24bot3.Models;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3.Core
 {
@@ -33,28 +35,57 @@ namespace fs24bot3.Core
             else
             {
                 Log.Verbose("Using internet");
-                string lyric = "";
-                var web = new HtmlWeb();
-                var doc = await web.LoadFromWebAsync("https://genius.com/" + Artist + "-" + Track + "-lyrics");
-                HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]");
-                if (divContainer != null)
+                string lyric = string.Empty;
+                string url = string.Empty;
+                Regex removeVerse = new Regex("\\[.*\\]");
+
+                string response = await new HttpTools().MakeRequestAsync("https://genius.com/api/search/multi?q= " + Artist + " - " + Track);
+
+                var settings = new JsonSerializerSettings
                 {
-                    foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//br"))
-                        node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
+                    NullValueHandling = NullValueHandling.Ignore,
+                    MissingMemberHandling = MissingMemberHandling.Ignore
+                };
 
-                    foreach (var node in divContainer)
+                Models.Lyrics search = JsonConvert.DeserializeObject<Models.Lyrics>(response, settings);
+
+
+                foreach (var item in search.Response.Sections[0].Hits)
+                {
+                    if (item.Result.Type == "song")
                     {
-                        Log.Verbose(node.InnerText);
-                        StringWriter writer = new StringWriter();
-
-                        HttpUtility.HtmlDecode(node.InnerText, writer);
-
-                        lyric += writer.ToString();
+                        url = item.Result.Path;
+                        break;
                     }
                 }
-                else
+
+                if (string.IsNullOrEmpty(url))
                 {
-                    throw new Exception("Lyrics not found!");
+                    throw new Exception("Song not found!");
+                }
+
+                var web = new HtmlWeb();
+                var doc = await web.LoadFromWebAsync("https://genius.com" + url);
+                File.WriteAllText("debug.txt", doc.Text);
+                HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"lyrics\"]");
+
+                // workaround because genius.com have 2 formats? with lyrics class and Lyrics__Container class
+                if (divContainer == null)
+                {
+                    divContainer = doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]");
+                }
+
+                foreach (var node in divContainer)
+                {
+                    StringWriter writer = new StringWriter();
+                    HttpUtility.HtmlDecode(node.InnerText, writer);
+
+                    string lrcLine = removeVerse.Replace(writer.ToString(), "");
+                    if (!string.IsNullOrWhiteSpace(lrcLine))
+                    {
+                        Log.Verbose(lrcLine);
+                        lyric += lrcLine;
+                    }
                 }
 
                 var lyricsToCache = new SQL.LyricsCache()
@@ -65,7 +96,6 @@ namespace fs24bot3.Core
                     Lyrics = lyric
                 };
                 Connection.Insert(lyricsToCache);
-
                 return lyric;
             }
         }

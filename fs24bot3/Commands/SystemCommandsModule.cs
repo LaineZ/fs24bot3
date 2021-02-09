@@ -213,6 +213,15 @@ namespace fs24bot3.Commands
             Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
         }
 
+        [Command("resetcache")]
+        [Checks.CheckAdmin]
+        public void ResetCache()
+        {
+            Context.Connection.DropTable<SQL.LyricsCache>();
+            Context.Connection.Table<SQL.LyricsCache>();
+            Context.SendMessage(Context.Channel, "Кэш песен УДАЛЕН!");
+        }
+
         [Command("ignore")]
         [Checks.CheckAdmin]
         public void Ignore(CommandToggles.CommandEdit action, [Remainder] string username)
