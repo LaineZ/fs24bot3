@@ -5,9 +5,6 @@ using System.Collections.Generic;
 using System.Text;
 using NetIRC.Messages;
 using NetIRC.Connection;
-using VkNet;
-using VkNet.Enums.Filters;
-using VkNet.Model;
 using System.Threading;
 using fs24bot3.Models;
 
@@ -24,15 +21,12 @@ namespace fs24bot3
             public SQLiteConnection Connection;
             readonly HttpTools http = new HttpTools();
 
-            public VkApi VKApi;
-
             // Pass your service provider to the base command context.
-            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, VkApi vk, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, IServiceProvider provider = null) : base(provider)
             {
                 Message = message;
                 Client = client;
                 Connection = connection;
-                VKApi = vk;
 
                 if (Message.To == Configuration.name)
                 {

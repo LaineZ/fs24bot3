@@ -21,8 +21,6 @@ namespace fs24bot3
         public static string jdoodleClientID;
         public static string jdoodleClientSecret;
         public static string vkApiId;
-        public static string vkLogin;
-        public static string vkPassword;
         public static string trashbinUrl;
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
@@ -52,9 +50,6 @@ namespace fs24bot3
                     {
                         {"jdoodle_client_id", jdoodleClientID},
                         {"jdoodle_client_secret", jdoodleClientSecret},
-                        {"vk_api_key", vkApiId},
-                        {"vk_login", vkLogin },
-                        {"vk_password", vkPassword },
                         {"trashbin_url", trashbinUrl },
                     }
                 }
@@ -94,10 +89,6 @@ namespace fs24bot3
                         {"jdoodle_client_secret", "0"},
                         {"pastebin_key", "#cc.ru" },
                         {"yandex_translate_key", "0" },
-                        {"vk_api_key", "0"},
-                        {"vk_login", "0" },
-                        {"vk_password", "0" },
-                        {"genius_token", "0"},
                         {"trashbin_url", "http://127.0.0.1:8000" },
                     }
                 }
@@ -121,9 +112,6 @@ namespace fs24bot3
 
                 jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
                 jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
-                vkApiId = (string)((TomlTable)table["services"])["vk_api_key"];
-                vkLogin = (string)((TomlTable)table["services"])["vk_login"];
-                vkPassword = (string)((TomlTable)table["services"])["vk_password"];
                 trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
                 Log.Information("Configuration loaded!");
             }

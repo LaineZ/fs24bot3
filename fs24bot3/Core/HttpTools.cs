@@ -9,17 +9,12 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using VkNet;
-using VkNet.Enums.Filters;
-using VkNet.Model;
 
 namespace fs24bot3
 {
     class HttpTools
     {
-        private readonly HttpClient client = new HttpClient();
         readonly CookieContainer cookies = new CookieContainer();
-        int VkTries = 0;
 
         public async Task<String> MakeRequestAsync(String url)
         {
@@ -106,36 +101,5 @@ namespace fs24bot3
             }
             return null;
         }
-
-        public VkApi LogInVKAPI()
-        {
-            Log.Information("Logging with vkapi...");
-            var vk = new VkApi();
-
-            try
-            {
-                if (VkTries > 5)
-                {
-                    // throw exception if tries exceed
-                    throw new Exception();
-                }
-
-                vk.Authorize(new ApiAuthParams
-                {
-                    ApplicationId = ulong.Parse(Configuration.vkApiId),
-                    Login = Configuration.vkLogin,
-                    Password = Configuration.vkPassword,
-                    Settings = Settings.All,
-                });
-                return vk;
-            }
-            catch (Exception e)
-            {
-                Log.Error("Failed to load vk api key that means you cannot use vk api functions, sorry... {0}", e.Message);
-                VkTries++;
-                return vk;
-            }
-        }
-
     }
 }

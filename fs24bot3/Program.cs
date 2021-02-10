@@ -9,7 +9,6 @@ using NetIRC.Connection;
 using NetIRC.Messages;
 using System.Threading;
 using fs24bot3.Models;
-using VkNet;
 using System.Collections.Generic;
 using fs24bot3.Commands;
 
@@ -19,7 +18,6 @@ namespace fs24bot3
     {
         private static readonly SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
         private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
-        private static VkApi vk;
         private static Core.CustomCommandProcessor CustomCommandProcessor;
 
         static async void RandomLyics(Client client)
@@ -63,8 +61,6 @@ namespace fs24bot3
             _service.AddModule<NetstalkingCommandsModule>();
             _service.AddModule<FishCommandsModule>();
             _service.AddModule<CustomCommandsModule>();
-
-            vk = new HttpTools().LogInVKAPI();
             using var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
@@ -162,7 +158,7 @@ namespace fs24bot3
             if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
                 return;
 
-            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, vk));
+            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
             switch (result)
             {
                 case ChecksFailedResult err:

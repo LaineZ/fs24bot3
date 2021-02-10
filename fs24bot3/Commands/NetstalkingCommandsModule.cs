@@ -4,7 +4,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VkNet.Enums.Filters;
 
 namespace fs24bot3.Commands
 {
@@ -194,66 +193,6 @@ namespace fs24bot3.Commands
                         }
                     }
                     break;
-            }
-        }
-
-        [Command("vksearch", "vks", "groups")]
-        [Description("Поиск душевных групп в ВК")]
-        public async void VkGroups(int count = 99, int rangemin = 100, int rangemax = 32900000, int minmembers = 2)
-        {
-            if (count > 0 && count < 151 && rangemin < rangemax)
-            {
-                Random random = new Random();
-                List<string> vkg = new List<string>();
-
-                for (int i = 0; i < count; i++)
-                {
-                    vkg.Add(random.Next(rangemin, rangemax).ToString());
-                }
-
-                try
-                {
-                    var groups = await Context.VKApi.Groups.GetByIdAsync(vkg, null, GroupsFields.All);
-
-                    vkg.Clear();
-
-                    List<(string Name, string Url, string Img)> vkgs = new List<(string, string, string)>();
-
-                    foreach (var group in groups)
-                    {
-                        if (group.MembersCount > minmembers && group.IsClosed == VkNet.Enums.GroupPublicity.Public)
-                        {
-                            try
-                            {
-                                vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: group.Photo200.AbsoluteUri));
-                            }
-                            catch (InvalidOperationException)
-                            {
-                                // reset avatar
-                                vkgs.Add((group.Name, Url: "https://vk.com/club" + group.Id, Img: "https://gitlab.com/uploads/-/system/user/avatar/2374023/avatar.png"));
-                            }
-                        }
-                    }
-
-                    if (vkgs.Count > 8)
-                    {
-                        Context.SendMessage(Context.Channel, string.Join(" ", vkgs.Take(5).Select(x => x.Name + " // " + x.Url)));
-                        Context.SendMessage(Context.Channel, await http.UploadToTrashbin(
-                            string.Join("<br>", vkgs.Select(x => $"<img width=100 height=100 src=\"{x.Img}\"><a href=\"{x.Url}\">{x.Name}</a>"))));
-                    }
-                    else
-                    {
-                        Context.SendMessage(Context.Channel, string.Join(" ", vkg));
-                    }
-                }
-                catch (Exception)
-                {
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK, не знаю почему......................................");
-                }
-            }
-            else
-            {
-                Context.SendMessage(Context.Channel, "капец ты математик");
             }
         }
     }
