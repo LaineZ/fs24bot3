@@ -256,34 +256,5 @@ namespace fs24bot3.Commands
                 Context.SendMessage(Context.Channel, "капец ты математик");
             }
         }
-
-
-        [Command("vkfind", "vs")]
-        [Description("Поиск в ВК")]
-        public async void VkSearch([Remainder] string query)
-        {
-            try
-            {
-                var parametrs = new VkNet.Model.RequestParams.NewsFeedSearchParams
-                {
-                    Query = query,
-                    Count = 1
-                };
-                var found = await Context.VKApi.NewsFeed.SearchAsync(parametrs);
-
-                if (found.TotalCount > 0)
-                {
-                    Context.SendMessage(Context.Channel, found.Items[0].Text[..Math.Min(200, found.Items[0].Text.Length)].Replace("\n", " ") + IrcColors.Lime + " // https://vk.com/wall" + found.Items[0].FromId + "_" + found.Items[0].Id); ;
-                }
-                else
-                {
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ничего не найдено...");
-                }
-            }
-            catch (Exception)
-            {
-                Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка сессии VK, не знаю почему......................................");
-            }
-        }
     }
 }
