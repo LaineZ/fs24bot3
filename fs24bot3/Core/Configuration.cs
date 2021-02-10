@@ -38,7 +38,6 @@ namespace fs24bot3
                         {"name", name},
                         {"network", network},
                         {"channel", channel },
-                        {"reconnect", reconnect },
                         {"port", port },
                         {"nickserv_pass", nickservPass },
                     }
@@ -75,7 +74,6 @@ namespace fs24bot3
                         {"name", "djmadest123"},
                         {"network", "irc.esper.net"},
                         {"channel", "#fl-studio" },
-                        {"reconnect", true },
                         {"port", 6667 },
                         {"nickserv_pass", "zxcvbnM1" },
                     }
@@ -87,8 +85,6 @@ namespace fs24bot3
                     {
                         {"jdoodle_client_id", "0"},
                         {"jdoodle_client_secret", "0"},
-                        {"pastebin_key", "#cc.ru" },
-                        {"yandex_translate_key", "0" },
                         {"trashbin_url", "http://127.0.0.1:8000" },
                     }
                 }
@@ -106,7 +102,6 @@ namespace fs24bot3
                 name = (string)((TomlTable)table["irc"])["name"];
                 network = (string)((TomlTable)table["irc"])["network"];
                 channel = (string)((TomlTable)table["irc"])["channel"];
-                reconnect = (bool)((TomlTable)table["irc"])["reconnect"];
                 port = (long)((TomlTable)table["irc"])["port"];
                 nickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
 

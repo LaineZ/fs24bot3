@@ -19,8 +19,8 @@ namespace fs24bot3.Core
 
         public Lyrics(string artist, string track, SQLiteConnection connect)
         {
-            Artist = artist.Replace(" ", "-");
-            Track = track.Replace(" ", "-");
+            Artist = artist;
+            Track = track;
             Connection = connect;
         }
 
@@ -55,6 +55,7 @@ namespace fs24bot3.Core
                     if (item.Result.Type == "song")
                     {
                         url = item.Result.Path;
+                        Log.Information(url);
                         break;
                     }
                 }
@@ -67,12 +68,12 @@ namespace fs24bot3.Core
                 var web = new HtmlWeb();
                 var doc = await web.LoadFromWebAsync("https://genius.com" + url);
                 File.WriteAllText("debug.txt", doc.Text);
-                HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"lyrics\"]");
+                HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]");
 
                 // workaround because genius.com have 2 formats? with lyrics class and Lyrics__Container class
                 if (divContainer == null)
                 {
-                    divContainer = doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]");
+                    divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"lyrics\"]");
                 }
 
                 foreach (var node in divContainer)
@@ -80,13 +81,15 @@ namespace fs24bot3.Core
                     StringWriter writer = new StringWriter();
                     HttpUtility.HtmlDecode(node.InnerText, writer);
 
-                    string lrcLine = removeVerse.Replace(writer.ToString(), "");
-                    if (!string.IsNullOrWhiteSpace(lrcLine))
+                    string lrcLine = writer.ToString();
+                    lyric += lrcLine;
+                    if (!lrcLine.EndsWith("\n"))
                     {
-                        Log.Verbose(lrcLine);
-                        lyric += lrcLine;
+                        lyric += "\n";
                     }
                 }
+
+                lyric = Regex.Replace(lyric, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
 
                 var lyricsToCache = new SQL.LyricsCache()
                 {
