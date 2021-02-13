@@ -46,6 +46,7 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🧱 Укрепление", Price = 15000, Sellable = true, Slug = "wall" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🔫 Пистолет", Price = 5500, Sellable = true, Slug = "pistol" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Бомба", Price = 9500, Sellable = true, Slug = "bomb" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💣 Насос", Price = 500, Sellable = true, Slug = "pump" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐍 Червь", Price = 50, Sellable = true, Slug = "worm" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐟 Рыба", Price = 390, Sellable = true, Slug = "fish" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐠 Тропическая рыба", Price = 1570, Sellable = true, Slug = "tfish" });
