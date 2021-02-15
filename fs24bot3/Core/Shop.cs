@@ -55,6 +55,7 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎏 Верхоплавки", Price = 270, Sellable = true, Slug = "veriplace" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🦈 Щука", Price = 1000, Sellable = true, Slug = "pike" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐬 Сом", Price = 1200, Sellable = true, Slug = "som" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💧 Вода", Price = 1, Sellable = true, Slug = "water" });
             foreach (var item in ShopItems)
             {
                 var sqlItem = new Models.SQL.Item()
@@ -132,18 +133,17 @@ namespace fs24bot3
             }
 
             int checkPayday = Rand.Next(0, 10);
-            if (checkPayday == 8 && GetItemAvg(connect) < MaxCap)
+            Log.Information("Giving payday/taxes!");
+            var query = connect.Table<Models.SQL.UserStats>();
+            foreach (var users in query)
             {
-                Log.Information("Giving payday/taxes!");
-                var query = connect.Table<Models.SQL.UserStats>();
-                foreach (var users in query)
+                UserOperations user = new UserOperations(users.Nick, connect);
+                if (checkPayday == 8 && GetItemAvg(connect) < MaxCap)
                 {
-                    UserOperations user = new UserOperations(users.Nick, connect);
                     if (Rand.Next(0, 10) == 1 && user.RemItemFromInv("wall", 1))
                     {
                         Log.Information("Breaking wall for {0}", users.Nick);
                     }
-
                     var subst = DateTime.Now.Subtract(user.GetLastMessage()).TotalHours;
 
                     if (subst > 10)
@@ -155,11 +155,32 @@ namespace fs24bot3
                     {
                         user.AddItemToInv("money", user.GetUserInfo().Level);
                     }
-
                 }
-                PaydaysCount++;
+
+                var inv = user.GetInventory();
+
+                if (inv != null)
+                {
+                    foreach (var item in inv)
+                    {
+                        // if user have a PUMP!
+                        if (item.Item == "pump")
+                        {
+                            Log.Information("Giving water!");
+                            user.AddItemToInv("water", Rand.Next(1, 2));
+
+                            if (Rand.Next(1, 3) == 3)
+                            {
+                                user.RemItemFromInv("pump", 1);
+                            }
+
+                            break;
+                        }
+                    }
+                }
 
             }
+            PaydaysCount++;
             DateTime elapsed = DateTime.Now;
             TickSpeed = elapsed.Subtract(start);
         }

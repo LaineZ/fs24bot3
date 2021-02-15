@@ -99,7 +99,7 @@ namespace fs24bot3.Commands
 
         [Command("transfer")]
         [Description("Передатать вещи")]
-        public void Transfer(string destanationNick, string itemname, int count)
+        public void Transfer(string destanationNick, string itemname, int count = 1)
         {
             UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
             UserOperations destanation = new UserOperations(destanationNick, Context.Connection);
