@@ -17,6 +17,21 @@ namespace fs24bot3.Commands
 
         readonly HttpTools http = new HttpTools();
 
+
+        private string RemoveArticles(string line)
+        {
+            string[] art = new string[] { "the", "are", "a", "an", "i"};
+            foreach (string word in art)
+            {
+                Regex regexArticle = new Regex(@"\b" + word + @"\b");
+                line = regexArticle.Replace(line.ToLower(), " ");
+            }
+
+            // remove double spaces
+            Regex regex = new Regex("[ ]{2,}");
+            return new string(regex.Replace(line.Trim(), " ").ToCharArray().Where(c => !char.IsPunctuation(c)).ToArray());
+        }
+
         [Command("help", "commands")]
         [Description("Список команд")]
         public async void Help()
@@ -97,6 +112,7 @@ namespace fs24bot3.Commands
         public async void Songame([Remainder] string translated = "")
         {
             var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            int timeout = 10;
 
             if (Shop.SongameTries <= 0)
             {
@@ -109,11 +125,9 @@ namespace fs24bot3.Commands
             Random rand = new Random();
             List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
 
-            string[] art = new string[] { "the", "are", ",", ".", "!", "?", "a ", "an " };
-
             if (Shop.SongameString.Length == 0)
             {
-                while (Shop.SongameString.Length == 0)
+                while (Shop.SongameString.Length == 0 && timeout > 0)
                 {
                     if (query.Count > 0)
                     {
@@ -123,25 +137,22 @@ namespace fs24bot3.Commands
                         {
                             if (Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
                             {
-
-                                StringBuilder input = new StringBuilder(line);
-
-                                foreach (string word in art)
-                                {
-                                    input.Replace(word, " ");
-                                }
-                                // remove double spaces
-                                Regex regex = new Regex("[ ]{2,}");
-                                Shop.SongameString = regex.Replace(input.ToString().ToLower().Trim(), " ");
+                                Shop.SongameString = RemoveArticles(line);
                                 break;
                             }
                         }
 
                     }
                     Shop.SongameTries = 5;
+                    timeout--;
                 }
             }
 
+            if (timeout <= 0)
+            {
+                Context.SendErrorMessage(Context.Channel, "Не удалось найти нормальную строку песни... Может попробуем поискать что-нибудь с помощью @lyrics?");
+                return;
+            }
 
             if (translated.Length == 0)
             {
@@ -149,11 +160,13 @@ namespace fs24bot3.Commands
             }
             else
             {
-                if (!Regex.IsMatch(translated, @"^([A-Za-z\s]*)$"))
+                if (!Regex.IsMatch(translated, @"([A-Za-z])"))
                 {
                     var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
 
-                    if (translatedOutput.text.ToString().ToLower().Trim().Replace(".", "") == Shop.SongameString)
+                    string trOutFixed = RemoveArticles(translatedOutput.text.ToString());
+
+                    if (trOutFixed == Shop.SongameString)
                     {
                         int reward = 450 * Shop.SongameTries;
                         user.AddItemToInv("money", reward);
@@ -163,7 +176,7 @@ namespace fs24bot3.Commands
                     }
                     else
                     {
-                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {translatedOutput.text.ToString().ToLower().Replace(".", "")}");
+                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {trOutFixed}");
                         Shop.SongameTries--;
                     }
                 }

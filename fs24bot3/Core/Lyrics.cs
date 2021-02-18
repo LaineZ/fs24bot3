@@ -82,11 +82,11 @@ namespace fs24bot3.Core
                     HttpUtility.HtmlDecode(node.InnerText, writer);
 
                     string lrcLine = writer.ToString();
-                    lyric += lrcLine;
                     if (!lrcLine.EndsWith("\n"))
                     {
-                        lyric += "\n";
+                        lrcLine += "\n";
                     }
+                    lyric += lrcLine;
                 }
 
                 lyric = Regex.Replace(lyric, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
