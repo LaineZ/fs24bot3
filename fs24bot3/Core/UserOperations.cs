@@ -25,8 +25,6 @@ namespace fs24bot3
             Ctx = ctx;
         }
 
-
-
         public void CreateAccountIfNotExist()
         {
             int query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).Count();
@@ -50,7 +48,6 @@ namespace fs24bot3
             }
         }
 
-
         public bool IncreaseXp(int count)
         {
             var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
@@ -68,7 +65,6 @@ namespace fs24bot3
 
             return false;
         }
-
 
         public void SetLastMessage()
         {

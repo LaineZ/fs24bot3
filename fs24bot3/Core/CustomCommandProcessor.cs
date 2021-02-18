@@ -26,7 +26,6 @@ namespace fs24bot3.Core
             Log.Information("Custom command processor enabled!");
         }
 
-
         public async Task<bool> ProcessCmd(PrivMsgMessage message)
         {
             if (message.Message.StartsWith("@"))
@@ -177,7 +176,7 @@ namespace fs24bot3.Core
                                     Process currentProc = Process.GetCurrentProcess();
                                     long memoryUsed = currentProc.PrivateMemorySize64 / 1024 / 1024;
 
-                                    if (memoryUsed > 350)
+                                    if (memoryUsed > 150)
                                     {
                                         lua.State.Error("out of memory " + memoryUsed + " mb");
                                         break;
