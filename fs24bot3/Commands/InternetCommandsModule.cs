@@ -43,14 +43,7 @@ namespace fs24bot3.Commands
             {
                 string rndWord = "";
                 Random rnd = new Random();
-
-                if (max > 351)
-                {
-                    Context.SendMessage(Context.Channel, $"Сбрасываю на 200, вообще максимум 350... А ты чёт ппц психанул {max}!");
-                    max = 200;
-                }
-
-                for (uint i = 0; i < rnd.Next(10, (int)max); i++)
+                for (uint i = 0; i < rnd.Next(10, (int)Math.Clamp(max, 10, 400)); i++)
                 {
                     rndWord += chars[rnd.Next(0, chars.Length - 1)];
                 }
@@ -229,7 +222,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("trppc")]
-        [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в @tr")]
+        [Description("Переводчик (ппц)")]
         public async void TranslatePpc([Remainder] string text)
         {
             var usr = new UserOperations(Context.Message.From, Context.Connection, Context);
@@ -242,6 +235,29 @@ namespace fs24bot3.Commands
                 {
                     var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
                     translated = translatorResponse.text;
+                }
+
+                Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
+            }
+        }
+
+        [Command("trppcgen")]
+        [Description("Переводчик (ппц)")]
+        public async void TranslatePpcGen(int gens, [Remainder] string text)
+        {
+            var usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+            if (usr.RemItemFromInv("beer", 1))
+            {
+                string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
+                string translated = text;
+
+                for (int i = 0; i < Math.Clamp(gens, 1, 5); i++)
+                {
+                    foreach (var tr in translations)
+                    {
+                        var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
+                        translated = translatorResponse.text;
+                    }
                 }
 
                 Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
