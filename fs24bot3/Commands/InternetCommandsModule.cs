@@ -439,7 +439,10 @@ namespace fs24bot3.Commands
         public async void InPearls(string category = "", int page = 0)
         {
             var output = await InPearlsGetter(category, page);
-            Context.SendMessage(Context.Channel, output);
+            if (output != null)
+            {
+                Context.SendMessage(Context.Channel, output);
+            }
         }
 
         [Command("pearlsppc", "inpearlsppc", "inppc", "pppc")]
