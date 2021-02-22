@@ -11,6 +11,7 @@ using Serilog;
 using System.Collections.Generic;
 using SQLite;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace fs24bot3.Commands
 {
@@ -35,6 +36,19 @@ namespace fs24bot3.Commands
             }
 
             return (from, to);
+        }
+
+
+        private string RecursiveHtmlDecode(string str)
+        {
+            if (string.IsNullOrWhiteSpace(str)) return str;
+            var tmp = HttpUtility.HtmlDecode(str);
+            while (tmp != str)
+            {
+                str = tmp;
+                tmp = HttpUtility.HtmlDecode(str);
+            }
+            return str; //completely decoded string
         }
 
         private async void AITranslate(string lang, string chars, uint max)
@@ -360,9 +374,7 @@ namespace fs24bot3.Commands
         public async void WikiHowRand()
         {
             var resp = await new HttpTools().GetResponseAsync("https://ru.wikihow.com/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:Randomizer");
-
             Context.SendMessage(Context.Channel, resp.ResponseUri.ToString());
-
         }
 
         [Command("wh", "wikihow")]
@@ -384,6 +396,50 @@ namespace fs24bot3.Commands
                     Context.SendMessage(Context.Channel, $"{title.InnerText} // {hrefValue}");
                     break;
                 }
+            }
+        }
+
+
+        [Command("pearls", "inpearls", "inp", "ip")]
+        [Description("Самые душевные цитаты в мире!")]
+        public async void InPearls(string category = "", int page = 0)
+        {
+            if (page == 0)
+            {
+                page = new Random().Next(1, 35);
+            }
+            var web = new HtmlWeb();
+            var doc = await web.LoadFromWebAsync("https://www.inpearls.ru/" + category + "?page=" + page);
+            HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"text\"]");
+            var nodes = doc.DocumentNode.SelectNodes("//br");
+
+            List<string> pearls = new List<string>();
+            Log.Verbose("Page: {0}", page);
+            if (divContainer != null && nodes != null)
+            {
+                foreach (HtmlNode node in nodes)
+                    node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
+
+                foreach (var node in divContainer)
+                {
+                    if (node.InnerText.Split("\n").Length <= 2)
+                    {
+                        pearls.Add(RecursiveHtmlDecode(node.InnerText));
+                    }
+                }
+
+                if (pearls.Any())
+                {
+                    Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(pearls));
+                }
+                else
+                {
+                    Context.SendSadMessage(Context.Channel, $"Подходящие сообщения в категории `{category}` не найдены!");
+                }
+            }
+            else
+            {
+                Context.SendSadMessage(Context.Channel, $"Категории: `{category}` не существует!");
             }
         }
 
