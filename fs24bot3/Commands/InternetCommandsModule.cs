@@ -51,6 +51,50 @@ namespace fs24bot3.Commands
             return str; //completely decoded string
         }
 
+
+        private async Task<string> InPearlsGetter(string category = "", int page = 0)
+        {
+            if (page == 0)
+            {
+                page = new Random().Next(1, 35);
+            }
+            var web = new HtmlWeb();
+            var doc = await web.LoadFromWebAsync("https://www.inpearls.ru/" + category + "?page=" + page);
+            HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"text\"]");
+            var nodes = doc.DocumentNode.SelectNodes("//br");
+
+            List<string> pearls = new List<string>();
+            Log.Verbose("Page: {0}", page);
+            if (divContainer != null && nodes != null)
+            {
+                foreach (HtmlNode node in nodes)
+                    node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
+
+                foreach (var node in divContainer)
+                {
+                    if (node.InnerText.Split("\n").Length <= 2)
+                    {
+                        pearls.Add(RecursiveHtmlDecode(node.InnerText));
+                    }
+                }
+
+                if (pearls.Any())
+                {
+                    return RandomMsgs.GetRandomMessage(pearls);
+                }
+                else
+                {
+                    Context.SendSadMessage(Context.Channel, $"Подходящие сообщения в категории `{category}` не найдены!");
+                }
+            }
+            else
+            {
+                Context.SendSadMessage(Context.Channel, $"Категории: `{category}` не существует!");
+            }
+
+            return null;
+        }
+
         private async void AITranslate(string lang, string chars, uint max)
         {
             try
@@ -204,16 +248,6 @@ namespace fs24bot3.Commands
             if (user.RemItemFromInv("beer", 1))
             {
                 AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
-            }
-        }
-
-        [Command("aigen2", "gensent2", "ppc2")]
-        public void GenAI2(uint max = 200)
-        {
-            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
-            if (user.RemItemFromInv("beer", 1))
-            {
-                AITranslate("he", "קראטוןםפשדגכעיחלךףזסבהנמצת ", max);
             }
         }
 
@@ -404,42 +438,17 @@ namespace fs24bot3.Commands
         [Description("Самые душевные цитаты в мире!")]
         public async void InPearls(string category = "", int page = 0)
         {
-            if (page == 0)
-            {
-                page = new Random().Next(1, 35);
-            }
-            var web = new HtmlWeb();
-            var doc = await web.LoadFromWebAsync("https://www.inpearls.ru/" + category + "?page=" + page);
-            HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"text\"]");
-            var nodes = doc.DocumentNode.SelectNodes("//br");
+            var output = await InPearlsGetter(category, page);
+            Context.SendMessage(Context.Channel, output);
+        }
 
-            List<string> pearls = new List<string>();
-            Log.Verbose("Page: {0}", page);
-            if (divContainer != null && nodes != null)
+        [Command("pearlsppc", "inpearlsppc", "inppc", "pppc")]
+        public async void InPearlsPpc(string category = "", int page = 0)
+        {
+            var output = await InPearlsGetter(category, page);
+            if (output != null)
             {
-                foreach (HtmlNode node in nodes)
-                    node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
-
-                foreach (var node in divContainer)
-                {
-                    if (node.InnerText.Split("\n").Length <= 2)
-                    {
-                        pearls.Add(RecursiveHtmlDecode(node.InnerText));
-                    }
-                }
-
-                if (pearls.Any())
-                {
-                    Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(pearls));
-                }
-                else
-                {
-                    Context.SendSadMessage(Context.Channel, $"Подходящие сообщения в категории `{category}` не найдены!");
-                }
-            }
-            else
-            {
-                Context.SendSadMessage(Context.Channel, $"Категории: `{category}` не существует!");
+                TranslatePpc(output);
             }
         }
 
