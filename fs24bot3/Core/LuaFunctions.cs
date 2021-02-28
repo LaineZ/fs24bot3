@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using fs24bot3.Models;
+﻿using fs24bot3.Models;
 using NetIRC.Messages;
 using Serilog;
 using SQLite;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace fs24bot3.Core
 {

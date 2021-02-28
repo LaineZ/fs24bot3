@@ -1,11 +1,10 @@
 ﻿using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using System.IO;
 using Tomlyn;
 using Tomlyn.Model;
 using Tomlyn.Syntax;
-using System.Collections.Generic;
-using Serilog.Core;
-using Serilog.Events;
 
 namespace fs24bot3
 {

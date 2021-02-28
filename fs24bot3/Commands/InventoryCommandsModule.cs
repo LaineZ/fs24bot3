@@ -1,8 +1,8 @@
-﻿using Qmmands;
+﻿using fs24bot3.Models;
+using Qmmands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using fs24bot3.Models;
 
 namespace fs24bot3.Commands
 {

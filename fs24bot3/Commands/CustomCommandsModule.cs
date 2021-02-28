@@ -2,10 +2,8 @@
 using Qmmands;
 using SQLite;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace fs24bot3.Commands
 {

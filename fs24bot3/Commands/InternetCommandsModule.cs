@@ -1,15 +1,15 @@
 ﻿using fs24bot3.Models;
+using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Qmmands;
+using Serilog;
+using SQLite;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using HtmlAgilityPack;
-using Serilog;
-using System.Collections.Generic;
-using SQLite;
 using System.Threading.Tasks;
 using System.Web;
 

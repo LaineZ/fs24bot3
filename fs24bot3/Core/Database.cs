@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using fs24bot3.Models;
+﻿using fs24bot3.Models;
 using Serilog;
 using SQLite;
 

@@ -1,16 +1,16 @@
-﻿using Qmmands;
-using System;
-using Serilog;
-using SQLite;
-using System.Text;
+﻿using fs24bot3.Commands;
+using fs24bot3.Models;
 using NetIRC;
-using System.Threading.Tasks;
 using NetIRC.Connection;
 using NetIRC.Messages;
-using System.Threading;
-using fs24bot3.Models;
+using Qmmands;
+using Serilog;
+using SQLite;
+using System;
 using System.Collections.Generic;
-using fs24bot3.Commands;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace fs24bot3
 {

@@ -1,13 +1,13 @@
-﻿using HtmlAgilityPack;
+﻿using fs24bot3.Models;
+using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Serilog;
+using SQLite;
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
-using SQLite;
-using fs24bot3.Models;
-using Newtonsoft.Json;
-using System.Text.RegularExpressions;
 
 namespace fs24bot3.Core
 {

@@ -1,12 +1,8 @@
-﻿using Qmmands;
+﻿using fs24bot3.Models;
+using NetIRC.Messages;
+using Qmmands;
 using SQLite;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using NetIRC.Messages;
-using NetIRC.Connection;
-using System.Threading;
-using fs24bot3.Models;
 
 namespace fs24bot3
 {

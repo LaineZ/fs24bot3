@@ -1,12 +1,9 @@
 ﻿using fs24bot3.Models;
 using Qmmands;
 using Serilog;
-using SQLite;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace fs24bot3.Commands
