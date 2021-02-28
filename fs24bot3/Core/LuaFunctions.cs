@@ -49,7 +49,7 @@ namespace fs24bot3.Core
 
             if (query.Any())
             {
-                return query.First().Data;
+                return query.First().Data.Trim();
             }
             
             return null;
@@ -59,7 +59,7 @@ namespace fs24bot3.Core
         {
             if (Encoding.Unicode.GetByteCount(data) < 1024)
             {
-                Connection.Insert(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = data });
+                Connection.InsertOrReplace(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = data });
                 return true;
             }
             else
@@ -73,7 +73,7 @@ namespace fs24bot3.Core
             string totalData = GetLocalStorage() + data;
             if (Encoding.Unicode.GetByteCount(totalData) < 1024)
             {
-                Connection.Insert(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = totalData });
+                Connection.InsertOrReplace(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = totalData });
                 return true;
             }
             else
