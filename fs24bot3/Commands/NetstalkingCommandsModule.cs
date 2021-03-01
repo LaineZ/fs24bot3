@@ -95,7 +95,7 @@ namespace fs24bot3.Commands
 
             for (int i = page; i < maxpage; i++)
             {
-                Log.Verbose("Foring {0}", i);
+                Log.Verbose("Foring {0} Query string: {1}", i, string.Join(" ", queryText));
                 if (searchResults.Count >= limit) { break; }
                 string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + ((i + 1) * 10) + "&site=" + site);
                 var items = Core.MailSearchDecoder.PerformDecode(response);
