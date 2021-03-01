@@ -18,7 +18,7 @@ namespace fs24bot3.Commands
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
         [Remarks("Запрос разбивается на сам запрос, параметры которые выглядят как `PARAMETR:VALUE` и операторы поиска (+, -)\n" +
             "page:Number - Страница поиска; max:Number - Максимальная глубина поиска;\n" +
-            "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса; multi:on - Мульти вывод (сразу 5 результатов)" +
+            "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса; multi:on - Мульти вывод (сразу 5 результатов); random:off - Выключить рандомную выдачу" +
             "Операторы поиска: `+` - Включить слово в запрос `-` - Исключить слово из запроса")]
         public async void MailSearch([Remainder] string query)
         {
@@ -27,7 +27,7 @@ namespace fs24bot3.Commands
             int limit = 1;
             int maxpage = 10;
             bool fullmatch = false;
-            bool random = false;
+            bool random = true;
             string site = "";
 
             string[] queryOptions = query.Split(" ");
@@ -45,16 +45,10 @@ namespace fs24bot3.Commands
                         string[] options = queryOptions[i].Split(":");
                         page = int.Parse(options[1]);
                     }
-
-                    if (queryOptions[i].Contains("max:"))
+                    else if (queryOptions[i].Contains("max:"))
                     {
                         string[] options = queryOptions[i].Split(":");
                         maxpage = int.Parse(options[1]);
-                    }
-
-                    if (queryOptions[i].Contains("commongarbage:off"))
-                    {
-                        exclude.AddRange(new List<string>() { "mp3", "музыку", "двач", "2ch" });
                     }
                     // exclude
                     else if (queryOptions[i].Contains("-"))
@@ -79,9 +73,9 @@ namespace fs24bot3.Commands
                     {
                         fullmatch = queryOptions[i].Contains("fullmatch:on");
                     }
-                    else if (queryOptions[i].Contains("random:on"))
+                    else if (queryOptions[i].Contains("random:off"))
                     {
-                        random = true;
+                        random = false;
                     }
                     else
                     {
