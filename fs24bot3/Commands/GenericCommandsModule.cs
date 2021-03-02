@@ -17,7 +17,7 @@ namespace fs24bot3.Commands
 
         private string RemoveArticles(string line)
         {
-            string[] art = new string[] { "the", "are", "a", "an", "i"};
+            string[] art = new string[] { "the", "are", "a", "an", "i" };
             foreach (string word in art)
             {
                 Regex regexArticle = new Regex(@"\b" + word + @"\b");
@@ -50,7 +50,7 @@ namespace fs24bot3.Commands
 
         [Command("helpcmd")]
         [Description("Помощь по команде")]
-        public void HelpСmd(string command)
+        public void HelpСmd(string command = "helpcmd")
         {
             foreach (Command cmd in Service.GetAllCommands())
             {
@@ -225,28 +225,21 @@ namespace fs24bot3.Commands
 
         [Command("genname")]
         [Description("Генератор имен")]
-        public void GenName(bool isRussian = false, int maxlen = 10, int count = 10)
+        public void GenName(bool isRussian = false, int maxlen = 10, uint count = 10)
         {
-            if (count <= 20 && maxlen <= 30)
+            List<string> names = new List<string>();
+            for (int i = 0; i < Math.Clamp(count, 1, 10); i++)
             {
-                List<string> names = new List<string>();
-                for (int i = 0; i < count; i++)
+                if (!isRussian)
                 {
-                    if (!isRussian)
-                    {
-                        names.Add(Core.MessageUtils.GenerateName(maxlen));
-                    }
-                    else
-                    {
-                        names.Add(Core.MessageUtils.GenerateNameRus(maxlen));
-                    }
+                    names.Add(Core.MessageUtils.GenerateName(Math.Clamp(maxlen, 5, 20)));
                 }
-                Context.SendMessage(Context.Channel, string.Join(",", names));
+                else
+                {
+                    names.Add(Core.MessageUtils.GenerateNameRus(Math.Clamp(maxlen, 5, 20)));
+                }
             }
-            else
-            {
-                Context.SendMessage(Context.Channel, IrcColors.Red + "ПРЕВЫШЕН ЛИМИТ!");
-            }
+            Context.SendMessage(Context.Channel, string.Join(",", names));
         }
 
         [Command("midi")]
