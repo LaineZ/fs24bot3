@@ -116,7 +116,8 @@ namespace fs24bot3.Commands
                         {
                             if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
-                                var excludeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x) || item.passage.ToLower().Contains(x) || item.url.ToLower().Contains(x));
+                                string desc = item.passage?.ToLower() ?? string.Empty;
+                                var excludeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x) || desc.Contains(x) || item.url.ToLower().Contains(x));
 
                                 if (fullmatch)
                                 {
