@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Models;
+using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
 using System;
@@ -188,6 +189,46 @@ namespace fs24bot3.Commands
                         }
                     }
                     break;
+            }
+        }
+        [Command("bc", "bandcamp", "bcs")]
+        public async void BcSearch([Remainder] string query)
+        {
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            };
+
+            string response = await http.MakeRequestAsync("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
+            try
+            {
+                BandcampSearch.Root searchResult = JsonConvert.DeserializeObject<BandcampSearch.Root>(response, settings);
+                if (searchResult.auto.results.Any())
+                {
+                    int randIdx = new Random().Next(0, searchResult.auto.results.Count - 1);
+                    var rezik = searchResult.auto.results[randIdx];
+                    switch (rezik.type)
+                    {
+                        case "a":
+                            Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {rezik.url}");
+                            break;
+                        case "b":
+                            Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {rezik.url}");
+                            break;
+                        case "t":
+                            Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {rezik.url}");
+                            break;
+                        default:
+                            Context.SendSadMessage(Context.Channel, $"Неизвестный результат поиска: {rezik.type}");
+                            break;
+                    }
+
+                }
+            }
+            catch (JsonSerializationException)
+            {
+                Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
             }
         }
     }
