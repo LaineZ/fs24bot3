@@ -217,9 +217,8 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public void ResetCache()
         {
-            Context.Connection.DropTable<SQL.LyricsCache>();
-            Context.Connection.Table<SQL.LyricsCache>();
-            Context.SendMessage(Context.Channel, "Кэш песен УДАЛЕН!");
+            Context.Connection.Execute("DELETE FROM LyricsCache WHERE addedby IS NULL");
+            Context.SendMessage(Context.Channel, "Кэш песен УДАЛЕН НАВСЕГДА.....................");
         }
 
         [Command("ignore")]
