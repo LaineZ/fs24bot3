@@ -94,7 +94,8 @@ namespace fs24bot3.Commands
                         totalSecs += 1 * uint.Parse(part.Trim('s'));
                         break;
                     default:
-                        break;
+                        Context.SendErrorMessage(Context.Channel, $"Неизвестная единица измерения времени: {part[^1]}");
+                        return;
                 }
             }
 
@@ -102,6 +103,29 @@ namespace fs24bot3.Commands
             var user = new UserOperations(Context.Message.From, Context.Connection);
             user.AddRemind(ts, message);
             Context.SendMessage(Context.Channel, $"{message} через ({time})!");
+        }
+
+        [Command("reminds", "ins", "rems")]
+        [Description("Список напоминаний")]
+        public void Reminds(string username = "")
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                username = Context.Message.From;
+            }
+            var reminds = Context.Connection.Table<SQL.Reminds>().Where(x => x.Nick == username).Take(5);
+
+            if (!reminds.Any())
+            {
+                Context.SendSadMessage(Context.Channel, $"У пользователя {username} нет напоминаний!");
+            }
+            foreach (var remind in reminds)
+            {
+                DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToLocalTime();
+
+                Context.SendMessage(Context.Channel, $"Напоминание {username}: {remind.Message} в {dtDateTime}");
+            }
         }
 
         [Command("songame", "songg", "sg")]

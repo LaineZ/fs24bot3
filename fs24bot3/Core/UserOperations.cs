@@ -72,9 +72,9 @@ namespace fs24bot3
 
         public DateTime GetLastMessage()
         {
-            var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
+            var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).FirstOrDefault();
             DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds(nick.LastMsg).ToLocalTime();
+            dtDateTime = dtDateTime.AddSeconds(nick == null ? 0 : nick.LastMsg).ToLocalTime();
             return dtDateTime;
         }
 
