@@ -29,7 +29,7 @@ namespace fs24bot3
 
         public static void Init(SQLiteConnection connect)
         {
-            Log.Information("loading shop...");
+            Log.Information("Loading shop...");
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💰 Деньги", Price = 0, Sellable = false, Slug = "money" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍺 Пиво", Price = 100, Sellable = true, Slug = "beer" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🍷 Вино [МОЛДАВСКОЕ]", Price = 150, Sellable = true, Slug = "wine" });
@@ -53,23 +53,43 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🎏 Верхоплавки", Price = 270, Sellable = true, Slug = "veriplace" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🦈 Щука", Price = 1000, Sellable = true, Slug = "pike" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐬 Сом", Price = 1200, Sellable = true, Slug = "som" });
+            ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💧 Вода", Price = 1, Sellable = true, Slug = "water" });
             foreach (var item in ShopItems)
             {
                 var sqlItem = new Models.SQL.Item()
                 {
                     Name = item.Name
                 };
-                connect.InsertOrReplace(sqlItem);
-                Log.Verbose("Inserted: {0}", item.Name);
+                Log.Verbose("Inserting: {0}", item.Name);
+                try
+                {
+                    connect.Insert(sqlItem);
+                }
+                catch (SQLiteException)
+                {
+                    Log.Verbose("Item aready added: {0}", item.Name);
+                }
+                catch (Exception e)
+                {
+                    Log.Warning("Unrecoverable error while adding item: {0} Reason: {1}", item.Name, e.Message);
+                }
             }
             Rand = new Random();
             // 🎣 add 2 new fishing rod
-            for (int i = 0; i < 2; i++)
+            try
             {
-                connect.InsertOrReplace(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(2, 5)), Price = Rand.Next(1000, 5000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 100) });
-                connect.InsertOrReplace(new Models.SQL.FishingNests() { Level = Rand.Next(1, 3), FishCount = Rand.Next(1, 20), FishingLineRequired = Rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(Rand.Next(2, 4)) });
+                for (int i = 0; i < 2; i++)
+                {
+                    connect.Insert(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(2, 5)), Price = Rand.Next(1000, 5000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 100) });
+                    connect.Insert(new Models.SQL.FishingNests() { Level = Rand.Next(1, 3), FishCount = Rand.Next(1, 20), FishingLineRequired = Rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(Rand.Next(2, 4)) });
+                }
             }
-            Log.Information("Done loading shop!");
+            catch (SQLiteException)
+            {
+                Log.Verbose("Fishing rod aready added!");
+            }
+
+            Log.Information("Done loading preparing shop!");
         }
 
         internal static double GetItemAvg(SQLiteConnection connection, string itemname = "money")
@@ -134,6 +154,29 @@ namespace fs24bot3
                         user.AddItemToInv("money", user.GetUserInfo().Level);
                     }
                 }
+
+                var inv = user.GetInventory();
+
+                if (inv != null)
+                {
+                    foreach (var item in inv)
+                    {
+                        // if user have a PUMP!
+                        if (item.Item == "pump")
+                        {
+                            Log.Information("Giving water!");
+                            user.AddItemToInv("water", Rand.Next(1, 2));
+
+                            if (Rand.Next(1, 3) == 3)
+                            {
+                                user.RemItemFromInv("pump", 1);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
             }
             PaydaysCount++;
             DateTime elapsed = DateTime.Now;
