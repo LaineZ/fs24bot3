@@ -112,7 +112,7 @@ namespace fs24bot3
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
-            if (MessageBus.Count < 1000)
+            if (DateTime.Now.Minute != 0)
             {
                 MessageBus.Add(e.IRCMessage);
             }

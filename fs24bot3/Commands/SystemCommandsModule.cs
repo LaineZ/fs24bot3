@@ -29,6 +29,14 @@ namespace fs24bot3.Commands
             Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
 
+
+        [Command("hourstat")]
+        public void Hourstat()
+        {
+            Shop.SongameString = "";
+            Context.SendMessage(Context.Channel, "Игра перезагружена!");
+        }
+
         [Command("quit", "exit")]
         [Checks.CheckAdmin]
         [Description("Выход")]

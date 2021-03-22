@@ -3,6 +3,7 @@ using NetIRC.Messages;
 using Qmmands;
 using SQLite;
 using System;
+using System.Collections.Generic;
 
 namespace fs24bot3
 {
@@ -16,13 +17,15 @@ namespace fs24bot3
             public string Channel;
             public SQLiteConnection Connection;
             readonly HttpTools http = new HttpTools();
+            public List<PrivMsgMessage> Messages = new List<PrivMsgMessage>();
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, List<PrivMsgMessage> msgs = null, IServiceProvider provider = null) : base(provider)
             {
                 Message = message;
                 Client = client;
                 Connection = connection;
+                Messages = msgs;
 
                 if (Message.To == Configuration.name)
                 {
