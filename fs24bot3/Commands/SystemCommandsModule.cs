@@ -17,7 +17,7 @@ namespace fs24bot3.Commands
         public void Version()
         {
             var os = Environment.OSVersion;
-            Context.SendMessage(Context.Channel, string.Format("fs24_bot3 Версия: 8.02.2021 | .NET Core: {0} Система: {1}",
+            Context.SendMessage(Context.Channel, string.Format("fs24_bot3 Версия: 23.03.2021 | .NET Core: {0} Система: {1}",
                 Environment.Version.ToString(), os.VersionString));
         }
 
@@ -31,10 +31,17 @@ namespace fs24bot3.Commands
 
 
         [Command("hourstat")]
+        [Description("Статистика за час")]
         public void Hourstat()
         {
-            Shop.SongameString = "";
-            Context.SendMessage(Context.Channel, "Игра перезагружена!");
+            int messageCount = Context.Messages.Count;
+            string mostActive = Context.Messages.GroupBy(msg => msg.From).OrderByDescending(grp => grp.Count())
+                        .Select(grp => grp.Key).First();
+            string concatedMessage = string.Join("\n", Context.Messages.Select(x => x.Message));
+            string[] words = concatedMessage.Split(" ");
+            string mostUsedword = words.GroupBy(word => word).OrderByDescending(grp => grp.Count())
+            .Select(grp => grp.Key).First();
+            Context.SendMessage(Context.Channel, $"Статистика за текущий час: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самый активный: {mostActive}, Возможная тема: {mostUsedword}");
         }
 
         [Command("quit", "exit")]

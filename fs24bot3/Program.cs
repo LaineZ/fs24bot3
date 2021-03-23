@@ -158,7 +158,7 @@ namespace fs24bot3
             if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
                 return;
 
-            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection));
+            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, MessageBus));
             switch (result)
             {
                 case ChecksFailedResult err:
