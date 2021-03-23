@@ -118,7 +118,7 @@ namespace fs24bot3
             }
             else
             {
-                MessageBus.RemoveAt(0);
+                MessageBus.Clear();
             }
 
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
