@@ -273,6 +273,12 @@ namespace fs24bot3.Commands
                 try
                 {
                     BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, settings);
+
+                    if (!discover.ok)
+                    {
+                        timeout++;
+                    }
+
                     if (discover.items.Any())
                     {
                         for (int i = 0; i < Math.Clamp(mult, 1, 5); i++)
@@ -287,9 +293,8 @@ namespace fs24bot3.Commands
                 catch (JsonSerializationException)
                 {
                     Log.Warning("cannot find tracks for request {0}", tagsStr);
+                    timeout++;
                 }
-
-                timeout++;
             }
 
             Context.SendSadMessage(Context.Channel, "Не удалось найти треки...");
