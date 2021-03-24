@@ -262,7 +262,7 @@ namespace fs24bot3.Commands
 
             int timeout = 0;
 
-            while (timeout < 5)
+            while (timeout < 3)
             {
                 string content = "{\"filters\":{ \"format\":\"all\",\"location\":0,\"sort\":\"pop\",\"tags\":[" + string.Join(",", tagsFixed) + "] },\"page\":" + rand.Next(0, 200) + "}";
                 //Console.WriteLine(content);
@@ -274,7 +274,7 @@ namespace fs24bot3.Commands
                 {
                     BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, settings);
 
-                    if (!discover.ok)
+                    if (!discover.ok || !discover.more_available)
                     {
                         timeout++;
                     }
