@@ -112,13 +112,14 @@ namespace fs24bot3
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
-            if (DateTime.Now.Minute != 0)
+            if (DateTime.Now.Minute == 0)
             {
-                MessageBus.Add(e.IRCMessage);
+                MessageBus.Clear();
             }
             else
             {
-                MessageBus.Clear();
+                MessageBus.Add(e.IRCMessage);
+                Log.Verbose("Hourstat counter: {0} {1}", DateTime.Now.Minute, MessageBus.Count);
             }
 
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
