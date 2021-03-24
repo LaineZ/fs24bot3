@@ -5,6 +5,8 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 
 namespace fs24bot3.Commands
 {
@@ -14,6 +16,7 @@ namespace fs24bot3.Commands
         public CommandService Service { get; set; }
 
         readonly HttpTools http = new HttpTools();
+        HttpClient client = new HttpClient();
 
         [Command("ms", "search")]
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
@@ -191,6 +194,7 @@ namespace fs24bot3.Commands
                     break;
             }
         }
+
         [Command("bc", "bandcamp", "bcs")]
         public async void BcSearch([Remainder] string query)
         {
@@ -206,30 +210,89 @@ namespace fs24bot3.Commands
                 BandcampSearch.Root searchResult = JsonConvert.DeserializeObject<BandcampSearch.Root>(response, settings);
                 if (searchResult.auto.results.Any())
                 {
-                    int randIdx = new Random().Next(0, searchResult.auto.results.Count - 1);
-                    var rezik = searchResult.auto.results[randIdx];
-                    switch (rezik.type)
+                    foreach (var rezik in searchResult.auto.results)
                     {
-                        case "a":
-                            Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {rezik.url}");
-                            break;
-                        case "b":
-                            Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {rezik.url}");
-                            break;
-                        case "t":
-                            Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {rezik.url}");
-                            break;
-                        default:
-                            Context.SendSadMessage(Context.Channel, $"Неизвестный результат поиска: {rezik.type}");
-                            break;
-                    }
+                        if (rezik.is_label)
+                        {
+                            continue;
+                        }
 
+                        switch (rezik.type)
+                        {
+                            case "a":
+                                Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {rezik.url}");
+                                return;
+                            case "b":
+                                Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {rezik.url}");
+                                return;
+                            case "t":
+                                Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {rezik.url}");
+                                return;
+                        }
+                    }
                 }
             }
             catch (JsonSerializationException)
             {
                 Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
             }
+        }
+
+        [Command("bcr", "bcd", "bcdisc", "bandcampdiscover", "bcdiscover")]
+        public async void BcDiscover(uint mult = 1, [Remainder] string tagsStr = "metal")
+        {
+            var tags = tagsStr.Split(" ");
+            List<string> tagsFixed = new List<string>();
+
+            foreach (string tag in tags)
+            {
+                if (tag.Length > 0)
+                {
+                    tagsFixed.Add("\"" + tag + "\"");
+                }
+            }
+
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            };
+
+            Random rand = new Random();
+
+            int timeout = 0;
+
+            while (timeout < 5)
+            {
+                string content = "{\"filters\":{ \"format\":\"all\",\"location\":0,\"sort\":\"pop\",\"tags\":[" + string.Join(",", tagsFixed) + "] },\"page\":" + rand.Next(0, 200) + "}";
+                //Console.WriteLine(content);
+                HttpContent c = new StringContent(content, Encoding.UTF8, "application/json");
+                var response = await client.PostAsync("https://bandcamp.com/api/hub/2/dig_deeper", c);
+                string responseString = await response.Content.ReadAsStringAsync();
+
+                try
+                {
+                    BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, settings);
+                    if (discover.items.Any())
+                    {
+                        for (int i = 0; i < Math.Clamp(mult, 1, 5); i++)
+                        {
+                            int randIdx = new Random().Next(0, discover.items.Count - 1);
+                            var rezik = discover.items[randIdx];
+                            Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {rezik.tralbum_url}");
+                        }
+                        return;
+                    }
+                }
+                catch (JsonSerializationException)
+                {
+                    Log.Warning("cannot find tracks for request {0}", tagsStr);
+                }
+
+                timeout++;
+            }
+
+            Context.SendSadMessage(Context.Channel, "Не удалось найти треки...");
         }
     }
 }
