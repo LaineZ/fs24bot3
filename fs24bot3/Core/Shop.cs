@@ -54,6 +54,7 @@ namespace fs24bot3
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🦈 Щука", Price = 1000, Sellable = true, Slug = "pike" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "🐬 Сом", Price = 1200, Sellable = true, Slug = "som" });
             ShopItems.Add(new Models.ItemInventory.Shop() { Name = "💧 Вода", Price = 1, Sellable = true, Slug = "water" });
+
             foreach (var item in ShopItems)
             {
                 var sqlItem = new Models.SQL.Item()
@@ -92,27 +93,9 @@ namespace fs24bot3
             Log.Information("Done loading preparing shop!");
         }
 
-        internal static double GetItemAvg(SQLiteConnection connection, string itemname = "money")
+        public static void UpdateShop()
         {
-            List<int> money = new List<int>();
-
-            var query = connection.Table<Models.SQL.UserStats>();
-            foreach (var users in query)
-            {
-                UserOperations user = new UserOperations(users.Nick, connection);
-                var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.GetItem(itemname).Name));
-                if (itemToCount != null)
-                {
-                    money.Add(itemToCount.ItemCount);
-                }
-            }
-            return money.Any() ? money.Average() : 0;
-        }
-
-        public static void Update(SQLiteConnection connect)
-        {
-            DateTime start = DateTime.Now;
-            foreach (var shopItem in ShopItems)
+            foreach (var shopItem in Shop.ShopItems)
             {
                 int check = Rand.Next(0, 10);
                 if (check == 5)
@@ -129,54 +112,6 @@ namespace fs24bot3
                     }
                 }
             }
-
-            int checkPayday = Rand.Next(0, 10);
-            Log.Information("Giving payday/taxes!");
-            var query = connect.Table<Models.SQL.UserStats>();
-            foreach (var users in query)
-            {
-                UserOperations user = new UserOperations(users.Nick, connect);
-                if (checkPayday == 8 && GetItemAvg(connect) < MaxCap)
-                {
-                    var subst = DateTime.Now.Subtract(user.GetLastMessage()).TotalHours;
-
-                    if (subst > 10)
-                    {
-                        Log.Information("Tax fine for user: {0}", user.Username);
-                        user.RemItemFromInv("money", user.GetUserInfo().Level * Rand.Next(1, 2));
-                    }
-                    else
-                    {
-                        user.AddItemToInv("money", user.GetUserInfo().Level);
-                    }
-                }
-
-                var inv = user.GetInventory();
-
-                if (inv != null)
-                {
-                    foreach (var item in inv)
-                    {
-                        // if user have a PUMP!
-                        if (item.Item == "pump")
-                        {
-                            Log.Information("Giving water!");
-                            user.AddItemToInv("water", Rand.Next(1, 2));
-
-                            if (Rand.Next(1, 3) == 3)
-                            {
-                                user.RemItemFromInv("pump", 1);
-                            }
-
-                            break;
-                        }
-                    }
-                }
-
-            }
-            PaydaysCount++;
-            DateTime elapsed = DateTime.Now;
-            TickSpeed = elapsed.Subtract(start);
         }
 
         public static Models.ItemInventory.Shop GetItem(string name)

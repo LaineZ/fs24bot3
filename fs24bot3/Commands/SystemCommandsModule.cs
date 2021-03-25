@@ -52,7 +52,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public void Giveall(string username)
         {
-            var user = new UserOperations(username, Context.Connection);
+            var user = new User(username, Context.Connection);
             foreach (var item in Shop.ShopItems)
             {
                 user.AddItemToInv(item.Slug, 1);
@@ -89,7 +89,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public void Give(string username, string item, int count)
         {
-            UserOperations sql = new UserOperations(username, Context.Connection);
+            User sql = new User(username, Context.Connection);
 
             sql.AddItemToInv(item, count);
             Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
@@ -118,7 +118,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public void GiveXp(string username, int count)
         {
-            UserOperations sql = new UserOperations(username, Context.Connection);
+            User sql = new User(username, Context.Connection);
 
             sql.IncreaseXp(count);
             Context.SendMessage(Context.Channel, "Вы установили " + count + " xp пользователю " + username);
@@ -137,7 +137,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public void GiveLevel(string username, int count)
         {
-            UserOperations sql = new UserOperations(username, Context.Connection);
+            User sql = new User(username, Context.Connection);
 
             sql.SetLevel(count);
             Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
