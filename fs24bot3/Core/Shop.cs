@@ -138,10 +138,6 @@ namespace fs24bot3
                 UserOperations user = new UserOperations(users.Nick, connect);
                 if (checkPayday == 8 && GetItemAvg(connect) < MaxCap)
                 {
-                    if (Rand.Next(0, 10) == 1 && user.RemItemFromInv("wall", 1))
-                    {
-                        Log.Information("Breaking wall for {0}", users.Nick);
-                    }
                     var subst = DateTime.Now.Subtract(user.GetLastMessage()).TotalHours;
 
                     if (subst > 10)
