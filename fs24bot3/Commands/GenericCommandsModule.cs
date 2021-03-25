@@ -208,45 +208,6 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("stat", "stats")]
-        [Description("Статы пользователя или себя")]
-        public void Userstat(string nick = null)
-        {
-            string userNick;
-            if (nick != null)
-            {
-                userNick = nick;
-            }
-            else
-            {
-                userNick = Context.Message.From;
-            }
-
-            UserOperations usr = new UserOperations(userNick, Context.Connection);
-
-            var data = usr.GetUserInfo();
-            if (data != null)
-            {
-                Context.SendMessage(Context.Channel, $"Статистика: {data.Nick} Уровень: {data.Level} XP: {data.Xp} / {data.Need}");
-                try
-                {
-                    var userTags = usr.GetUserTags();
-                    if (userTags.Count > 0)
-                    {
-                        Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
-                    }
-                }
-                catch (Core.Exceptions.UserNotFoundException)
-                {
-                    Context.SendMessage(Context.Channel, "Теги: Нет");
-                }
-            }
-            else
-            {
-                Context.SendMessage(Context.Channel, "Пользователя не существует (это как вообще? даже тебя что ли не существует?)");
-            }
-        }
-
         [Command("genname")]
         [Description("Генератор имен")]
         public void GenName(bool isRussian = false, int maxlen = 10, uint count = 10)

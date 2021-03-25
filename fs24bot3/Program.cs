@@ -8,6 +8,7 @@ using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,6 +62,8 @@ namespace fs24bot3
             _service.AddModule<NetstalkingCommandsModule>();
             _service.AddModule<FishCommandsModule>();
             _service.AddModule<CustomCommandsModule>();
+            _service.AddModule<StatCommandModule>();
+
             using var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
@@ -100,7 +103,7 @@ namespace fs24bot3
             {
                 Thread.Sleep(Shop.Tickrate);
                 Shop.Update(connection);
-                
+
                 if (DateTime.Now.Minute == 0)
                 {
                     Log.Verbose("Cleaning messages!");
@@ -121,7 +124,6 @@ namespace fs24bot3
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
             var queryIfExt = connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
 
-
             if (queryIfExt <= 0)
             {
                 MessageBus.Add(e.IRCMessage);
@@ -129,17 +131,14 @@ namespace fs24bot3
                 {
                     if (e.IRCMessage.To != Configuration.name)
                     {
-                        UserOperations usr = new UserOperations(e.IRCMessage.From, connection);
-                        usr.CreateAccountIfNotExist();
-                        usr.SetLastMessage();
-                        bool newLevel = usr.IncreaseXp(e.IRCMessage.Message.Length * new Random().Next(1, 3) + 1);
-                        if (newLevel)
-                        {
-                            var random = new Random();
-                            int index = random.Next(Shop.ShopItems.Count);
-                            usr.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                            client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, e.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
-                        }
+                        EventProcessors.OnMsgEvent instance = new EventProcessors.OnMsgEvent(client, e, connection);
+
+                        var methods = instance
+                          .GetType()
+                          .GetMethods(BindingFlags.Public | BindingFlags.Instance);
+
+                        foreach (var method in methods)
+                            method.Invoke(instance, new Object[0]);
                     }
                     else
                     {
