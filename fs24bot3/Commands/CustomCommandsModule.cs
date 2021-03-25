@@ -18,7 +18,7 @@ namespace fs24bot3.Commands
         [Remarks("[IsLua = false] Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел\n[isLua = true] - Lua движок команд")]
         public void CustomCmdRegister(string command, bool isLua, [Remainder] string output)
         {
-            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+            User usr = new User(Context.Message.From, Context.Connection, Context);
             bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
 
             if (!commandIntenral)
@@ -81,7 +81,7 @@ namespace fs24bot3.Commands
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat && query[0].IsLua == 0)
             {
                 if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
@@ -189,7 +189,7 @@ namespace fs24bot3.Commands
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
                 if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
@@ -214,7 +214,7 @@ namespace fs24bot3.Commands
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Message.From, Context.Connection);
             if (query.Any() && query[0].IsLua == 1 && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
                 if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
@@ -238,7 +238,7 @@ namespace fs24bot3.Commands
         public void CustomCmdRem(string command)
         {
             var commandConcat = "@" + command;
-            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Message.From, Context.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
                 var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
@@ -282,7 +282,7 @@ namespace fs24bot3.Commands
                 track = data[1].Replace(" ", "-");
             }
 
-            UserOperations usr = new UserOperations(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Message.From, Context.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
                 var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track)).Delete();

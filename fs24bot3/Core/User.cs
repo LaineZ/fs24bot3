@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace fs24bot3
 {
-    class UserOperations
+    class User
     {
         public string Username;
         public SQLiteConnection Connect;
@@ -17,7 +17,7 @@ namespace fs24bot3
         const int XP_MULTIPLER = 150;
 
 
-        public UserOperations(string username, SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
+        public User(string username, SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
         {
             Username = username;
             Connect = connection;

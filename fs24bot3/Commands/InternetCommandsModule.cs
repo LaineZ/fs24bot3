@@ -214,7 +214,7 @@ namespace fs24bot3.Commands
                         Track = track
                     };
 
-                    var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+                    var user = new User(Context.Message.From, Context.Connection, Context);
 
                     try
                     {
@@ -244,7 +244,7 @@ namespace fs24bot3.Commands
         [Command("aigen", "gensent", "ppc")]
         public void GenAI(uint max = 200)
         {
-            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            var user = new User(Context.Message.From, Context.Connection, Context);
             if (user.RemItemFromInv("beer", 1))
             {
                 AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
@@ -273,7 +273,7 @@ namespace fs24bot3.Commands
         [Description("Переводчик (ппц)")]
         public async void TranslatePpc([Remainder] string text)
         {
-            var usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+            var usr = new User(Context.Message.From, Context.Connection, Context);
             if (usr.RemItemFromInv("beer", 1))
             {
                 string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
@@ -293,7 +293,7 @@ namespace fs24bot3.Commands
         [Description("Переводчик (ппц)")]
         public async void TranslatePpcGen(int gens, [Remainder] string text)
         {
-            var usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+            var usr = new User(Context.Message.From, Context.Connection, Context);
             if (usr.RemItemFromInv("beer", 1))
             {
                 string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
@@ -354,7 +354,7 @@ namespace fs24bot3.Commands
                 {
                     Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.Connection);
                     string translated = await lyrics.GetLyrics();
-                    var usr = new UserOperations(Context.Message.From, Context.Connection, Context);
+                    var usr = new User(Context.Message.From, Context.Connection, Context);
 
                     if (usr.RemItemFromInv("beer", 1))
                     {
@@ -459,7 +459,7 @@ namespace fs24bot3.Commands
         [Description("Текст песни (Перевод)")]
         public async void LyricsTr([Remainder] string song)
         {
-            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            var user = new User(Context.Message.From, Context.Connection, Context);
 
             var data = song.Split(" - ");
             if (data.Length > 0)

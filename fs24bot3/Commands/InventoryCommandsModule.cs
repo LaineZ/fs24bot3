@@ -15,7 +15,7 @@ namespace fs24bot3.Commands
         [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд @buy/@sell/@transfer и других")]
         public void Userstat(bool useSlugs = false)
         {
-            var userop = new UserOperations(Context.Message.From, Context.Connection);
+            var userop = new User(Context.Message.From, Context.Connection);
             var userInv = userop.GetInventory();
             if (userInv.Count > 0)
             {
@@ -38,7 +38,7 @@ namespace fs24bot3.Commands
         [Description("Купить товар")]
         public void Buy(string itemname, int count = 1)
         {
-            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+            User user = new User(Context.Message.From, Context.Connection);
 
             int buyprice = Shop.GetItem(itemname).Price * count;
 
@@ -61,7 +61,7 @@ namespace fs24bot3.Commands
         [Description("Продать товар")]
         public void Sell(string itemname, int count = 1)
         {
-            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+            User user = new User(Context.Message.From, Context.Connection);
 
             if (user.RemItemFromInv(itemname, count) && Shop.GetItem(itemname).Sellable)
             {
@@ -81,7 +81,7 @@ namespace fs24bot3.Commands
         [Description("Продать весь товар")]
         public void SellAll()
         {
-            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+            User user = new User(Context.Message.From, Context.Connection);
             var inv = user.GetInventory();
             int totalPrice = 0;
 
@@ -101,8 +101,8 @@ namespace fs24bot3.Commands
         [Description("Передатать вещи")]
         public void Transfer(string destanationNick, string itemname, int count = 1)
         {
-            UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
-            UserOperations destanation = new UserOperations(destanationNick, Context.Connection);
+            User user = new User(Context.Message.From, Context.Connection);
+            User destanation = new User(destanationNick, Context.Connection);
 
             if (user.RemItemFromInv(Shop.GetItem(itemname).Name, count))
             {
@@ -125,7 +125,7 @@ namespace fs24bot3.Commands
 
             foreach (var users in query)
             {
-                var user = new UserOperations(users.Nick, Context.Connection);
+                var user = new User(users.Nick, Context.Connection);
                 top.Add((users.Nick, user.CountItem(itemname)));
             }
 
@@ -177,7 +177,7 @@ namespace fs24bot3.Commands
         {
             try
             {
-                UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+                User user = new User(Context.Message.From, Context.Connection);
                 int dmg = 0;
                 string wrname = string.Empty;
 
@@ -207,7 +207,7 @@ namespace fs24bot3.Commands
                     return;
                 }
 
-                UserOperations userDest = new UserOperations(username, Context.Connection);
+                User userDest = new User(username, Context.Connection);
                 var takeItems = userDest.GetInventory();
 
                 var rand = new Random();
@@ -259,7 +259,7 @@ namespace fs24bot3.Commands
         {
             try
             {
-                UserOperations user = new UserOperations(Context.Message.From, Context.Connection);
+                User user = new User(Context.Message.From, Context.Connection);
                 int dmg = 0;
                 string brname = String.Empty;
 
@@ -287,7 +287,7 @@ namespace fs24bot3.Commands
                     return;
                 }
 
-                UserOperations userDest = new UserOperations(username, Context.Connection);
+                User userDest = new User(username, Context.Connection);
                 var rand = new Random();
 
                 if (userDest.CountItem("wall") > 0 && rand.Next(0, 10 - dmg) == 0 && username != Context.Message.From)

@@ -8,7 +8,6 @@ using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,7 +63,7 @@ namespace fs24bot3
             _service.AddModule<CustomCommandsModule>();
             _service.AddModule<StatCommandModule>();
 
-            using var client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
+            using var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
             client.EventHub.PrivMsg += EventHub_PrivMsg;
@@ -102,8 +101,13 @@ namespace fs24bot3
             while (true)
             {
                 Thread.Sleep(Shop.Tickrate);
-                Shop.Update(connection);
-
+                var query = connection.Table<SQL.UserStats>();
+                foreach (var users in query)
+                {
+                    var onTick = new EventProcessors.OnTick(users.Nick, connection);
+                    onTick.UpdateUserPaydays();
+                }
+                Shop.UpdateShop();
                 if (DateTime.Now.Minute == 0)
                 {
                     Log.Verbose("Cleaning messages!");
@@ -131,14 +135,10 @@ namespace fs24bot3
                 {
                     if (e.IRCMessage.To != Configuration.name)
                     {
-                        EventProcessors.OnMsgEvent instance = new EventProcessors.OnMsgEvent(client, e, connection);
-
-                        var methods = instance
-                          .GetType()
-                          .GetMethods(BindingFlags.Public | BindingFlags.Instance);
-
-                        foreach (var method in methods)
-                            method.Invoke(instance, new Object[0]);
+                        EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, e, connection);
+                        events.DestroyWallRandomly();
+                        events.LevelInscrease();
+                        events.GiveWaterFromPumps();
                     }
                     else
                     {

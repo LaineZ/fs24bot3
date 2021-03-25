@@ -42,7 +42,15 @@ namespace fs24bot3.Commands
         [Description("Макроэкономические показатели")]
         public void Economy()
         {
-            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {Shop.GetItemAvg(Context.Connection)} Последнее время выполнения Shop.Update(): {Shop.TickSpeed.TotalMilliseconds} ms Период выполнения Shop.Update() {Shop.Tickrate} ms Покупок/Продаж {Shop.Buys}/{Shop.Sells}");
+            Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {new MultiUser(Context.Connection).GetItemAvg()} Последнее время выполнения обновления данных о пользователях: {Shop.TickSpeed.TotalMilliseconds} ms Период выполнения Shop.Update() {Shop.Tickrate} ms Покупок/Продаж {Shop.Buys}/{Shop.Sells}");
+        }
+
+        [Command("mem")]
+        [Description("Использование памяти")]
+        public void MemoryUsage()
+        {
+            var proc = System.Diagnostics.Process.GetCurrentProcess();
+            Context.SendMessage(Context.Channel, string.Join(" | ", proc.GetType().GetProperties().Where(x => x.Name.EndsWith("64")).Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
         }
 
         [Command("stat", "stats")]
@@ -50,7 +58,7 @@ namespace fs24bot3.Commands
         public void Userstat(string nick = null)
         {
             string userNick = nick ?? Context.Message.From;
-            UserOperations usr = new UserOperations(userNick, Context.Connection);
+            User usr = new User(userNick, Context.Connection);
 
             var data = usr.GetUserInfo();
             if (data != null)

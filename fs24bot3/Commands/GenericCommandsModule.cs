@@ -100,7 +100,7 @@ namespace fs24bot3.Commands
             }
 
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
-            var user = new UserOperations(Context.Message.From, Context.Connection);
+            var user = new User(Context.Message.From, Context.Connection);
             user.AddRemind(ts, message);
             Context.SendMessage(Context.Channel, $"{message} через ({time})!");
         }
@@ -132,7 +132,7 @@ namespace fs24bot3.Commands
         [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
         public async void Songame([Remainder] string translated = "")
         {
-            var user = new UserOperations(Context.Message.From, Context.Connection, Context);
+            var user = new User(Context.Message.From, Context.Connection, Context);
             int timeout = 10;
 
             if (Shop.SongameTries <= 0)
@@ -259,7 +259,7 @@ namespace fs24bot3.Commands
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
         public void AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
         {
-            var user = new UserOperations(Context.Message.From, Context.Connection);
+            var user = new User(Context.Message.From, Context.Connection);
 
             switch (action)
             {
@@ -302,7 +302,7 @@ namespace fs24bot3.Commands
         [Description("Добавить тег пользователю")]
         public void InsertTag(string tagname, string destination)
         {
-            var user = new UserOperations(destination, Context.Connection);
+            var user = new User(destination, Context.Connection);
 
             if (user.AddTag(tagname, 1))
             {
@@ -318,7 +318,7 @@ namespace fs24bot3.Commands
         [Description("Когда последний раз пользователь писал сообщени")]
         public void LastSeen(string destination)
         {
-            var user = new UserOperations(destination, Context.Connection);
+            var user = new User(destination, Context.Connection);
             TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
             if (date.Days < 1000)
             {
