@@ -100,6 +100,12 @@ namespace fs24bot3
             {
                 Thread.Sleep(Shop.Tickrate);
                 Shop.Update(connection);
+                
+                if (DateTime.Now.Minute == 0)
+                {
+                    Log.Verbose("Cleaning messages!");
+                    MessageBus.Clear();
+                }
             }
         }
 
@@ -112,22 +118,13 @@ namespace fs24bot3
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
-            if (DateTime.Now.Minute == 0)
-            {
-                MessageBus.Clear();
-            }
-            else
-            {
-                MessageBus.Add(e.IRCMessage);
-                Log.Verbose("Hourstat counter: {0} {1}", DateTime.Now.Minute, MessageBus.Count);
-            }
-
             var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
             var queryIfExt = connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
 
 
             if (queryIfExt <= 0)
             {
+                MessageBus.Add(e.IRCMessage);
                 new Thread(() =>
                 {
                     if (e.IRCMessage.To != Configuration.name)
