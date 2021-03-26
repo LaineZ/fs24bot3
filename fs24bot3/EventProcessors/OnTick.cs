@@ -21,7 +21,6 @@ namespace fs24bot3.EventProcessors
         {
             DateTime start = DateTime.Now;
             int checkPayday = Rand.Next(0, 10);
-            Log.Verbose("Giving payday/taxes!");
 
             if (checkPayday == 8 && MultiUser.GetItemAvg() < Shop.MaxCap)
             {

@@ -78,6 +78,11 @@ namespace fs24bot3
             return dtDateTime;
         }
 
+        public bool UserIsIgnored()
+        {
+            return Connect.Table<SQL.Ignore>().Where(v => v.Username.Equals(Username)).Any();
+        }
+
         public void SetLevel(int level)
         {
             Connect.Execute("UPDATE UserStats SET Level = ? WHERE Nick = ?", level, Username);

@@ -174,7 +174,7 @@ namespace fs24bot3.Core
                                 {
                                     Thread.Sleep(10);
                                     Process currentProc = Process.GetCurrentProcess();
-                                    long memoryUsed = currentProc.PrivateMemorySize64 / 1024 / 1024;
+                                    long memoryUsed = currentProc.WorkingSet64 / 1024 / 1024;
 
                                     if (memoryUsed > 150)
                                     {

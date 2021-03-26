@@ -5,7 +5,7 @@ using System;
 
 namespace fs24bot3.EventProcessors
 {
-    class OnMsgEvent
+    public class OnMsgEvent
     {
         private readonly IRCMessageEventArgs<PrivMsgMessage> Event;
         private readonly Client Client;
