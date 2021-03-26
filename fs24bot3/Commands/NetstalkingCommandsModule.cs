@@ -196,6 +196,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("bc", "bandcamp", "bcs")]
+        [Description("Поиск по сайту bandcamp.com")]
         public async void BcSearch([Remainder] string query)
         {
             var settings = new JsonSerializerSettings
@@ -239,6 +240,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("bcr", "bcd", "bcdisc", "bandcampdiscover", "bcdiscover")]
+        [Description("Поиск по тегам на сайте bandcamp.com")]
         public async void BcDiscover(uint mult = 1, [Remainder] string tagsStr = "metal")
         {
             var tags = tagsStr.Split(" ");
@@ -262,7 +264,7 @@ namespace fs24bot3.Commands
 
             int timeout = 0;
 
-            while (timeout < 3)
+            while (timeout < 5)
             {
                 string content = "{\"filters\":{ \"format\":\"all\",\"location\":0,\"sort\":\"pop\",\"tags\":[" + string.Join(",", tagsFixed) + "] },\"page\":" + rand.Next(0, 200) + "}";
                 //Console.WriteLine(content);

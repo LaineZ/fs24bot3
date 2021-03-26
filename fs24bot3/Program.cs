@@ -16,13 +16,13 @@ namespace fs24bot3
 {
     class Program
     {
-        private static readonly SQLiteConnection connection = new SQLiteConnection("fsdb.sqlite");
+        private static readonly SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
         private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
         private static Core.CustomCommandProcessor CustomCommandProcessor;
 
         static async void RandomLyics(Client client)
         {
-            var query = connection.Table<SQL.LyricsCache>().ToList();
+            var query = Connection.Table<SQL.LyricsCache>().ToList();
 
             if (query.Count > 0)
             {
@@ -52,7 +52,7 @@ namespace fs24bot3
                 Console.OutputEncoding = Encoding.Unicode;
             }
 
-            Core.Database.InitDatabase(connection);
+            Core.Database.InitDatabase(Connection);
 
             _service.AddModule<GenericCommandsModule>();
             _service.AddModule<SystemCommandModule>();
@@ -79,7 +79,7 @@ namespace fs24bot3
                 while (true)
                 {
                     Thread.Sleep(1000);
-                    var query = connection.Table<SQL.Reminds>();
+                    var query = Connection.Table<SQL.Reminds>();
 
                     foreach (var item in query)
                     {
@@ -88,23 +88,23 @@ namespace fs24bot3
                         if (dtDateTime <= DateTime.Now)
                         {
                             await client.SendAsync(new PrivMsgMessage(Configuration.channel, $"{item.Nick}: {item.Message}!"));
-                            connection.Delete(item);
+                            Connection.Delete(item);
                         }
 
                     }
                 }
             }).Start();
 
-            CustomCommandProcessor = new Core.CustomCommandProcessor(client, connection, MessageBus);
+            CustomCommandProcessor = new Core.CustomCommandProcessor(client, Connection, MessageBus);
 
             Log.Information("Running in loop!");
             while (true)
             {
                 Thread.Sleep(Shop.Tickrate);
-                var query = connection.Table<SQL.UserStats>();
+                var query = Connection.Table<SQL.UserStats>();
                 foreach (var users in query)
                 {
-                    var onTick = new EventProcessors.OnTick(users.Nick, connection);
+                    var onTick = new EventProcessors.OnTick(users.Nick, Connection);
                     onTick.UpdateUserPaydays();
                 }
                 Shop.UpdateShop();
@@ -125,8 +125,8 @@ namespace fs24bot3
 
         private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
         {
-            var query = connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
-            var queryIfExt = connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
+            var query = Connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
+            var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
 
             if (queryIfExt <= 0)
             {
@@ -135,7 +135,7 @@ namespace fs24bot3
                 {
                     if (e.IRCMessage.To != Configuration.name)
                     {
-                        EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, e, connection);
+                        EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, e, Connection);
                         events.DestroyWallRandomly();
                         events.LevelInscrease();
                         events.GiveWaterFromPumps();
@@ -155,7 +155,7 @@ namespace fs24bot3
             if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
                 return;
 
-            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, connection, MessageBus));
+            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, Connection, MessageBus));
             switch (result)
             {
                 case ChecksFailedResult err:

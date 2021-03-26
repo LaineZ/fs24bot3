@@ -315,7 +315,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("seen")]
-        [Description("Когда последний раз пользователь писал сообщени")]
+        [Description("Когда последний раз пользователь писал сообщения")]
         public void LastSeen(string destination)
         {
             var user = new User(destination, Context.Connection);
