@@ -221,6 +221,8 @@ namespace fs24bot3.Commands
                             case "t":
                                 Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {IrcColors.Blue}{rezik.url}");
                                 return;
+                            default:
+                                continue;
                         }
                     }
                 }
