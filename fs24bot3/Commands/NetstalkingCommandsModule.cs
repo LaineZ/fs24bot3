@@ -129,10 +129,6 @@ namespace fs24bot3.Commands
                                     {
                                         searchResults.Add(item);
                                     }
-                                    else
-                                    {
-                                        continue;
-                                    }
                                 }
                                 else
                                 {
@@ -141,10 +137,6 @@ namespace fs24bot3.Commands
                                         searchResults.Add(item);
                                     }
                                 }
-                            }
-                            else
-                            {
-                                continue;
                             }
                         }
                     }

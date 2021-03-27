@@ -78,18 +78,11 @@ namespace fs24bot3.Core
 
                 foreach (var node in divContainer)
                 {
-                    StringWriter writer = new StringWriter();
-                    HttpUtility.HtmlDecode(node.InnerText, writer);
-
-                    string lrcLine = writer.ToString();
-                    if (!lrcLine.EndsWith("\n"))
-                    {
-                        lrcLine += "\n";
-                    }
-                    lyric += lrcLine;
+                    lyric += HttpUtility.HtmlDecode(node.InnerHtml.Replace("<br>", "\n"));
                 }
 
                 lyric = Regex.Replace(lyric, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
+                lyric = Regex.Replace(lyric, @"<[^>]*>", String.Empty, RegexOptions.Multiline);
 
                 var lyricsToCache = new SQL.LyricsCache()
                 {
