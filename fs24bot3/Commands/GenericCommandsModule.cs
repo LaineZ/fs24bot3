@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace fs24bot3.Commands
 {
@@ -35,14 +36,15 @@ namespace fs24bot3.Commands
         {
             Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
             var cmds = Service.GetAllCommands();
-            string commandsOutput;
+            string commandsOutput = File.ReadAllText("template.html"); ;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
             var customCommands = Context.Connection.Table<SQL.CustomUserCommands>().ToList();
-            commandsOutput = string.Join('\n', Service.GetAllCommands().Select(x => $"<p style=\"font-family: 'sans-serif';\"><strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><pre>{x.Description}</pre><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"))
+            string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"))
                 + "<h3>Магазин:</h3>" +
-                string.Join("\n", shop.Select(x => $"<p style=\"font-family: 'sans-serif';\">[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
+                string.Join("\n", shop.Select(x => $"<p>[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
                 "<h3>Кастом команды:</h3>" +
                 string.Join("\n", customCommands.Select(x => $"<p>{x.Command}</p>"));
+            commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
 
             string link = await http.UploadToTrashbin(commandsOutput);
             Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");

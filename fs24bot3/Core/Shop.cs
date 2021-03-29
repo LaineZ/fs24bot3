@@ -61,14 +61,14 @@ namespace fs24bot3
                 {
                     Name = item.Name
                 };
-                Log.Verbose("Inserting: {0}", item.Name);
                 try
                 {
                     connect.Insert(sqlItem);
+                    Log.Verbose("Inserted: {0}", item.Name);
                 }
                 catch (SQLiteException)
                 {
-                    Log.Verbose("Item aready added: {0}", item.Name);
+                    continue;
                 }
                 catch (Exception e)
                 {

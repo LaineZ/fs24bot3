@@ -30,12 +30,12 @@ namespace fs24bot3.Commands
                 "том", "нельзя", "такой", "более", "всегда", "конечно", "всю" };
 
             int messageCount = Context.Messages.Count;
-            string mostActive = Context.Messages.GroupBy(msg => msg.From).OrderByDescending(grp => grp.Count())
-                        .Select(grp => grp.Key).First();
+            string mostActives = string.Join(" ", Context.Messages.GroupBy(msg => msg.From).OrderByDescending(grp => grp.Count())
+                        .Select(grp => grp.Key).Take(2));
             string concatedMessage = string.Join("\n", Context.Messages.Select(x => x.Message));
             string[] words = concatedMessage.Split(" ");
-            string mostUsedword = words.Where(word => word.Length > 2 && !stopwords.Any(s => word.Equals(s))).GroupBy(word => word).OrderByDescending(grp => grp.Count()).Select(grp => grp.Key).FirstOrDefault() ?? "не знаю";
-            Context.SendMessage(Context.Channel, $"Статистика за текущий час: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самый активный: {mostActive}, Возможная тема: {mostUsedword}");
+            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 2 && !stopwords.Any(s => word.Equals(s))).GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(3).Select(grp => grp.Key));
+            Context.SendMessage(Context.Channel, $"Статистика за текущий час: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самый активные: {mostActives}, Возможная темы: {mostUsedwords}");
         }
 
         [Command("me")]
