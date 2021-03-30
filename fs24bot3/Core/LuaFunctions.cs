@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Models;
+using NetIRC;
 using NetIRC.Messages;
 using Serilog;
 using SQLite;
@@ -13,14 +14,12 @@ namespace fs24bot3.Core
     {
         private readonly SQLiteConnection Connection;
         private string Caller { get; set; }
-        private List<PrivMsgMessage> MessageBus { get; set; }
         private string Command { get; set; }
 
-        public LuaFunctions(SQLiteConnection connection, string caller, string commandname, List<PrivMsgMessage> messageBus)
+        public LuaFunctions(SQLiteConnection connection, string caller, string commandname)
         {
             Connection = connection;
             Caller = caller;
-            MessageBus = messageBus;
             Command = commandname;
         }
 
@@ -82,9 +81,6 @@ namespace fs24bot3.Core
             }
         }
 
-        public PrivMsgMessage[] GetMessageBus()
-        {
-            return MessageBus.ToArray();
-        }
+        // TODO: back GetMessageBus function
     }
 }

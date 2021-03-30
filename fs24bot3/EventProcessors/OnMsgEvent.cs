@@ -7,31 +7,33 @@ namespace fs24bot3.EventProcessors
 {
     public class OnMsgEvent
     {
-        private readonly IRCMessageEventArgs<PrivMsgMessage> Event;
         private readonly Client Client;
         private readonly SQLite.SQLiteConnection Connection;
         private User User;
+        private string Target;
+        private string Message;
         private readonly Random Rand = new Random();
 
-        public OnMsgEvent(Client client, IRCMessageEventArgs<PrivMsgMessage> ev, SQLite.SQLiteConnection connect)
+        public OnMsgEvent(Client client, string nick, string target, string message, SQLite.SQLiteConnection connect)
         {
-            Event = ev;
             Client = client;
             Connection = connect;
-            User = new User(Event.IRCMessage.From, Connection);
+            Message = message;
+            Target = target;
+            User = new User(nick, Connection);
         }
 
         public void LevelInscrease()
         {
             User.CreateAccountIfNotExist();
             User.SetLastMessage();
-            bool newLevel = User.IncreaseXp(Event.IRCMessage.Message.Length * new Random().Next(1, 3) + 1);
+            bool newLevel = User.IncreaseXp(Message.Length * new Random().Next(1, 3) + 1);
             if (newLevel)
             {
                 var random = new Random();
                 int index = random.Next(Shop.ShopItems.Count);
                 User.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                Client.SendAsync(new PrivMsgMessage(Event.IRCMessage.To, Event.IRCMessage.From + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
+                Client.SendAsync(new PrivMsgMessage(Target, User.Username + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
             }
         }
 
@@ -39,7 +41,7 @@ namespace fs24bot3.EventProcessors
         {
             if (Rand.Next(0, 10) == 1 && User.RemItemFromInv("wall", 1))
             {
-                Log.Information("Breaking wall for {0}", Event.IRCMessage.From);
+                Log.Information("Breaking wall for {0}", User.Username);
             }
         }
 

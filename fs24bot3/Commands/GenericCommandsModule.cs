@@ -102,7 +102,7 @@ namespace fs24bot3.Commands
             }
 
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
-            var user = new User(Context.Message.From, Context.Connection);
+            var user = new User(Context.Sender, Context.Connection);
             user.AddRemind(ts, message);
             Context.SendMessage(Context.Channel, $"{message} через ({time})!");
         }
@@ -113,7 +113,7 @@ namespace fs24bot3.Commands
         {
             if (string.IsNullOrEmpty(username))
             {
-                username = Context.Message.From;
+                username = Context.Sender;
             }
             var reminds = Context.Connection.Table<SQL.Reminds>().Where(x => x.Nick == username).Take(5);
 
@@ -134,7 +134,7 @@ namespace fs24bot3.Commands
         [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
         public async void Songame([Remainder] string translated = "")
         {
-            var user = new User(Context.Message.From, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.Connection, Context);
             int timeout = 10;
 
             if (Shop.SongameTries <= 0)
@@ -261,7 +261,7 @@ namespace fs24bot3.Commands
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
         public void AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
         {
-            var user = new User(Context.Message.From, Context.Connection);
+            var user = new User(Context.Sender, Context.Connection);
 
             switch (action)
             {
@@ -273,7 +273,7 @@ namespace fs24bot3.Commands
                             TagName = tagname,
                             Color = ircolor.ToString(),
                             TagCount = 0,
-                            Username = Context.Message.From
+                            Username = Context.Sender
                         };
 
                         Context.Connection.Insert(tag);
@@ -287,14 +287,14 @@ namespace fs24bot3.Commands
                     break;
                 case CommandToggles.CommandEdit.Delete:
                     var tagDel = new Core.TagsUtils(tagname, Context.Connection);
-                    if (tagDel.GetTagByName().Username == Context.Message.From)
+                    if (tagDel.GetTagByName().Username == Context.Sender)
                     {
                         Context.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);
                         Context.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
                     }
                     else
                     {
-                        Context.SendMessage(Context.Channel, IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Message.From}");
+                        Context.SendMessage(Context.Channel, IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Sender}");
                     }
                     break;
             }

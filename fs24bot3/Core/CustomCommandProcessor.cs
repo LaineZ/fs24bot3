@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Models;
+using NetIRC;
 using NetIRC.Messages;
 using NLua;
 using Serilog;
@@ -14,11 +15,11 @@ namespace fs24bot3.Core
 {
     public class CustomCommandProcessor
     {
-        private NetIRC.Client Client { get; }
+        private Client Client { get; }
         private SQLite.SQLiteConnection Connect { get; }
-        private List<PrivMsgMessage> MessageBus { get; }
+        private List<ParsedIRCMessage> MessageBus { get; }
 
-        public CustomCommandProcessor(NetIRC.Client client, SQLite.SQLiteConnection connect, List<PrivMsgMessage> messageBus)
+        public CustomCommandProcessor(Client client, SQLite.SQLiteConnection connect, List<ParsedIRCMessage> messageBus)
         {
             Client = client;
             Connect = connect;
@@ -26,11 +27,11 @@ namespace fs24bot3.Core
             Log.Information("Custom command processor enabled!");
         }
 
-        public async Task<bool> ProcessCmd(PrivMsgMessage message)
+        public async Task<bool> ProcessCmd(string senderNick, string channel, string message)
         {
-            if (message.Message.StartsWith("@"))
+            if (message.StartsWith("@"))
             {
-                var argsArray = message.Message.Split(" ").ToList();
+                var argsArray = message.Split(" ").ToList();
                 string cmdname = argsArray[0];
                 //Log.Verbose("Issused command: {0}", cmdname);
                 var cmd = Connect.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == cmdname);
@@ -54,7 +55,7 @@ namespace fs24bot3.Core
                         {
                             if (result > outputs.Length - 1 || result < 0)
                             {
-                                await Client.SendAsync(new PrivMsgMessage(message.To, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
+                                await Client.SendAsync(new PrivMsgMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
                                 index = random.Next(outputs.Length - 1);
                             }
                             else
@@ -74,11 +75,11 @@ namespace fs24bot3.Core
 
                         StringBuilder argsFinal = new StringBuilder(outputs[index]);
                         argsFinal.Replace("#USERINPUT", argsString);
-                        argsFinal.Replace("#USERNAME", message.From);
+                        argsFinal.Replace("#USERNAME", senderNick);
                         argsFinal.Replace("#RNDNICK", nick);
                         argsFinal.Replace("#RNG", random.Next(int.MinValue, int.MaxValue).ToString());
 
-                        await Client.SendAsync(new PrivMsgMessage(message.To, argsFinal.ToString()));
+                        await Client.SendAsync(new PrivMsgMessage(channel, argsFinal.ToString()));
                     }
                     else
                     {
@@ -106,7 +107,7 @@ namespace fs24bot3.Core
                         lua["CMD_NAME"] = cmd.Command;
                         lua["CMD_OWNER"] = cmd.Nick;
                         lua["CMD_ARGS"] = string.Join(" ", argsArray);
-                        LuaFunctions luaFunctions = new LuaFunctions(Connect, message.From, cmd.Command, MessageBus);
+                        LuaFunctions luaFunctions = new LuaFunctions(Connect, senderNick, cmd.Command);
                         lua["Cmd"] = luaFunctions;
 
                         Thread thread = new Thread(async () =>
@@ -122,13 +123,13 @@ namespace fs24bot3.Core
                                     {
                                         if (!string.IsNullOrWhiteSpace(outputstr))
                                         {
-                                            await Client.SendAsync(new PrivMsgMessage(message.To, outputstr[..Math.Min(350, outputstr.Length)]));
+                                            await Client.SendAsync(new PrivMsgMessage(channel, outputstr[..Math.Min(350, outputstr.Length)]));
                                         }
                                         count++;
                                         if (count > 5)
                                         {
                                             string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                                            await Client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
+                                            await Client.SendAsync(new PrivMsgMessage(channel, senderNick + ": Полный вывод здесь: " + link));
                                             break;
                                         }
                                     }
@@ -136,12 +137,12 @@ namespace fs24bot3.Core
                                 else
                                 {
                                     string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                                    await Client.SendAsync(new PrivMsgMessage(message.To, message.From + ": Полный вывод здесь: " + link));
+                                    await Client.SendAsync(new PrivMsgMessage(channel, senderNick + ": Полный вывод здесь: " + link));
                                 }
                             }
                             catch (Exception e)
                             {
-                                await Client.SendAsync(new PrivMsgMessage(message.To, $"Ошибка в Lua: {e.Message}"));
+                                await Client.SendAsync(new PrivMsgMessage(channel, $"Ошибка в Lua: {e.Message}"));
                                 lua.Close();
                                 lua.Dispose();
                             }

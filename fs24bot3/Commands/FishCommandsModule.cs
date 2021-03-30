@@ -17,7 +17,7 @@ namespace fs24bot3.Commands
             if (rodname.Any())
             {
                 var query = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
-                var user = new User(Context.Message.From, Context.Connection, Context);
+                var user = new User(Context.Sender, Context.Connection, Context);
 
                 if (query.Any())
                 {
@@ -57,7 +57,7 @@ namespace fs24bot3.Commands
         [Description("Продать свою удочку")]
         public void SellRod()
         {
-            var user = new User(Context.Message.From, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.Connection, Context);
 
             (FishingError.RodErrors, SQL.UserFishingRods) rodState = user.DelRod();
 
@@ -85,7 +85,7 @@ namespace fs24bot3.Commands
         [Remarks("RLF - требуемый размер лески F - количество рыбы")]
         public async void SetNest(string nestname = "")
         {
-            var user = new User(Context.Message.From, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.Connection, Context);
             string rodname = user.GetRod().RodName;
             var query = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).FirstOrDefault();
 
@@ -137,7 +137,7 @@ namespace fs24bot3.Commands
         [Description("Рыбачить!")]
         public void Fish()
         {
-            var user = new User(Context.Message.From, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.Connection, Context);
             var userRod = user.GetRod();
 
             if (userRod == null)
@@ -197,7 +197,7 @@ namespace fs24bot3.Commands
                 Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Рыба сорвалась!");
             }
 
-            Context.Connection.Execute("UPDATE UserFishingRods SET RodDurabillity = RodDurabillity - 1 WHERE Username = ?", Context.Message.From);
+            Context.Connection.Execute("UPDATE UserFishingRods SET RodDurabillity = RodDurabillity - 1 WHERE Username = ?", Context.Sender);
         }
 
         [Command("rodinfo")]
@@ -206,7 +206,7 @@ namespace fs24bot3.Commands
         {
             if (!rodname.Any())
             {
-                User user = new User(Context.Message.From, Context.Connection);
+                User user = new User(Context.Sender, Context.Connection);
 
                 var rod = user.GetRod();
 

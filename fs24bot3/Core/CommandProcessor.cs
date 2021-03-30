@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Models;
+using NetIRC;
 using NetIRC.Messages;
 using Qmmands;
 using SQLite;
@@ -11,46 +12,49 @@ namespace fs24bot3
     {
         public sealed class CustomCommandContext : CommandContext
         {
-            public PrivMsgMessage Message { get; }
-            public NetIRC.Client Client { get; }
+            public Client Client { get; }
 
             public string Channel;
+            public string Sender;
             public SQLiteConnection Connection;
             readonly HttpTools http = new HttpTools();
-            public List<PrivMsgMessage> Messages = new List<PrivMsgMessage>();
+            public List<ParsedIRCMessage> Messages = new List<ParsedIRCMessage>();
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(PrivMsgMessage message, NetIRC.Client client, SQLiteConnection connection, List<PrivMsgMessage> msgs = null, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(ParsedIRCMessage message, Client client, SQLiteConnection connection, List<ParsedIRCMessage> msgs = null, IServiceProvider provider = null) : base(provider)
             {
-                Message = message;
                 Client = client;
                 Connection = connection;
                 Messages = msgs;
-
-                if (Message.To == Configuration.name)
-                {
-                    Channel = Message.From;
-                }
-                else
-                {
-                    Channel = Message.To;
-                }
-
+                Channel = message.Parameters[0];
+                Sender = message.Prefix.From;
             }
 
             public async void SendMessage(string channel, string message)
             {
-                if (message.Length > 250)
+                if (!message.Contains("\n"))
                 {
-                    foreach (var slice in Core.MessageUtils.SplitMessage(message, 450))
+                    if (message.Length > 250)
                     {
-                        await Client.SendAsync(new PrivMsgMessage(channel, slice));
+                        foreach (var slice in Core.MessageUtils.SplitMessage(message, 450))
+                        {
+                            await Client.SendAsync(new PrivMsgMessage(channel, slice));
+                        }
+                    }
+                    else
+                    {
+                        await Client.SendAsync(new PrivMsgMessage(channel, message));
                     }
                 }
                 else
                 {
-                    await Client.SendAsync(new PrivMsgMessage(channel, message));
+                    SendMultiLineMessage(message);
                 }
+            }
+
+            public void SendMessage(string message)
+            {
+                SendMessage(Channel, message);
             }
 
 
@@ -71,13 +75,13 @@ namespace fs24bot3
                 {
                     if (!string.IsNullOrWhiteSpace(outputstr))
                     {
-                        await Client.SendAsync(new PrivMsgMessage(this.Channel, this.Message.From + ": " + outputstr));
+                        await Client.SendAsync(new PrivMsgMessage(Channel, Sender + ": " + outputstr));
                     }
                     count++;
                     if (count > 4)
                     {
                         string link = await http.UploadToTrashbin(content, "addplain");
-                        await Client.SendAsync(new PrivMsgMessage(this.Channel, this.Message.From + ": Полный вывод здесь: " + link));
+                        await Client.SendAsync(new PrivMsgMessage(Channel, Sender + ": Полный вывод здесь: " + link));
                         break;
                     }
                 }

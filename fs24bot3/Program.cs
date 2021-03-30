@@ -17,8 +17,10 @@ namespace fs24bot3
     class Program
     {
         private static readonly SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
-        private static readonly List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
+        private static readonly List<ParsedIRCMessage> MessageBus = new List<ParsedIRCMessage>();
         private static Core.CustomCommandProcessor CustomCommandProcessor;
+
+        private static Client client;
 
         static async private void RandomLyics(Client client)
         {
@@ -63,11 +65,11 @@ namespace fs24bot3
             _service.AddModule<CustomCommandsModule>();
             _service.AddModule<StatCommandModule>();
 
-            using var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
+            client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
             client.OnIRCMessageParsed += Client_OnIRCMessageParsed;
-            client.RegistrationCompleted += EventHub_RegistrationCompleted;
+            client.RegistrationCompleted += Client_OnRegister;
 
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
 
@@ -120,16 +122,19 @@ namespace fs24bot3
         {
             if (message.IRCCommand == IRCCommand.PRIVMSG)
             {
-                var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
+                string nick = message.Prefix.From;
+                string target = message.Parameters[0];
+
+                var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Count();
 
                 if (queryIfExt <= 0)
                 {
-                    MessageBus.Add(e.IRCMessage);
+                    MessageBus.Add(message);
                     new Thread(() =>
                     {
-                        if (e.IRCMessage.To != Configuration.name)
+                        if (target != Configuration.name)
                         {
-                            EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, e, Connection);
+                            EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, nick, target, message.Trailing.Trim(), Connection);
                             events.DestroyWallRandomly();
                             events.LevelInscrease();
                             events.GiveWaterFromPumps();
@@ -146,10 +151,10 @@ namespace fs24bot3
                 }
 
 
-                if (!CommandUtilities.HasPrefix(message.TrimEnd(), '@', out string output))
+                if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd(), '@', out string output))
                     return;
 
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, Connection, MessageBus));
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(message, client, Connection, MessageBus));
                 switch (result)
                 {
                     case ChecksFailedResult err:
@@ -159,29 +164,29 @@ namespace fs24bot3
                         {
                             errStr.Append(error.Reason);
                         }
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Требования не выполнены: {errStr}"));
+                        await client.SendAsync(new PrivMsgMessage(target, $"Требования не выполнены: {errStr}"));
                         break;
                     case TypeParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
+                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
                         break;
                     case ArgumentParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка парсера: `{err.Reason}`"));
+                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка парсера: `{err.Reason}`"));
                         break;
                     case OverloadsFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
+                        await client.SendAsync(new PrivMsgMessage(target, "Для данной команды нету перегрузки!"));
                         break;
                     case CommandNotFoundResult err:
-                        bool customSuccess = await CustomCommandProcessor.ProcessCmd(e.IRCMessage);
+                        bool customSuccess = await CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
                         break;
                     case ExecutionFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
-                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
+                        await client.SendAsync(new PrivMsgMessage(target, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
+                        await client.SendAsync(new PrivMsgMessage(target, err.Exception.StackTrace));
                         break;
                 }
             }
         }
 
-        private async static void Client_OnWelcome(Client client, IRCMessageEventArgs<RplWelcomeMessage> e)
+        private async static void Client_OnRegister(object sender, EventArgs _)
         {
             await client.SendRaw("JOIN " + Configuration.channel);
             await client.SendAsync(new PrivMsgMessage("NickServ", "identify " + Configuration.nickservPass));

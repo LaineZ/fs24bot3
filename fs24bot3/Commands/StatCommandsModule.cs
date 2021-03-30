@@ -30,9 +30,9 @@ namespace fs24bot3.Commands
                 "том", "нельзя", "такой", "более", "всегда", "конечно", "всю" };
 
             int messageCount = Context.Messages.Count;
-            string mostActives = string.Join(" ", Context.Messages.GroupBy(msg => msg.From).OrderByDescending(grp => grp.Count())
+            string mostActives = string.Join(" ", Context.Messages.GroupBy(msg => msg.Parameters[1]).OrderByDescending(grp => grp.Count())
                         .Select(grp => grp.Key).Take(2));
-            string concatedMessage = string.Join("\n", Context.Messages.Select(x => x.Message));
+            string concatedMessage = string.Join("\n", Context.Messages.Select(x => x.Trailing));
             string[] words = concatedMessage.Split(" ");
             string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 2 && !stopwords.Any(s => word.Equals(s))).GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(3).Select(grp => grp.Key));
             Context.SendMessage(Context.Channel, $"Статистика за текущий час: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самый активные: {mostActives}, Возможная темы: {mostUsedwords}");
@@ -57,7 +57,7 @@ namespace fs24bot3.Commands
         [Description("Статы пользователя или себя")]
         public void Userstat(string nick = null)
         {
-            string userNick = nick ?? Context.Message.From;
+            string userNick = nick ?? Context.Sender;
             User usr = new User(userNick, Context.Connection);
 
             var data = usr.GetUserInfo();

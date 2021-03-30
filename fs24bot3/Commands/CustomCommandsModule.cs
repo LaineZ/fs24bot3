@@ -18,7 +18,7 @@ namespace fs24bot3.Commands
         [Remarks("[IsLua = false] Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел\n[isLua = true] - Lua движок команд")]
         public void CustomCmdRegister(string command, bool isLua, [Remainder] string output)
         {
-            User usr = new User(Context.Message.From, Context.Connection, Context);
+            User usr = new User(Context.Sender, Context.Connection, Context);
             bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
 
             if (!commandIntenral)
@@ -28,7 +28,7 @@ namespace fs24bot3.Commands
                 {
                     Command = "@" + command,
                     Output = output,
-                    Nick = Context.Message.From,
+                    Nick = Context.Sender,
                     IsLua = isLuaInt
                 };
                 try
@@ -81,10 +81,10 @@ namespace fs24bot3.Commands
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            User usr = new User(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Sender, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat && query[0].IsLua == 0)
             {
-                if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
+                if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
                 {
                     switch (action)
                     {
@@ -125,7 +125,7 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
                 }
             }
             else
@@ -189,17 +189,17 @@ namespace fs24bot3.Commands
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            User usr = new User(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Sender, Context.Connection);
             if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
-                if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
+                if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
                 {
                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
                     Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
                 }
             }
             else
@@ -214,17 +214,17 @@ namespace fs24bot3.Commands
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            User usr = new User(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Sender, Context.Connection);
             if (query.Any() && query[0].IsLua == 1 && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
-                if (query[0].Nick == Context.Message.From || usr.GetUserInfo().Admin == 2)
+                if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
                 {
                     Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", newstr, commandConcat);
                     Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Message.From}");
+                    Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
                 }
             }
             else
@@ -238,7 +238,7 @@ namespace fs24bot3.Commands
         public void CustomCmdRem(string command)
         {
             var commandConcat = "@" + command;
-            User usr = new User(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Sender, Context.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
                 var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
@@ -250,7 +250,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Message.From)).Delete();
+                var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Sender)).Delete();
                 if (query > 0)
                 {
                     Context.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(commandConcat)).Delete();
@@ -282,7 +282,7 @@ namespace fs24bot3.Commands
                 track = data[1].Replace(" ", "-");
             }
 
-            User usr = new User(Context.Message.From, Context.Connection);
+            User usr = new User(Context.Sender, Context.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
                 var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track)).Delete();
@@ -297,7 +297,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track) && v.AddedBy.Equals(Context.Message.From)).Delete();
+                var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track) && v.AddedBy.Equals(Context.Sender)).Delete();
                 if (query > 0)
                 {
                     Context.SendMessage(Context.Channel, "Песня удалена!");
