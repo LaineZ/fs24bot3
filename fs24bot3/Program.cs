@@ -17,10 +17,10 @@ namespace fs24bot3
     class Program
     {
         private static readonly SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
-        private static List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
+        private static readonly List<PrivMsgMessage> MessageBus = new List<PrivMsgMessage>();
         private static Core.CustomCommandProcessor CustomCommandProcessor;
 
-        static async void RandomLyics(Client client)
+        static async private void RandomLyics(Client client)
         {
             var query = Connection.Table<SQL.LyricsCache>().ToList();
 
@@ -66,8 +66,8 @@ namespace fs24bot3
             using var client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
-            client.EventHub.PrivMsg += EventHub_PrivMsg;
-            client.EventHub.RplWelcome += Client_OnWelcome;
+            client.OnIRCMessageParsed += Client_OnIRCMessageParsed;
+            client.RegistrationCompleted += EventHub_RegistrationCompleted;
 
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
 
@@ -116,74 +116,76 @@ namespace fs24bot3
             }
         }
 
+        private async static void Client_OnIRCMessageParsed(Client client, ParsedIRCMessage message)
+        {
+            if (message.IRCCommand == IRCCommand.PRIVMSG)
+            {
+                var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
+
+                if (queryIfExt <= 0)
+                {
+                    MessageBus.Add(e.IRCMessage);
+                    new Thread(() =>
+                    {
+                        if (e.IRCMessage.To != Configuration.name)
+                        {
+                            EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, e, Connection);
+                            events.DestroyWallRandomly();
+                            events.LevelInscrease();
+                            events.GiveWaterFromPumps();
+                        }
+                        else
+                        {
+                            Log.Verbose("Message was sent in PM, Level increasing IGNORED!!!");
+                        }
+                    }).Start();
+                }
+                else
+                {
+                    Log.Verbose("User tried send message but it ignored!");
+                }
+
+
+                if (!CommandUtilities.HasPrefix(message.TrimEnd(), '@', out string output))
+                    return;
+
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, Connection, MessageBus));
+                switch (result)
+                {
+                    case ChecksFailedResult err:
+                        var errStr = new StringBuilder();
+
+                        foreach (var (check, error) in err.FailedChecks)
+                        {
+                            errStr.Append(error.Reason);
+                        }
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Требования не выполнены: {errStr}"));
+                        break;
+                    case TypeParseFailedResult err:
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
+                        break;
+                    case ArgumentParseFailedResult err:
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка парсера: `{err.Reason}`"));
+                        break;
+                    case OverloadsFailedResult err:
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
+                        break;
+                    case CommandNotFoundResult err:
+                        bool customSuccess = await CustomCommandProcessor.ProcessCmd(e.IRCMessage);
+                        break;
+                    case ExecutionFailedResult err:
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
+                        await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
+                        break;
+                }
+            }
+        }
+
         private async static void Client_OnWelcome(Client client, IRCMessageEventArgs<RplWelcomeMessage> e)
         {
             await client.SendRaw("JOIN " + Configuration.channel);
             await client.SendAsync(new PrivMsgMessage("NickServ", "identify " + Configuration.nickservPass));
             RandomLyics(client);
-        }
-
-        private async static void EventHub_PrivMsg(Client client, IRCMessageEventArgs<PrivMsgMessage> e)
-        {
-            var query = Connection.Table<SQL.UserStats>().Where(v => v.Nick.Equals(e.IRCMessage.From));
-            var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(e.IRCMessage.From)).Count();
-
-            if (queryIfExt <= 0)
-            {
-                MessageBus.Add(e.IRCMessage);
-                new Thread(() =>
-                {
-                    if (e.IRCMessage.To != Configuration.name)
-                    {
-                        EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, e, Connection);
-                        events.DestroyWallRandomly();
-                        events.LevelInscrease();
-                        events.GiveWaterFromPumps();
-                    }
-                    else
-                    {
-                        Log.Verbose("Message was sent in PM, Level increasing IGNORED!!!");
-                    }
-                }).Start();
-            }
-            else
-            {
-                Log.Verbose("User tried send message but it ignored!");
-            }
-
-
-            if (!CommandUtilities.HasPrefix(e.IRCMessage.Message.TrimEnd(), '@', out string output))
-                return;
-
-            var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(e.IRCMessage, client, Connection, MessageBus));
-            switch (result)
-            {
-                case ChecksFailedResult err:
-                    var errStr = new StringBuilder();
-
-                    foreach (var (check, error) in err.FailedChecks)
-                    {
-                        errStr.Append(error.Reason);
-                    }
-                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Требования не выполнены: {errStr}"));
-                    break;
-                case TypeParseFailedResult err:
-                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
-                    break;
-                case ArgumentParseFailedResult err:
-                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"Ошибка парсера: `{err.Reason}`"));
-                    break;
-                case OverloadsFailedResult err:
-                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, "Для данной команды нету перегрузки!"));
-                    break;
-                case CommandNotFoundResult err:
-                    bool customSuccess = await CustomCommandProcessor.ProcessCmd(e.IRCMessage);
-                    break;
-                case ExecutionFailedResult err:
-                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
-                    await client.SendAsync(new PrivMsgMessage(e.IRCMessage.To, err.Exception.StackTrace));
-                    break;
-            }
         }
 
         private static async void Client_OnRawDataReceived(Client client, string rawData)

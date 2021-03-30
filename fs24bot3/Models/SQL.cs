@@ -134,7 +134,7 @@ namespace fs24bot3.Models
             public string Name { get; set; }
             public string Symbol { get; set; }
         }
-        
+
         internal class FishingNests
         {
             [PrimaryKey]
