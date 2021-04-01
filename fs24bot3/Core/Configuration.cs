@@ -94,7 +94,7 @@ namespace fs24bot3
             }
             else
             {
-                Log.Information("Loading configuration from {0}", System.Reflection.Assembly.GetExecutingAssembly().Location);
+                Log.Information("Loading configuration from {0}", Directory.GetCurrentDirectory());
                 string configFile = File.ReadAllText("settings.toml");
                 var config = Toml.Parse(configFile);
                 var table = config.ToModel();

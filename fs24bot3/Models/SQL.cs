@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using System;
 
 namespace fs24bot3.Models
 {
@@ -23,6 +24,11 @@ namespace fs24bot3.Models
         {
             [PrimaryKey]
             public string Name { get; set; }
+
+            public static explicit operator Item(ItemInventory.Shop v)
+            {
+                return new Item() { Name = v.Name };
+            }
         }
 
 

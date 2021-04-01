@@ -57,13 +57,9 @@ namespace fs24bot3
 
             foreach (var item in ShopItems)
             {
-                var sqlItem = new Models.SQL.Item()
-                {
-                    Name = item.Name
-                };
                 try
                 {
-                    connect.Insert(sqlItem);
+                    connect.Insert((Models.SQL.Item)item);
                     Log.Verbose("Inserted: {0}", item.Name);
                 }
                 catch (SQLiteException)
@@ -76,21 +72,18 @@ namespace fs24bot3
                 }
             }
             Rand = new Random();
-            // 🎣 add 2 new fishing rod
+            // 🎣 add new fishing rod
             try
             {
-                for (int i = 0; i < 2; i++)
-                {
-                    connect.Insert(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(2, 5)), Price = Rand.Next(1000, 5000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 100) });
-                    connect.Insert(new Models.SQL.FishingNests() { Level = Rand.Next(1, 3), FishCount = Rand.Next(1, 20), FishingLineRequired = Rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(Rand.Next(2, 4)) });
-                }
+                connect.Insert(new Models.SQL.FishingRods() { RodName = Core.MessageUtils.GenerateName(Rand.Next(2, 5)), Price = Rand.Next(1000, 5000), FishingLine = Rand.Next(1, 15), HookSize = Rand.Next(1, 5), RodDurabillity = Rand.Next(10, 100) });
+                connect.Insert(new Models.SQL.FishingNests() { Level = Rand.Next(1, 3), FishCount = Rand.Next(1, 20), FishingLineRequired = Rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(Rand.Next(2, 4)) });
             }
             catch (SQLiteException)
             {
                 Log.Verbose("Fishing rod aready added!");
             }
 
-            Log.Information("Done loading preparing shop!");
+            Log.Information("Shop loading is done!");
         }
 
         public static void UpdateShop()

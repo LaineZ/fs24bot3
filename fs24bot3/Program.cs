@@ -49,6 +49,8 @@ namespace fs24bot3
             .MinimumLevel.ControlledBy(Configuration.LoggerSw)
             .CreateLogger();
 
+            Log.Information("fs24_bot 3 by 140bpmdubstep");
+
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 Console.OutputEncoding = Encoding.Unicode;
@@ -99,7 +101,7 @@ namespace fs24bot3
 
             CustomCommandProcessor = new Core.CustomCommandProcessor(client, Connection, MessageBus);
 
-            Log.Information("Running in loop!");
+            Log.Information("First init is ok!");
             while (true)
             {
                 Thread.Sleep(Shop.Tickrate);
@@ -184,6 +186,21 @@ namespace fs24bot3
                         break;
                 }
             }
+            if (message.IRCCommand == IRCCommand.ERROR)
+            {
+                Log.Error("Connection closed due to error... Exiting");
+                Environment.Exit(1);
+            }
+
+            if (message.IRCCommand == IRCCommand.KICK)
+            {
+                if (message.Parameters[1] == Configuration.name)
+                {
+                    Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
+                    await client.SendRaw("JOIN " + Configuration.channel);
+                    await client.SendAsync(new PrivMsgMessage(Configuration.channel, "За что?"));
+                }
+            }
         }
 
         private async static void Client_OnRegister(object sender, EventArgs _)
@@ -193,27 +210,9 @@ namespace fs24bot3
             RandomLyics(client);
         }
 
-        private static async void Client_OnRawDataReceived(Client client, string rawData)
+        private static void Client_OnRawDataReceived(Client client, string rawData)
         {
             Log.Information(rawData);
-            var ircMessage = new ParsedIRCMessage(rawData);
-            switch (ircMessage.Command)
-            {
-                case "KICK":
-                    if (ircMessage.Parameters[1] == Configuration.name)
-                    {
-                        Log.Warning("I've got kick from {0} rejoining...", ircMessage.Prefix);
-                        await client.SendRaw("JOIN " + Configuration.channel);
-                        await client.SendAsync(new PrivMsgMessage(Configuration.channel, "За что?"));
-                    }
-                    break;
-                case "ERROR":
-                    Log.Error("Connection closed due to error... Exiting");
-                    Environment.Exit(1);
-                    break;
-                default:
-                    break;
-            }
         }
 
         private static readonly CommandService _service = new CommandService();
