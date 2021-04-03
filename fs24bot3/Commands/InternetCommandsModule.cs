@@ -265,7 +265,7 @@ namespace fs24bot3.Commands
             }
             catch (Exception e)
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( {e.Message}");
+                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( Возможно вы неправильно ввели код языка. Используйте @helpcmd tr чтобы узнать как правильно пользоваться.");
             }
         }
 
