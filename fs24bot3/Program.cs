@@ -161,7 +161,7 @@ namespace fs24bot3
                 if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd(), '@', out string output))
                     return;
 
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, client, Connection, MessageBus));
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, client, Connection, MessageBus));
                 switch (result)
                 {
                     case ChecksFailedResult err:
