@@ -21,13 +21,12 @@ namespace fs24bot3
             public List<ParsedIRCMessage> Messages = new List<ParsedIRCMessage>();
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(ParsedIRCMessage message, Client client, SQLiteConnection connection, List<ParsedIRCMessage> msgs = null, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(string target, Client client, SQLiteConnection connection, List<ParsedIRCMessage> msgs = null, IServiceProvider provider = null) : base(provider)
             {
                 Client = client;
                 Connection = connection;
                 Messages = msgs;
-                Channel = message.Parameters[0];
-                Sender = message.Prefix.From;
+                Channel = target;
             }
 
             public async void SendMessage(string channel, string message)

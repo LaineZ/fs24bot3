@@ -127,6 +127,11 @@ namespace fs24bot3
                 string nick = message.Prefix.From;
                 string target = message.Parameters[0];
 
+                if (message.Parameters[0] == client.User.Nick)
+                {
+                    target = message.Prefix.From;
+                }
+
                 var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Count();
 
                 if (queryIfExt <= 0)
@@ -134,7 +139,7 @@ namespace fs24bot3
                     MessageBus.Add(message);
                     new Thread(() =>
                     {
-                        if (target != Configuration.name)
+                        if (target != client.User.Nick)
                         {
                             EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, nick, target, message.Trailing.Trim(), Connection);
                             events.DestroyWallRandomly();
@@ -156,7 +161,7 @@ namespace fs24bot3
                 if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd(), '@', out string output))
                     return;
 
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(message, client, Connection, MessageBus));
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, client, Connection, MessageBus));
                 switch (result)
                 {
                     case ChecksFailedResult err:
