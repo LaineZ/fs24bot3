@@ -193,8 +193,8 @@ namespace fs24bot3.Commands
             }
             else
             {
-                artist = data[0].Replace(" ", "-");
-                track = data[1].Replace(" ", "-");
+                artist = data[0];
+                track = data[1];
             }
 
             var response = await http.GetResponseAsync(rawurl);

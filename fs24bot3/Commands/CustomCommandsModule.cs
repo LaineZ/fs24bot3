@@ -268,8 +268,8 @@ namespace fs24bot3.Commands
         public void CustomLyrRem([Remainder] string song)
         {
             var data = song.Split(" - ");
-            string artist;
-            string track;
+            string artist = data[0];
+            string track = data[1];
 
             if (data.Length <= 1)
             {
@@ -278,8 +278,8 @@ namespace fs24bot3.Commands
             }
             else
             {
-                artist = data[0].Replace(" ", "-");
-                track = data[1].Replace(" ", "-");
+                artist = data[0];
+                track = data[1];
             }
 
             User usr = new User(Context.Sender, Context.Connection);

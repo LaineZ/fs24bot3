@@ -22,15 +22,15 @@ namespace fs24bot3.Commands
                 "без", "будто", "чего", "раз", "тоже", "себе", "под", "будет", "тогда", "кто", 
                 "этот", "это", "того", "потому", "этого", "какой", "совсем", "ним", "здесь", 
                 "этом", "один", "почти", "мой", "тем", "чтобы", "нее", "сейчас", "были", 
-                "куда", "зачем", "всех", "никогда", "можно", "при", 
-                "наконец", "два", "другой", "хоть", "после", 
+                "куда", "зачем", "всех", "никогда", "можно", "при",
+                "наконец", "два", "другой", "хоть", "после", "the", "then",
                 "над", "больше", "тот", "через", "эти", "нас", "про", 
                 "всего", "них", "какая", "много", "разве", "три", "эту", "моя", 
                 "впрочем", "хорошо", "свою", "этой", "перед", "иногда", "лучше", "чуть", 
                 "том", "нельзя", "такой", "более", "всегда", "конечно", "всю" };
 
             int messageCount = Context.Messages.Count;
-            string mostActives = string.Join(" ", Context.Messages.GroupBy(msg => msg.Parameters[1]).OrderByDescending(grp => grp.Count())
+            string mostActives = string.Join(" ", Context.Messages.GroupBy(msg => msg.Prefix.From).OrderByDescending(grp => grp.Count())
                         .Select(grp => grp.Key).Take(2));
             string concatedMessage = string.Join("\n", Context.Messages.Select(x => x.Trailing));
             string[] words = concatedMessage.Split(" ");
