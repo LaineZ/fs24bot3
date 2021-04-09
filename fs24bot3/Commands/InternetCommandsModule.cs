@@ -107,11 +107,11 @@ namespace fs24bot3.Commands
                 }
 
                 var translatedOutput = await Core.Transalator.Translate(rndWord, lang, "ru");
-                Context.SendMessage(Context.Channel, translatedOutput.text.ToString());
+                await Context.SendMessage(Context.Channel, translatedOutput.text.ToString());
             }
             catch (Exception e)
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( {e.Message}");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( {e.Message}");
             }
         }
 
@@ -140,17 +140,17 @@ namespace fs24bot3.Commands
 
                 if (jsonOutput.output != null)
                 {
-                    Context.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
+                    await Context.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
                     Context.SendMultiLineMessage(jsonOutput.output);
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+                    await Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
                 }
             }
             catch (HttpRequestException)
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не работает короче, блин........");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не работает короче, блин........");
             }
         }
 
@@ -168,12 +168,12 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
+                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
                 }
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
             }
         }
 
@@ -232,12 +232,12 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
+                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
                 }
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
             }
         }
 
@@ -261,11 +261,11 @@ namespace fs24bot3.Commands
             try
             {
                 var translatedOutput = await Core.Transalator.Translate(text, from, to);
-                Context.SendMessage(Context.Channel, $"{translatedOutput.text} ({from}-{translatedOutput.to}, bing.com/translator)");
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.text} ({from}-{translatedOutput.to}, bing.com/translator)");
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( Возможно вы неправильно ввели код языка. Используйте @helpcmd tr чтобы узнать как правильно пользоваться.");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( Возможно вы неправильно ввели код языка. Используйте @helpcmd tr чтобы узнать как правильно пользоваться.");
             }
         }
 
@@ -276,16 +276,7 @@ namespace fs24bot3.Commands
             var usr = new User(Context.Sender, Context.Connection, Context);
             if (usr.RemItemFromInv("beer", 1))
             {
-                string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
-                string translated = text;
-
-                foreach (var tr in translations)
-                {
-                    var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
-                    translated = translatorResponse.text;
-                }
-
-                Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
+                await Context.SendMessage(Context.Channel, Core.Transalator.TranslatePpc(text) + " (bing.com/translator, ппц)");
             }
         }
 
@@ -308,7 +299,7 @@ namespace fs24bot3.Commands
                     }
                 }
 
-                Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
+                await Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
             }
         }
 
@@ -325,7 +316,7 @@ namespace fs24bot3.Commands
 
                 if (splitted.Length > 35)
                 {
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Royal}У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
+                    await Context.SendMessage(Context.Channel, $"{IrcColors.Royal}У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
                 }
 
                 // Forech statement cannot be modified WHY???????
@@ -335,11 +326,11 @@ namespace fs24bot3.Commands
                     splitted[i] = tr.text;
                 }
 
-                Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + " (bing.com/translator, ппц lite edition) ");
+                await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + " (bing.com/translator, ппц lite edition) ");
             }
             catch (Exception)
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст....");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст....");
             }
         }
 
@@ -376,7 +367,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                Context.SendMessage(Context.Channel, "Instumental");
+                await Context.SendMessage(Context.Channel, "Instumental");
             }
         }
 
@@ -400,7 +391,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                Context.SendMessage(Context.Channel, "Instumental");
+                await Context.SendMessage(Context.Channel, "Instumental");
             }
         }
 
@@ -408,7 +399,7 @@ namespace fs24bot3.Commands
         public async void WikiHowRand()
         {
             var resp = await new HttpTools().GetResponseAsync("https://ru.wikihow.com/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:Randomizer");
-            Context.SendMessage(Context.Channel, resp.ResponseUri.ToString());
+            await Context.SendMessage(Context.Channel, resp.ResponseUri.ToString());
         }
 
         [Command("wh", "wikihow")]
@@ -427,7 +418,7 @@ namespace fs24bot3.Commands
                     Log.Verbose(node.InnerText);
                     string hrefValue = node.GetAttributeValue("href", string.Empty);
                     var title = node.SelectSingleNode("//div[@class=\"result\"]").SelectSingleNode("//div[@class=\"result_title\"]");
-                    Context.SendMessage(Context.Channel, $"{title.InnerText} // {hrefValue}");
+                    await Context.SendMessage(Context.Channel, $"{title.InnerText} // {hrefValue}");
                     break;
                 }
             }
@@ -441,7 +432,7 @@ namespace fs24bot3.Commands
             var output = await InPearlsGetter(category, page);
             if (output != null)
             {
-                Context.SendMessage(Context.Channel, output);
+                await Context.SendMessage(Context.Channel, output);
             }
         }
 
@@ -484,7 +475,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                Context.SendMessage(Context.Channel, "Instumental");
+                await Context.SendMessage(Context.Channel, "Instumental");
             }
         }
 
@@ -530,11 +521,11 @@ namespace fs24bot3.Commands
 
             if (output.Any())
             {
-                Context.SendMessage(Context.Channel, string.Join(", ", output));
+                await Context.SendMessage(Context.Channel, string.Join(", ", output));
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Red}{RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages)}");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Red}{RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages)}");
             }
         }
     }

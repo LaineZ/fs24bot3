@@ -34,7 +34,7 @@ namespace fs24bot3.Commands
         [Description("Список команд")]
         public async void Help()
         {
-            Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
+            await Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
             var cmds = Service.GetAllCommands();
             string commandsOutput = File.ReadAllText("template.html"); ;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
@@ -47,24 +47,24 @@ namespace fs24bot3.Commands
             commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
 
             string link = await http.UploadToTrashbin(commandsOutput);
-            Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
+            await Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
         }
 
         [Command("helpcmd")]
         [Description("Помощь по команде")]
-        public void HelpСmd(string command = "helpcmd")
+        public async void HelpСmd(string command = "helpcmd")
         {
             foreach (Command cmd in Service.GetAllCommands())
             {
                 if (cmd.Aliases.Contains(command))
                 {
-                    Context.SendMessage(Context.Channel, "@" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
+                    await Context.SendMessage(Context.Channel, "@" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                     if (cmd.Remarks != null)
                     {
                         Context.SendMultiLineMessage(IrcColors.Bold + cmd.Remarks);
                     }
 
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
+                    await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
                     break;
                 }
             }
@@ -72,7 +72,7 @@ namespace fs24bot3.Commands
 
         [Command("remind", "in")]
         [Description("Напоминание. time вводится в формате 1m;30s (1 минута и 30 секунд = 90 секунд)")]
-        public void Remind(string time = "1m", [Remainder] string message = "Remind")
+        public async void Remind(string time = "1m", [Remainder] string message = "Remind")
         {
             // sorry for this idk how to make more coolest code!!!!
             double totalSecs = 0;
@@ -104,12 +104,12 @@ namespace fs24bot3.Commands
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
             var user = new User(Context.Sender, Context.Connection);
             user.AddRemind(ts, message);
-            Context.SendMessage(Context.Channel, $"{message} через ({time})!");
+            await Context.SendMessage(Context.Channel, $"{message} через ({time})!");
         }
 
         [Command("reminds", "ins", "rems")]
         [Description("Список напоминаний")]
-        public void Reminds(string username = "")
+        public async void Reminds(string username = "")
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -126,7 +126,7 @@ namespace fs24bot3.Commands
                 DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                 dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToLocalTime();
 
-                Context.SendMessage(Context.Channel, $"Напоминание {username}: {remind.Message} в {dtDateTime}");
+                await Context.SendMessage(Context.Channel, $"Напоминание {username}: {remind.Message} в {dtDateTime}");
             }
         }
 
@@ -139,7 +139,7 @@ namespace fs24bot3.Commands
 
             if (Shop.SongameTries <= 0)
             {
-                Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
+                await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
                 Shop.SongameString = "";
                 Shop.SongameTries = 5;
                 user.RemItemFromInv("money", 1000);
@@ -179,7 +179,7 @@ namespace fs24bot3.Commands
 
             if (translated.Length == 0)
             {
-                Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {Shop.SongameString} попыток: {Shop.SongameTries}");
+                await Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {Shop.SongameString} попыток: {Shop.SongameTries}");
             }
             else
             {
@@ -193,26 +193,26 @@ namespace fs24bot3.Commands
                     {
                         int reward = 450 * Shop.SongameTries;
                         user.AddItemToInv("money", reward);
-                        Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
+                        await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
                         // reset the game
                         Shop.SongameString = "";
                     }
                     else
                     {
-                        Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {trOutFixed}");
+                        await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {trOutFixed}");
                         Shop.SongameTries--;
                     }
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
+                    await Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
                 }
             }
         }
 
         [Command("genname")]
         [Description("Генератор имен")]
-        public void GenName(bool isRussian = false, int maxlen = 10, uint count = 10)
+        public async void GenName(bool isRussian = false, int maxlen = 10, uint count = 10)
         {
             List<string> names = new List<string>();
             for (int i = 0; i < Math.Clamp(count, 1, 10); i++)
@@ -226,12 +226,12 @@ namespace fs24bot3.Commands
                     names.Add(Core.MessageUtils.GenerateNameRus(Math.Clamp(maxlen, 5, 20)));
                 }
             }
-            Context.SendMessage(Context.Channel, string.Join(",", names));
+            await Context.SendMessage(Context.Channel, string.Join(",", names));
         }
 
         [Command("midi")]
         [Description("Миди ноты")]
-        public void Midi(string note, int oct = 4)
+        public async void Midi(string note, int oct = 4)
         {
             string[] noteString = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
@@ -240,7 +240,7 @@ namespace fs24bot3.Commands
                 int octave = (int)(initialNote / 12) - 1;
                 uint noteIndex = initialNote % 12;
                 string noteName = noteString[noteIndex];
-                Context.SendMessage(Context.Channel, $"MIDI: {note} = {IrcColors.Reset}{noteName}{octave}");
+                await Context.SendMessage(Context.Channel, $"MIDI: {note} = {IrcColors.Reset}{noteName}{octave}");
             }
             else
             {
@@ -249,7 +249,7 @@ namespace fs24bot3.Commands
                     if (noteString[i].ToLower() == note.ToLower())
                     {
                         int noteIndex = (12 * (oct + 1)) + i;
-                        Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {IrcColors.Reset}{noteIndex}");
+                        await Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {IrcColors.Reset}{noteIndex}");
                         break;
                     }
                 }
@@ -259,7 +259,7 @@ namespace fs24bot3.Commands
         [Command("tag")]
         [Description("Управление тегами: параметр action: add/del")]
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
-        public void AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
+        public async void AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
         {
             var user = new User(Context.Sender, Context.Connection);
 
@@ -278,7 +278,7 @@ namespace fs24bot3.Commands
 
                         Context.Connection.Insert(tag);
 
-                        Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{IrcColors.Reset} успешно добавлен!");
+                        await Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{IrcColors.Reset} успешно добавлен!");
                     }
                     else
                     {
@@ -290,11 +290,11 @@ namespace fs24bot3.Commands
                     if (tagDel.GetTagByName().Username == Context.Sender)
                     {
                         Context.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);
-                        Context.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
+                        await Context.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
                     }
                     else
                     {
-                        Context.SendMessage(Context.Channel, IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Sender}");
+                        await Context.SendMessage(Context.Channel, IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Sender}");
                     }
                     break;
             }
@@ -302,40 +302,40 @@ namespace fs24bot3.Commands
 
         [Command("addtag")]
         [Description("Добавить тег пользователю")]
-        public void InsertTag(string tagname, string destination)
+        public async void InsertTag(string tagname, string destination)
         {
             var user = new User(destination, Context.Connection);
 
             if (user.AddTag(tagname, 1))
             {
-                Context.SendMessage(Context.Channel, $"Тег {tagname} добавлен пользователю {destination}");
+                await Context.SendMessage(Context.Channel, $"Тег {tagname} добавлен пользователю {destination}");
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
         }
 
         [Command("seen")]
         [Description("Когда последний раз пользователь писал сообщения")]
-        public void LastSeen(string destination)
+        public async void LastSeen(string destination)
         {
             var user = new User(destination, Context.Connection);
             TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
             if (date.Days < 1000)
             {
-                Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {date.Days} дн. {date.Hours} час. {date.Minutes} мин. {date.Seconds} сек. назад");
+                await Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {date.Days} дн. {date.Hours} час. {date.Minutes} мин. {date.Seconds} сек. назад");
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"Я уже не помню как выглядит {destination}... Даже не помню когда я его видел");
+                await Context.SendMessage(Context.Channel, $"Я уже не помню как выглядит {destination}... Даже не помню когда я его видел");
             }
 
         }
 
         [Command("tags")]
         [Description("Список всех тегов")]
-        public void AllTags()
+        public async void AllTags()
         {
             List<SQL.Tag> tags = new List<SQL.Tag>();
             var query = Context.Connection.Table<SQL.Tag>();
@@ -343,12 +343,12 @@ namespace fs24bot3.Commands
             {
                 tags.Add(tag);
             }
-            Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
+            await Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
         }
 
         [Command("rndl", "randomlyrics")]
         [Description("Рандомная песня")]
-        public void RandomSong()
+        public async void RandomSong()
         {
             var query = Context.Connection.Table<SQL.LyricsCache>().ToList();
 
@@ -364,7 +364,7 @@ namespace fs24bot3.Commands
                     if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
                 }
 
-                Context.SendMessage(Context.Channel, outputmsg);
+                await Context.SendMessage(Context.Channel, outputmsg);
             }
         }
     }

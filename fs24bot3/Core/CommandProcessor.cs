@@ -5,6 +5,7 @@ using Qmmands;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace fs24bot3
 {
@@ -19,18 +20,20 @@ namespace fs24bot3
             public SQLiteConnection Connection;
             readonly HttpTools http = new HttpTools();
             public List<ParsedIRCMessage> Messages = new List<ParsedIRCMessage>();
+            private bool PerformPpc = false;
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(string target, ParsedIRCMessage message, Client client, SQLiteConnection connection, List<ParsedIRCMessage> msgs = null, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(string target, ParsedIRCMessage message, Client client, SQLiteConnection connection, List<ParsedIRCMessage> msgs = null, bool perfppc = false, IServiceProvider provider = null) : base(provider)
             {
                 Client = client;
                 Connection = connection;
                 Messages = msgs;
                 Channel = target;
                 Sender = message.Prefix.From;
+                PerformPpc = perfppc;
             }
 
-            public async void SendMessage(string channel, string message)
+            private async Task SendMessageInternal(string channel, string message)
             {
                 if (!message.Contains("\n"))
                 {
@@ -52,20 +55,27 @@ namespace fs24bot3
                 }
             }
 
-            public void SendMessage(string message)
+            public async Task SendMessage(string channel, string message)
             {
-                SendMessage(Channel, message);
+                if (!PerformPpc)
+                {
+                    await SendMessageInternal(channel, message);
+                }
+                else
+                {
+                    var txt = await Core.Transalator.TranslatePpc(message);
+                    await SendMessageInternal(channel, txt);
+                }
             }
 
-
-            public void SendSadMessage(string channel, string message)
+            public async void SendSadMessage(string channel, string message)
             {
-                SendMessage(channel, IrcColors.Gray + message);
+                await SendMessage(channel, IrcColors.Gray + message);
             }
 
-            public void SendErrorMessage(string channel, string message)
+            public async void SendErrorMessage(string channel, string message)
             {
-                SendMessage(channel, IrcColors.Gray + message);
+                await SendMessage(channel, IrcColors.Gray + message);
             }
 
             public async void SendMultiLineMessage(string content)

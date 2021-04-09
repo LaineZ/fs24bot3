@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 
 namespace fs24bot3.Core
 {
@@ -23,6 +24,17 @@ namespace fs24bot3.Core
                 get
                 {
                     return "Предмет с данным типом не найден!";
+                }
+            }
+        }
+
+        public class WrongTypeException : Exception
+        {
+            public override string Message
+            {
+                get
+                {
+                    return "Неверный тип!";
                 }
             }
         }

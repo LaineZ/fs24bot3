@@ -88,10 +88,10 @@ namespace fs24bot3.Commands
                 }
                 catch (FormatException)
                 {
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}{IrcColors.Bold}ОШИБКА:{IrcColors.Reset} Неверно задан тип");
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Red}{query}");
+                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}{IrcColors.Bold}ОШИБКА:{IrcColors.Reset} Неверно задан тип");
+                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}{query}");
                     // 5 is page: word offest (in positive side)
-                    Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]) + 5)}^ ожидалось число");
+                    await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]) + 5)}^ ожидалось число");
                     return;
                 }
             }
@@ -157,13 +157,13 @@ namespace fs24bot3.Commands
             switch (errors)
             {
                 case MailErrors.SearchError.Banned:
-                    Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                    await Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
                     break;
                 case MailErrors.SearchError.NotFound:
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                    await Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
                     break;
                 case MailErrors.SearchError.UnknownError:
-                    Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
+                    await Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
                     break;
                 default:
                     if (searchResults.Count > 0)
@@ -172,15 +172,15 @@ namespace fs24bot3.Commands
                         {
                             foreach (var item in searchResults.Take(limit))
                             {
-                                Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.title)} // {IrcColors.Blue}{item.url}");
-                                if (limit <= 1) { Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.passage)); }
+                                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.title)} // {IrcColors.Blue}{item.url}");
+                                if (limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.passage)); }
                             }
                         }
                         else
                         {
                             var rand = new Random().Next(0, searchResults.Count - 1);
-                            Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(searchResults[rand].title)} // {IrcColors.Blue}{searchResults[rand].url}");
-                            if (limit <= 1) { Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(searchResults[rand].passage)); }
+                            await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(searchResults[rand].title)} // {IrcColors.Blue}{searchResults[rand].url}");
+                            if (limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(searchResults[rand].passage)); }
                         }
                     }
                     break;
@@ -213,13 +213,13 @@ namespace fs24bot3.Commands
                         switch (rezik.type)
                         {
                             case "a":
-                                Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {IrcColors.Blue}{rezik.url}");
+                                await Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {IrcColors.Blue}{rezik.url}");
                                 return;
                             case "b":
-                                Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {IrcColors.Blue}{rezik.url}");
+                                await Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {IrcColors.Blue}{rezik.url}");
                                 return;
                             case "t":
-                                Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {IrcColors.Blue}{rezik.url}");
+                                await Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {IrcColors.Blue}{rezik.url}");
                                 return;
                             default:
                                 continue;
@@ -282,7 +282,7 @@ namespace fs24bot3.Commands
                         {
                             int randIdx = new Random().Next(0, discover.items.Count - 1);
                             var rezik = discover.items[randIdx];
-                            Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {IrcColors.Blue}{rezik.tralbum_url}");
+                            await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {IrcColors.Blue}{rezik.tralbum_url}");
                         }
                         return;
                     }

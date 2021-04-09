@@ -48,5 +48,19 @@ namespace fs24bot3.Core
             throw new Exception(responseString);
 
         }
+
+        public async static Task<string> TranslatePpc(string text)
+        {
+            string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
+            string translated = text;
+
+            foreach (var tr in translations)
+            {
+                var translatorResponse = await Translate(translated, "auto-detect", tr);
+                translated = translatorResponse.text;
+            }
+
+            return translated;
+        }
     }
 }

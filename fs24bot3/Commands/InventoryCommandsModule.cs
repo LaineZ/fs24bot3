@@ -13,7 +13,7 @@ namespace fs24bot3.Commands
 
         [Command("inv", "inventory")]
         [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд @buy/@sell/@transfer и других")]
-        public void Userstat(bool useSlugs = false)
+        public async void Userstat(bool useSlugs = false)
         {
             var userop = new User(Context.Sender, Context.Connection);
             var userInv = userop.GetInventory();
@@ -21,22 +21,22 @@ namespace fs24bot3.Commands
             {
                 if (!useSlugs)
                 {
-                    Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
+                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Shop.GetItem(x.Item).Slug}) x{x.ItemCount}")));
+                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Shop.GetItem(x.Item).Slug}) x{x.ItemCount}")));
                 }
             }
             else
             {
-                Context.SendMessage(Context.Channel, $"{IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
             }
         }
 
         [Command("buy")]
         [Description("Купить товар")]
-        public void Buy(string itemname, int count = 1)
+        public async void Buy(string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.Connection);
 
@@ -47,19 +47,19 @@ namespace fs24bot3.Commands
             if (sucessfully)
             {
                 user.AddItemToInv(itemname, count);
-                Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.GetItem(itemname).Name + " за " + buyprice + " денег");
+                await Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.GetItem(itemname).Name + " за " + buyprice + " денег");
                 Shop.GetItem(itemname).Price += 5;
                 Shop.Buys++;
             }
             else
             {
-                Context.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
+                await Context.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
             }
         }
 
         [Command("sell")]
         [Description("Продать товар")]
-        public void Sell(string itemname, int count = 1)
+        public async void Sell(string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.Connection);
 
@@ -68,18 +68,18 @@ namespace fs24bot3.Commands
                 // tin
                 int sellprice = (int)Math.Floor((decimal)(Shop.GetItem(itemname).Price * count) / 2);
                 user.AddItemToInv("money", sellprice);
-                Context.SendMessage(Context.Channel, "Вы успешно продали " + Shop.GetItem(itemname).Name + " за " + sellprice + " денег");
+                await Context.SendMessage(Context.Channel, "Вы успешно продали " + Shop.GetItem(itemname).Name + " за " + sellprice + " денег");
                 Shop.Sells++;
             }
             else
             {
-                Context.SendMessage(Context.Channel, "Вы не можете это продать!");
+                await Context.SendMessage(Context.Channel, "Вы не можете это продать!");
             }
         }
 
         [Command("sellall")]
         [Description("Продать весь товар")]
-        public void SellAll()
+        public async void SellAll()
         {
             User user = new User(Context.Sender, Context.Connection);
             var inv = user.GetInventory();
@@ -94,12 +94,12 @@ namespace fs24bot3.Commands
             }
 
             user.AddItemToInv("money", totalPrice);
-            Context.SendMessage(Context.Channel, $"Вы продали всё! За {totalPrice} денег!");
+            await Context.SendMessage(Context.Channel, $"Вы продали всё! За {totalPrice} денег!");
         }
 
         [Command("transfer")]
         [Description("Передатать вещи")]
-        public void Transfer(string destanationNick, string itemname, int count = 1)
+        public async void Transfer(string destanationNick, string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.Connection);
             User destanation = new User(destanationNick, Context.Connection);
@@ -107,17 +107,17 @@ namespace fs24bot3.Commands
             if (user.RemItemFromInv(Shop.GetItem(itemname).Name, count))
             {
                 destanation.AddItemToInv(itemname, count);
-                Context.SendMessage(Context.Channel, $"Вы успешно передали {Shop.GetItem(itemname).Name} x{count} пользователю {destanationNick}");
+                await Context.SendMessage(Context.Channel, $"Вы успешно передали {Shop.GetItem(itemname).Name} x{count} пользователю {destanationNick}");
             }
             else
             {
-                Context.SendMessage(Context.Channel, "У вас нет таких предметов!");
+                await Context.SendMessage(Context.Channel, "У вас нет таких предметов!");
             }
         }
 
         [Command("topitem")]
         [Description("Топ по предматам, по стандарту показывает топ по деньгам")]
-        public void TopItem(string itemname = "money")
+        public async void TopItem(string itemname = "money")
         {
             var top = new List<(string Name, int Count)>();
 
@@ -131,11 +131,11 @@ namespace fs24bot3.Commands
 
             var result = top.OrderByDescending(p => p.Count).ToList();
 
-            Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.GetItem(itemname).Name);
+            await Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.GetItem(itemname).Name);
 
             foreach (var (Name, Count) in result.Take(5))
             {
-                Context.SendMessage(Context.Channel, IrcColors.Bold + Name + ": " + Count);
+                await Context.SendMessage(Context.Channel, IrcColors.Bold + Name + ": " + Count);
             }
         }
 
@@ -149,7 +149,7 @@ namespace fs24bot3.Commands
 
         [Command("toplevels", "toplevel", "top")]
         [Description("Топ по уровню")]
-        public void TopLevels()
+        public async void TopLevels()
         {
             var top = new List<(string Name, int Count)>();
 
@@ -162,18 +162,18 @@ namespace fs24bot3.Commands
 
             var result = top.OrderByDescending(p => p.Count).ToList();
 
-            Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ ПО УРОВНЮ");
+            await Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ ПО УРОВНЮ");
 
             foreach (var topuser in result.Take(5))
             {
-                Context.SendMessage(Context.Channel, IrcColors.Bold + topuser.Name + ": " + topuser.Count);
+                await Context.SendMessage(Context.Channel, IrcColors.Bold + topuser.Name + ": " + topuser.Count);
             }
         }
 
         [Command("wrench")]
         [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
         [Remarks("Стройте укрепления чтобы не получить гаечный ключ в лицо!!! И покупайте колонки чтобы не пропустить сообщения вашей оборонительной системы!!!")]
-        public void Wrench([Remainder] string username)
+        public async void Wrench([Remainder] string username)
         {
             try
             {
@@ -203,7 +203,7 @@ namespace fs24bot3.Commands
                 // wrench not found...... 😥
                 if (dmg == 0)
                 {
-                    Context.SendMessage(Context.Channel, $"У вас нету: {string.Join(" или ", wrenches.Select(x => Shop.GetItem(x.Item1).Name))}");
+                    await Context.SendMessage(Context.Channel, $"У вас нету: {string.Join(" или ", wrenches.Select(x => Shop.GetItem(x.Item1).Name))}");
                     return;
                 }
 
@@ -229,33 +229,33 @@ namespace fs24bot3.Commands
 
                     user.IncreaseXp(xp);
 
-                    Context.SendMessage(Context.Channel, $"Вы кинули {wrname} с уроном {dmg} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +{xp} XP");
+                    await Context.SendMessage(Context.Channel, $"Вы кинули {wrname} с уроном {dmg} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +{xp} XP");
                     if (rand.Next(0, 7) == 2)
                     {
-                        Context.SendMessage(username, $"Вас атакует {Context.Sender} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
+                        await Context.SendMessage(username, $"Вас атакует {Context.Sender} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
                     }
                     else
                     {
                         if (rand.Next(0, 1) == 1 || userDest.RemItemFromInv("speaker", 1))
                         {
-                            Context.SendMessage(username, $"Вас атакует {Context.Sender} гаечными ключами! Вы потеряли {takeItems[indexItem].Item} x{itemCount}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
+                            await Context.SendMessage(username, $"Вас атакует {Context.Sender} гаечными ключами! Вы потеряли {takeItems[indexItem].Item} x{itemCount}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
                         }
                     }
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.MissMessages));
+                    await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.MissMessages));
                 }
             }
             catch (Core.Exceptions.UserNotFoundException)
             {
-                Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ в {username}!");
+                await Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ в {username}!");
             }
         }
 
         [Command("break")]
         [Description("С определенным шансом позволяет пробить укрепления - требуется пистолет или 💣")]
-        public void Shot(string username)
+        public async void Shot(string username)
         {
             try
             {
@@ -283,7 +283,7 @@ namespace fs24bot3.Commands
                 // destroy item not found...... 😥
                 if (dmg == 0)
                 {
-                    Context.SendMessage(Context.Channel, $"У вас нету пистолета или бомбы!");
+                    await Context.SendMessage(Context.Channel, $"У вас нету пистолета или бомбы!");
                     return;
                 }
 
@@ -293,20 +293,20 @@ namespace fs24bot3.Commands
                 if (userDest.CountItem("wall") > 0 && rand.Next(0, 10 - dmg) == 0 && username != Context.Sender)
                 {
                     userDest.RemItemFromInv("wall", 1);
-                    Context.SendMessage(Context.Channel, $"Вы атаковали с помощью {brname} уроном {dmg} укрепления пользователя {username} и сломали 1 укрепление!");
+                    await Context.SendMessage(Context.Channel, $"Вы атаковали с помощью {brname} уроном {dmg} укрепления пользователя {username} и сломали 1 укрепление!");
                     if (rand.Next(0, 3) == 2)
                     {
-                        Context.SendMessage(username, $"Вас атакует {Context.Sender}!");
+                        await Context.SendMessage(username, $"Вас атакует {Context.Sender}!");
                     }
                 }
                 else
                 {
-                    Context.SendMessage(Context.Channel, "Вы не попали по укреплению или их вообще нет!");
+                    await Context.SendMessage(Context.Channel, "Вы не попали по укреплению или их вообще нет!");
                 }
             }
             catch (Core.Exceptions.UserNotFoundException)
             {
-                Context.SendMessage(Context.Channel, $"Вы потеряли себя...");
+                await Context.SendMessage(Context.Channel, $"Вы потеряли себя...");
             }
         }
     }
