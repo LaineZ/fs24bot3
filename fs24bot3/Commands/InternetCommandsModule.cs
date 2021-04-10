@@ -218,7 +218,7 @@ namespace fs24bot3.Commands
 
                     try
                     {
-                        if (user.RemItemFromInv("money", 2000))
+                        if (await user.RemItemFromInv("money", 2000))
                         {
                             Context.Connection.Insert(lyric);
                             Context.SendErrorMessage(Context.Channel, "Добавлено!");
@@ -242,10 +242,10 @@ namespace fs24bot3.Commands
         }
 
         [Command("aigen", "gensent", "ppc")]
-        public void GenAI(uint max = 200)
+        public async void GenAI(uint max = 200)
         {
             var user = new User(Context.Sender, Context.Connection, Context);
-            if (user.RemItemFromInv("beer", 1))
+            if (await user.RemItemFromInv("beer", 1))
             {
                 AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
             }
@@ -274,7 +274,7 @@ namespace fs24bot3.Commands
         public async void TranslatePpc([Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.Connection, Context);
-            if (usr.RemItemFromInv("beer", 1))
+            if (await usr.RemItemFromInv("beer", 1))
             {
                 await Context.SendMessage(Context.Channel, Core.Transalator.TranslatePpc(text) + " (bing.com/translator, ппц)");
             }
@@ -285,7 +285,7 @@ namespace fs24bot3.Commands
         public async void TranslatePpcGen(int gens, [Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.Connection, Context);
-            if (usr.RemItemFromInv("beer", 1))
+            if (await usr.RemItemFromInv("beer", 1))
             {
                 string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
                 string translated = text;
@@ -347,7 +347,7 @@ namespace fs24bot3.Commands
                     string translated = await lyrics.GetLyrics();
                     var usr = new User(Context.Sender, Context.Connection, Context);
 
-                    if (usr.RemItemFromInv("beer", 1))
+                    if (await usr.RemItemFromInv("beer", 1))
                     {
                         string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
 
@@ -461,7 +461,7 @@ namespace fs24bot3.Commands
 
                     string lyricsOut = await lyrics.GetLyrics();
 
-                    if (user.RemItemFromInv("money", 1000 + lyricsOut.Length))
+                    if (await user.RemItemFromInv("money", 1000 + lyricsOut.Length))
                     {
                         var resultTranslated = await Core.Transalator.Translate(lyricsOut, "auto-detect", "ru");
 

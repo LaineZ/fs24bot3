@@ -37,15 +37,15 @@ namespace fs24bot3.EventProcessors
             }
         }
 
-        public void DestroyWallRandomly()
+        public async void DestroyWallRandomly()
         {
-            if (Rand.Next(0, 10) == 1 && User.RemItemFromInv("wall", 1))
+            if (Rand.Next(0, 10) == 1 && await User.RemItemFromInv("wall", 1))
             {
                 Log.Information("Breaking wall for {0}", User.Username);
             }
         }
 
-        public void GiveWaterFromPumps()
+        public async void GiveWaterFromPumps()
         {
             if (User.GetInventory() != null)
             {
@@ -59,7 +59,7 @@ namespace fs24bot3.EventProcessors
 
                         if (Rand.Next(1, 3) == 3)
                         {
-                            User.RemItemFromInv("pump", 1);
+                            await User.RemItemFromInv("pump", 1);
                         }
                         break;
                     }

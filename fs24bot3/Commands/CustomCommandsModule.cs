@@ -33,7 +33,7 @@ namespace fs24bot3.Commands
                 };
                 try
                 {
-                    if (usr.RemItemFromInv("money", 8000))
+                    if (await usr.RemItemFromInv("money", 8000))
                     {
                         Context.Connection.Insert(commandInsert);
                         await Context.SendMessage(Context.Channel, "Команда успешно создана");

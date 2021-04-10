@@ -18,7 +18,7 @@ namespace fs24bot3.Commands
         public async void Version()
         {
             var os = Environment.OSVersion;
-            await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 Версия: 23.03.2021 | .NET Core: {0} Система: {1}",
+            await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 Версия: 10.04.2021 | .NET Core: {0} Система: {1}",
                 Environment.Version.ToString(), os.VersionString));
         }
 

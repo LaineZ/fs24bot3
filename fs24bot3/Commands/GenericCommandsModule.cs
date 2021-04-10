@@ -142,7 +142,7 @@ namespace fs24bot3.Commands
                 await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
                 Shop.SongameString = "";
                 Shop.SongameTries = 5;
-                user.RemItemFromInv("money", 1000);
+                await user.RemItemFromInv("money", 1000);
                 return;
             }
             Random rand = new Random();
@@ -266,7 +266,7 @@ namespace fs24bot3.Commands
             switch (action)
             {
                 case CommandToggles.CommandEdit.Add:
-                    if (user.RemItemFromInv("money", 1000))
+                    if (await user.RemItemFromInv("money", 1000))
                     {
                         var tag = new SQL.Tag()
                         {

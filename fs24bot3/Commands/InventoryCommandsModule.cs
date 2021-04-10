@@ -42,7 +42,7 @@ namespace fs24bot3.Commands
 
             int buyprice = Shop.GetItem(itemname).Price * count;
 
-            bool sucessfully = user.RemItemFromInv("money", buyprice);
+            bool sucessfully = await user.RemItemFromInv("money", buyprice);
 
             if (sucessfully)
             {
@@ -63,7 +63,7 @@ namespace fs24bot3.Commands
         {
             User user = new User(Context.Sender, Context.Connection);
 
-            if (user.RemItemFromInv(itemname, count) && Shop.GetItem(itemname).Sellable)
+            if (await user.RemItemFromInv(itemname, count) && Shop.GetItem(itemname).Sellable)
             {
                 // tin
                 int sellprice = (int)Math.Floor((decimal)(Shop.GetItem(itemname).Price * count) / 2);
@@ -87,7 +87,7 @@ namespace fs24bot3.Commands
 
             foreach (var item in inv)
             {
-                if (Shop.GetItem(item.Item).Sellable && user.RemItemFromInv(Shop.GetItem(item.Item).Slug, item.ItemCount))
+                if (Shop.GetItem(item.Item).Sellable && await user.RemItemFromInv(Shop.GetItem(item.Item).Slug, item.ItemCount))
                 {
                     totalPrice += (int)Math.Floor((decimal)(Shop.GetItem(item.Item).Price * item.ItemCount) / 2);
                 }
@@ -104,7 +104,7 @@ namespace fs24bot3.Commands
             User user = new User(Context.Sender, Context.Connection);
             User destanation = new User(destanationNick, Context.Connection);
 
-            if (user.RemItemFromInv(Shop.GetItem(itemname).Name, count))
+            if (await user.RemItemFromInv(Shop.GetItem(itemname).Name, count))
             {
                 destanation.AddItemToInv(itemname, count);
                 await Context.SendMessage(Context.Channel, $"Вы успешно передали {Shop.GetItem(itemname).Name} x{count} пользователю {destanationNick}");
@@ -192,7 +192,7 @@ namespace fs24bot3.Commands
 
                 foreach ((string wrench, int wrdmg) in wrenches)
                 {
-                    if (user.RemItemFromInv(wrench, 1))
+                    if (await user.RemItemFromInv(wrench, 1))
                     {
                         dmg = wrdmg;
                         wrname = Shop.GetItem(wrench).Name;
@@ -223,7 +223,7 @@ namespace fs24bot3.Commands
                     }
 
                     user.AddItemToInv(takeItems[indexItem].Item, itemCount);
-                    userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
+                    await userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
 
                     int xp = rand.Next(100, 500 + user.GetUserInfo().Level);
 
@@ -236,7 +236,7 @@ namespace fs24bot3.Commands
                     }
                     else
                     {
-                        if (rand.Next(0, 1) == 1 || userDest.RemItemFromInv("speaker", 1))
+                        if (rand.Next(0, 1) == 1 || await userDest.RemItemFromInv("speaker", 1))
                         {
                             await Context.SendMessage(username, $"Вас атакует {Context.Sender} гаечными ключами! Вы потеряли {takeItems[indexItem].Item} x{itemCount}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
                         }
@@ -272,7 +272,7 @@ namespace fs24bot3.Commands
 
                 foreach ((string wrench, int wrdmg) in wrenches)
                 {
-                    if (user.RemItemFromInv(wrench, 1))
+                    if (await user.RemItemFromInv(wrench, 1))
                     {
                         dmg = wrdmg;
                         brname = Shop.GetItem(wrench).Name;
@@ -292,7 +292,7 @@ namespace fs24bot3.Commands
 
                 if (userDest.CountItem("wall") > 0 && rand.Next(0, 10 - dmg) == 0 && username != Context.Sender)
                 {
-                    userDest.RemItemFromInv("wall", 1);
+                    await userDest.RemItemFromInv("wall", 1);
                     await Context.SendMessage(Context.Channel, $"Вы атаковали с помощью {brname} уроном {dmg} укрепления пользователя {username} и сломали 1 укрепление!");
                     if (rand.Next(0, 3) == 2)
                     {

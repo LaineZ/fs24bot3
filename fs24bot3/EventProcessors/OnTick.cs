@@ -17,7 +17,7 @@ namespace fs24bot3.EventProcessors
             User = new User(username, connection);
         }
 
-        public void UpdateUserPaydays()
+        public async void UpdateUserPaydays()
         {
             DateTime start = DateTime.Now;
             int checkPayday = Rand.Next(0, 10);
@@ -29,7 +29,7 @@ namespace fs24bot3.EventProcessors
                 if (subst > 10)
                 {
                     Log.Information("Tax fine for user: {0}", User.Username);
-                    User.RemItemFromInv("money", User.GetUserInfo().Level * Rand.Next(1, 2));
+                    await User.RemItemFromInv("money", User.GetUserInfo().Level * Rand.Next(1, 2));
                 }
                 else
                 {

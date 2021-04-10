@@ -169,7 +169,7 @@ namespace fs24bot3
 
                         foreach (var (check, error) in err.FailedChecks)
                         {
-                            errStr.Append(error.Reason);
+                            errStr.Append(error.FailureReason);
                         }
                         await client.SendAsync(new PrivMsgMessage(target, $"Требования не выполнены: {errStr}"));
                         break;
@@ -177,7 +177,7 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(target, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
                         break;
                     case ArgumentParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка парсера: `{err.Reason}`"));
+                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка парсера: `{err.FailureReason}`"));
                         break;
                     case OverloadsFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(target, "Для данной команды нету перегрузки!"));
@@ -185,12 +185,13 @@ namespace fs24bot3
                     case CommandNotFoundResult err:
                         bool customSuccess = await CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
                         break;
-                    case ExecutionFailedResult err:
+                    case CommandExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(target, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
                         await client.SendAsync(new PrivMsgMessage(target, err.Exception.StackTrace));
                         break;
                 }
             }
+
             if (message.IRCCommand == IRCCommand.ERROR)
             {
                 Log.Error("Connection closed due to error... Exiting");

@@ -5,6 +5,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3
 {
@@ -121,7 +122,7 @@ namespace fs24bot3
         /// <param name="name">Item slug</param>
         /// <param name="count">Count</param>
         /// <returns>Success of removing</returns>
-        public bool RemItemFromInv(string name, int count)
+        public async Task<bool> RemItemFromInv(string name, int count)
         {
             count = (int)Math.Floor((decimal)count);
 
@@ -135,14 +136,14 @@ namespace fs24bot3
                 Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
                 if (Ctx != null)
                 {
-                    Ctx.SendMessage(Ctx.Channel, $" {Shop.GetItem(name).Name} -{count} За использование данной команды");
+                    await Ctx.SendMessage(Ctx.Channel, $" {Shop.GetItem(name).Name} -{count} За использование данной команды");
                 }
                 return true;
             }
 
             if (Ctx != null)
             {
-                Ctx.SendMessage(Ctx.Channel, $"Недостаточно {Shop.GetItem(name).Name} x{count}");
+                await Ctx.SendMessage(Ctx.Channel, $"Недостаточно {Shop.GetItem(name).Name} x{count}");
             }
             return false;
         }

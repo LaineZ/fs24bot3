@@ -21,7 +21,7 @@ namespace fs24bot3.Commands
 
                 if (query.Any())
                 {
-                    if (user.RemItemFromInv("money", query[0].Price))
+                    if (await user.RemItemFromInv("money", query[0].Price))
                     {
                         FishingError.RodErrors rodState = user.AddRod(rodname);
 
@@ -152,7 +152,7 @@ namespace fs24bot3.Commands
                 return;
             }
 
-            if (!user.RemItemFromInv("worm", 1))
+            if (!await user.RemItemFromInv("worm", 1))
             {
                 await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}У вас нет наживки @buy worm");
                 return;

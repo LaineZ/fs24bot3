@@ -15,7 +15,7 @@ namespace fs24bot3.Checks
             User usr = new User(context.Sender, context.Connection);
             return usr.GetUserInfo().Admin == 2
                 ? CheckResult.Successful
-                : CheckResult.Unsuccessful("Это команда только для админов!");
+                : CheckResult.Failed("Это команда только для админов!");
         }
 
         public override string ToString()

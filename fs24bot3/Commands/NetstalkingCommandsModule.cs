@@ -15,176 +15,138 @@ namespace fs24bot3.Commands
 
         public CommandService Service { get; set; }
 
-        readonly HttpTools http = new HttpTools();
-        HttpClient client = new HttpClient();
+        private readonly HttpTools http = new HttpTools();
+        private HttpClient client = new HttpClient();
+        private readonly CommandService SearchCommandService = new CommandService();
+
+
+        private async void FormatError(IResult result)
+        {
+            switch (result)
+            {
+                case TypeParseFailedResult err:
+                    await Context.SendMessage(Context.Channel, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}`");
+                    break;
+                case ArgumentParseFailedResult err:
+                    await Context.SendMessage(Context.Channel, $"Ошибка парсера: `{err.FailureReason}`");
+                    break;
+                case CommandExecutionFailedResult err:
+                    await Context.SendMessage(Context.Channel, $"Ошибка: `{err.Exception.Message}`");
+                    break;
+            }
+        }
 
         [Command("ms", "search")]
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
-        [Remarks("Запрос разбивается на сам запрос, параметры которые выглядят как `PARAMETR:VALUE` и операторы поиска (+, -)\n" +
-            "page:Number - Страница поиска; max:Number - Максимальная глубина поиска;\n" +
-            "site:URL - Поиск по адресу сайта; fullmatch:on - Включить полное совпадение запроса; multi:on - Мульти вывод (сразу 5 результатов); random:off - Выключить рандомную выдачу" +
-            "Операторы поиска: `+` - Включить слово в запрос `-` - Исключить слово из запроса")]
+        [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`. Все параметры с типом String, кроме `regex` - регистронезависимы\n" +
+            "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; site:String - Поиск по адресу сайта; multi:Boolean - Мульти вывод (сразу 5 результатов);\n" +
+            "random:Boolean - Рандомная выдача (не работает с multi); include:String - Включить результаты с данной подстрокой; exclude:String - Исключить результаты с данной подстрокой;\n" +
+            "regex:String - Регулярное выражение в формате PCRE")]
         public async void MailSearch([Remainder] string query)
         {
-            // search options
-            int page = 0;
-            int limit = 1;
-            int maxpage = 10;
-            bool fullmatch = false;
-            bool random = true;
-            string site = "";
-
+            SearchCommandService.AddModule<SearchQueryCommands>();
             string[] queryOptions = query.Split(" ");
-            List<string> queryText = new List<string>();
-            List<string> exclude = new List<string>();
-            // error message
-            MailErrors.SearchError errors = MailErrors.SearchError.None;
+            Dictionary<Command, string> searchOptions = new Dictionary<Command, string>();
+
+            var ctx = new SearchCommandProcessor.CustomCommandContext();
+            ctx.PreProcess = true;
 
             for (int i = 0; i < queryOptions.Length; i++)
             {
-                try
+                string[] options = queryOptions[i].Split(":");
+                if (options.Length > 1)
                 {
-                    if (queryOptions[i].Contains("page:"))
+                    var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == options[0]).FirstOrDefault();
+
+                    if (cmd == null)
                     {
-                        string[] options = queryOptions[i].Split(":");
-                        page = int.Parse(options[1]);
+                        await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{options[0]}`");
+                        return;
                     }
-                    else if (queryOptions[i].Contains("max:"))
+
+                    if (options[1].StartsWith('"'))
                     {
-                        string[] options = queryOptions[i].Split(":");
-                        maxpage = int.Parse(options[1]);
-                    }
-                    // exclude
-                    else if (queryOptions[i].Contains("-"))
-                    {
-                        string[] options = queryOptions[i].Split("-");
-                        // do not add to exclude if user just wrote a '-'
-                        if (options[1].Length > 0)
+                        foreach (string value in queryOptions.Skip(i + 1))
                         {
-                            exclude.Add(options[1].ToLower());
+                            options[1] += " " + value;
+                            if (value.EndsWith('"')) { break; }
                         }
                     }
-                    else if (queryOptions[i].Contains("multi:on"))
-                    {
-                        limit = 5;
-                    }
-                    else if (queryOptions[i].Contains("site:"))
-                    {
-                        string[] options = queryOptions[i].Split(":");
-                        site = options[1].ToLower();
-                    }
-                    else if (queryOptions[i].Contains("fullmatch:on"))
-                    {
-                        fullmatch = queryOptions[i].Contains("fullmatch:on");
-                    }
-                    else if (queryOptions[i].Contains("random:off"))
-                    {
-                        random = false;
-                    }
-                    else
-                    {
-                        queryText.Add(queryOptions[i]);
-                    }
-                }
-                catch (FormatException)
-                {
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}{IrcColors.Bold}ОШИБКА:{IrcColors.Reset} Неверно задан тип");
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}{query}");
-                    // 5 is page: word offest (in positive side)
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{new String(' ', query.IndexOf(queryOptions[i]) + 5)}^ ожидалось число");
-                    return;
+
+                    Log.Verbose("{0}", options[1]);
+                    searchOptions.Add(cmd, options[1]);
+                    query = query.Replace($"{options[0]}:{options[1]}", "");
                 }
             }
-            var searchResults = new List<MailSearch.Result>();
 
-            for (int i = page; i < maxpage; i++)
+            // execute pre process commands
+            foreach ((Command cmd, string args) in searchOptions)
             {
-                Log.Verbose("Foring {0} Query string: {1}", i, string.Join(" ", queryText));
-                if (searchResults.Count >= limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + string.Join(" ", queryText) + "&sf=" + ((i + 1) * 10) + "&site=" + site);
-                var items = Core.MailSearchDecoder.PerformDecode(response);
-                if (items == null) { continue; }
+                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
+                FormatError(result);
+                if (!result.IsSuccessful) { return; }
+            }
 
-                Log.Information("@MS: Antirobot-blocked?: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
+            for (int i = ctx.Page; i < ctx.Max; i++)
+            {
+                Log.Verbose("Foring {0} Query string: {1}", i, query);
+
+                if (ctx.SearchResults.Count >= ctx.Limit) { break; }
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query + "&sf=" + ((i + 1) * 10) + "&site=" + ctx.Site);
+                var items = Core.MailSearchDecoder.PerformDecode(response);
+                
+                if (items == null) { continue; }
 
                 if (items.antirobot.blocked)
                 {
-                    errors = MailErrors.SearchError.Banned;
-                    break;
+                    Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
+                    await Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                    return; 
                 }
                 else
                 {
-                    if (items.serp.results.Count > 0)
+                    if (items.serp.results.Any())
                     {
                         foreach (var item in items.serp.results)
                         {
                             if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
-                                string desc = item.passage?.ToLower() ?? string.Empty;
-                                var excludeMatch = exclude.FirstOrDefault(x => item.title.ToLower().Contains(x) || desc.Contains(x) || item.url.ToLower().Contains(x));
-
-                                if (fullmatch)
-                                {
-                                    if (item.title.Contains(string.Join(" ", queryText)) || item.passage.Contains(string.Join(" ", queryText)))
-                                    {
-                                        searchResults.Add(item);
-                                    }
-                                }
-                                else
-                                {
-                                    if (excludeMatch == null)
-                                    {
-                                        searchResults.Add(item);
-                                    }
-                                }
+                                ctx.SearchResults.Add(item);
                             }
                         }
-                    }
-                    else
-                    {
-                        errors = MailErrors.SearchError.NotFound;
-                        break;
                     }
                 }
-                if (errors != MailErrors.SearchError.None) { break; }
             }
 
-            if (searchResults.Count <= 0 && errors != MailErrors.SearchError.Banned)
+            ctx.PreProcess = false;
+            foreach ((Command cmd, string args) in searchOptions)
             {
-                errors = MailErrors.SearchError.NotFound;
+                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
+                FormatError(result);
+                if (!result.IsSuccessful) { return; }
             }
 
-            switch (errors)
+            if (!ctx.SearchResults.Any())
             {
-                case MailErrors.SearchError.Banned:
-                    await Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
-                    break;
-                case MailErrors.SearchError.NotFound:
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
-                    break;
-                case MailErrors.SearchError.UnknownError:
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + "Ошибка блин..........");
-                    break;
-                default:
-                    if (searchResults.Count > 0)
-                    {
-                        if (!random)
-                        {
-                            foreach (var item in searchResults.Take(limit))
-                            {
-                                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.title)} // {IrcColors.Blue}{item.url}");
-                                if (limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.passage)); }
-                            }
-                        }
-                        else
-                        {
-                            var rand = new Random().Next(0, searchResults.Count - 1);
-                            await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(searchResults[rand].title)} // {IrcColors.Blue}{searchResults[rand].url}");
-                            if (limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(searchResults[rand].passage)); }
-                        }
-                    }
-                    break;
+                await Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                return;
             }
+
+            if (!ctx.Random)
+            {
+                foreach (var item in ctx.SearchResults.Take(ctx.Limit))
+                {
+                    await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.title)} // {IrcColors.Blue}{item.url}");
+                    if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.passage)); }
+                }
+            }
+            else
+            {
+                var rand = new Random().Next(0, ctx.SearchResults.Count - 1);
+                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].title)} // {IrcColors.Blue}{ctx.SearchResults[rand].url}");
+                if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].passage)); }
+            }
+
         }
 
         [Command("bc", "bandcamp", "bcs")]
