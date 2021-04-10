@@ -276,7 +276,7 @@ namespace fs24bot3.Commands
             var usr = new User(Context.Sender, Context.Connection, Context);
             if (await usr.RemItemFromInv("beer", 1))
             {
-                await Context.SendMessage(Context.Channel, Core.Transalator.TranslatePpc(text) + " (bing.com/translator, ппц)");
+                await Context.SendMessage(Context.Channel, Core.Transalator.TranslatePpc(text).Result + " (bing.com/translator, ппц)");
             }
         }
 
