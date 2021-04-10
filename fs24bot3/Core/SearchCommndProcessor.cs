@@ -18,7 +18,7 @@ namespace fs24bot3
             public bool Random = true;
             public int Page = 0;
             public int Limit = 1;
-            public int Max = 5;
+            public int Max = 10;
             public bool PreProcess = false;
 
             // Pass your service provider to the base command context.

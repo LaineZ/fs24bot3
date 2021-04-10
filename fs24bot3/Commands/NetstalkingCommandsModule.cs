@@ -89,10 +89,10 @@ namespace fs24bot3.Commands
 
             for (int i = ctx.Page; i < ctx.Max; i++)
             {
-                Log.Verbose("Foring {0} Query string: {1}", i, query);
+                Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
 
                 if (ctx.SearchResults.Count >= ctx.Limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query + "&sf=" + ((i + 1) * 10) + "&site=" + ctx.Site);
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query + "&sf=" + (i * 10) + "&site=" + ctx.Site);
                 var items = Core.MailSearchDecoder.PerformDecode(response);
                 
                 if (items == null) { continue; }
