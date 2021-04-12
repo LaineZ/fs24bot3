@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Threading.Tasks;
+using fs24bot3.QmmandsProcessors;
 
 namespace fs24bot3.Commands
 {
@@ -32,7 +34,7 @@ namespace fs24bot3.Commands
 
         [Command("help", "commands")]
         [Description("Список команд")]
-        public async void Help()
+        public async Task Help()
         {
             await Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
             var cmds = Service.GetAllCommands();
@@ -52,7 +54,7 @@ namespace fs24bot3.Commands
 
         [Command("helpcmd")]
         [Description("Помощь по команде")]
-        public async void HelpСmd(string command = "helpcmd")
+        public async Task HelpСmd(string command = "helpcmd")
         {
             foreach (Command cmd in Service.GetAllCommands())
             {
@@ -72,7 +74,7 @@ namespace fs24bot3.Commands
 
         [Command("remind", "in")]
         [Description("Напоминание. time вводится в формате 1m;30s (1 минута и 30 секунд = 90 секунд)")]
-        public async void Remind(string time = "1m", [Remainder] string message = "Remind")
+        public async Task Remind(string time = "1m", [Remainder] string message = "Remind")
         {
             // sorry for this idk how to make more coolest code!!!!
             double totalSecs = 0;
@@ -109,7 +111,7 @@ namespace fs24bot3.Commands
 
         [Command("reminds", "ins", "rems")]
         [Description("Список напоминаний")]
-        public async void Reminds(string username = "")
+        public async Task Reminds(string username = "")
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -132,7 +134,7 @@ namespace fs24bot3.Commands
 
         [Command("songame", "songg", "sg")]
         [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
-        public async void Songame([Remainder] string translated = "")
+        public async Task Songame([Remainder] string translated = "")
         {
             var user = new User(Context.Sender, Context.Connection, Context);
             int timeout = 10;
@@ -212,7 +214,7 @@ namespace fs24bot3.Commands
 
         [Command("genname")]
         [Description("Генератор имен")]
-        public async void GenName(bool isRussian = false, int maxlen = 10, uint count = 10)
+        public async Task GenName(bool isRussian = false, int maxlen = 10, uint count = 10)
         {
             List<string> names = new List<string>();
             for (int i = 0; i < Math.Clamp(count, 1, 10); i++)
@@ -231,7 +233,7 @@ namespace fs24bot3.Commands
 
         [Command("midi")]
         [Description("Миди ноты")]
-        public async void Midi(string note, int oct = 4)
+        public async Task Midi(string note, int oct = 4)
         {
             string[] noteString = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
@@ -259,7 +261,7 @@ namespace fs24bot3.Commands
         [Command("tag")]
         [Description("Управление тегами: параметр action: add/del")]
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
-        public async void AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
+        public async Task AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
         {
             var user = new User(Context.Sender, Context.Connection);
 
@@ -302,7 +304,7 @@ namespace fs24bot3.Commands
 
         [Command("addtag")]
         [Description("Добавить тег пользователю")]
-        public async void InsertTag(string tagname, string destination)
+        public async Task InsertTag(string tagname, string destination)
         {
             var user = new User(destination, Context.Connection);
 
@@ -318,7 +320,7 @@ namespace fs24bot3.Commands
 
         [Command("seen")]
         [Description("Когда последний раз пользователь писал сообщения")]
-        public async void LastSeen(string destination)
+        public async Task LastSeen(string destination)
         {
             var user = new User(destination, Context.Connection);
             TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
@@ -335,7 +337,7 @@ namespace fs24bot3.Commands
 
         [Command("tags")]
         [Description("Список всех тегов")]
-        public async void AllTags()
+        public async Task AllTags()
         {
             List<SQL.Tag> tags = new List<SQL.Tag>();
             var query = Context.Connection.Table<SQL.Tag>();
@@ -348,7 +350,7 @@ namespace fs24bot3.Commands
 
         [Command("rndl", "randomlyrics")]
         [Description("Рандомная песня")]
-        public async void RandomSong()
+        public async Task RandomSong()
         {
             var query = Context.Connection.Table<SQL.LyricsCache>().ToList();
 

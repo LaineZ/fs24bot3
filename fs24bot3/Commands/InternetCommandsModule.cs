@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Qmmands;
@@ -117,7 +118,7 @@ namespace fs24bot3.Commands
 
         [Command("execute", "exec")]
         [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
-        public async void ExecuteAPI(string lang, [Remainder] string code)
+        public async Task ExecuteAPI(string lang, [Remainder] string code)
         {
             HttpClient client = new HttpClient();
 
@@ -156,7 +157,7 @@ namespace fs24bot3.Commands
 
         [Command("executeurl", "execurl")]
         [Description("Тоже самое что и @exec только работает через URL")]
-        public async void ExecuteAPIUrl(string code, string rawurl)
+        public async Task ExecuteAPIUrl(string code, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
             if (response != null)
@@ -164,7 +165,7 @@ namespace fs24bot3.Commands
                 if (response.ContentType.Contains("text/plain"))
                 {
                     Stream responseStream = response.GetResponseStream();
-                    ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
+                    await ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
                 }
                 else
                 {
@@ -180,7 +181,7 @@ namespace fs24bot3.Commands
 
         [Command("addlyrics", "addlyr")]
         [Description("Добавить свои слова в базу бота: параметр song должен быть в формате `artist - trackname`")]
-        public async void Addlyrics(string rawurl, [Remainder] string song)
+        public async Task Addlyrics(string rawurl, [Remainder] string song)
         {
             var data = song.Split(" - ");
             string artist;
@@ -242,7 +243,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("aigen", "gensent", "ppc")]
-        public async void GenAI(uint max = 200)
+        public async Task GenAI(uint max = 200)
         {
             var user = new User(Context.Sender, Context.Connection, Context);
             if (await user.RemItemFromInv("beer", 1))
@@ -254,7 +255,7 @@ namespace fs24bot3.Commands
         [Command("tr", "translate")]
         [Description("Переводчик")]
         [Remarks("Параметр lang нужно вводить в формате 'sourcelang-translatelang' или 'traslatelang' в данном случае переводчик попытается догадаться с какого языка пытаются перевести (работает криво, претензии не к разработчику бота)\nВсе языки вводятся по стандарту ISO-639-1 посмотреть можно здесь: https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")]
-        public async void Translate(string lang, [Remainder] string text)
+        public async Task Translate(string lang, [Remainder] string text)
         {
             (string from, string to) = ParseLang(lang);
 
@@ -271,7 +272,7 @@ namespace fs24bot3.Commands
 
         [Command("trppc")]
         [Description("Переводчик (ппц)")]
-        public async void TranslatePpc([Remainder] string text)
+        public async Task TranslatePpc([Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.Connection, Context);
             if (await usr.RemItemFromInv("beer", 1))
@@ -282,7 +283,7 @@ namespace fs24bot3.Commands
 
         [Command("trppcgen")]
         [Description("Переводчик (ппц)")]
-        public async void TranslatePpcGen(int gens, [Remainder] string text)
+        public async Task TranslatePpcGen(int gens, [Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.Connection, Context);
             if (await usr.RemItemFromInv("beer", 1))
@@ -305,7 +306,7 @@ namespace fs24bot3.Commands
 
         [Command("trppclite", "trl")]
         [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в @tr")]
-        public async void TranslatePpc2(string lang, [Remainder] string text)
+        public async Task TranslatePpc2(string lang, [Remainder] string text)
         {
 
             (string from, string to) = ParseLang(lang);
@@ -336,7 +337,7 @@ namespace fs24bot3.Commands
 
         [Command("dmlyrics", "dmlyr")]
         [Description("Текст песни (ппц)")]
-        public async void LyricsPpc([Remainder] string song)
+        public async Task LyricsPpc([Remainder] string song)
         {
             var data = song.Split(" - ");
             if (data.Length > 0)
@@ -373,7 +374,7 @@ namespace fs24bot3.Commands
 
         [Command("lyrics", "lyr")]
         [Description("Текст песни")]
-        public async void Lyrics([Remainder] string song)
+        public async Task Lyrics([Remainder] string song)
         {
             var data = song.Split(" - ");
             if (data.Length > 0)
@@ -396,14 +397,14 @@ namespace fs24bot3.Commands
         }
 
         [Command("whrand", "whowrand", "howrand")]
-        public async void WikiHowRand()
+        public async Task WikiHowRand()
         {
             var resp = await new HttpTools().GetResponseAsync("https://ru.wikihow.com/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:Randomizer");
             await Context.SendMessage(Context.Channel, resp.ResponseUri.ToString());
         }
 
         [Command("wh", "wikihow")]
-        public async void WikiHow([Remainder] string query)
+        public async Task WikiHow([Remainder] string query)
         {
             var web = new HtmlWeb();
             var doc = await web.LoadFromWebAsync("https://ru.wikihow.com/wikiHowTo?search=" + query);
@@ -427,7 +428,7 @@ namespace fs24bot3.Commands
 
         [Command("pearls", "inpearls", "inp", "ip")]
         [Description("Самые душевные цитаты в мире!")]
-        public async void InPearls(string category = "", int page = 0)
+        public async Task InPearls(string category = "", int page = 0)
         {
             var output = await InPearlsGetter(category, page);
             if (output != null)
@@ -437,18 +438,18 @@ namespace fs24bot3.Commands
         }
 
         [Command("pearlsppc", "inpearlsppc", "inppc", "pppc")]
-        public async void InPearlsPpc(string category = "", int page = 0)
+        public async Task InPearlsPpc(string category = "", int page = 0)
         {
             var output = await InPearlsGetter(category, page);
             if (output != null)
             {
-                TranslatePpc(output);
+                await TranslatePpc(output);
             }
         }
 
         [Command("trlyrics", "trlyr")]
         [Description("Текст песни (Перевод)")]
-        public async void LyricsTr([Remainder] string song)
+        public async Task LyricsTr([Remainder] string song)
         {
             var user = new User(Context.Sender, Context.Connection, Context);
 
@@ -480,7 +481,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("u", "unicode")]
-        public async void FindUnicode(string query)
+        public async Task FindUnicode(string query)
         {
             string definedCodePoints = await http.MakeRequestAsync("http://unicode.org/Public/UNIDATA/UnicodeData.txt");
             StringReader reader = new StringReader(definedCodePoints);

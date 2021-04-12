@@ -19,7 +19,6 @@ namespace fs24bot3
 
         public static string jdoodleClientID;
         public static string jdoodleClientSecret;
-        public static string vkApiId;
         public static string trashbinUrl;
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
@@ -98,6 +97,7 @@ namespace fs24bot3
                 string configFile = File.ReadAllText("settings.toml");
                 var config = Toml.Parse(configFile);
                 var table = config.ToModel();
+
                 name = (string)((TomlTable)table["irc"])["name"];
                 network = (string)((TomlTable)table["irc"])["network"];
                 channel = (string)((TomlTable)table["irc"])["channel"];

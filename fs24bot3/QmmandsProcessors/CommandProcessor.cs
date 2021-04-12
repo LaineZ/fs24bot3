@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace fs24bot3
+namespace fs24bot3.QmmandsProcessors
 {
     public class CommandProcessor
     {

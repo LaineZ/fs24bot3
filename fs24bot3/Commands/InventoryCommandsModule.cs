@@ -1,8 +1,10 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -13,7 +15,7 @@ namespace fs24bot3.Commands
 
         [Command("inv", "inventory")]
         [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд @buy/@sell/@transfer и других")]
-        public async void Userstat(bool useSlugs = false)
+        public async Task Userstat(bool useSlugs = false)
         {
             var userop = new User(Context.Sender, Context.Connection);
             var userInv = userop.GetInventory();
@@ -36,7 +38,7 @@ namespace fs24bot3.Commands
 
         [Command("buy")]
         [Description("Купить товар")]
-        public async void Buy(string itemname, int count = 1)
+        public async Task Buy(string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.Connection);
 
@@ -59,7 +61,7 @@ namespace fs24bot3.Commands
 
         [Command("sell")]
         [Description("Продать товар")]
-        public async void Sell(string itemname, int count = 1)
+        public async Task Sell(string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.Connection);
 
@@ -79,7 +81,7 @@ namespace fs24bot3.Commands
 
         [Command("sellall")]
         [Description("Продать весь товар")]
-        public async void SellAll()
+        public async Task SellAll()
         {
             User user = new User(Context.Sender, Context.Connection);
             var inv = user.GetInventory();
@@ -99,7 +101,7 @@ namespace fs24bot3.Commands
 
         [Command("transfer")]
         [Description("Передатать вещи")]
-        public async void Transfer(string destanationNick, string itemname, int count = 1)
+        public async Task Transfer(string destanationNick, string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.Connection);
             User destanation = new User(destanationNick, Context.Connection);
@@ -117,7 +119,7 @@ namespace fs24bot3.Commands
 
         [Command("topitem")]
         [Description("Топ по предматам, по стандарту показывает топ по деньгам")]
-        public async void TopItem(string itemname = "money")
+        public async Task TopItem(string itemname = "money")
         {
             var top = new List<(string Name, int Count)>();
 
@@ -141,15 +143,15 @@ namespace fs24bot3.Commands
 
         [Command("topmoney")]
         [Description("Топ по деньгам")]
-        public void TopMoney()
+        public async Task TopMoney()
         {
-            TopItem();
+            await TopItem();
         }
 
 
         [Command("toplevels", "toplevel", "top")]
         [Description("Топ по уровню")]
-        public async void TopLevels()
+        public async Task TopLevels()
         {
             var top = new List<(string Name, int Count)>();
 
@@ -173,7 +175,7 @@ namespace fs24bot3.Commands
         [Command("wrench")]
         [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
         [Remarks("Стройте укрепления чтобы не получить гаечный ключ в лицо!!! И покупайте колонки чтобы не пропустить сообщения вашей оборонительной системы!!!")]
-        public async void Wrench([Remainder] string username)
+        public async Task Wrench([Remainder] string username)
         {
             try
             {
@@ -255,7 +257,7 @@ namespace fs24bot3.Commands
 
         [Command("break")]
         [Description("С определенным шансом позволяет пробить укрепления - требуется пистолет или 💣")]
-        public async void Shot(string username)
+        public async Task Shot(string username)
         {
             try
             {

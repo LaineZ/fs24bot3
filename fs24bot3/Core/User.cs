@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Serilog;
 using SQLite;

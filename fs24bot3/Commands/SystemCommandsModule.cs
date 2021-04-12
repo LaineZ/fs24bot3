@@ -1,10 +1,12 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -15,7 +17,7 @@ namespace fs24bot3.Commands
 
         [Command("info", "about", "credits")]
         [Description("Информация о боте")]
-        public async void Version()
+        public async Task Version()
         {
             var os = Environment.OSVersion;
             await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 Версия: 10.04.2021 | .NET Core: {0} Система: {1}",
@@ -24,7 +26,7 @@ namespace fs24bot3.Commands
 
         [Command("rsgame")]
         [Checks.CheckAdmin]
-        public async void ResetGame()
+        public async Task ResetGame()
         {
             Shop.SongameString = "";
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
@@ -41,7 +43,7 @@ namespace fs24bot3.Commands
         [Command("gc")]
         [Checks.CheckAdmin]
         [Description("Вывоз мусора")]
-        public async void CollectGarbage()
+        public async Task CollectGarbage()
         {
             GC.Collect();
             await Context.SendMessage(Context.Channel, "Мусор вывезли!");
@@ -50,7 +52,7 @@ namespace fs24bot3.Commands
 
         [Command("giveall")]
         [Checks.CheckAdmin]
-        public async void Giveall(string username)
+        public async Task Giveall(string username)
         {
             var user = new User(username, Context.Connection);
             foreach (var item in Shop.ShopItems)
@@ -63,7 +65,7 @@ namespace fs24bot3.Commands
         [Command("updconfig")]
         [Checks.CheckAdmin]
         [Description("Обновление файла конфигурации")]
-        public async void LoadConfig()
+        public async Task LoadConfig()
         {
             try
             {
@@ -78,7 +80,7 @@ namespace fs24bot3.Commands
 
         [Command("delalluserrods")]
         [Checks.CheckAdmin]
-        public async void RemoveAllRods()
+        public async Task RemoveAllRods()
         {
             Context.Connection.Execute("DROP TABLE UserFishingRods");
             Context.Connection.CreateTable<SQL.UserFishingRods>();
@@ -87,7 +89,7 @@ namespace fs24bot3.Commands
 
         [Command("give")]
         [Checks.CheckAdmin]
-        public async void Give(string username, string item, int count)
+        public async Task Give(string username, string item, int count)
         {
             User sql = new User(username, Context.Connection);
 
@@ -97,7 +99,7 @@ namespace fs24bot3.Commands
 
         [Command("joinch")]
         [Checks.CheckAdmin]
-        public async void JoinChannel(string channel)
+        public async Task JoinChannel(string channel)
         {
             await Context.SendMessage(Context.Channel, $"Зашел на: {channel}");
             await Context.Client.SendRaw("JOIN " + channel);
@@ -107,7 +109,7 @@ namespace fs24bot3.Commands
 
         [Command("partch")]
         [Checks.CheckAdmin]
-        public async void PartChannel(string channel)
+        public async Task PartChannel(string channel)
         {
             await Context.SendMessage(channel, "Простите я ухожу, всем пока...");
             await Context.Client.SendRaw("PART " + channel);
@@ -116,7 +118,7 @@ namespace fs24bot3.Commands
 
         [Command("xp")]
         [Checks.CheckAdmin]
-        public async void GiveXp(string username, int count)
+        public async Task GiveXp(string username, int count)
         {
             User sql = new User(username, Context.Connection);
 
@@ -127,7 +129,7 @@ namespace fs24bot3.Commands
 
         [Command("restartdb", "reinitdb", "refresh", "db")]
         [Checks.CheckAdmin]
-        public async void ReinitDb()
+        public async Task ReinitDb()
         {
             Core.Database.InitDatabase(Context.Connection);
             await Context.SendMessage(Context.Channel, "База данных загружена!");
@@ -135,7 +137,7 @@ namespace fs24bot3.Commands
 
         [Command("level")]
         [Checks.CheckAdmin]
-        public async void GiveLevel(string username, int count)
+        public async Task GiveLevel(string username, int count)
         {
             User sql = new User(username, Context.Connection);
 
@@ -145,7 +147,7 @@ namespace fs24bot3.Commands
 
         [Command("setcap")]
         [Checks.CheckAdmin]
-        public async void Cap(int cap)
+        public async Task Cap(int cap)
         {
             Shop.MaxCap = cap;
             await Context.SendMessage(Context.Channel, "Установлен лимит невыплаты при: " + Shop.MaxCap);
@@ -153,7 +155,7 @@ namespace fs24bot3.Commands
 
         [Command("tickrate")]
         [Checks.CheckAdmin]
-        public async void Tickrate(int speed = 5000)
+        public async Task Tickrate(int speed = 5000)
         {
             Shop.Tickrate = speed;
             await Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Shop.Tickrate);
@@ -162,7 +164,7 @@ namespace fs24bot3.Commands
 
         [Command("loggerlevel")]
         [Checks.CheckAdmin]
-        public async void LoggerLevel(string level = "Verbose")
+        public async Task LoggerLevel(string level = "Verbose")
         {
             Enum.TryParse(level, out LogEventLevel lvlToSet);
             Configuration.LoggerSw.MinimumLevel = lvlToSet;
@@ -171,7 +173,7 @@ namespace fs24bot3.Commands
 
         [Command("sqlt")]
         [Checks.CheckAdmin]
-        public async void LoggerLevel(bool enabled = true)
+        public async Task LoggerLevel(bool enabled = true)
         {
             Context.Connection.Tracer = new Action<string>(q => { Log.Warning(q); });
             Context.Connection.Trace = enabled;
@@ -181,7 +183,7 @@ namespace fs24bot3.Commands
 
         [Command("delete")]
         [Checks.CheckAdmin]
-        public async void DeleteUser(string users, int level = 1)
+        public async Task DeleteUser(string users, int level = 1)
         {
             if (users.Length > 0)
             {
@@ -201,14 +203,14 @@ namespace fs24bot3.Commands
 
         [Command("view")]
         [Checks.CheckAdmin]
-        public async void ViewUsers()
+        public async Task ViewUsers()
         {
             await Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
         }
 
         [Command("resetcache")]
         [Checks.CheckAdmin]
-        public async void ResetCache()
+        public async Task ResetCache()
         {
             Context.Connection.Execute("DELETE FROM LyricsCache WHERE addedby IS NULL");
             await Context.SendMessage(Context.Channel, "Кэш песен УДАЛЕН НАВСЕГДА.....................");
@@ -216,7 +218,7 @@ namespace fs24bot3.Commands
 
         [Command("ignore")]
         [Checks.CheckAdmin]
-        public async void Ignore(CommandToggles.CommandEdit action, [Remainder] string username)
+        public async Task Ignore(CommandToggles.CommandEdit action, [Remainder] string username)
         {
             var usernames = username.Split(" ");
             switch (action)

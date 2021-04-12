@@ -1,7 +1,9 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -12,7 +14,7 @@ namespace fs24bot3.Commands
 
         [Command("buyrod")]
         [Description("Купить удочочку - если параметр rodname пуст, напишет список удочек")]
-        public async void Buyrod(string rodname = "")
+        public async Task Buyrod(string rodname = "")
         {
             if (rodname.Any())
             {
@@ -55,7 +57,7 @@ namespace fs24bot3.Commands
 
         [Command("sellrod")]
         [Description("Продать свою удочку")]
-        public async void SellRod()
+        public async Task SellRod()
         {
             var user = new User(Context.Sender, Context.Connection, Context);
 
@@ -83,7 +85,7 @@ namespace fs24bot3.Commands
         [Command("nest")]
         [Description("Установить место рыбалки - если параметр nestname пуст, напишет список мест")]
         [Remarks("RLF - требуемый размер лески F - количество рыбы")]
-        public async void SetNest(string nestname = "")
+        public async Task SetNest(string nestname = "")
         {
             var user = new User(Context.Sender, Context.Connection, Context);
             string rodname = user.GetRod().RodName;
@@ -135,7 +137,7 @@ namespace fs24bot3.Commands
 
         [Command("fish")]
         [Description("Рыбачить!")]
-        public async void Fish()
+        public async Task Fish()
         {
             var user = new User(Context.Sender, Context.Connection, Context);
             var userRod = user.GetRod();
@@ -202,7 +204,7 @@ namespace fs24bot3.Commands
 
         [Command("rodinfo")]
         [Description("Инфо о удочке")]
-        public async void Rodinfo(string rodname = "")
+        public async Task Rodinfo(string rodname = "")
         {
             if (!rodname.Any())
             {

@@ -1,5 +1,6 @@
 ﻿using fs24bot3.Commands;
 using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using NetIRC;
 using NetIRC.Connection;
 using NetIRC.Messages;
@@ -146,17 +147,8 @@ namespace fs24bot3
                             events.LevelInscrease();
                             events.GiveWaterFromPumps();
                         }
-                        else
-                        {
-                            Log.Verbose("Message was sent in PM, Level increasing IGNORED!!!");
-                        }
                     }).Start();
                 }
-                else
-                {
-                    Log.Verbose("User tried send message but it ignored!");
-                }
-
 
                 if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd(), '@', out string output))
                     return;

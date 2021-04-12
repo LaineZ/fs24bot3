@@ -1,9 +1,11 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using SQLite;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -16,7 +18,7 @@ namespace fs24bot3.Commands
         [Command("regcmd")]
         [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
         [Remarks("[IsLua = false] Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел\n[isLua = true] - Lua движок команд")]
-        public async void CustomCmdRegister(string command, bool isLua, [Remainder] string output)
+        public async Task CustomCmdRegister(string command, bool isLua, [Remainder] string output)
         {
             User usr = new User(Context.Sender, Context.Connection, Context);
             bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
@@ -53,7 +55,7 @@ namespace fs24bot3.Commands
 
         [Command("regcmdurl", "regluaurl")]
         [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
-        public async void CustomCmdRegisterUrlAsync(string command, string rawurl)
+        public async Task CustomCmdRegisterUrlAsync(string command, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
             if (response != null)
@@ -61,7 +63,7 @@ namespace fs24bot3.Commands
                 if (response.ContentType.Contains("text/plain"))
                 {
                     Stream responseStream = response.GetResponseStream();
-                    CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
+                    await CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
                 }
                 else
                 {
@@ -77,7 +79,7 @@ namespace fs24bot3.Commands
         [Command("cmdout")]
         [Description("Редактор строки вывода команды: параметр action: add, delete")]
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить вывод команды при этом параметр value отвечает за строку вывода\ndelete - удалить вывод команды, параметр value принимает как числовые значения вывода от 0-n, так и строку вывода которую небоходимо удалить (без ||)")]
-        public async void CustomCmdEdit(string command, CommandToggles.CommandEdit action, [Remainder] string value)
+        public async Task CustomCmdEdit(string command, CommandToggles.CommandEdit action, [Remainder] string value)
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
@@ -138,7 +140,7 @@ namespace fs24bot3.Commands
         [Command("cmdown")]
         [Checks.CheckAdmin]
         [Description("Сменить владельца команды")]
-        public async void CmdOwn(string command, string nick)
+        public async Task CmdOwn(string command, string nick)
         {
             Context.Connection.Execute("UPDATE CustomUserCommands SET Nick = ? WHERE Command = ?", nick, command);
             await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
@@ -146,7 +148,7 @@ namespace fs24bot3.Commands
 
         [Command("cmdinfo")]
         [Description("Информация о команде")]
-        public async void CmdInfo(string command)
+        public async Task CmdInfo(string command)
         {
             // a small workaround for this exception An exception occurred while executing cmdinfo.: `Cannot get SQL for: Add`
             command = "@" + command;
@@ -185,7 +187,7 @@ namespace fs24bot3.Commands
         [Command("cmdrep")]
         [Description("Заменитель строки вывода команды (используете кавычки если замена с пробелом)")]
         [Remarks("Если параметр newstr не заполнен - происходит просто удаление oldstr из команды")]
-        public async void CustomCmdRepl(string command, string oldstr, string newstr = "")
+        public async Task CustomCmdRepl(string command, string oldstr, string newstr = "")
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
@@ -210,7 +212,7 @@ namespace fs24bot3.Commands
 
         [Command("cmdupd")]
         [Description("Полное обновление вывода команды")]
-        public async void LuaUpdCoommand(string command, [Remainder] string newstr)
+        public async Task LuaUpdCoommand(string command, [Remainder] string newstr)
         {
             var commandConcat = "@" + command;
             var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
@@ -235,7 +237,7 @@ namespace fs24bot3.Commands
 
         [Command("delcmd")]
         [Description("Удалить команду")]
-        public async void CustomCmdRem(string command)
+        public async Task CustomCmdRem(string command)
         {
             var commandConcat = "@" + command;
             User usr = new User(Context.Sender, Context.Connection);
@@ -265,7 +267,7 @@ namespace fs24bot3.Commands
 
         [Command("dellrc", "deletelyrics", "removelyrics", "remlyr", "dellyr")]
         [Description("Удалить свои слова из базы бота: параметр song должен быть в формате `artist - trackname`")]
-        public async void CustomLyrRem([Remainder] string song)
+        public async Task CustomLyrRem([Remainder] string song)
         {
             var data = song.Split(" - ");
             string artist = data[0];

@@ -1,7 +1,9 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -12,7 +14,7 @@ namespace fs24bot3.Commands
 
         [Command("hourstat")]
         [Description("Статистика за час")]
-        public async void Hourstat()
+        public async Task Hourstat()
         {
             List<string> stopwords = new List<string>() { "что", "как", "все", "она", "так", "его", "только", "мне", 
                 "было", "вот", "меня", "еще", "нет", "ему", "теперь", "когда", "даже", "вдруг", 
@@ -40,14 +42,14 @@ namespace fs24bot3.Commands
 
         [Command("me")]
         [Description("Макроэкономические показатели")]
-        public async void Economy()
+        public async Task Economy()
         {
             await Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {new MultiUser(Context.Connection).GetItemAvg()} Последнее время выполнения обновления данных о пользователях: {Shop.TickSpeed.TotalMilliseconds} ms Период выполнения Shop.Update() {Shop.Tickrate} ms Покупок/Продаж {Shop.Buys}/{Shop.Sells}");
         }
 
         [Command("mem")]
         [Description("Использование памяти")]
-        public async void MemoryUsage()
+        public async Task MemoryUsage()
         {
             var proc = System.Diagnostics.Process.GetCurrentProcess();
             await Context.SendMessage(Context.Channel, string.Join(" | ", proc.GetType().GetProperties().Where(x => x.Name.EndsWith("64")).Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
@@ -55,7 +57,7 @@ namespace fs24bot3.Commands
 
         [Command("stat", "stats")]
         [Description("Статы пользователя или себя")]
-        public async void Userstat(string nick = null)
+        public async Task Userstat(string nick = null)
         {
             string userNick = nick ?? Context.Sender;
             User usr = new User(userNick, Context.Connection);

@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
 {
@@ -42,7 +44,7 @@ namespace fs24bot3.Commands
             "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; site:String - Поиск по адресу сайта; multi:Boolean - Мульти вывод (сразу 5 результатов);\n" +
             "random:Boolean - Рандомная выдача (не работает с multi); include:String - Включить результаты с данной подстрокой; exclude:String - Исключить результаты с данной подстрокой;\n" +
             "regex:String - Регулярное выражение в формате PCRE")]
-        public async void MailSearch([Remainder] string query)
+        public async Task MailSearch([Remainder] string query)
         {
             SearchCommandService.AddModule<SearchQueryCommands>();
             string[] queryOptions = query.Split(" ");
@@ -158,7 +160,7 @@ namespace fs24bot3.Commands
 
         [Command("bc", "bandcamp", "bcs")]
         [Description("Поиск по сайту bandcamp.com")]
-        public async void BcSearch([Remainder] string query)
+        public async Task BcSearch([Remainder] string query)
         {
             var settings = new JsonSerializerSettings
             {
@@ -205,7 +207,7 @@ namespace fs24bot3.Commands
 
         [Command("bcr", "bcd", "bcdisc", "bandcampdiscover", "bcdiscover")]
         [Description("Поиск по тегам на сайте bandcamp.com")]
-        public async void BcDiscover(uint mult = 1, [Remainder] string tagsStr = "metal")
+        public async Task BcDiscover(uint mult = 1, [Remainder] string tagsStr = "metal")
         {
             var tags = tagsStr.Split(" ");
             List<string> tagsFixed = new List<string>();
