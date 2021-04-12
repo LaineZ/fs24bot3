@@ -93,6 +93,13 @@ namespace fs24bot3.Commands
 
                 if (ctx.SearchResults.Count >= ctx.Limit) { break; }
                 string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query + "&sf=" + (i * 10) + "&site=" + ctx.Site);
+
+                if (response == null)
+                {
+                    Context.SendSadMessage(Context.Channel, "Не удается установить соединение с сервером. Возможно...");
+                    return;
+                }
+
                 var items = Core.MailSearchDecoder.PerformDecode(response);
                 
                 if (items == null) { continue; }
