@@ -101,6 +101,7 @@ namespace fs24bot3.Core
                         lua["print"] = null;
                         lua["pcall"] = null;
                         lua["xpcall"] = null;
+                        lua["load"] = null;
 
                         // just a bunch of globals
                         lua["RANDOM_NICK"] = nick;
