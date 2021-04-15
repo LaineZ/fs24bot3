@@ -34,7 +34,7 @@ namespace fs24bot3.Commands
             int messageCount = Context.Messages.Count;
             string mostActives = string.Join(" ", Context.Messages.GroupBy(msg => msg.Prefix.From).OrderByDescending(grp => grp.Count())
                         .Select(grp => grp.Key).Take(3));
-            string concatedMessage = string.Join("\n", Context.Messages.Select(x => x.Trailing));
+            string concatedMessage = string.Join("\n", Context.Messages.Select(x => x.Trailing.TrimEnd()));
             string[] words = concatedMessage.Split(" ");
             string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 2 && !stopwords.Any(s => word.Equals(s))).GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(5).Select(grp => grp.Key));
             await Context.SendMessage(Context.Channel, $"Статистика за текущий час: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самый активные: {mostActives}, Возможная темы: {mostUsedwords}");

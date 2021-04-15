@@ -210,7 +210,6 @@ namespace fs24bot3.Commands
                     {
                         AddedBy = Context.Sender,
                         Lyrics = lyricData,
-                        // TODO: fix that
                         Artist = artist,
                         Track = track
                     };
@@ -242,7 +241,7 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("aigen", "gensent", "ppc")]
+        [Command("aigen", "gensent")]
         public async Task GenAI(uint max = 200)
         {
             var user = new User(Context.Sender, Context.Connection, Context);
@@ -449,7 +448,7 @@ namespace fs24bot3.Commands
 
         [Command("trlyrics", "trlyr")]
         [Description("Текст песни (Перевод)")]
-        public async Task LyricsTr([Remainder] string song)
+        public async Task LyricsTr(string lang, [Remainder] string song)
         {
             var user = new User(Context.Sender, Context.Connection, Context);
 
@@ -464,7 +463,8 @@ namespace fs24bot3.Commands
 
                     if (await user.RemItemFromInv("money", 1000 + lyricsOut.Length))
                     {
-                        var resultTranslated = await Core.Transalator.Translate(lyricsOut, "auto-detect", "ru");
+                        var lng = ParseLang(lang);
+                        var resultTranslated = await Core.Transalator.Translate(lyricsOut, lng.Item1, lng.Item2);
 
                         Context.SendMultiLineMessage(resultTranslated.text.ToString());
                     }
@@ -477,56 +477,6 @@ namespace fs24bot3.Commands
             else
             {
                 await Context.SendMessage(Context.Channel, "Instumental");
-            }
-        }
-
-        [Command("u", "unicode")]
-        public async Task FindUnicode(string query)
-        {
-            string definedCodePoints = await http.MakeRequestAsync("http://unicode.org/Public/UNIDATA/UnicodeData.txt");
-            StringReader reader = new StringReader(definedCodePoints);
-            UTF8Encoding encoder = new UTF8Encoding();
-            List<string> output = new List<string>();
-            while (true)
-            {
-                string line = reader.ReadLine();
-
-                if (line == null) break;
-
-                var props = line.Split(";");
-
-                int codePoint = Convert.ToInt32(props[0], 16);
-                if (codePoint >= 0xD800 && codePoint <= 0xDFFF)
-                {
-                    //surrogate boundary; not valid codePoint, but listed in the document
-                }
-                else
-                {
-                    string utf16 = char.ConvertFromUtf32(codePoint);
-                    byte[] utf8 = encoder.GetBytes(utf16);
-
-                    string name = props[1];
-                    string hexcode = "0x" + props[0];
-
-                    if (name == "<control>")
-                    {
-                        name = props[10];
-                    }
-
-                    if (query.ToLower().Contains(name.ToLower()) || query == encoder.GetString(utf8))
-                    {
-                        output.Add($"{encoder.GetString(utf8)} {IrcColors.Green}({name}, {hexcode})");
-                    }
-                }
-            }
-
-            if (output.Any())
-            {
-                await Context.SendMessage(Context.Channel, string.Join(", ", output));
-            }
-            else
-            {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Red}{RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages)}");
             }
         }
     }
