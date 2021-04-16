@@ -85,9 +85,9 @@ namespace fs24bot3.QmmandsProcessors
                 {
                     if (!string.IsNullOrWhiteSpace(outputstr))
                     {
-                        await Client.SendAsync(new PrivMsgMessage(Channel, Sender + ": " + outputstr));
+                        await Client.SendAsync(new PrivMsgMessage(Channel, outputstr));
+                        count++;
                     }
-                    count++;
                     if (count > 4)
                     {
                         string link = await http.UploadToTrashbin(content, "addplain");

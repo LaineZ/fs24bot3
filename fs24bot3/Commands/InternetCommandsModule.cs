@@ -1,5 +1,6 @@
 ﻿using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
+using Genbox.WolframAlpha;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Qmmands;
@@ -420,6 +421,37 @@ namespace fs24bot3.Commands
                     var title = node.SelectSingleNode("//div[@class=\"result\"]").SelectSingleNode("//div[@class=\"result_title\"]");
                     await Context.SendMessage(Context.Channel, $"{title.InnerText} // {hrefValue}");
                     break;
+                }
+            }
+        }
+
+        [Command("wa", "wolfram", "wolframalpha")]
+        [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Запущена 15 мая 2009 года. Не является поисковой системой.")]
+        public async Task Wolfram([Remainder] string query)
+        {
+            WolframAlphaClient client = new WolframAlphaClient(Configuration.wolframID);
+            var results = await client.QueryAsync(query);
+
+            if (results.IsError)
+            {
+                Context.SendErrorMessage(Context.Channel, $"Ошибка при работе сервиса: {results.ErrorDetails}");
+                return;
+            }
+
+            if (!results.IsSuccess || !results.Pods.Any())
+            {
+                Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                return;
+            }
+
+            foreach (var pod in results.Pods.Skip(1).Take(2))
+            {
+                //await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{pod.Title}:");
+
+                foreach (var subPod in pod.SubPods)
+                {
+                    if (!string.IsNullOrEmpty(subPod.Plaintext))
+                        await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{pod.Title}: {IrcColors.Reset}{subPod.Plaintext}");
                 }
             }
         }

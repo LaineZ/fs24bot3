@@ -20,6 +20,7 @@ namespace fs24bot3
         public static string jdoodleClientID;
         public static string jdoodleClientSecret;
         public static string trashbinUrl;
+        public static string wolframID;
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
 
@@ -48,6 +49,7 @@ namespace fs24bot3
                         {"jdoodle_client_id", jdoodleClientID},
                         {"jdoodle_client_secret", jdoodleClientSecret},
                         {"trashbin_url", trashbinUrl },
+                        {"wolfram_id", wolframID },
                     }
                 }
             }
@@ -84,6 +86,7 @@ namespace fs24bot3
                         {"jdoodle_client_id", "0"},
                         {"jdoodle_client_secret", "0"},
                         {"trashbin_url", "http://127.0.0.1:8000" },
+                        {"wolfram_id", "0" },
                     }
                 }
             }
@@ -107,6 +110,7 @@ namespace fs24bot3
                 jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
                 jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
                 trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
+                wolframID = (string)((TomlTable)table["services"])["wolfram_id"];
                 Log.Information("Configuration loaded!");
             }
         }
