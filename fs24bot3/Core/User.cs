@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace fs24bot3
+namespace fs24bot3.Core
 {
     class User
     {
@@ -181,7 +181,7 @@ namespace fs24bot3
             }
             else
             {
-                throw new Core.Exceptions.UserNotFoundException();
+                throw new Exceptions.UserNotFoundException();
             }
         }
 
@@ -195,7 +195,7 @@ namespace fs24bot3
 
                 if (userNick == null)
                 {
-                    throw new Core.Exceptions.UserNotFoundException();
+                    throw new Exceptions.UserNotFoundException();
                 }
 
                 foreach (var nick in userNick)
@@ -206,7 +206,7 @@ namespace fs24bot3
             }
             else
             {
-                throw new Core.Exceptions.UserNotFoundException();
+                throw new Exceptions.UserNotFoundException();
             }
         }
 
@@ -323,7 +323,7 @@ namespace fs24bot3
             {
 
                 Log.Verbose("Trying to find tag with name: {0}", name);
-                var tagInfo = new Core.TagsUtils(name, Connect);
+                var tagInfo = new TagsUtils(name, Connect);
 
                 if (tagInfo.GetTagByName() == null)
                 {

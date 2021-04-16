@@ -1,10 +1,11 @@
-﻿using fs24bot3.QmmandsProcessors;
+﻿using fs24bot3.Core;
+using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Checks
 {
-    public class CheckAdmin : CheckAttribute
+    public sealed class CheckAdmin : CheckAttribute
     {
         public CheckAdmin()
         { }

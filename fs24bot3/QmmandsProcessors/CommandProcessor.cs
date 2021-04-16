@@ -20,7 +20,7 @@ namespace fs24bot3.QmmandsProcessors
             public SQLiteConnection Connection;
             readonly HttpTools http = new HttpTools();
             public List<ParsedIRCMessage> Messages = new List<ParsedIRCMessage>();
-            private bool PerformPpc = false;
+            public bool PerformPpc = false;
 
             // Pass your service provider to the base command context.
             public CustomCommandContext(string target, ParsedIRCMessage message, Client client, SQLiteConnection connection, List<ParsedIRCMessage> msgs = null, bool perfppc = false, IServiceProvider provider = null) : base(provider)
@@ -30,7 +30,11 @@ namespace fs24bot3.QmmandsProcessors
                 Messages = msgs;
                 Channel = target;
                 Sender = message.Prefix.From;
-                PerformPpc = perfppc;
+                if (perfppc)
+                {
+                    var usr = new Core.User(Sender, connection, this);
+                    PerformPpc = usr.RemItemFromInv("beer", 1).Result;
+                }
             }
 
             private async Task SendMessageInternal(string channel, string message)
@@ -51,7 +55,21 @@ namespace fs24bot3.QmmandsProcessors
                 }
                 else
                 {
-                    SendMultiLineMessage(message);
+                    int count = 0;
+                    foreach (string outputstr in message.Split("\n"))
+                    {
+                        if (!string.IsNullOrWhiteSpace(outputstr))
+                        {
+                            await Client.SendAsync(new PrivMsgMessage(Channel, outputstr));
+                            count++;
+                        }
+                        if (count > 4)
+                        {
+                            string link = await http.UploadToTrashbin(message, "addplain");
+                            await Client.SendAsync(new PrivMsgMessage(Channel, Sender + ": Полный вывод здесь: " + link));
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -76,25 +94,6 @@ namespace fs24bot3.QmmandsProcessors
             public async void SendErrorMessage(string channel, string message)
             {
                 await SendMessage(channel, IrcColors.Gray + message);
-            }
-
-            public async void SendMultiLineMessage(string content)
-            {
-                int count = 0;
-                foreach (string outputstr in content.Split("\n"))
-                {
-                    if (!string.IsNullOrWhiteSpace(outputstr))
-                    {
-                        await Client.SendAsync(new PrivMsgMessage(Channel, outputstr));
-                        count++;
-                    }
-                    if (count > 4)
-                    {
-                        string link = await http.UploadToTrashbin(content, "addplain");
-                        await Client.SendAsync(new PrivMsgMessage(Channel, Sender + ": Полный вывод здесь: " + link));
-                        break;
-                    }
-                }
             }
         }
     }

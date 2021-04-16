@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Threading.Tasks;
 using fs24bot3.QmmandsProcessors;
+using fs24bot3.Core;
 
 namespace fs24bot3.Commands
 {
@@ -63,7 +64,7 @@ namespace fs24bot3.Commands
                     await Context.SendMessage(Context.Channel, "@" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                     if (cmd.Remarks != null)
                     {
-                        Context.SendMultiLineMessage(IrcColors.Bold + cmd.Remarks);
+                        await Context.SendMessage(Context.Channel, IrcColors.Bold + cmd.Remarks);
                     }
 
                     await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
@@ -288,7 +289,7 @@ namespace fs24bot3.Commands
                     }
                     break;
                 case CommandToggles.CommandEdit.Delete:
-                    var tagDel = new Core.TagsUtils(tagname, Context.Connection);
+                    var tagDel = new TagsUtils(tagname, Context.Connection);
                     if (tagDel.GetTagByName().Username == Context.Sender)
                     {
                         Context.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);

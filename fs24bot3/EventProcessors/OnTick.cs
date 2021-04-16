@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using fs24bot3.Core;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Text;

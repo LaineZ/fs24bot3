@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Core;
+using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System;
@@ -166,9 +167,9 @@ namespace fs24bot3.Commands
 
             await Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ ПО УРОВНЮ");
 
-            foreach (var topuser in result.Take(5))
+            foreach (var (Name, Count) in result.Take(5))
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Bold + topuser.Name + ": " + topuser.Count);
+                await Context.SendMessage(Context.Channel, IrcColors.Bold + Name + ": " + Count);
             }
         }
 
@@ -249,7 +250,7 @@ namespace fs24bot3.Commands
                     await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.MissMessages));
                 }
             }
-            catch (Core.Exceptions.UserNotFoundException)
+            catch (Exceptions.UserNotFoundException)
             {
                 await Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ в {username}!");
             }
@@ -306,7 +307,7 @@ namespace fs24bot3.Commands
                     await Context.SendMessage(Context.Channel, "Вы не попали по укреплению или их вообще нет!");
                 }
             }
-            catch (Core.Exceptions.UserNotFoundException)
+            catch (Exceptions.UserNotFoundException)
             {
                 await Context.SendMessage(Context.Channel, $"Вы потеряли себя...");
             }

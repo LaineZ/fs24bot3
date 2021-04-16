@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Core;
+using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Genbox.WolframAlpha;
 using HtmlAgilityPack;
@@ -143,7 +144,7 @@ namespace fs24bot3.Commands
                 if (jsonOutput.output != null)
                 {
                     await Context.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
-                    Context.SendMultiLineMessage(jsonOutput.output);
+                    await Context.SendMessage(Context.Channel, jsonOutput.output);
                 }
                 else
                 {
@@ -243,6 +244,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("aigen", "gensent")]
+        [Checks.UnPpcable]
         public async Task GenAI(uint max = 200)
         {
             var user = new User(Context.Sender, Context.Connection, Context);
@@ -253,6 +255,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("tr", "translate")]
+        [Checks.UnPpcable]
         [Description("Переводчик")]
         [Remarks("Параметр lang нужно вводить в формате 'sourcelang-translatelang' или 'traslatelang' в данном случае переводчик попытается догадаться с какого языка пытаются перевести (работает криво, претензии не к разработчику бота)\nВсе языки вводятся по стандарту ISO-639-1 посмотреть можно здесь: https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")]
         public async Task Translate(string lang, [Remainder] string text)
@@ -271,6 +274,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("trppc")]
+        [Checks.UnPpcable]
         [Description("Переводчик (ппц)")]
         public async Task TranslatePpc([Remainder] string text)
         {
@@ -282,6 +286,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("trppcgen")]
+        [Checks.UnPpcable]
         [Description("Переводчик (ппц)")]
         public async Task TranslatePpcGen(int gens, [Remainder] string text)
         {
@@ -305,6 +310,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("trppclite", "trl")]
+        [Checks.UnPpcable]
         [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в @tr")]
         public async Task TranslatePpc2(string lang, [Remainder] string text)
         {
@@ -336,6 +342,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("dmlyrics", "dmlyr")]
+        [Checks.UnPpcable]
         [Description("Текст песни (ппц)")]
         public async Task LyricsPpc([Remainder] string song)
         {
@@ -358,12 +365,12 @@ namespace fs24bot3.Commands
                             translated = translatorResponse.text;
                         }
 
-                        Context.SendMultiLineMessage(translated);
+                        await Context.SendMessage(Context.Channel, translated);
                     }
                 }
                 catch (Exception e)
                 {
-                    Context.SendMultiLineMessage("Ошибка при получении слов: " + e.Message);
+                    Context.SendErrorMessage(Context.Channel, "Ошибка при получении слов: " + e.Message);
                 }
             }
             else
@@ -383,11 +390,11 @@ namespace fs24bot3.Commands
                 {
                     Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.Connection);
 
-                    Context.SendMultiLineMessage(await lyrics.GetLyrics());
+                    await Context.SendMessage(Context.Channel, await lyrics.GetLyrics());
                 }
                 catch (Exception e)
                 {
-                    Context.SendMultiLineMessage("Ошибка при получении слов: " + e.Message);
+                    Context.SendErrorMessage(Context.Channel, "Ошибка при получении слов: " + e.Message);
                 }
             }
             else
@@ -426,7 +433,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("wa", "wolfram", "wolframalpha")]
-        [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Запущена 15 мая 2009 года. Не является поисковой системой.")]
+        [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Не является поисковой системой.")]
         public async Task Wolfram([Remainder] string query)
         {
             WolframAlphaClient client = new WolframAlphaClient(Configuration.wolframID);
@@ -444,10 +451,8 @@ namespace fs24bot3.Commands
                 return;
             }
 
-            foreach (var pod in results.Pods.Skip(1).Take(2))
+            foreach (var pod in results.Pods.Take(3))
             {
-                //await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{pod.Title}:");
-
                 foreach (var subPod in pod.SubPods)
                 {
                     if (!string.IsNullOrEmpty(subPod.Plaintext))
@@ -468,17 +473,8 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("pearlsppc", "inpearlsppc", "inppc", "pppc")]
-        public async Task InPearlsPpc(string category = "", int page = 0)
-        {
-            var output = await InPearlsGetter(category, page);
-            if (output != null)
-            {
-                await TranslatePpc(output);
-            }
-        }
-
         [Command("trlyrics", "trlyr")]
+        [Checks.UnPpcable]
         [Description("Текст песни (Перевод)")]
         public async Task LyricsTr(string lang, [Remainder] string song)
         {
@@ -498,12 +494,12 @@ namespace fs24bot3.Commands
                         var lng = ParseLang(lang);
                         var resultTranslated = await Core.Transalator.Translate(lyricsOut, lng.Item1, lng.Item2);
 
-                        Context.SendMultiLineMessage(resultTranslated.text.ToString());
+                        Context.SendMessage(Context.Channel, resultTranslated.text.ToString());
                     }
                 }
                 catch (Exception e)
                 {
-                    Context.SendMultiLineMessage("Ошибка при получении слов: " + e.Message);
+                    await Context.SendMessage(Context.Channel, "Ошибка при получении слов: " + e.Message);
                 }
             }
             else

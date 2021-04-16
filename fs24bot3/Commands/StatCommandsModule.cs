@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Core;
+using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System.Collections.Generic;
@@ -74,7 +75,7 @@ namespace fs24bot3.Commands
                         await Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
                     }
                 }
-                catch (Core.Exceptions.UserNotFoundException)
+                catch (Exceptions.UserNotFoundException)
                 {
                     await Context.SendMessage(Context.Channel, "Теги: Нет");
                 }

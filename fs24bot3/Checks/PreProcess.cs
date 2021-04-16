@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace fs24bot3.Checks
 {
-    public class PreProcess : CheckAttribute
+    public sealed class PreProcess : CheckAttribute
     {
         public PreProcess()
         { }

@@ -18,7 +18,7 @@ namespace fs24bot3.Commands
         public CommandService Service { get; set; }
 
         private readonly HttpTools http = new HttpTools();
-        private HttpClient client = new HttpClient();
+        private readonly HttpClient client = new HttpClient();
         private readonly CommandService SearchCommandService = new CommandService();
 
 

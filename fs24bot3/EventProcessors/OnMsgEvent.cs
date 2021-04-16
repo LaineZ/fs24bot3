@@ -1,3 +1,4 @@
+using fs24bot3.Core;
 using NetIRC;
 using NetIRC.Messages;
 using Serilog;
@@ -9,9 +10,9 @@ namespace fs24bot3.EventProcessors
     {
         private readonly Client Client;
         private readonly SQLite.SQLiteConnection Connection;
-        private User User;
-        private string Target;
-        private string Message;
+        private readonly Core.User User;
+        private readonly string Target;
+        private readonly string Message;
         private readonly Random Rand = new Random();
 
         public OnMsgEvent(Client client, string nick, string target, string message, SQLite.SQLiteConnection connect)
@@ -20,7 +21,7 @@ namespace fs24bot3.EventProcessors
             Connection = connect;
             Message = message;
             Target = target;
-            User = new User(nick, Connection);
+            User = new Core.User(nick, Connection);
         }
 
         public void LevelInscrease()

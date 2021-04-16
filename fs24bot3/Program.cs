@@ -68,7 +68,7 @@ namespace fs24bot3
             _service.AddModule<CustomCommandsModule>();
             _service.AddModule<StatCommandModule>();
 
-            client = new Client(new NetIRC.User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
+            client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
 
             client.OnRawDataReceived += Client_OnRawDataReceived;
             client.OnIRCMessageParsed += Client_OnIRCMessageParsed;
@@ -150,10 +150,10 @@ namespace fs24bot3
                     }).Start();
                 }
 
-                if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd(), '@', out string output))
+                if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd().TrimStart('p'), '@', out string output))
                     return;
 
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, client, Connection, MessageBus));
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, client, Connection, MessageBus, message.Trailing.StartsWith("p")));
                 switch (result)
                 {
                     case ChecksFailedResult err:
