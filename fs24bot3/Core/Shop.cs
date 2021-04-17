@@ -57,18 +57,10 @@ namespace fs24bot3
 
             foreach (var item in ShopItems)
             {
-                try
+                if (!connect.Table<Models.SQL.Item>().Where(x => x.Name == item.Name).Any())
                 {
                     connect.Insert((Models.SQL.Item)item);
                     Log.Verbose("Inserted: {0}", item.Name);
-                }
-                catch (SQLiteException)
-                {
-                    continue;
-                }
-                catch (Exception e)
-                {
-                    Log.Warning("Unrecoverable error while adding item: {0} Reason: {1}", item.Name, e.Message);
                 }
             }
             Rand = new Random();
@@ -88,7 +80,7 @@ namespace fs24bot3
 
         public static void UpdateShop()
         {
-            foreach (var shopItem in Shop.ShopItems)
+            foreach (var shopItem in ShopItems)
             {
                 int check = Rand.Next(0, 10);
                 if (check == 5)

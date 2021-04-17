@@ -45,20 +45,20 @@ namespace fs24bot3.Commands
         [Command("include")]
         public void FilterInclude(string contains)
         {
-            Context.SearchResults.RemoveAll(s => !s.title.ToLower().Contains(contains.ToLower()) || !s.passage.ToLower().Contains(contains.ToLower()));
+            Context.SearchResults.RemoveAll(s => !s.Title.ToLower().Contains(contains.ToLower()) || !s.Description.ToLower().Contains(contains.ToLower()));
         }
 
         [Command("exclude")]
         public void FilterExclude(string contains)
         {
-            Context.SearchResults.RemoveAll(s => s.title.ToLower().Contains(contains.ToLower()) || s.passage.ToLower().Contains(contains.ToLower()));
+            Context.SearchResults.RemoveAll(s => s.Title.ToLower().Contains(contains.ToLower()) || s.Description.ToLower().Contains(contains.ToLower()));
         }
 
         [Command("regex")]
         public void FilterRegex(string regex)
         {
             var reg = new Regex(regex);
-            var stuffToRemove = Context.SearchResults.RemoveAll(s => !reg.IsMatch(s.title) || !reg.IsMatch(s.passage));
+            var stuffToRemove = Context.SearchResults.RemoveAll(s => !reg.IsMatch(s.Title) || !reg.IsMatch(s.Description));
         }
     }
 }

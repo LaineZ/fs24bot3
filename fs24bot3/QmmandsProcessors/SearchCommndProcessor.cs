@@ -13,7 +13,7 @@ namespace fs24bot3.QmmandsProcessors
     {
         public sealed class CustomCommandContext : CommandContext
         {
-            public List<MailSearch.Result> SearchResults = new List<MailSearch.Result>();
+            public List<ResultGeneric> SearchResults = new List<ResultGeneric>();
             public string Site = string.Empty;
             public bool Random = true;
             public int Page = 0;

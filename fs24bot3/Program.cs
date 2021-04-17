@@ -158,7 +158,6 @@ namespace fs24bot3
                 {
                     case ChecksFailedResult err:
                         var errStr = new StringBuilder();
-
                         foreach (var (check, error) in err.FailedChecks)
                         {
                             errStr.Append(error.FailureReason);

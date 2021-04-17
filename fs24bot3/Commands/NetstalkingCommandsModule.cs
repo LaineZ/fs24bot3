@@ -22,6 +22,30 @@ namespace fs24bot3.Commands
         private readonly CommandService SearchCommandService = new CommandService();
 
 
+        private async Task PrintResults(SearchCommandProcessor.CustomCommandContext ctx)
+        {
+            if (!ctx.SearchResults.Any())
+            {
+                await Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                return;
+            }
+
+            if (!ctx.Random)
+            {
+                foreach (var item in ctx.SearchResults.Take(ctx.Limit))
+                {
+                    await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.Title)} // {IrcColors.Blue}{item.Url}");
+                    if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.Description)); }
+                }
+            }
+            else
+            {
+                var rand = new Random().Next(0, ctx.SearchResults.Count - 1);
+                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Title)} // {IrcColors.Blue}{ctx.SearchResults[rand].Url}");
+                if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Description)); }
+            }
+        }
+
         private async void FormatError(IResult result)
         {
             switch (result)
@@ -38,7 +62,7 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("ms", "search")]
+        [Command("ms", "mailsearch")]
         [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
         [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`. Все параметры с типом String, кроме `regex` - регистронезависимы\n" +
             "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; site:String - Поиск по адресу сайта; multi:Boolean - Мульти вывод (сразу 5 результатов);\n" +
@@ -46,39 +70,25 @@ namespace fs24bot3.Commands
             "regex:String - Регулярное выражение в формате PCRE")]
         public async Task MailSearch([Remainder] string query)
         {
-            SearchCommandService.AddModule<SearchQueryCommands>();
-            string[] queryOptions = query.Split(" ");
-            Dictionary<Command, string> searchOptions = new Dictionary<Command, string>();
+            List<(Command, string)> searchOptions = new List<(Command, string)>();
+            var paser = new Core.OneLinerOptionParser(query);
 
+            SearchCommandService.AddModule<SearchQueryCommands>();
             var ctx = new SearchCommandProcessor.CustomCommandContext();
             ctx.PreProcess = true;
 
-            for (int i = 0; i < queryOptions.Length; i++)
+            foreach ((string opt, string value) in paser.Options)
             {
-                string[] options = queryOptions[i].Split(":");
-                if (options.Length > 1)
+                var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == opt).FirstOrDefault();
+
+                if (cmd == null)
                 {
-                    var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == options[0]).FirstOrDefault();
-
-                    if (cmd == null)
-                    {
-                        await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{options[0]}`");
-                        return;
-                    }
-
-                    if (options[1].StartsWith('"'))
-                    {
-                        foreach (string value in queryOptions.Skip(i + 1))
-                        {
-                            options[1] += " " + value;
-                            if (value.EndsWith('"')) { break; }
-                        }
-                    }
-
-                    Log.Verbose("{0}", options[1]);
-                    searchOptions.Add(cmd, options[1]);
-                    query = query.Replace($"{options[0]}:{options[1]}", "");
+                    await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{opt}`");
+                    return;
                 }
+
+                Log.Verbose("{0}", value);
+                searchOptions.Add((cmd, value));
             }
 
             // execute pre process commands
@@ -103,14 +113,14 @@ namespace fs24bot3.Commands
                 }
 
                 var items = Core.MailSearchDecoder.PerformDecode(response);
-                
+
                 if (items == null) { continue; }
 
                 if (items.antirobot.blocked)
                 {
                     Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
                     await Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
-                    return; 
+                    return;
                 }
                 else
                 {
@@ -120,7 +130,7 @@ namespace fs24bot3.Commands
                         {
                             if (!item.is_porno && item.title != null && item.title.Length > 0)
                             {
-                                ctx.SearchResults.Add(item);
+                                ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.passage));
                             }
                         }
                     }
@@ -135,27 +145,7 @@ namespace fs24bot3.Commands
                 if (!result.IsSuccessful) { return; }
             }
 
-            if (!ctx.SearchResults.Any())
-            {
-                await Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
-                return;
-            }
-
-            if (!ctx.Random)
-            {
-                foreach (var item in ctx.SearchResults.Take(ctx.Limit))
-                {
-                    await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.title)} // {IrcColors.Blue}{item.url}");
-                    if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.passage)); }
-                }
-            }
-            else
-            {
-                var rand = new Random().Next(0, ctx.SearchResults.Count - 1);
-                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].title)} // {IrcColors.Blue}{ctx.SearchResults[rand].url}");
-                if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].passage)); }
-            }
-
+            await PrintResults(ctx);
         }
 
         [Command("bc", "bandcamp", "bcs")]
@@ -176,10 +166,7 @@ namespace fs24bot3.Commands
                 {
                     foreach (var rezik in searchResult.auto.results)
                     {
-                        if (rezik.is_label)
-                        {
-                            continue;
-                        }
+                        if (rezik.is_label) { continue; }
 
                         switch (rezik.type)
                         {
@@ -233,7 +220,6 @@ namespace fs24bot3.Commands
             while (timeout < 5)
             {
                 string content = "{\"filters\":{ \"format\":\"all\",\"location\":0,\"sort\":\"pop\",\"tags\":[" + string.Join(",", tagsFixed) + "] },\"page\":" + rand.Next(0, 200) + "}";
-                //Console.WriteLine(content);
                 HttpContent c = new StringContent(content, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("https://bandcamp.com/api/hub/2/dig_deeper", c);
                 string responseString = await response.Content.ReadAsStringAsync();
@@ -266,6 +252,73 @@ namespace fs24bot3.Commands
             }
 
             Context.SendSadMessage(Context.Channel, "Не удалось найти треки...");
+        }
+
+        [Command("sx")]
+        [Description("Еще один инструмент нетсталкинга")]
+        public async Task SearxSearch([Remainder] string query)
+        {
+            List<(Command, string)> searchOptions = new List<(Command, string)>();
+
+            SearchCommandService.AddModule<SearchQueryCommands>();
+            var ctx = new SearchCommandProcessor.CustomCommandContext();
+            var paser = new Core.OneLinerOptionParser(query);
+            ctx.PreProcess = true;
+
+            foreach ((string opt, string value) in paser.Options)
+            {
+                var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == opt).FirstOrDefault();
+
+                if (cmd == null)
+                {
+                    await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{opt}`");
+                    return;
+                }
+
+                Log.Verbose("{0}", value);
+                searchOptions.Add((cmd, value));
+            }
+
+            // execute pre process commands
+            foreach ((Command cmd, string args) in searchOptions)
+            {
+                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
+                FormatError(result);
+                if (!result.IsSuccessful) { return; }
+            }
+
+            // weird visibility bug
+            string inp = paser.RetainedInput;
+
+            for (int i = ctx.Page + 1; i < ctx.Max; i++)
+            {
+                MultipartFormDataContent form = new MultipartFormDataContent();
+
+                form.Add(new StringContent(inp), "q");
+                form.Add(new StringContent(i.ToString()), "pageno");
+                form.Add(new StringContent("json"), "format");
+
+                HttpResponseMessage response = await client.PostAsync("https://searx.xyz/search", form);
+                var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
+
+                if (search.results != null)
+                {
+                    foreach (var item in search.results)
+                    {
+                        ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.content ?? "Нет описания"));
+                    }
+                }
+            }
+
+            ctx.PreProcess = false;
+            foreach ((Command cmd, string args) in searchOptions)
+            {
+                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
+                FormatError(result);
+                if (!result.IsSuccessful) { return; }
+            }
+
+            await PrintResults(ctx);
         }
     }
 }
