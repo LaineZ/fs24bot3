@@ -1,9 +1,6 @@
 ﻿using Serilog;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Qmmands;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3.Core
 {
@@ -11,31 +8,62 @@ namespace fs24bot3.Core
     {
         public List<(string, string)> Options { get; }
         public string RetainedInput { get; }
+        private readonly Regex SearchTermRegex = new Regex(
+        @"^(
+            \s*
+            (?<term>
+                ((?<prefix>[a-zA-Z][a-zA-Z0-9-_]*):)?
+                (?<termString>
+                    (?<quotedTerm>
+                        (?<quote>['""])
+                        ((\\\k<quote>)|((?!\k<quote>).))*
+                        \k<quote>?
+                    )
+                    |(?<simpleTerm>[^\s]+)
+                )
+            )
+            \s*
+        )*$",
+        RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.ExplicitCapture
+        );
+
 
         public OneLinerOptionParser(string input)
         {
             RetainedInput = input;
             Options = new List<(string, string)>();
 
-            string[] queryOptions = input.Split(" ");
-
-            for (int i = 0; i < queryOptions.Length; i++)
+            Match match = SearchTermRegex.Match(input);
+            foreach (Capture term in match.Groups["term"].Captures)
             {
-                string[] options = queryOptions[i].Split(":");
-                if (options.Length > 1)
-                {
-                    if (options[1].StartsWith('"'))
+                Capture prefix = null;
+                foreach (Capture prefixMatch in match.Groups["prefix"].Captures)
+                    if (prefixMatch.Index >= term.Index && prefixMatch.Index <= term.Index + term.Length)
                     {
-                        foreach (string value in queryOptions.Skip(i + 1))
-                        {
-                            options[1] += " " + value;
-                            if (value.EndsWith('"')) { break; }
-                        }
+                        prefix = prefixMatch;
+                        break;
                     }
-                    Options.Add((options[0], options[1]));
-                    RetainedInput = RetainedInput.Replace($"{options[0]}:{options[1]}", "");
+
+                Capture termString = null;
+                foreach (Capture termStringMatch in match.Groups["termString"].Captures)
+                    if (termStringMatch.Index >= term.Index && termStringMatch.Index <= term.Index + term.Length)
+                    {
+                        termString = termStringMatch;
+                        break;
+                    }
+
+                if (prefix != null)
+                {
+                    RetainedInput = RetainedInput.Replace($"{prefix.Value}:{termString.Value}", "");
+                    Log.Verbose("option: {0} value: {1}", prefix.Value, termString.Value);
+                    Options.Add((prefix.Value, termString.Value));
                 }
+
+                RetainedInput = RetainedInput.TrimStart();
             }
+
+
+            Log.Verbose("Retained: {0}", RetainedInput);
         }
     }
 }

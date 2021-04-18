@@ -86,8 +86,6 @@ namespace fs24bot3.Commands
                     await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{opt}`");
                     return;
                 }
-
-                Log.Verbose("{0}", value);
                 searchOptions.Add((cmd, value));
             }
 
@@ -275,7 +273,6 @@ namespace fs24bot3.Commands
                     return;
                 }
 
-                Log.Verbose("{0}", value);
                 searchOptions.Add((cmd, value));
             }
 
