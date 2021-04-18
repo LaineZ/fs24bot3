@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
@@ -43,6 +42,16 @@ namespace fs24bot3.Commands
                 var rand = new Random().Next(0, ctx.SearchResults.Count - 1);
                 await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Title)} // {IrcColors.Blue}{ctx.SearchResults[rand].Url}");
                 if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Description)); }
+            }
+        }
+
+        private async Task ExecuteCommands(List<(Command, string)> searchOptions, CommandContext ctx)
+        {
+            foreach ((Command cmd, string args) in searchOptions)
+            {
+                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
+                FormatError(result);
+                if (!result.IsSuccessful) { return; }
             }
         }
 
@@ -90,13 +99,7 @@ namespace fs24bot3.Commands
             }
 
             // execute pre process commands
-            foreach ((Command cmd, string args) in searchOptions)
-            {
-                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
-                FormatError(result);
-                if (!result.IsSuccessful) { return; }
-            }
-
+            await ExecuteCommands(searchOptions, ctx);
             for (int i = ctx.Page; i < ctx.Max; i++)
             {
                 Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
@@ -135,121 +138,10 @@ namespace fs24bot3.Commands
                 }
             }
 
+            // execute post process commands
             ctx.PreProcess = false;
-            foreach ((Command cmd, string args) in searchOptions)
-            {
-                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
-                FormatError(result);
-                if (!result.IsSuccessful) { return; }
-            }
-
+            await ExecuteCommands(searchOptions, ctx);
             await PrintResults(ctx);
-        }
-
-        [Command("bc", "bandcamp", "bcs")]
-        [Description("Поиск по сайту bandcamp.com")]
-        public async Task BcSearch([Remainder] string query)
-        {
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Ignore
-            };
-
-            string response = await http.MakeRequestAsync("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
-            try
-            {
-                BandcampSearch.Root searchResult = JsonConvert.DeserializeObject<BandcampSearch.Root>(response, settings);
-                if (searchResult.auto.results.Any())
-                {
-                    foreach (var rezik in searchResult.auto.results)
-                    {
-                        if (rezik.is_label) { continue; }
-
-                        switch (rezik.type)
-                        {
-                            case "a":
-                                await Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {IrcColors.Blue}{rezik.url}");
-                                return;
-                            case "b":
-                                await Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {IrcColors.Blue}{rezik.url}");
-                                return;
-                            case "t":
-                                await Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {IrcColors.Blue}{rezik.url}");
-                                return;
-                            default:
-                                continue;
-                        }
-                    }
-                }
-                Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
-            }
-            catch (JsonSerializationException)
-            {
-                Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
-            }
-        }
-
-        [Command("bcr", "bcd", "bcdisc", "bandcampdiscover", "bcdiscover")]
-        [Description("Поиск по тегам на сайте bandcamp.com")]
-        public async Task BcDiscover(uint mult = 1, [Remainder] string tagsStr = "metal")
-        {
-            var tags = tagsStr.Split(" ");
-            List<string> tagsFixed = new List<string>();
-
-            foreach (string tag in tags)
-            {
-                if (tag.Length > 0)
-                {
-                    tagsFixed.Add("\"" + tag + "\"");
-                }
-            }
-
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Ignore
-            };
-
-            Random rand = new Random();
-
-            int timeout = 0;
-
-            while (timeout < 5)
-            {
-                string content = "{\"filters\":{ \"format\":\"all\",\"location\":0,\"sort\":\"pop\",\"tags\":[" + string.Join(",", tagsFixed) + "] },\"page\":" + rand.Next(0, 200) + "}";
-                HttpContent c = new StringContent(content, Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("https://bandcamp.com/api/hub/2/dig_deeper", c);
-                string responseString = await response.Content.ReadAsStringAsync();
-
-                try
-                {
-                    BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, settings);
-
-                    if (!discover.ok || !discover.more_available)
-                    {
-                        timeout++;
-                    }
-
-                    if (discover.items.Any())
-                    {
-                        for (int i = 0; i < Math.Clamp(mult, 1, 5); i++)
-                        {
-                            int randIdx = new Random().Next(0, discover.items.Count - 1);
-                            var rezik = discover.items[randIdx];
-                            await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {IrcColors.Blue}{rezik.tralbum_url}");
-                        }
-                        return;
-                    }
-                }
-                catch (JsonSerializationException)
-                {
-                    Log.Warning("cannot find tracks for request {0}", tagsStr);
-                    timeout++;
-                }
-            }
-
-            Context.SendSadMessage(Context.Channel, "Не удалось найти треки...");
         }
 
         [Command("sx")]
@@ -277,23 +169,22 @@ namespace fs24bot3.Commands
             }
 
             // execute pre process commands
-            foreach ((Command cmd, string args) in searchOptions)
-            {
-                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
-                FormatError(result);
-                if (!result.IsSuccessful) { return; }
-            }
+            await ExecuteCommands(searchOptions, ctx);
 
             // weird visibility bug
             string inp = paser.RetainedInput;
 
             for (int i = ctx.Page + 1; i < ctx.Max; i++)
             {
-                MultipartFormDataContent form = new MultipartFormDataContent();
+                Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
+                if (ctx.SearchResults.Count >= ctx.Limit) { break; }
 
-                form.Add(new StringContent(inp), "q");
-                form.Add(new StringContent(i.ToString()), "pageno");
-                form.Add(new StringContent("json"), "format");
+                MultipartFormDataContent form = new MultipartFormDataContent
+                {
+                    { new StringContent(inp), "q" },
+                    { new StringContent(i.ToString()), "pageno" },
+                    { new StringContent("json"), "format" }
+                };
 
                 HttpResponseMessage response = await client.PostAsync("https://searx.xyz/search", form);
                 var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
@@ -308,13 +199,7 @@ namespace fs24bot3.Commands
             }
 
             ctx.PreProcess = false;
-            foreach ((Command cmd, string args) in searchOptions)
-            {
-                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
-                FormatError(result);
-                if (!result.IsSuccessful) { return; }
-            }
-
+            await ExecuteCommands(searchOptions, ctx);
             await PrintResults(ctx);
         }
     }
