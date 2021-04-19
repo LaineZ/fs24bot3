@@ -12,9 +12,9 @@ namespace fs24bot3.Core
 {
     class User
     {
-        public string Username;
-        public SQLiteConnection Connect;
-        public CommandProcessor.CustomCommandContext Ctx;
+        public string Username { get; }
+        private SQLiteConnection Connect;
+        private CommandProcessor.CustomCommandContext Ctx;
 
         const int XP_MULTIPLER = 150;
 
@@ -47,6 +47,12 @@ namespace fs24bot3.Core
 
                 Connect.Insert(user);
             }
+        }
+
+        public void RemoveUserAccount()
+        {
+            Connect.Execute("DELETE FROM UserStats WHERE Nick = ?", Username);
+            Connect.Execute("DELETE FROM Inventory WHERE Nick = ?", Username);
         }
 
         public bool IncreaseXp(int count)

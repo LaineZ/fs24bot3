@@ -3,6 +3,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace fs24bot3.EventProcessors
 {
@@ -41,6 +42,17 @@ namespace fs24bot3.EventProcessors
             Shop.PaydaysCount++;
             DateTime elapsed = DateTime.Now;
             Shop.TickSpeed = elapsed.Subtract(start);
+        }
+
+        public void RemoveLevelOneAccs()
+        {
+            var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalDays;
+
+            if (subst > 30 && User.GetUserInfo().Level == 1 && User.CountItem("money") > 2000)
+            {
+                Log.Warning("Removing user account: {0}", User.Username);
+                User.RemoveUserAccount();
+            }
         }
     }
 }

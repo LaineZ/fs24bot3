@@ -112,6 +112,7 @@ namespace fs24bot3
                 {
                     var onTick = new EventProcessors.OnTick(users.Nick, Connection);
                     onTick.UpdateUserPaydays();
+                    onTick.RemoveLevelOneAccs();
                 }
                 Shop.UpdateShop();
                 if (DateTime.Now.Minute == 0)
