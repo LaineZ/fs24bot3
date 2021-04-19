@@ -155,7 +155,15 @@ namespace fs24bot3
                 if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd().TrimStart('p'), '@', out string output))
                     return;
 
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, client, Connection, MessageBus, message.Trailing.StartsWith("p")));
+                bool ppc = message.Trailing.StartsWith("p");
+
+                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, client, Connection, MessageBus, ppc));
+
+                if (!result.IsSuccessful && ppc)
+                {
+                    await client.SendAsync(new PrivMsgMessage(target, $"{nick}: ПИВО ВОЗВРАЩЕНО!"));
+                }
+
                 switch (result)
                 {
                     case ChecksFailedResult err:

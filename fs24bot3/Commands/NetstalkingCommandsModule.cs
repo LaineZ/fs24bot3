@@ -186,7 +186,7 @@ namespace fs24bot3.Commands
                     { new StringContent("json"), "format" }
                 };
 
-                HttpResponseMessage response = await client.PostAsync("https://searx.xyz/search", form);
+                HttpResponseMessage response = await client.PostAsync("https://anon.sx/search", form);
                 var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
 
                 if (search.results != null)
