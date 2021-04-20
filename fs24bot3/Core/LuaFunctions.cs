@@ -36,9 +36,6 @@ namespace fs24bot3.Core
             argsFinal.Replace("#RNDNICK", nick);
             argsFinal.Replace("#RNG", random.Next(int.MinValue, int.MaxValue).ToString());
 
-
-            Log.Verbose("OUTPUT: {0}", argsFinal.ToString());
-
             return argsFinal.ToString().Split("||");
         }
 
@@ -65,6 +62,11 @@ namespace fs24bot3.Core
             {
                 return false;
             }
+        }
+
+        public void ClearLocalStorage()
+        {
+            SetLocalStorage("");
         }
 
         public bool AppendLocalStorage(string data)

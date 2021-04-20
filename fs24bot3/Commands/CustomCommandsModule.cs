@@ -16,10 +16,7 @@ namespace fs24bot3.Commands
 
         readonly HttpTools http = new HttpTools();
 
-        [Command("regcmd")]
-        [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
-        [Remarks("[IsLua = false] Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел\n[isLua = true] - Lua движок команд")]
-        public async Task CustomCmdRegister(string command, bool isLua, [Remainder] string output)
+        private async Task CustomCmdRegisterInternal(string command, bool isLua, [Remainder] string output)
         {
             User usr = new User(Context.Sender, Context.Connection, Context);
             bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
@@ -54,6 +51,21 @@ namespace fs24bot3.Commands
             }
         }
 
+        [Command("regcmd")]
+        [Description("Регистрация команды (Параметр command вводится без @)")]
+        [Remarks("Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел")]
+        public async Task CustomCmdRegister(string command, [Remainder] string output)
+        {
+            await CustomCmdRegisterInternal(command, false, output);
+        }
+
+        [Command("regcmdlua", "regcmdl", "reglua")]
+        [Description("Регистрация команды (Параметр command вводится без @). Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
+        public async Task CustomCmdRegisterLua(string command, [Remainder] string code)
+        {
+            await CustomCmdRegisterInternal(command, true, code);
+        }
+
         [Command("regcmdurl", "regluaurl")]
         [Description("Регистрация команды (Параметр command вводится без @) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
         public async Task CustomCmdRegisterUrlAsync(string command, string rawurl)
@@ -64,7 +76,7 @@ namespace fs24bot3.Commands
                 if (response.ContentType.Contains("text/plain"))
                 {
                     Stream responseStream = response.GetResponseStream();
-                    await CustomCmdRegister(command, true, new StreamReader(responseStream).ReadToEnd());
+                    await CustomCmdRegisterInternal(command, true, new StreamReader(responseStream).ReadToEnd());
                 }
                 else
                 {

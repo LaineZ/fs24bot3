@@ -38,161 +38,19 @@ namespace fs24bot3.Core
 
                 if (cmd != null)
                 {
-                    Random random = new Random();
-                    var arr = Connect.Table<SQL.UserStats>().ToList();
-                    var nick = MessageUtils.AntiHightlight(arr[random.Next(0, arr.Count - 1)].Nick);
                     argsArray.RemoveAt(0); // removing command name
 
                     if (cmd.IsLua == 0)
                     {
-                        //Log.Verbose("Command found: {0}", cmd.Command);
-                        string argsString = string.Join(" ", argsArray);
-
-                        string[] outputs = cmd.Output.Split("||");
-                        int index = 0;
-
-                        if (int.TryParse(argsString, out int result))
-                        {
-                            if (result > outputs.Length - 1 || result < 0)
-                            {
-                                await Client.SendAsync(new PrivMsgMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
-                                index = random.Next(outputs.Length - 1);
-                            }
-                            else
-                            {
-                                index = result;
-                            }
-                        }
-                        else
-                        {
-                            if (argsString.Any())
-                            {
-                                Log.Verbose("Args string is not empty!");
-                                random = new Random(argsString.GetHashCode());
-                            }
-                            index = random.Next(outputs.Length - 1);
-                        }
-
-                        StringBuilder argsFinal = new StringBuilder(outputs[index]);
-                        argsFinal.Replace("#USERINPUT", argsString);
-                        argsFinal.Replace("#USERNAME", senderNick);
-                        argsFinal.Replace("#RNDNICK", nick);
-                        argsFinal.Replace("#RNG", random.Next(int.MinValue, int.MaxValue).ToString());
-
-                        await Client.SendAsync(new PrivMsgMessage(channel, argsFinal.ToString()));
+                        new CustomExecutor(Client, Connect, MessageBus, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
+                        return true;
                     }
                     else
                     {
-                        Lua lua = new Lua();
-                        lua.State.Encoding = Encoding.UTF8;
-
-                        // block danger functions
-                        lua["os.execute"] = null;
-                        lua["os.exit"] = null;
-                        lua["os.remove"] = null;
-                        lua["os.getenv"] = null;
-                        lua["os.rename"] = null;
-                        lua["os.setlocale"] = null;
-                        lua["os.tmpname"] = null;
-
-                        lua["io"] = null;
-                        lua["debug"] = null;
-                        lua["require"] = null;
-                        lua["print"] = null;
-                        lua["pcall"] = null;
-                        lua["xpcall"] = null;
-                        lua["load"] = null;
-
-                        // just a bunch of globals
-                        lua["RANDOM_NICK"] = nick;
-                        lua["CMD_NAME"] = cmd.Command;
-                        lua["CMD_OWNER"] = cmd.Nick;
-                        lua["CMD_ARGS"] = string.Join(" ", argsArray);
-                        LuaFunctions luaFunctions = new LuaFunctions(Connect, senderNick, cmd.Command);
-                        lua["Cmd"] = luaFunctions;
-
-                        Thread thread = new Thread(async () =>
-                        {
-                            try
-                            {
-                                var res = (string)lua.DoString(cmd.Output)[0];
-                                int count = 0;
-
-                                if (res.Length < 20000)
-                                {
-                                    foreach (string outputstr in res.Split("\n"))
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(outputstr))
-                                        {
-                                            await Client.SendAsync(new PrivMsgMessage(channel, outputstr[..Math.Min(350, outputstr.Length)]));
-                                        }
-                                        count++;
-                                        if (count > 5)
-                                        {
-                                            string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                                            await Client.SendAsync(new PrivMsgMessage(channel, senderNick + ": Полный вывод здесь: " + link));
-                                            break;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                                    await Client.SendAsync(new PrivMsgMessage(channel, senderNick + ": Полный вывод здесь: " + link));
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                await Client.SendAsync(new PrivMsgMessage(channel, $"Ошибка в Lua: {e.Message}"));
-                                lua.Close();
-                                lua.Dispose();
-                            }
-                        });
-                        thread.Start();
-
-                        // watch thread
-                        Thread threadWatch = new Thread(() =>
-                        {
-                            try
-                            {
-                                Thread.Sleep(10000);
-                                if (thread.IsAlive)
-                                {
-                                    lua.State.Error("too long run time (10 seconds)");
-                                }
-                            }
-                            catch (Exception)
-                            {
-                                Log.Information("Lua thread watcher has stopped working...");
-                            }
-                        });
-                        threadWatch.Start();
-
-                        new Thread(() =>
-                        {
-                            while (thread.IsAlive)
-                            {
-                                try
-                                {
-                                    Thread.Sleep(10);
-                                    Process currentProc = Process.GetCurrentProcess();
-                                    long memoryUsed = currentProc.WorkingSet64 / 1024 / 1024;
-
-                                    if (memoryUsed > 150)
-                                    {
-                                        lua.State.Error("out of memory " + memoryUsed + " mb");
-                                        break;
-                                    }
-                                }
-                                catch (Exception)
-                                {
-                                    Log.Warning("Lua command has ended with out of memory!");
-                                }
-                            }
-                        }).Start();
+                        new LuaExecutor(Client, Connect, MessageBus, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
+                        return true;
                     }
                 }
-                return true;
             }
 
             return false;

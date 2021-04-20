@@ -20,28 +20,8 @@ namespace fs24bot3
         private static readonly SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
         private static readonly List<ParsedIRCMessage> MessageBus = new List<ParsedIRCMessage>();
         private static Core.CustomCommandProcessor CustomCommandProcessor;
-
+        private static readonly CommandService _service = new CommandService();
         private static Client client;
-
-        static async private void RandomLyics(Client client)
-        {
-            var query = Connection.Table<SQL.LyricsCache>().ToList();
-
-            if (query.Count > 0)
-            {
-                Random rand = new Random();
-                string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
-                int baseoffset = rand.Next(0, lyrics.Length - 1);
-                string outputmsg = "";
-
-                for (int i = 0; i < rand.Next(1, 5); i++)
-                {
-                    if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
-                }
-
-                await client.SendAsync(new PrivMsgMessage(Configuration.channel, outputmsg));
-            }
-        }
 
         static void Main()
         {
@@ -161,7 +141,7 @@ namespace fs24bot3
 
                 if (!result.IsSuccessful && ppc)
                 {
-                    await client.SendAsync(new PrivMsgMessage(target, $"{nick}: ПИВО ВОЗВРАЩЕНО!"));
+                    await client.SendAsync(new PrivMsgMessage(target, $"{nick}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ"));
                 }
 
                 switch (result)
@@ -214,14 +194,12 @@ namespace fs24bot3
         {
             await client.SendRaw("JOIN " + Configuration.channel);
             await client.SendAsync(new PrivMsgMessage("NickServ", "identify " + Configuration.nickservPass));
-            RandomLyics(client);
+            await client.SendAsync(new PrivMsgMessage(Configuration.channel, Core.Database.GetRandomLyric(Connection)));
         }
 
         private static void Client_OnRawDataReceived(Client client, string rawData)
         {
             Log.Information(rawData);
         }
-
-        private static readonly CommandService _service = new CommandService();
     }
 }

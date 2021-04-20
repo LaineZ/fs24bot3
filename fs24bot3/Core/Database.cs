@@ -1,6 +1,7 @@
 ﻿using fs24bot3.Models;
 using Serilog;
 using SQLite;
+using System;
 
 namespace fs24bot3.Core
 {
@@ -30,6 +31,27 @@ namespace fs24bot3.Core
 
             connection.Execute("CREATE TABLE IF NOT EXISTS LyricsCache (track TEXT, artist TEXT, lyrics TEXT, addedby TEXT, PRIMARY KEY (track, artist))");
             Log.Information("Databases loaded!");
+        }
+
+        public static string GetRandomLyric(SQLiteConnection connection)
+        {
+            var query = connection.Table<SQL.LyricsCache>().ToList();
+            string outputmsg = "";
+
+            if (query.Count > 0)
+            {
+                Random rand = new Random();
+                string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+                int baseoffset = rand.Next(0, lyrics.Length - 1);
+
+                for (int i = 0; i < rand.Next(1, 5); i++)
+                {
+                    if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
+                }
+            }
+
+
+            return outputmsg;
         }
     }
 }
