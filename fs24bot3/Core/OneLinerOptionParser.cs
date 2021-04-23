@@ -8,6 +8,7 @@ namespace fs24bot3.Core
     {
         public List<(string, string)> Options { get; }
         public string RetainedInput { get; }
+
         private readonly Regex SearchTermRegex = new Regex(
         @"^(
             \s*

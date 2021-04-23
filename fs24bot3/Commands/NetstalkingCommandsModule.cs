@@ -100,7 +100,7 @@ namespace fs24bot3.Commands
 
             // execute pre process commands
             await ExecuteCommands(searchOptions, ctx);
-            for (int i = ctx.Page; i < ctx.Max; i++)
+            for (int i = ctx.Page; i < ctx.Page + ctx.Max; i++)
             {
                 Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
 
@@ -146,6 +146,10 @@ namespace fs24bot3.Commands
 
         [Command("sx")]
         [Description("Еще один инструмент нетсталкинга")]
+        [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`. Все параметры с типом String, кроме `regex` - регистронезависимы\n" +
+            "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; site:String - Поиск по адресу сайта; multi:Boolean - Мульти вывод (сразу 5 результатов);\n" +
+            "random:Boolean - Рандомная выдача (не работает с multi); include:String - Включить результаты с данной подстрокой; exclude:String - Исключить результаты с данной подстрокой;\n" +
+            "regex:String - Регулярное выражение в формате PCRE")]
         public async Task SearxSearch([Remainder] string query)
         {
             List<(Command, string)> searchOptions = new List<(Command, string)>();
@@ -174,7 +178,7 @@ namespace fs24bot3.Commands
             // weird visibility bug
             string inp = paser.RetainedInput;
 
-            for (int i = ctx.Page + 1; i < ctx.Max; i++)
+            for (int i = ctx.Page + 1; i < ctx.Page + ctx.Max; i++)
             {
                 Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
                 if (ctx.SearchResults.Count >= ctx.Limit) { break; }
@@ -193,7 +197,10 @@ namespace fs24bot3.Commands
                 {
                     foreach (var item in search.results)
                     {
-                        ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.content ?? "Нет описания"));
+                        if (item.url.Contains(ctx.Site))
+                        {
+                            ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.content ?? "Нет описания"));
+                        }
                     }
                 }
             }

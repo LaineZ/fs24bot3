@@ -19,6 +19,33 @@ namespace fs24bot3.Commands
 
         private readonly HttpTools http = new HttpTools();
         private readonly HttpClient client = new HttpClient();
+        private readonly CommandService SearchCommandService = new CommandService();
+
+        private async Task ExecuteCommands(List<(Command, string)> searchOptions, CommandContext ctx)
+        {
+            foreach ((Command cmd, string args) in searchOptions)
+            {
+                var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
+                FormatError(result);
+                if (!result.IsSuccessful) { return; }
+            }
+        }
+
+        private async void FormatError(IResult result)
+        {
+            switch (result)
+            {
+                case TypeParseFailedResult err:
+                    await Context.SendMessage(Context.Channel, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}`");
+                    break;
+                case ArgumentParseFailedResult err:
+                    await Context.SendMessage(Context.Channel, $"Ошибка парсера: `{err.FailureReason}`");
+                    break;
+                case CommandExecutionFailedResult err:
+                    await Context.SendMessage(Context.Channel, $"Ошибка: `{err.Exception.Message}`");
+                    break;
+            }
+        }
 
         [Command("bc", "bandcamp", "bcs")]
         [Description("Поиск по сайту bandcamp.com")]
@@ -66,18 +93,31 @@ namespace fs24bot3.Commands
 
         [Command("bcr", "bcd", "bcdisc", "bandcampdiscover", "bcdiscover")]
         [Description("Поиск по тегам на сайте bandcamp.com")]
-        public async Task BcDiscover(uint mult = 1, [Remainder] string tagsStr = "metal")
+        [Remarks("Через пробел вводятся теги поиска, так же доступны функции:\n" +
+            "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; format:string - Формат носителя: cd, cassete, vinyl, all; sort:string - Сортировка: pop, date; location:Number - ID локации")]
+        public async Task BcDiscover([Remainder] string tagsStr = "metal limit:5")
         {
-            var tags = tagsStr.Split(" ");
-            List<string> tagsFixed = new List<string>();
+            List<(Command, string)> searchOptions = new List<(Command, string)>();
 
-            foreach (string tag in tags)
+            SearchCommandService.AddModule<BandcampSearchQueryCommands>();
+            var ctx = new BandcampSearchCommandProcessor.CustomCommandContext();
+            var parser = new Core.OneLinerOptionParser(tagsStr);
+
+            var tags = parser.RetainedInput.Split(" ");
+
+            foreach ((string opt, string value) in parser.Options)
             {
-                if (tag.Length > 0)
+                var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == opt).FirstOrDefault();
+
+                if (cmd == null)
                 {
-                    tagsFixed.Add("\"" + tag + "\"");
+                    await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{opt}`");
+                    return;
                 }
+                searchOptions.Add((cmd, value));
             }
+
+            await ExecuteCommands(searchOptions, ctx);
 
             var settings = new JsonSerializerSettings
             {
@@ -85,16 +125,24 @@ namespace fs24bot3.Commands
                 MissingMemberHandling = MissingMemberHandling.Ignore
             };
 
-            Random rand = new Random();
-
-            int timeout = 0;
-
-            while (timeout < 5)
+            var query = new BandcampDiscoverQuery.Root()
             {
-                string content = "{\"filters\":{ \"format\":\"all\",\"location\":0,\"sort\":\"pop\",\"tags\":[" + string.Join(",", tagsFixed) + "] },\"page\":" + rand.Next(0, 200) + "}";
-                HttpContent c = new StringContent(content, Encoding.UTF8, "application/json");
+                page = ctx.Page,
+                filters = new BandcampDiscoverQuery.Filters()
+                {
+                    format = ctx.Format,
+                    location = ctx.Location,
+                    sort = ctx.Sort,
+                    tags = tags.ToList()
+                }
+            };
+
+            for (int i = ctx.Page; i < ctx.Page + ctx.Max; i++)
+            {
+                HttpContent c = new StringContent(JsonConvert.SerializeObject(query), Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("https://bandcamp.com/api/hub/2/dig_deeper", c);
                 string responseString = await response.Content.ReadAsStringAsync();
+                query.page = i;
 
                 try
                 {
@@ -102,15 +150,13 @@ namespace fs24bot3.Commands
 
                     if (!discover.ok || !discover.more_available)
                     {
-                        timeout++;
+                        Log.Warning("cannot find tracks for request {0}, retrying", tagsStr);
                     }
 
                     if (discover.items.Any())
                     {
-                        for (int i = 0; i < Math.Clamp(mult, 1, 5); i++)
+                        foreach (var rezik in discover.items.Take(ctx.Limit))
                         {
-                            int randIdx = new Random().Next(0, discover.items.Count - 1);
-                            var rezik = discover.items[randIdx];
                             await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {IrcColors.Blue}{rezik.tralbum_url}");
                         }
                         return;
@@ -119,7 +165,6 @@ namespace fs24bot3.Commands
                 catch (JsonSerializationException)
                 {
                     Log.Warning("cannot find tracks for request {0}", tagsStr);
-                    timeout++;
                 }
             }
 
