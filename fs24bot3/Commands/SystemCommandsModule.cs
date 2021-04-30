@@ -33,6 +33,14 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
 
+        [Command("toggleppc")]
+        [Checks.CheckAdmin]
+        public async Task TooglePpc()
+        {
+            Transalator.AlloPpc = !Transalator.AlloPpc;
+            await Context.SendMessage(Context.Channel, "Включить ппц всех команд: " + Transalator.AlloPpc);
+        }
+
         [Command("quit", "exit")]
         [Checks.CheckAdmin]
         [Description("Выход")]
@@ -144,6 +152,70 @@ namespace fs24bot3.Commands
 
             sql.SetLevel(count);
             await Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
+        }
+
+
+        [Command("command", "cmd")]
+        [Description("Управление командами, параметр `command` вводить без @")]
+        [Checks.CheckAdmin]
+        public async Task CommandMgmt(CommandToggles.Switch action, string command)
+        {
+            var cmdHandle = Service.GetAllCommands().Where(x => x.Aliases.Where(al => al == command).Any()).FirstOrDefault();
+
+            if (cmdHandle == null)
+            {
+                Context.SendErrorMessage(Context.Channel, $"Команда @{command} не найдена!");
+                return;
+            }
+
+            switch (action)
+            {
+                case CommandToggles.Switch.Enable:
+                    cmdHandle.Enable();
+                    await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcColors.Green}ВКЛЮЧЕНА!");
+                    break;
+                case CommandToggles.Switch.Disable:
+                    cmdHandle.Disable();
+                    await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcColors.Red}ВЫКЛЮЧЕНА!");
+                    break;
+            }
+        }
+
+
+        [Command("mod", "module")]
+        [Description("Управление модулями")]
+        [Checks.CheckAdmin]
+        public async Task ModMgmt(CommandToggles.Switch action, string module)
+        {
+            var modHandle = Service.GetAllModules().Where(x => x.Name.ToLower() == module.ToLower()).FirstOrDefault();
+
+            if (modHandle == null)
+            {
+                Context.SendErrorMessage(Context.Channel, $"Модуль {module} не найден!");
+                return;
+            }
+
+            switch (action)
+            {
+                case CommandToggles.Switch.Enable:
+                    modHandle.Enable();
+                    await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcColors.Green}ВКЛЮЧЕН!");
+                    break;
+                case CommandToggles.Switch.Disable:
+                    modHandle.Disable();
+                    await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcColors.Red}ВЫКЛЮЧЕН!");
+                    break;
+            }
+        }
+
+        [Command("mods", "modules")]
+        public async Task Mods()
+        {
+            await Context.SendMessage(Context.Channel, $"{IrcColors.Red}█{IrcColors.Reset} Выключен {IrcColors.Green}█{IrcColors.Reset} Включен. Число в скобках: количество команд в модуле");
+            await Context.SendMessage(Context.Channel, $"В данный момент загружено: {Service.GetAllModules().Count} модулей");
+            string modi = string.Join(" ", Service.GetAllModules()
+                .Select(x => $"{(x.IsEnabled ? IrcColors.Green : IrcColors.Red)}{x.Name}{IrcColors.Reset}({x.Commands.Count()})"));
+            await Context.SendMessage(Context.Channel, modi);
         }
 
         [Command("setcap")]

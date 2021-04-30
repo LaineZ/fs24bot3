@@ -5,16 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Core
 {
     public static class Transalator
     {
+        public static bool AlloPpc = true;
+        private static readonly HttpClient client = new HttpClient();
+
+
         public async static Task<dynamic> Translate(string text, string fromLang = "auto-detect", string toLang = "auto-detect")
         {
-            HttpClient client = new HttpClient();
-
             var formVariables = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("fromLang", fromLang),
@@ -46,18 +49,40 @@ namespace fs24bot3.Core
             }
 
             throw new Exception(responseString);
+        }
 
+        private async static Task<string> LibreTranslate(string text, string fromLang = "auto", string toLang = "auto")
+        {
+            var data = new Models.LibreTranslate.TranslateQuery()
+            {
+                q = text,
+                source = fromLang,
+                target = toLang
+            };
+            HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("https://libretranslate.com/translate", c);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var translatedOutput = JsonConvert.DeserializeObject<Models.LibreTranslate.TranslateOut>(responseString);
+                Log.Verbose(translatedOutput.translatedText);
+                return translatedOutput.translatedText;
+            }
+
+            throw new Exception(responseString);
         }
 
         public async static Task<string> TranslatePpc(string text)
         {
-            string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
+            string[] translations = { "ru", "en", "pt", "ja", "de", "ar", "ru"};
             string translated = text;
 
             foreach (var tr in translations)
-            {
-                var translatorResponse = await Translate(translated, "auto-detect", tr);
-                translated = translatorResponse.text;
+            { 
+
+                var translatorResponse = await LibreTranslate(translated, "auto", tr);
+                translated = translatorResponse;
             }
 
             return translated;

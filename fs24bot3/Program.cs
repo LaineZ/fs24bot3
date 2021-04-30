@@ -136,7 +136,7 @@ namespace fs24bot3
                 if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd().TrimStart('p'), '@', out string output))
                     return;
 
-                bool ppc = message.Trailing.StartsWith("p");
+                bool ppc = message.Trailing.StartsWith("p") && Core.Transalator.AlloPpc;
 
                 var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, client, Connection, MessageBus, ppc));
 
@@ -162,7 +162,7 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(target, $"Ошибка парсера: `{err.FailureReason}`"));
                         break;
                     case OverloadsFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, "Для данной команды нету перегрузки!"));
+                        await client.SendAsync(new PrivMsgMessage(target, "Команда выключена..."));
                         break;
                     case CommandNotFoundResult err:
                         bool customSuccess = await CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());

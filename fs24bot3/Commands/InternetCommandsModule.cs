@@ -210,7 +210,7 @@ namespace fs24bot3.Commands
         [Description("Текст песни")]
         public async Task Lyrics([Remainder] string song)
         {
-            var data = song.Split(" - ", 1);
+            var data = song.Split(" - ");
             if (data.Length > 0)
             {
                 try

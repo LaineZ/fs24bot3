@@ -7,5 +7,12 @@
             Add,
             Delete,
         }
+
+
+        public enum Switch
+        {            
+            Enable,
+            Disable
+        }
     }
 }

@@ -188,22 +188,28 @@ namespace fs24bot3.Commands
             {
                 if (!Regex.IsMatch(translated, @"([A-Za-z])"))
                 {
-                    var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
-
-                    string trOutFixed = RemoveArticles(translatedOutput.text.ToString());
-
-                    if (trOutFixed == Shop.SongameString)
+                    try
                     {
-                        int reward = 450 * Shop.SongameTries;
-                        user.AddItemToInv("money", reward);
-                        await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
-                        // reset the game
-                        Shop.SongameString = "";
+                        var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
+                        string trOutFixed = RemoveArticles(translatedOutput.text.ToString());
+
+                        if (trOutFixed == Shop.SongameString)
+                        {
+                            int reward = 450 * Shop.SongameTries;
+                            user.AddItemToInv("money", reward);
+                            await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
+                            // reset the game
+                            Shop.SongameString = "";
+                        }
+                        else
+                        {
+                            await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {trOutFixed}");
+                            Shop.SongameTries--;
+                        }
                     }
-                    else
+                    catch (FormatException)
                     {
-                        await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Shop.SongameString} | {trOutFixed}");
-                        Shop.SongameTries--;
+                       Context.SendErrorMessage(Context.Channel, "К сожалению, в данный момент игра недоступна...");
                     }
                 }
                 else
@@ -222,11 +228,11 @@ namespace fs24bot3.Commands
             {
                 if (!isRussian)
                 {
-                    names.Add(Core.MessageUtils.GenerateName(Math.Clamp(maxlen, 5, 20)));
+                    names.Add(MessageUtils.GenerateName(Math.Clamp(maxlen, 5, 20)));
                 }
                 else
                 {
-                    names.Add(Core.MessageUtils.GenerateNameRus(Math.Clamp(maxlen, 5, 20)));
+                    names.Add(MessageUtils.GenerateNameRus(Math.Clamp(maxlen, 5, 20)));
                 }
             }
             await Context.SendMessage(Context.Channel, string.Join(",", names));

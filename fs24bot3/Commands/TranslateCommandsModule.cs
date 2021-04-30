@@ -1,20 +1,9 @@
 ﻿using fs24bot3.Core;
 using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
-using Genbox.WolframAlpha;
-using HtmlAgilityPack;
-using Newtonsoft.Json;
 using Qmmands;
-using Serilog;
-using SQLite;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace fs24bot3.Commands
 {
@@ -97,9 +86,16 @@ namespace fs24bot3.Commands
         public async Task TranslatePpc([Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.Connection, Context);
-            if (await usr.RemItemFromInv("beer", 1))
+            if (await usr.RemItemFromInv("beer", 2))
             {
-                await Context.SendMessage(Context.Channel, Transalator.TranslatePpc(text).Result + " (bing.com/translator, ппц)");
+                try
+                {
+                    await Context.SendMessage(Context.Channel, Transalator.TranslatePpc(text).Result + " (bing.com/translator, ппц)");
+                }
+                catch (FormatException)
+                {
+                    await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                }
             }
         }
 
@@ -109,7 +105,7 @@ namespace fs24bot3.Commands
         public async Task TranslatePpcGen(int gens, [Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.Connection, Context);
-            if (await usr.RemItemFromInv("beer", 1))
+            if (await usr.RemItemFromInv("beer", 4))
             {
                 string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
                 string translated = text;
@@ -118,8 +114,15 @@ namespace fs24bot3.Commands
                 {
                     foreach (var tr in translations)
                     {
-                        var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
-                        translated = translatorResponse.text;
+                        try
+                        {
+                            var translatorResponse = await Transalator.Translate(translated, "auto-detect", tr);
+                            translated = translatorResponse.text;
+                        }
+                        catch (FormatException)
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -153,9 +156,9 @@ namespace fs24bot3.Commands
 
                 await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + " (bing.com/translator, ппц lite edition) ");
             }
-            catch (Exception)
+            catch (FormatException)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст....");
+                await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
             }
         }
 
@@ -173,7 +176,7 @@ namespace fs24bot3.Commands
                     string translated = await lyrics.GetLyrics();
                     var usr = new User(Context.Sender, Context.Connection, Context);
 
-                    if (await usr.RemItemFromInv("beer", 1))
+                    if (await usr.RemItemFromInv("beer", 4))
                     {
                         string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
 
