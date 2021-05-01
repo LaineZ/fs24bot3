@@ -41,7 +41,7 @@ namespace fs24bot3.Commands
             var cmds = Service.GetAllCommands();
             string commandsOutput = File.ReadAllText("template.html"); ;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
-            var customCommands = Context.Connection.Table<SQL.CustomUserCommands>().ToList();
+            var customCommands = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().ToList();
             string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"))
                 + "<h3>Магазин:</h3>" +
                 string.Join("\n", shop.Select(x => $"<p>[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
@@ -105,7 +105,7 @@ namespace fs24bot3.Commands
             }
 
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
-            var user = new User(Context.Sender, Context.Connection);
+            var user = new User(Context.Sender, Context.BotCtx.Connection);
             user.AddRemind(ts, message);
             await Context.SendMessage(Context.Channel, $"{message} через ({time})!");
         }
@@ -118,7 +118,7 @@ namespace fs24bot3.Commands
             {
                 username = Context.Sender;
             }
-            var reminds = Context.Connection.Table<SQL.Reminds>().Where(x => x.Nick == username).Take(5);
+            var reminds = Context.BotCtx.Connection.Table<SQL.Reminds>().Where(x => x.Nick == username).Take(5);
 
             if (!reminds.Any())
             {
@@ -137,7 +137,7 @@ namespace fs24bot3.Commands
         [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
         public async Task Songame([Remainder] string translated = "")
         {
-            var user = new User(Context.Sender, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
             int timeout = 10;
 
             if (Shop.SongameTries <= 0)
@@ -149,7 +149,7 @@ namespace fs24bot3.Commands
                 return;
             }
             Random rand = new Random();
-            List<SQL.LyricsCache> query = Context.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
+            List<SQL.LyricsCache> query = Context.BotCtx.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
 
             if (Shop.SongameString.Length == 0)
             {
@@ -270,7 +270,7 @@ namespace fs24bot3.Commands
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
         public async Task AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
         {
-            var user = new User(Context.Sender, Context.Connection);
+            var user = new User(Context.Sender, Context.BotCtx.Connection);
 
             switch (action)
             {
@@ -285,7 +285,7 @@ namespace fs24bot3.Commands
                             Username = Context.Sender
                         };
 
-                        Context.Connection.Insert(tag);
+                        Context.BotCtx.Connection.Insert(tag);
 
                         await Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{IrcColors.Reset} успешно добавлен!");
                     }
@@ -295,10 +295,10 @@ namespace fs24bot3.Commands
                     }
                     break;
                 case CommandToggles.CommandEdit.Delete:
-                    var tagDel = new TagsUtils(tagname, Context.Connection);
+                    var tagDel = new TagsUtils(tagname, Context.BotCtx.Connection);
                     if (tagDel.GetTagByName().Username == Context.Sender)
                     {
-                        Context.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);
+                        Context.BotCtx.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);
                         await Context.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
                     }
                     else
@@ -313,7 +313,7 @@ namespace fs24bot3.Commands
         [Description("Добавить тег пользователю")]
         public async Task InsertTag(string tagname, string destination)
         {
-            var user = new User(destination, Context.Connection);
+            var user = new User(destination, Context.BotCtx.Connection);
 
             if (user.AddTag(tagname, 1))
             {
@@ -329,7 +329,7 @@ namespace fs24bot3.Commands
         [Description("Когда последний раз пользователь писал сообщения")]
         public async Task LastSeen(string destination)
         {
-            var user = new User(destination, Context.Connection);
+            var user = new User(destination, Context.BotCtx.Connection);
             TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
             if (date.Days < 1000)
             {
@@ -347,7 +347,7 @@ namespace fs24bot3.Commands
         public async Task AllTags()
         {
             List<SQL.Tag> tags = new List<SQL.Tag>();
-            var query = Context.Connection.Table<SQL.Tag>();
+            var query = Context.BotCtx.Connection.Table<SQL.Tag>();
             foreach (var tag in query)
             {
                 tags.Add(tag);
@@ -359,7 +359,7 @@ namespace fs24bot3.Commands
         [Description("Рандомная песня")]
         public async Task RandomSong()
         {
-            var query = Context.Connection.Table<SQL.LyricsCache>().ToList();
+            var query = Context.BotCtx.Connection.Table<SQL.LyricsCache>().ToList();
 
             if (query.Count > 0)
             {

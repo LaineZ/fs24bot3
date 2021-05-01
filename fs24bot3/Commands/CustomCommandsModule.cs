@@ -18,7 +18,7 @@ namespace fs24bot3.Commands
 
         private async Task CustomCmdRegisterInternal(string command, bool isLua, [Remainder] string output)
         {
-            User usr = new User(Context.Sender, Context.Connection, Context);
+            User usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
             bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
 
             if (!commandIntenral)
@@ -35,7 +35,7 @@ namespace fs24bot3.Commands
                 {
                     if (await usr.RemItemFromInv("money", 8000))
                     {
-                        Context.Connection.Insert(commandInsert);
+                        Context.BotCtx.Connection.Insert(commandInsert);
                         await Context.SendMessage(Context.Channel, "Команда успешно создана");
                     }
                 }
@@ -95,8 +95,8 @@ namespace fs24bot3.Commands
         public async Task CustomCmdEdit(string command, CommandToggles.CommandEdit action, [Remainder] string value)
         {
             var commandConcat = "@" + command;
-            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            User usr = new User(Context.Sender, Context.Connection);
+            var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            User usr = new User(Context.Sender, Context.BotCtx.Connection);
             if (query.Any() && query[0].Command == commandConcat && query[0].IsLua == 0)
             {
                 if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
@@ -104,7 +104,7 @@ namespace fs24bot3.Commands
                     switch (action)
                     {
                         case CommandToggles.CommandEdit.Add:
-                            Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output + "||" + value, commandConcat);
+                            Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output + "||" + value, commandConcat);
                             await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                             break;
                         case CommandToggles.CommandEdit.Delete:
@@ -115,7 +115,7 @@ namespace fs24bot3.Commands
                                 if (val < outputlist.Count && val >= 0)
                                 {
                                     outputlist.RemoveAt(val);
-                                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
+                                    Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
                                     await Context.SendMessage(Context.Channel, IrcColors.Green + "Команда успешно обновлена!");
                                 }
                                 else
@@ -127,7 +127,7 @@ namespace fs24bot3.Commands
                             {
                                 if (outputlist.Remove(value))
                                 {
-                                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
+                                    Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
                                     await Context.SendMessage(Context.Channel, IrcColors.Green + "Команда успешно обновлена!");
                                 }
                                 else
@@ -155,7 +155,7 @@ namespace fs24bot3.Commands
         [Description("Сменить владельца команды")]
         public async Task CmdOwn(string command, string nick)
         {
-            Context.Connection.Execute("UPDATE CustomUserCommands SET Nick = ? WHERE Command = ?", nick, command);
+            Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Nick = ? WHERE Command = ?", nick, command);
             await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
         }
 
@@ -165,7 +165,7 @@ namespace fs24bot3.Commands
         {
             // a small workaround for this exception An exception occurred while executing cmdinfo.: `Cannot get SQL for: Add`
             command = "@" + command;
-            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
+            var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
             if (query != null)
             {
                 await Context.SendMessage(Context.Channel, IrcColors.Blue + $"Команда {query.Command} Создал: `{query.Nick}` Размер вывода: {query.Output.Length} символов, строк - {query.Output.Split("||").Length} Lua: {query.IsLua}");
@@ -203,13 +203,13 @@ namespace fs24bot3.Commands
         public async Task CustomCmdRepl(string command, string oldstr, string newstr = "")
         {
             var commandConcat = "@" + command;
-            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            User usr = new User(Context.Sender, Context.Connection);
+            var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            User usr = new User(Context.Sender, Context.BotCtx.Connection);
             if (query.Any() && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
                 if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
                 {
-                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
+                    Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
                     await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                 }
                 else
@@ -228,13 +228,13 @@ namespace fs24bot3.Commands
         public async Task LuaUpdCoommand(string command, [Remainder] string newstr)
         {
             var commandConcat = "@" + command;
-            var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
-            User usr = new User(Context.Sender, Context.Connection);
+            var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).ToList();
+            User usr = new User(Context.Sender, Context.BotCtx.Connection);
             if (query.Any() && query[0].IsLua == 1 && query[0].Command == commandConcat || usr.GetUserInfo().Admin == 2)
             {
                 if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
                 {
-                    Context.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", newstr, commandConcat);
+                    Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", newstr, commandConcat);
                     await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
                 }
                 else
@@ -253,22 +253,22 @@ namespace fs24bot3.Commands
         public async Task CustomCmdRem(string command)
         {
             var commandConcat = "@" + command;
-            User usr = new User(Context.Sender, Context.Connection);
+            User usr = new User(Context.Sender, Context.BotCtx.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
-                var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
+                var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat)).Delete();
                 if (query > 0)
                 {
-                    Context.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(commandConcat)).Delete();
+                    Context.BotCtx.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(commandConcat)).Delete();
                     await Context.SendMessage(Context.Channel, "Команда удалена!");
                 }
             }
             else
             {
-                var query = Context.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Sender)).Delete();
+                var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(commandConcat) && v.Nick.Equals(Context.Sender)).Delete();
                 if (query > 0)
                 {
-                    Context.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(commandConcat)).Delete();
+                    Context.BotCtx.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(commandConcat)).Delete();
                     await Context.SendMessage(Context.Channel, "Команда удалена!");
                 }
                 else
@@ -297,10 +297,10 @@ namespace fs24bot3.Commands
                 track = data[1];
             }
 
-            User usr = new User(Context.Sender, Context.Connection);
+            User usr = new User(Context.Sender, Context.BotCtx.Connection);
             if (usr.GetUserInfo().Admin == 2)
             {
-                var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track)).Delete();
+                var query = Context.BotCtx.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track)).Delete();
                 if (query > 0)
                 {
                     await Context.SendMessage(Context.Channel, "Песня удалена!");
@@ -312,7 +312,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                var query = Context.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track) && v.AddedBy.Equals(Context.Sender)).Delete();
+                var query = Context.BotCtx.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track) && v.AddedBy.Equals(Context.Sender)).Delete();
                 if (query > 0)
                 {
                     await Context.SendMessage(Context.Channel, "Песня удалена!");

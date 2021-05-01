@@ -1,14 +1,10 @@
-﻿using fs24bot3.Commands;
-using fs24bot3.Models;
+﻿using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using NetIRC;
-using NetIRC.Connection;
 using NetIRC.Messages;
 using Qmmands;
 using Serilog;
-using SQLite;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,11 +13,7 @@ namespace fs24bot3
 {
     class Program
     {
-        private static readonly SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
-        private static readonly List<ParsedIRCMessage> MessageBus = new List<ParsedIRCMessage>();
-        private static Core.CustomCommandProcessor CustomCommandProcessor;
-        private static readonly CommandService _service = new CommandService();
-        private static Client client;
+        public static Bot Botara;
 
         static void Main()
         {
@@ -37,71 +29,17 @@ namespace fs24bot3
                 Console.OutputEncoding = Encoding.Unicode;
             }
 
-            Core.Database.InitDatabase(Connection);
+            Botara = new Bot();
 
-            _service.AddModule<GenericCommandsModule>();
-            _service.AddModule<SystemCommandModule>();
-            _service.AddModule<InventoryCommandsModule>();
-            _service.AddModule<InternetCommandsModule>();
-            _service.AddModule<NetstalkingCommandsModule>();
-            _service.AddModule<FishCommandsModule>();
-            _service.AddModule<CustomCommandsModule>();
-            _service.AddModule<StatCommandModule>();
-            _service.AddModule<BandcampCommandsModule>();
-            _service.AddModule<TranslateCommandModule>();
-
-            client = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
-
-            client.OnRawDataReceived += Client_OnRawDataReceived;
-            client.OnIRCMessageParsed += Client_OnIRCMessageParsed;
-            client.RegistrationCompleted += Client_OnRegister;
+            Botara.BotClient.OnRawDataReceived += Client_OnRawDataReceived;
+            Botara.BotClient.OnIRCMessageParsed += Client_OnIRCMessageParsed;
+            Botara.BotClient.RegistrationCompleted += Client_OnRegister;
 
             Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
-
-            Task.Run(() => client.ConnectAsync(Configuration.network, (int)Configuration.port));
-
-            new Thread(async () =>
-            {
-                Log.Information("Reminds thread started!");
-                while (true)
-                {
-                    Thread.Sleep(1000);
-                    var query = Connection.Table<SQL.Reminds>();
-
-                    foreach (var item in query)
-                    {
-                        DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                        dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
-                        if (dtDateTime <= DateTime.Now)
-                        {
-                            await client.SendAsync(new PrivMsgMessage(Configuration.channel, $"{item.Nick}: {item.Message}!"));
-                            Connection.Delete(item);
-                        }
-
-                    }
-                }
-            }).Start();
-
-            CustomCommandProcessor = new Core.CustomCommandProcessor(client, Connection, MessageBus);
-
+            Task.Run(() => Botara.BotClient.ConnectAsync(Configuration.network, (int)Configuration.port));
             Log.Information("First init is ok!");
-            while (true)
-            {
-                Thread.Sleep(Shop.Tickrate);
-                var query = Connection.Table<SQL.UserStats>();
-                foreach (var users in query)
-                {
-                    var onTick = new EventProcessors.OnTick(users.Nick, Connection);
-                    onTick.UpdateUserPaydays();
-                    onTick.RemoveLevelOneAccs();
-                }
-                Shop.UpdateShop();
-                if (DateTime.Now.Minute == 0)
-                {
-                    Log.Verbose("Cleaning messages!");
-                    MessageBus.Clear();
-                }
-            }
+
+            Botara.ProccessInfinite();
         }
 
         private async static void Client_OnIRCMessageParsed(Client client, ParsedIRCMessage message)
@@ -116,33 +54,18 @@ namespace fs24bot3
                     target = message.Prefix.From;
                 }
 
-                var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Count();
-
-                if (queryIfExt <= 0)
-                {
-                    MessageBus.Add(message);
-                    new Thread(() =>
-                    {
-                        if (target != client.User.Nick)
-                        {
-                            EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(client, nick, target, message.Trailing.Trim(), Connection);
-                            events.DestroyWallRandomly();
-                            events.LevelInscrease();
-                            events.GiveWaterFromPumps();
-                        }
-                    }).Start();
-                }
+                Botara.MessageTrigger(nick, target, message);
 
                 if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd().TrimStart('p'), '@', out string output))
                     return;
 
                 bool ppc = message.Trailing.StartsWith("p") && Core.Transalator.AlloPpc;
-
-                var result = await _service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, client, Connection, MessageBus, ppc));
+                var result = await Botara.Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, Botara, ppc));
 
                 if (!result.IsSuccessful && ppc)
                 {
                     await client.SendAsync(new PrivMsgMessage(target, $"{nick}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ"));
+                    new Core.User(nick, Botara.Connection).AddItemToInv("beer", 1);
                 }
 
                 switch (result)
@@ -156,16 +79,16 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(target, $"Требования не выполнены: {errStr}"));
                         break;
                     case TypeParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type}` вы же ввели `{err.Value.GetType()}`"));
+                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}`"));
                         break;
                     case ArgumentParseFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(target, $"Ошибка парсера: `{err.FailureReason}`"));
                         break;
-                    case OverloadsFailedResult err:
+                    case OverloadsFailedResult _:
                         await client.SendAsync(new PrivMsgMessage(target, "Команда выключена..."));
                         break;
-                    case CommandNotFoundResult err:
-                        bool customSuccess = await CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
+                    case CommandNotFoundResult _:
+                        await Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
                         break;
                     case CommandExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(target, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
@@ -193,9 +116,9 @@ namespace fs24bot3
 
         private async static void Client_OnRegister(object sender, EventArgs _)
         {
-            await client.SendRaw("JOIN " + Configuration.channel);
-            await client.SendAsync(new PrivMsgMessage("NickServ", "identify " + Configuration.nickservPass));
-            await client.SendAsync(new PrivMsgMessage(Configuration.channel, Core.Database.GetRandomLyric(Connection)));
+            await Botara.BotClient.SendRaw("JOIN " + Configuration.channel);
+            await Botara.SendMessage("Nickserv", "IDENTIFY " + Configuration.nickservPass);
+            await Botara.SendMessage(Configuration.channel, Core.Database.GetRandomLyric(Botara.Connection));
         }
 
         private static void Client_OnRawDataReceived(Client client, string rawData)

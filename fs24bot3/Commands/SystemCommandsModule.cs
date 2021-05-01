@@ -63,7 +63,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task Giveall(string username)
         {
-            var user = new User(username, Context.Connection);
+            var user = new User(username, Context.BotCtx.Connection);
             foreach (var item in Shop.ShopItems)
             {
                 user.AddItemToInv(item.Slug, 1);
@@ -91,8 +91,8 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task RemoveAllRods()
         {
-            Context.Connection.Execute("DROP TABLE UserFishingRods");
-            Context.Connection.CreateTable<SQL.UserFishingRods>();
+            Context.BotCtx.Connection.Execute("DROP TABLE UserFishingRods");
+            Context.BotCtx.Connection.CreateTable<SQL.UserFishingRods>();
             await Context.SendMessage(Context.Channel, "Удочки у пользователей удалены!");
         }
 
@@ -100,7 +100,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task Give(string username, string item, int count)
         {
-            User sql = new User(username, Context.Connection);
+            User sql = new User(username, Context.BotCtx.Connection);
 
             sql.AddItemToInv(item, count);
             await Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
@@ -129,7 +129,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task GiveXp(string username, int count)
         {
-            User sql = new User(username, Context.Connection);
+            User sql = new User(username, Context.BotCtx.Connection);
 
             sql.IncreaseXp(count);
             await Context.SendMessage(Context.Channel, "Вы установили " + count + " xp пользователю " + username);
@@ -140,7 +140,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task ReinitDb()
         {
-            Core.Database.InitDatabase(Context.Connection);
+            Core.Database.InitDatabase(Context.BotCtx.Connection);
             await Context.SendMessage(Context.Channel, "База данных загружена!");
         }
 
@@ -148,7 +148,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task GiveLevel(string username, int count)
         {
-            User sql = new User(username, Context.Connection);
+            User sql = new User(username, Context.BotCtx.Connection);
 
             sql.SetLevel(count);
             await Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
@@ -248,8 +248,8 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task LoggerLevel(bool enabled = true)
         {
-            Context.Connection.Tracer = new Action<string>(q => { Log.Warning(q); });
-            Context.Connection.Trace = enabled;
+            Context.BotCtx.Connection.Tracer = new Action<string>(q => { Log.Warning(q); });
+            Context.BotCtx.Connection.Trace = enabled;
             await Context.SendMessage(Context.Channel, $"SQL логирование `{enabled}`");
 
         }
@@ -262,15 +262,15 @@ namespace fs24bot3.Commands
             {
                 foreach (var user in users.Split(" "))
                 {
-                    Context.Connection.Execute("DELETE FROM UserStats WHERE Nick = ?", user);
-                    Context.Connection.Execute("DELETE FROM Inventory WHERE Nick = ?", user);
+                    Context.BotCtx.Connection.Execute("DELETE FROM UserStats WHERE Nick = ?", user);
+                    Context.BotCtx.Connection.Execute("DELETE FROM Inventory WHERE Nick = ?", user);
                 }
             }
             else
             {
-                Context.Connection.Execute("DELETE FROM UserStats WHERE Level = ?", level);
+                Context.BotCtx.Connection.Execute("DELETE FROM UserStats WHERE Level = ?", level);
             }
-            Context.Connection.Execute("VACUUM;");
+            Context.BotCtx.Connection.Execute("VACUUM;");
             await Context.SendMessage(Context.Channel, "Данные удалены!");
         }
 
@@ -278,14 +278,14 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task ViewUsers()
         {
-            await Context.SendMessage(Context.Channel, String.Join(' ', Context.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
+            await Context.SendMessage(Context.Channel, String.Join(' ', Context.BotCtx.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
         }
 
         [Command("resetcache")]
         [Checks.CheckAdmin]
         public async Task ResetCache()
         {
-            Context.Connection.Execute("DELETE FROM LyricsCache WHERE addedby IS NULL");
+            Context.BotCtx.Connection.Execute("DELETE FROM LyricsCache WHERE addedby IS NULL");
             await Context.SendMessage(Context.Channel, "Кэш песен УДАЛЕН НАВСЕГДА.....................");
         }
 
@@ -303,14 +303,14 @@ namespace fs24bot3.Commands
                         {
                             Username = item
                         };
-                        Context.Connection.Insert(ignr);
+                        Context.BotCtx.Connection.Insert(ignr);
                     }
                     await Context.SendMessage(Context.Channel, $"Пользователь(и) {username} добавлен(ы) в игнор!");
                     break;
                 case CommandToggles.CommandEdit.Delete:
                     foreach (var item in usernames)
                     {
-                        Context.Connection.Execute("DELETE FROM Ignore WHERE Username = ?", item);
+                        Context.BotCtx.Connection.Execute("DELETE FROM Ignore WHERE Username = ?", item);
                     }
                     await Context.SendMessage(Context.Channel, $"Пользователь(и) {username} удален(ы) из игнора!");
                     break;

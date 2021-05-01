@@ -19,8 +19,8 @@ namespace fs24bot3.Commands
         {
             if (rodname.Any())
             {
-                var query = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
-                var user = new User(Context.Sender, Context.Connection, Context);
+                var query = Context.BotCtx.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
+                var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
                 if (query.Any())
                 {
@@ -50,7 +50,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                var query = Context.Connection.Table<SQL.FishingRods>().ToList();
+                var query = Context.BotCtx.Connection.Table<SQL.FishingRods>().ToList();
                 string link = await new HttpTools().UploadToTrashbin(string.Join("\n", query.Select(x => $"{x.RodName}\tРазмер лески: {x.FishingLine} Крутость поплавка: {x.HookSize} Цена: {x.Price}")), "addplain");
                 await Context.SendMessage(Context.Channel, "Все удочки: " + link);
             }
@@ -60,7 +60,7 @@ namespace fs24bot3.Commands
         [Description("Продать свою удочку")]
         public async Task SellRod()
         {
-            var user = new User(Context.Sender, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
             (FishingError.RodErrors, SQL.UserFishingRods) rodState = user.DelRod();
 
@@ -70,7 +70,7 @@ namespace fs24bot3.Commands
                     await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Удочка не найдена");
                     break;
                 case FishingError.RodErrors.RodOk:
-                    var rod = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodState.Item2.RodName)).ToList()[0];
+                    var rod = Context.BotCtx.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodState.Item2.RodName)).ToList()[0];
 
                     int price = rod.Price / 2 - rodState.Item2.RodDurabillity;
 
@@ -88,9 +88,9 @@ namespace fs24bot3.Commands
         [Remarks("RLF - требуемый размер лески F - количество рыбы")]
         public async Task SetNest(string nestname = "")
         {
-            var user = new User(Context.Sender, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
             string rodname = user.GetRod().RodName;
-            var query = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).FirstOrDefault();
+            var query = Context.BotCtx.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).FirstOrDefault();
 
             if (nestname.Any())
             {
@@ -129,7 +129,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                var queryFish = Context.Connection.Table<SQL.FishingNests>().ToList();
+                var queryFish = Context.BotCtx.Connection.Table<SQL.FishingNests>().ToList();
 
                 string link = await new HttpTools().UploadToTrashbin(string.Join("\n", queryFish.Select(x => $"{x.Name}\tТребуемый уровень удочки:{x.FishingLineRequired}\tКоличество рыбы:{x.FishCount} ")), "addplain");
                 await Context.SendMessage(Context.Channel, "Все места для рыбалки: " + link);
@@ -140,7 +140,7 @@ namespace fs24bot3.Commands
         [Description("Рыбачить!")]
         public async Task Fish()
         {
-            var user = new User(Context.Sender, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
             var userRod = user.GetRod();
 
             if (userRod == null)
@@ -167,8 +167,8 @@ namespace fs24bot3.Commands
                 return;
             }
 
-            var rod = Context.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(userRod.RodName)).ToList()[0];
-            var nest = Context.Connection.Table<SQL.FishingNests>().Where(v => v.Name.Equals(userRod.Nest)).ToList()[0];
+            var rod = Context.BotCtx.Connection.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(userRod.RodName)).ToList()[0];
+            var nest = Context.BotCtx.Connection.Table<SQL.FishingNests>().Where(v => v.Name.Equals(userRod.Nest)).ToList()[0];
 
 
             Random rand = new Random();
@@ -200,7 +200,7 @@ namespace fs24bot3.Commands
                 await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Рыба сорвалась!");
             }
 
-            Context.Connection.Execute("UPDATE UserFishingRods SET RodDurabillity = RodDurabillity - 1 WHERE Username = ?", Context.Sender);
+            Context.BotCtx.Connection.Execute("UPDATE UserFishingRods SET RodDurabillity = RodDurabillity - 1 WHERE Username = ?", Context.Sender);
         }
 
         [Command("rodinfo")]
@@ -209,13 +209,13 @@ namespace fs24bot3.Commands
         {
             if (!rodname.Any())
             {
-                User user = new User(Context.Sender, Context.Connection);
+                User user = new User(Context.Sender, Context.BotCtx.Connection);
 
                 var rod = user.GetRod();
 
                 if (rod != null)
                 {
-                    var query = Context.Connection.Table<SQL.FishingRods>().ToList();
+                    var query = Context.BotCtx.Connection.Table<SQL.FishingRods>().ToList();
                     var queryRod = query.Find(x => x.RodName.Equals(rod.RodName));
                     await Context.SendMessage(Context.Channel, $"🎣 {rod.RodName} - Прочность: {rod.RodDurabillity}/{queryRod.RodDurabillity} Размер лески: {queryRod.FishingLine} м Крутость поплавка: {queryRod.HookSize}");
                 }
@@ -226,7 +226,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                var query = Context.Connection.Table<SQL.FishingRods>().Where(x => x.RodName.Equals(rodname)).ToList();
+                var query = Context.BotCtx.Connection.Table<SQL.FishingRods>().Where(x => x.RodName.Equals(rodname)).ToList();
 
                 if (query.Any())
                 {

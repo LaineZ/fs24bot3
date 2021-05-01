@@ -54,7 +54,7 @@ namespace fs24bot3.Commands
         [Checks.UnPpcable]
         public async Task GenAI(uint max = 200)
         {
-            var user = new User(Context.Sender, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
             if (await user.RemItemFromInv("beer", 1))
             {
                 AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
@@ -85,7 +85,7 @@ namespace fs24bot3.Commands
         [Description("Переводчик (ппц)")]
         public async Task TranslatePpc([Remainder] string text)
         {
-            var usr = new User(Context.Sender, Context.Connection, Context);
+            var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
             if (await usr.RemItemFromInv("beer", 2))
             {
                 try
@@ -104,7 +104,7 @@ namespace fs24bot3.Commands
         [Description("Переводчик (ппц)")]
         public async Task TranslatePpcGen(int gens, [Remainder] string text)
         {
-            var usr = new User(Context.Sender, Context.Connection, Context);
+            var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
             if (await usr.RemItemFromInv("beer", 4))
             {
                 string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
@@ -172,9 +172,9 @@ namespace fs24bot3.Commands
             {
                 try
                 {
-                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.Connection);
+                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.BotCtx.Connection);
                     string translated = await lyrics.GetLyrics();
-                    var usr = new User(Context.Sender, Context.Connection, Context);
+                    var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
                     if (await usr.RemItemFromInv("beer", 4))
                     {
@@ -205,14 +205,14 @@ namespace fs24bot3.Commands
         [Description("Текст песни (Перевод)")]
         public async Task LyricsTr(string lang, [Remainder] string song)
         {
-            var user = new User(Context.Sender, Context.Connection, Context);
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
             var data = song.Split(" - ", 1);
             if (data.Length > 0)
             {
                 try
                 {
-                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.Connection);
+                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.BotCtx.Connection);
 
                     string lyricsOut = await lyrics.GetLyrics();
 

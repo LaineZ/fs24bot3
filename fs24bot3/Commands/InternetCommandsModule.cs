@@ -179,13 +179,13 @@ namespace fs24bot3.Commands
                         Track = track
                     };
 
-                    var user = new User(Context.Sender, Context.Connection, Context);
+                    var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
                     try
                     {
                         if (await user.RemItemFromInv("money", 2000))
                         {
-                            Context.Connection.Insert(lyric);
+                            Context.BotCtx.Connection.Insert(lyric);
                             Context.SendErrorMessage(Context.Channel, "Добавлено!");
                         }
                     }
@@ -215,7 +215,7 @@ namespace fs24bot3.Commands
             {
                 try
                 {
-                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.Connection);
+                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.BotCtx.Connection);
 
                     await Context.SendMessage(Context.Channel, await lyrics.GetLyrics());
                 }

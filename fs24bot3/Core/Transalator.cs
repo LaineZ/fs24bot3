@@ -75,7 +75,7 @@ namespace fs24bot3.Core
 
         public async static Task<string> TranslatePpc(string text)
         {
-            string[] translations = { "ru", "en", "pt", "ja", "de", "ar", "ru"};
+            string[] translations = { "en", "pt", "ja", "de", "ar", "ru"};
             string translated = text;
 
             foreach (var tr in translations)
