@@ -24,8 +24,6 @@ namespace fs24bot3.Core
             Connect = connect;
             MessageBus = messageBus;
             Command = command;
-
-
         }
 
         public void Execute(string senderNick, string channel, string message, string args)

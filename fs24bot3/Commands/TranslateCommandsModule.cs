@@ -90,7 +90,7 @@ namespace fs24bot3.Commands
             {
                 try
                 {
-                    await Context.SendMessage(Context.Channel, Transalator.TranslatePpc(text).Result + " (bing.com/translator, ппц)");
+                    await Context.SendMessage(Context.Channel, Transalator.TranslatePpc(text).Result);
                 }
                 catch (FormatException)
                 {

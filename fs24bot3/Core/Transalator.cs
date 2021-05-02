@@ -59,6 +59,7 @@ namespace fs24bot3.Core
                 source = fromLang,
                 target = toLang
             };
+
             HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
             var response = await client.PostAsync("https://libretranslate.com/translate", c);
             var responseString = await response.Content.ReadAsStringAsync();
@@ -70,7 +71,7 @@ namespace fs24bot3.Core
                 return translatedOutput.translatedText;
             }
 
-            throw new Exception(responseString);
+            throw new Exception("Translate server error: " + response.StatusCode.ToString());
         }
 
         public async static Task<string> TranslatePpc(string text)
