@@ -1,14 +1,8 @@
 ﻿using fs24bot3.Models;
 using NetIRC;
-using NetIRC.Messages;
-using NLua;
 using Serilog;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Core

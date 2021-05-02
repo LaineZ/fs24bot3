@@ -64,7 +64,6 @@ namespace fs24bot3
             }).Start();
         }
 
-
         public void ProccessInfinite()
         {
             while (true)
@@ -85,7 +84,6 @@ namespace fs24bot3
                 }
             }
         }
-
         public void MessageTrigger(string nick, string target, ParsedIRCMessage message)
         {
             var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Count();

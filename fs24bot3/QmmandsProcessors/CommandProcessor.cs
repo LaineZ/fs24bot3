@@ -3,6 +3,7 @@ using NetIRC;
 using Qmmands;
 using System;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3.QmmandsProcessors
 {
@@ -38,7 +39,7 @@ namespace fs24bot3.QmmandsProcessors
                 }
                 else
                 {
-                    var txt = await Core.Transalator.TranslatePpc(message);
+                    var txt = await Core.Transalator.TranslatePpc(Regex.Replace(message, @"[\x02\x1F\x0F\x16]|\x03(\d\d?(,\d\d?)?)?", String.Empty));
                     await BotCtx.SendMessage(channel, txt);
                 }
             }
@@ -50,7 +51,7 @@ namespace fs24bot3.QmmandsProcessors
 
             public async void SendErrorMessage(string channel, string message)
             {
-                await BotCtx.SendMessage(channel, IrcColors.Gray + message);
+                await BotCtx.SendMessage(channel, IrcColors.Red + message);
             }
         }
     }
