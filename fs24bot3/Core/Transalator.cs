@@ -60,18 +60,23 @@ namespace fs24bot3.Core
                 target = toLang
             };
 
-            HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync("https://libretranslate.com/translate", c);
-            var responseString = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = new HttpResponseMessage();
 
-            if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
+            foreach (var url in new string[] { "https://libretranslate.com/", "https://libretranslate.de/", "https://translate.dafnik.me/", "https://translate.astian.org/" })
             {
-                var translatedOutput = JsonConvert.DeserializeObject<Models.LibreTranslate.TranslateOut>(responseString);
-                Log.Verbose(translatedOutput.translatedText);
-                return translatedOutput.translatedText;
+                HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                response = await client.PostAsync(url + "translate", c);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var translatedOutput = JsonConvert.DeserializeObject<Models.LibreTranslate.TranslateOut>(responseString);
+                    Log.Verbose(translatedOutput.translatedText);
+                    return translatedOutput.translatedText;
+                }
             }
 
-            throw new Exception("Translate server error: " + response.StatusCode.ToString());
+            throw new Exception("Translate server error! " + response.StatusCode);
         }
 
         public async static Task<string> TranslatePpc(string text)
