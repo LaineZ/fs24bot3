@@ -62,7 +62,7 @@ namespace fs24bot3.Core
 
                 if (string.IsNullOrEmpty(url))
                 {
-                    throw new Exception("Song not found!");
+                    throw new Exceptions.LyricsNotFoundException();
                 }
 
                 var web = new HtmlWeb();

@@ -150,7 +150,7 @@ namespace fs24bot3.Commands
                 // Forech statement cannot be modified WHY???????
                 for (int i = 0; i < splitted.Length; i++)
                 {
-                    var tr = await Core.Transalator.Translate(splitted[i], from, to);
+                    var tr = await Transalator.Translate(splitted[i], from, to);
                     splitted[i] = tr.text;
                 }
 
@@ -167,7 +167,7 @@ namespace fs24bot3.Commands
         [Description("Текст песни (ппц)")]
         public async Task LyricsPpc([Remainder] string song)
         {
-            var data = song.Split(" - ", 1);
+            var data = song.Split(" - ");
             if (data.Length > 0)
             {
                 try
@@ -207,7 +207,7 @@ namespace fs24bot3.Commands
         {
             var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
-            var data = song.Split(" - ", 1);
+            var data = song.Split(" - ");
             if (data.Length > 0)
             {
                 try
@@ -219,14 +219,14 @@ namespace fs24bot3.Commands
                     if (await user.RemItemFromInv("money", 1000 + lyricsOut.Length))
                     {
                         var lng = ParseLang(lang);
-                        var resultTranslated = await Core.Transalator.Translate(lyricsOut, lng.Item1, lng.Item2);
+                        var resultTranslated = await Transalator.Translate(lyricsOut, lng.Item1, lng.Item2);
 
                         Context.SendMessage(Context.Channel, resultTranslated.text.ToString());
                     }
                 }
                 catch (Exception e)
                 {
-                    await Context.SendMessage(Context.Channel, "Ошибка при получении слов: " + e.Message);
+                    await Context.SendMessage(Context.Channel, e.Message);
                 }
             }
             else

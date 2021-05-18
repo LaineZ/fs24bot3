@@ -39,6 +39,17 @@ namespace fs24bot3.Core
             }
         }
 
+        public class LyricsNotFoundException : Exception
+        {
+            public override string Message
+            {
+                get
+                {
+                    return "Слова не найдены";
+                }
+            }
+        }
+
         public class SearchError : Exception
         {
             public override string Message
