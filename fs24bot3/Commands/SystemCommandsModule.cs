@@ -289,6 +289,25 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Кэш песен УДАЛЕН НАВСЕГДА.....................");
         }
 
+        [Command("insertlyrics", "inslyr")]
+        public async Task InsertLyrics([Remainder] string song)
+        {
+            var data = song.Split(" - ");
+            if (data.Length > 0)
+            {
+                try
+                {
+                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.BotCtx.Connection);
+                    await lyrics.GetLyrics();
+                    await Context.SendMessage(Context.Channel, "Готово!");
+                }
+                catch (Exception e)
+                {
+                    Context.SendErrorMessage(Context.Channel, "Ошибка при получении слов: " + e.Message);
+                }
+            }
+        }
+
         [Command("ignore")]
         [Checks.CheckAdmin]
         public async Task Ignore(CommandToggles.CommandEdit action, [Remainder] string username)

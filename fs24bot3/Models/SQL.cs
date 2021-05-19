@@ -15,7 +15,6 @@ namespace fs24bot3.Models
             public int Need { get; set; }
             public int Admin { get; set; }
             public string AdminPassword { get; set; }
-
             public int LastMsg { get; set; }
         }
 

@@ -99,37 +99,6 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("trppcgen")]
-        [Checks.UnPpcable]
-        [Description("Переводчик (ппц)")]
-        public async Task TranslatePpcGen(int gens, [Remainder] string text)
-        {
-            var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
-            if (await usr.RemItemFromInv("beer", 4))
-            {
-                string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
-                string translated = text;
-
-                for (int i = 0; i < Math.Clamp(gens, 1, 5); i++)
-                {
-                    foreach (var tr in translations)
-                    {
-                        try
-                        {
-                            var translatorResponse = await Transalator.Translate(translated, "auto-detect", tr);
-                            translated = translatorResponse.text;
-                        }
-                        catch (FormatException)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                await Context.SendMessage(Context.Channel, translated + " (bing.com/translator, ппц)");
-            }
-        }
-
         [Command("trppclite", "trl")]
         [Checks.UnPpcable]
         [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в @tr")]

@@ -8,6 +8,7 @@ using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -79,8 +80,11 @@ namespace fs24bot3
                 Shop.UpdateShop();
                 if (DateTime.Now.Minute == 0)
                 {
-                    Log.Verbose("Cleaning messages!");
-                    MessageBus.Clear();
+                    if (MessageBus.Any())
+                    {
+                        Log.Verbose("Cleaning messages!");
+                        MessageBus.Clear();
+                    }
                 }
             }
         }

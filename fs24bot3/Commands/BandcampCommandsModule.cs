@@ -94,7 +94,7 @@ namespace fs24bot3.Commands
 
         [Command("bcr", "bcd", "bcdisc", "bandcampdiscover", "bcdiscover")]
         [Description("Поиск по тегам на сайте bandcamp.com")]
-        [Remarks("Через пробел вводятся теги поиска, так же доступны функции:\n" +
+        [Remarks("Через пробел вводятся теги поиска, также доступны функции:\n" +
             "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; format:string - Формат носителя: cd, cassete, vinyl, all; sort:string - Сортировка: pop, date; location:Number - ID локации")]
         public async Task BcDiscover([Remainder] string tagsStr = "metal limit:5")
         {
