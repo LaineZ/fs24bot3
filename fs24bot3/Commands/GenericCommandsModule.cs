@@ -9,15 +9,14 @@ using System.IO;
 using System.Threading.Tasks;
 using fs24bot3.QmmandsProcessors;
 using fs24bot3.Core;
+using System.Globalization;
 
 namespace fs24bot3.Commands
 {
     public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
         public CommandService Service { get; set; }
-
         readonly HttpTools http = new HttpTools();
-
 
         private string RemoveArticles(string line)
         {
@@ -42,6 +41,7 @@ namespace fs24bot3.Commands
             string commandsOutput = File.ReadAllText("template.html"); ;
             var shop = Shop.ShopItems.Where(x => x.Sellable == true);
             var customCommands = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().ToList();
+            // TODO: Refactor
             string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"))
                 + "<h3>Магазин:</h3>" +
                 string.Join("\n", shop.Select(x => $"<p>[{x.Slug}] {x.Name}: Цена: {x.Price}</p>")) +
@@ -118,7 +118,7 @@ namespace fs24bot3.Commands
             {
                 username = Context.Sender;
             }
-            var reminds = Context.BotCtx.Connection.Table<SQL.Reminds>().Where(x => x.Nick == username).Take(5);
+            var reminds = new User(username, Context.BotCtx.Connection).GetReminds().Take(5);
 
             if (!reminds.Any())
             {
@@ -127,9 +127,10 @@ namespace fs24bot3.Commands
             foreach (var remind in reminds)
             {
                 DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                CultureInfo rus = new CultureInfo("ru-RU", false);
                 dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToLocalTime();
 
-                await Context.SendMessage(Context.Channel, $"Напоминание {username}: {remind.Message} в {dtDateTime}");
+                await Context.SendMessage(Context.Channel, $"Напоминание {username}: \"{remind.Message}\" в {dtDateTime.ToString(rus)}");
             }
         }
 

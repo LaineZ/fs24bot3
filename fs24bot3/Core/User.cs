@@ -13,6 +13,7 @@ namespace fs24bot3.Core
     class User
     {
         public string Username { get; }
+
         private SQLiteConnection Connect;
         private CommandProcessor.CustomCommandContext Ctx;
 
@@ -107,6 +108,11 @@ namespace fs24bot3.Core
             };
 
             Connect.Insert(remind);
+        }
+
+        public List<SQL.Reminds> GetReminds()
+        {
+            return Connect.Table<SQL.Reminds>().Where(x => x.Nick == Username).ToList();
         }
 
         public void AddItemToInv(string name, int count)
@@ -289,7 +295,6 @@ namespace fs24bot3.Core
 
         public bool AddTag(string name, int count)
         {
-
             var userinfo = GetUserInfo();
 
             if (userinfo == null)
