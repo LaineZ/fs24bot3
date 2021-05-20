@@ -41,7 +41,6 @@ namespace fs24bot3
             BotClient = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
             CustomCommandProcessor = new Core.CustomCommandProcessor(BotClient, Connection, MessageBus);
 
-
             new Thread(async () =>
             {
                 Log.Information("Reminds thread started!");
