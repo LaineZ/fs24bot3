@@ -5,7 +5,6 @@ namespace fs24bot3.Models
 {
     internal class SQL
     {
-
         internal class UserStats
         {
             [PrimaryKey]
@@ -148,6 +147,23 @@ namespace fs24bot3.Models
             public int Level { get; set; }
             public int FishingLineRequired { get; set; }
             public int FishCount { get; set; }
+        }
+
+        internal class UnhandledExceptions
+        {
+            [PrimaryKey]
+            public string Date { get; set; }
+            public string ErrorMessage { get; set; }
+            public string Username { get; set; }
+            public string Input { get; set; }
+
+            public UnhandledExceptions(string err, string username, string input)
+            {
+                Date = DateTime.Now.ToString();
+                ErrorMessage = err;
+                Username = username;
+                Input = input;
+            }
         }
     }
 }

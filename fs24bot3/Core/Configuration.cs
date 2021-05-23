@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using System.Collections.Generic;
 using System.IO;
 using Tomlyn;
 using Tomlyn.Model;
@@ -106,19 +107,25 @@ namespace fs24bot3
                 string configFile = File.ReadAllText("settings.toml");
                 var config = Toml.Parse(configFile);
                 var table = config.ToModel();
+                try
+                {
+                    name = (string)((TomlTable)table["irc"])["name"];
+                    network = (string)((TomlTable)table["irc"])["network"];
+                    channel = (string)((TomlTable)table["irc"])["channel"];
+                    port = (long)((TomlTable)table["irc"])["port"];
+                    nickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
 
-                name = (string)((TomlTable)table["irc"])["name"];
-                network = (string)((TomlTable)table["irc"])["network"];
-                channel = (string)((TomlTable)table["irc"])["channel"];
-                port = (long)((TomlTable)table["irc"])["port"];
-                nickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
-
-                jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
-                jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
-                trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
-                wolframID = (string)((TomlTable)table["services"])["wolfram_id"];
-                giteaLogin = (string)((TomlTable)table["services"])["gitea_login"];
-                giteaPassword = (string)((TomlTable)table["services"])["gitea_password"];
+                    jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
+                    jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
+                    trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
+                    wolframID = (string)((TomlTable)table["services"])["wolfram_id"];
+                    giteaLogin = (string)((TomlTable)table["services"])["gitea_login"];
+                    giteaPassword = (string)((TomlTable)table["services"])["gitea_password"];
+                }
+                catch (KeyNotFoundException e)
+                {
+                    Log.Error("Cannot load key: {0}", e.Message);
+                }
                 Log.Information("Configuration loaded!");
             }
         }

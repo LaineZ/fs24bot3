@@ -93,6 +93,7 @@ namespace fs24bot3
                     case CommandExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(target, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
                         await client.SendAsync(new PrivMsgMessage(target, err.Exception.StackTrace));
+                        Botara.Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, nick, message.Trailing.TrimEnd()));
                         break;
                 }
             }
