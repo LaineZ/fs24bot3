@@ -192,7 +192,7 @@ namespace fs24bot3.Commands
                     try
                     {
                         var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
-                        string trOutFixed = RemoveArticles(translatedOutput.text.ToString());
+                        string trOutFixed = RemoveArticles(translatedOutput);
 
                         if (trOutFixed == Shop.SongameString)
                         {

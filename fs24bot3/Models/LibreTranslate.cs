@@ -1,6 +1,6 @@
 ﻿namespace fs24bot3.Models
 {
-    public class LibreTranslate
+    public class Translate
     {
         public class TranslateQuery
         {

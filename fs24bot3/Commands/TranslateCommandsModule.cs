@@ -18,7 +18,7 @@ namespace fs24bot3.Commands
         {
             string[] langs = input.Split("-");
 
-            string from = "auto-detect";
+            string from = "auto";
             string to = langs[0]; // auto detection
 
             if (input.Contains("-"))
@@ -42,7 +42,7 @@ namespace fs24bot3.Commands
                 }
 
                 var translatedOutput = await Core.Transalator.Translate(rndWord, lang, "ru");
-                await Context.SendMessage(Context.Channel, translatedOutput.text.ToString());
+                await Context.SendMessage(Context.Channel, translatedOutput);
             }
             catch (Exception e)
             {
@@ -72,7 +72,7 @@ namespace fs24bot3.Commands
                 (string from, string to) = ParseLang(lang);
 
                 var translatedOutput = await Transalator.Translate(text, from, to);
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.text} ({from}-{translatedOutput.to}, bing.com/translator)");
+                await Context.SendMessage(Context.Channel, translatedOutput);
             }
             catch (ArgumentException)
             {
@@ -120,10 +120,10 @@ namespace fs24bot3.Commands
                 for (int i = 0; i < splitted.Length; i++)
                 {
                     var tr = await Transalator.Translate(splitted[i], from, to);
-                    splitted[i] = tr.text;
+                    splitted[i] = tr;
                 }
 
-                await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + " (bing.com/translator, ппц lite edition) ");
+                await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + "(ппц lite edition)");
             }
             catch (FormatException)
             {
@@ -152,7 +152,7 @@ namespace fs24bot3.Commands
                         foreach (var tr in translations)
                         {
                             var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
-                            translated = translatorResponse.text;
+                            translated = translatorResponse;
                         }
 
                         await Context.SendMessage(Context.Channel, translated);
@@ -190,7 +190,7 @@ namespace fs24bot3.Commands
                         var lng = ParseLang(lang);
                         var resultTranslated = await Transalator.Translate(lyricsOut, lng.Item1, lng.Item2);
 
-                        Context.SendMessage(Context.Channel, resultTranslated.text.ToString());
+                        await Context.SendMessage(Context.Channel, resultTranslated);
                     }
                 }
                 catch (Exception e)

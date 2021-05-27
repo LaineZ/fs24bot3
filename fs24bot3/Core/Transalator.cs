@@ -14,55 +14,18 @@ namespace fs24bot3.Core
     {
         public static bool AlloPpc = true;
         private static readonly HttpClient client = new HttpClient();
-
-
-        public async static Task<dynamic> Translate(string text, string fromLang = "auto-detect", string toLang = "auto-detect")
+        public async static Task<string> Translate(string text, string fromLang = "auto", string toLang = "auto")
         {
-            var formVariables = new List<KeyValuePair<string, string>>
+            var data = new Models.Translate.TranslateQuery()
             {
-                new KeyValuePair<string, string>("fromLang", fromLang),
-                new KeyValuePair<string, string>("to", toLang),
-                new KeyValuePair<string, string>("text", text)
-            };
-            var formContent = new FormUrlEncodedContent(formVariables);
-
-            var response = await client.PostAsync("https://www.bing.com/ttranslatev3?isVertical=1&=&IG=3E71308DE83C4B7EAF0A9A024F08A591&IID=translator.5026.1", formContent);
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            Log.Verbose(responseString);
-
-            if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-
-                var settings = new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    MissingMemberHandling = MissingMemberHandling.Ignore,
-                    Error = delegate (object sender, ErrorEventArgs args)
-                    {
-                        Log.Error("JSON ERROR: {0}", args.ErrorContext.Error.Message);
-                    },
-                };
-
-                dynamic translatedOutput = JsonConvert.DeserializeObject<dynamic>(responseString);
-                return translatedOutput[0].translations[0];
-            }
-
-            throw new Exception(responseString);
-        }
-
-        private async static Task<string> LibreTranslate(string text, string fromLang = "auto", string toLang = "auto")
-        {
-            var data = new Models.LibreTranslate.TranslateQuery()
-            {
-                q = text,
+                q = text.TrimEnd(),
                 source = fromLang,
                 target = toLang
             };
 
             HttpResponseMessage response = new HttpResponseMessage();
 
-            foreach (var url in new string[] { "https://libretranslate.com/", "https://libretranslate.de/", "https://translate.dafnik.me/", "https://translate.astian.org/" })
+            foreach (var url in new string[] { "https://translate.dafnik.me/", "https://translate.astian.org/" })
             {
                 HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 response = await client.PostAsync(url + "translate", c);
@@ -70,7 +33,7 @@ namespace fs24bot3.Core
 
                 if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    var translatedOutput = JsonConvert.DeserializeObject<Models.LibreTranslate.TranslateOut>(responseString);
+                    var translatedOutput = JsonConvert.DeserializeObject<Models.Translate.TranslateOut>(responseString);
                     Log.Verbose(translatedOutput.translatedText);
                     return translatedOutput.translatedText;
                 }
@@ -87,7 +50,7 @@ namespace fs24bot3.Core
             foreach (var tr in translations)
             { 
 
-                var translatorResponse = await LibreTranslate(translated, "auto", tr);
+                var translatorResponse = await Translate(translated, "auto", tr);
                 translated = translatorResponse;
             }
 
