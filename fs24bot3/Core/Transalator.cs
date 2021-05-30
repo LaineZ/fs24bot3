@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using fs24bot3.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Serilog;
 using System;
@@ -15,19 +16,16 @@ namespace fs24bot3.Core
         public static bool AlloPpc = true;
         private static readonly HttpClient client = new HttpClient();
 
-        public async static Task<dynamic> TranslateBing(string text, string fromLang = "auto-detect", string toLang = "auto-detect")
+        public async static Task<YandexTranslate.Root> TranslateYandex(string text, string lang)
         {
             var formVariables = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("fromLang", fromLang),
-                new KeyValuePair<string, string>("to", toLang),
                 new KeyValuePair<string, string>("text", text),
-                new KeyValuePair<string, string>("token", "S9IELVyAtekLubrRI1JOMXrMKFkWm0zA"),
-                new KeyValuePair<string, string>("key", "1622358632959"),
+                new KeyValuePair<string, string>("options", "4"),
             };
             var formContent = new FormUrlEncodedContent(formVariables);
 
-            var response = await client.PostAsync("https://www.bing.com/ttranslatev3?isVertical=1&=&IG=194E5197E1524D0B882A621E1C70D325&IID=translator.5023.3", formContent);
+            var response = await client.PostAsync("https://translate.yandex.net/api/v1/tr.json/translate?id=44c14e19.60b3879d.91e16a44.74722d74657874-1-0&srv=tr-text&lang=" + lang + "&reason=auto&format=text", formContent);
             var responseString = await response.Content.ReadAsStringAsync();
 
             Log.Verbose(responseString);
@@ -45,8 +43,7 @@ namespace fs24bot3.Core
                     },
                 };
 
-                dynamic translatedOutput = JsonConvert.DeserializeObject<dynamic>(responseString);
-                return translatedOutput[0].translations[0];
+                return JsonConvert.DeserializeObject<YandexTranslate.Root>(responseString);
             }
 
             throw new Exception(responseString);

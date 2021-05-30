@@ -69,10 +69,8 @@ namespace fs24bot3.Commands
         {
             try
             {
-                (string from, string to) = ParseLang(lang);
-
-                var translatedOutput = await Transalator.TranslateBing(text, from, to);
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.text.ToString()} (bing.com/translator)");
+                var translatedOutput = await Transalator.TranslateYandex(text, lang) ;
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.text[0]} ({translatedOutput.lang} translate.yandex.ru)");
             }
             catch (ArgumentException)
             {
@@ -119,8 +117,8 @@ namespace fs24bot3.Commands
                 // Forech statement cannot be modified WHY???????
                 for (int i = 0; i < splitted.Length; i++)
                 {
-                    var tr = await Transalator.TranslateBing(splitted[i], from, to);
-                    splitted[i] = tr.text.ToString();
+                    var tr = await Transalator.TranslateYandex(splitted[i], lang);
+                    splitted[i] = tr.text[0];
                 }
 
                 await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + "(bing.com/translator ппц lite edition)");
