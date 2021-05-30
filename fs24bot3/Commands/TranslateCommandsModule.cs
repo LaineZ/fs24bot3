@@ -71,8 +71,8 @@ namespace fs24bot3.Commands
             {
                 (string from, string to) = ParseLang(lang);
 
-                var translatedOutput = await Transalator.Translate(text, from, to);
-                await Context.SendMessage(Context.Channel, translatedOutput);
+                var translatedOutput = await Transalator.TranslateBing(text, from, to);
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.text.ToString()} (bing.com/translator)");
             }
             catch (ArgumentException)
             {
@@ -119,11 +119,11 @@ namespace fs24bot3.Commands
                 // Forech statement cannot be modified WHY???????
                 for (int i = 0; i < splitted.Length; i++)
                 {
-                    var tr = await Transalator.Translate(splitted[i], from, to);
-                    splitted[i] = tr;
+                    var tr = await Transalator.TranslateBing(splitted[i], from, to);
+                    splitted[i] = tr.text.ToString();
                 }
 
-                await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + "(ппц lite edition)");
+                await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + "(bing.com/translator ппц lite edition)");
             }
             catch (FormatException)
             {
