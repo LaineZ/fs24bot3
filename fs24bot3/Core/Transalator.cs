@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,16 +17,22 @@ namespace fs24bot3.Core
         public static bool AlloPpc = true;
         private static readonly HttpClient client = new HttpClient();
 
-        public async static Task<YandexTranslate.Root> TranslateYandex(string text, string lang)
+        public async static Task<BingTranlate.Root> TranslateBing(string text, string from = "", string to = "")
         {
-            var formVariables = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("text", text),
-                new KeyValuePair<string, string>("options", "4"),
-            };
-            var formContent = new FormUrlEncodedContent(formVariables);
 
-            var response = await client.PostAsync("https://translate.yandex.net/api/v1/tr.json/translate?id=44c14e19.60b3879d.91e16a44.74722d74657874-1-0&srv=tr-text&lang=" + lang + "&reason=auto&format=text", formContent);
+            var request = new HttpRequestMessage() {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri("https://microsoft-translator-text.p.rapidapi.com/translate?api-version=3.0&to=" + to + "&textType=plain&profanityAction=NoAction&from=" + from),
+                Headers = {
+                    { "x-rapidapi-key", Configuration.translateKey },
+                    { "x-rapidapi-host", "microsoft-translator-text.p.rapidapi.com" },
+                },
+                Content = new StringContent("[ { \"Text\": \"" + text + "\" } ]", Encoding.UTF8, "application/json"),
+            };
+
+            //request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
+            var response = await client.SendAsync(request);
             var responseString = await response.Content.ReadAsStringAsync();
 
             Log.Verbose(responseString);
@@ -43,7 +50,7 @@ namespace fs24bot3.Core
                     },
                 };
 
-                return JsonConvert.DeserializeObject<YandexTranslate.Root>(responseString);
+                return JsonConvert.DeserializeObject<BingTranlate.Root>(responseString.Substring(1, responseString.Length-2));
             }
 
             throw new Exception(responseString);

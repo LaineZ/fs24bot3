@@ -359,3 +359,4 @@ MigrationBackup/
 
 *.toml
 *.sqlite*
+.DS_Store

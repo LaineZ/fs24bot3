@@ -18,16 +18,14 @@ namespace fs24bot3.Commands
         {
             string[] langs = input.Split("-");
 
-            string from = "auto";
-            string to = langs[0]; // auto detection
-
-            if (input.Contains("-"))
+            if (langs.Length > 1)
             {
-                from = langs[0];
-                to = langs[1];
+                return (langs[0], langs[1]);                
             }
-
-            return (from, to);
+            else
+            {
+                return ("", input);
+            }
         }
 
         private async void AITranslate(string lang, string chars, uint max)
@@ -69,8 +67,9 @@ namespace fs24bot3.Commands
         {
             try
             {
-                var translatedOutput = await Transalator.TranslateYandex(text, lang) ;
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.text[0]} ({translatedOutput.lang} translate.yandex.ru)");
+                var (from, to) = ParseLang(lang);
+                var translatedOutput = await Transalator.TranslateBing(text, from, to);
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.translations[0].text} ({translatedOutput.translations[0].to})");
             }
             catch (ArgumentException)
             {
@@ -117,11 +116,11 @@ namespace fs24bot3.Commands
                 // Forech statement cannot be modified WHY???????
                 for (int i = 0; i < splitted.Length; i++)
                 {
-                    var tr = await Transalator.TranslateYandex(splitted[i], lang);
-                    splitted[i] = tr.text[0];
+                    var tr = await Transalator.TranslateBing(splitted[i], from, to);
+                    splitted[i] = tr.translations[0].text;
                 }
 
-                await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower() + "(bing.com/translator ппц lite edition)");
+                await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower());
             }
             catch (FormatException)
             {
@@ -185,8 +184,8 @@ namespace fs24bot3.Commands
 
                     if (await user.RemItemFromInv("money", 1000 + lyricsOut.Length))
                     {
-                        var lng = ParseLang(lang);
-                        var resultTranslated = await Transalator.Translate(lyricsOut, lng.Item1, lng.Item2);
+                        var (from, to) = ParseLang(lang);
+                        var resultTranslated = await Transalator.Translate(lyricsOut, from, to);
 
                         await Context.SendMessage(Context.Channel, resultTranslated);
                     }

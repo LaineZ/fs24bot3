@@ -22,6 +22,8 @@ namespace fs24bot3
         public static string jdoodleClientSecret;
         public static string trashbinUrl;
         public static string wolframID;
+
+        public static string translateKey;
         public static string giteaLogin;
         public static string giteaPassword;
 
@@ -55,6 +57,7 @@ namespace fs24bot3
                         {"wolfram_id", wolframID },
                         {"gitea_login", giteaLogin },
                         {"gita_password", giteaPassword },
+                        {"translate_key", translateKey },
                     }
                 }
             }
@@ -94,6 +97,7 @@ namespace fs24bot3
                         {"wolfram_id", "0" },
                         {"gitea_login", "login" },
                         {"gita_password", "password" },
+                        {"translate_key", "0" },
                     }
                 }
             }
@@ -119,6 +123,7 @@ namespace fs24bot3
                     jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
                     trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
                     wolframID = (string)((TomlTable)table["services"])["wolfram_id"];
+                    translateKey = (string)((TomlTable)table["services"])["translate_key"];
                     giteaLogin = (string)((TomlTable)table["services"])["gitea_login"];
                     giteaPassword = (string)((TomlTable)table["services"])["gitea_password"];
                 }
