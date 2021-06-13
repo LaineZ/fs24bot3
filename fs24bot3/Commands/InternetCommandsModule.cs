@@ -280,7 +280,7 @@ namespace fs24bot3.Commands
 
             foreach (var pod in results.Pods.Take(3))
             {
-                foreach (var subPod in pod.SubPods)
+                foreach (var subPod in pod.SubPods.Take(2))
                 {
                     if (!string.IsNullOrEmpty(subPod.Plaintext))
                         await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{pod.Title}: {IrcColors.Reset}{subPod.Plaintext}");
