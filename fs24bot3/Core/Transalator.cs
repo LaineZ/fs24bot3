@@ -87,9 +87,9 @@ namespace fs24bot3.Core
             throw new Exception("Translate server error! " + response.StatusCode);
         }
 
-        public async static Task<string> TranslatePpc(string text)
+        public async static Task<string> TranslatePpc(string text, string targetLang = "ru")
         {
-            string[] translations = { "en", "pt", "ja", "de", "ar", "ru" };
+            string[] translations = { "en", "pt", "ja", "de", "ar", targetLang };
             string translated = text;
 
             foreach (var tr in translations)

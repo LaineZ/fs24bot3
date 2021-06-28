@@ -183,7 +183,7 @@ namespace fs24bot3.Commands
 
                     try
                     {
-                        if (await user.RemItemFromInv("money", 2000))
+                        if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 2000))
                         {
                             Context.BotCtx.Connection.Insert(lyric);
                             Context.SendErrorMessage(Context.Channel, "Добавлено!");
@@ -192,7 +192,7 @@ namespace fs24bot3.Commands
                     catch (SQLiteException)
                     {
                         Context.SendErrorMessage(Context.Channel, "[ДЕНЬГИ ВОЗВРАЩЕНЫ] Такая песня уже существует в базе!");
-                        user.AddItemToInv("monney", 2000);
+                        user.AddItemToInv(Context.BotCtx.Shop, "money", 2000);
                     }
                 }
                 else

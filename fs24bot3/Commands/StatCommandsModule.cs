@@ -45,7 +45,7 @@ namespace fs24bot3.Commands
         [Description("Макроэкономические показатели")]
         public async Task Economy()
         {
-            await Context.SendMessage(Context.Channel, $"Число зарплат: {Shop.PaydaysCount} Денежная масса: {new MultiUser(Context.BotCtx.Connection).GetItemAvg()} Последнее время выполнения обновления данных о пользователях: {Shop.TickSpeed.TotalMilliseconds} ms Период выполнения Shop.Update() {Shop.Tickrate} ms Покупок/Продаж {Shop.Buys}/{Shop.Sells}");
+            await Context.SendMessage(Context.Channel, $"Число зарплат: {Context.BotCtx.Shop.PaydaysCount} Денежная масса: {new MultiUser(Context.BotCtx.Connection).GetItemAvg("money")} Покупок/Продаж {Context.BotCtx.Shop.Buys}/{Context.BotCtx.Shop.Sells}");
         }
 
         [Command("mem")]

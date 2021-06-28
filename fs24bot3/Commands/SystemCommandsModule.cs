@@ -29,7 +29,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task ResetGame()
         {
-            Shop.SongameString = "";
+            //Context.BotCtx.Shop.SongameString = "";
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
 
@@ -64,9 +64,9 @@ namespace fs24bot3.Commands
         public async Task Giveall(string username)
         {
             var user = new User(username, Context.BotCtx.Connection);
-            foreach (var item in Shop.ShopItems)
+            foreach (var item in Context.BotCtx.Shop.Items)
             {
-                user.AddItemToInv(item.Slug, 1);
+                user.AddItemToInv(Context.BotCtx.Shop, item.Key, 1);
             }
             await Context.SendMessage(Context.Channel, "Вы выдали себе все предметы!");
         }
@@ -87,23 +87,14 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("delalluserrods")]
-        [Checks.CheckAdmin]
-        public async Task RemoveAllRods()
-        {
-            Context.BotCtx.Connection.Execute("DROP TABLE UserFishingRods");
-            Context.BotCtx.Connection.CreateTable<SQL.UserFishingRods>();
-            await Context.SendMessage(Context.Channel, "Удочки у пользователей удалены!");
-        }
-
         [Command("give")]
         [Checks.CheckAdmin]
         public async Task Give(string username, string item, int count)
         {
             User sql = new User(username, Context.BotCtx.Connection);
 
-            sql.AddItemToInv(item, count);
-            await Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Shop.GetItem(item).Name + " пользователю " + username);
+            sql.AddItemToInv(Context.BotCtx.Shop, item, count);
+            await Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Context.BotCtx.Shop.Items[item].Name + " пользователю " + username);
         }
 
         [Command("joinch")]
@@ -156,7 +147,7 @@ namespace fs24bot3.Commands
 
 
         [Command("command", "cmd")]
-        [Description("Управление командами, параметр `command` вводить без @")]
+        [Description("Управление копоандами, параметр `command` вводить без @")]
         [Checks.CheckAdmin]
         public async Task CommandMgmt(CommandToggles.Switch action, string command)
         {
@@ -222,16 +213,16 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task Cap(int cap)
         {
-            Shop.MaxCap = cap;
-            await Context.SendMessage(Context.Channel, "Установлен лимит невыплаты при: " + Shop.MaxCap);
+            Context.BotCtx.Shop.MaxCap = cap;
+            await Context.SendMessage(Context.Channel, "Установлен лимит невыплаты при: " + Context.BotCtx.Shop.MaxCap);
         }
 
         [Command("tickrate")]
         [Checks.CheckAdmin]
         public async Task Tickrate(int speed = 5000)
         {
-            Shop.Tickrate = speed;
-            await Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Shop.Tickrate);
+            Context.BotCtx.Tickrate = speed;
+            await Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Context.BotCtx.Tickrate);
         }
 
 

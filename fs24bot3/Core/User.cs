@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.BotSystems;
+using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Serilog;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace fs24bot3.Core
 {
-    class User
+    public class User
     {
         public string Username { get; }
 
@@ -115,16 +116,20 @@ namespace fs24bot3.Core
             return Connect.Table<SQL.Reminds>().Where(x => x.Nick == Username).ToList();
         }
 
-        public void AddItemToInv(string name, int count)
+        public void AddItemToInv(Shop shop, string name, int count)
         {
+            if (!shop.Items.ContainsKey(name)) 
+            {
+                throw new Core.Exceptions.TypeNotFoundException();
+            }
             count = (int)Math.Floor((decimal)count);
             try
             {
-                Connect.Execute("INSERT INTO Inventory VALUES(?, ?, ?)", Username, Shop.GetItem(name).Name, count);
+                Connect.Execute("INSERT INTO Inventory VALUES(?, ?, ?)", Username, name, count);
             }
             catch (SQLiteException)
             {
-                Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, Shop.GetItem(name).Name, Username);
+                Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, name, Username);
             }
         }
 
@@ -132,31 +137,34 @@ namespace fs24bot3.Core
         /// <summary>
         /// Removes item from inventory
         /// </summary>
-        /// <param name="name">Item slug</param>
+        /// <param name="name">Item key</param>
         /// <param name="count">Count</param>
         /// <returns>Success of removing</returns>
-        public async Task<bool> RemItemFromInv(string name, int count)
+        public async Task<bool> RemItemFromInv(Shop shop, string name, int count)
         {
+            if (!shop.Items.ContainsKey(name)) 
+            {
+                throw new Core.Exceptions.TypeNotFoundException();
+            }
+            
             count = (int)Math.Floor((decimal)count);
-
-            string itemname = Shop.GetItem(name).Name;
-            var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemname));
+            var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(name));
 
             if (item != null && item.ItemCount >= count && count > 0)
             {
-                Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, itemname, Username);
+                Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, name, Username);
                 // clening up items with 0
                 Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
                 if (Ctx != null)
                 {
-                    await Ctx.SendMessage(Ctx.Channel, $" {Shop.GetItem(name).Name} -{count} За использование данной команды");
+                    await Ctx.SendMessage(Ctx.Channel, $" {shop.Items[name].Name} -{count} За использование данной команды");
                 }
                 return true;
             }
 
             if (Ctx != null)
             {
-                await Ctx.SendMessage(Ctx.Channel, $"Недостаточно {Shop.GetItem(name).Name} x{count}");
+                await Ctx.SendMessage(Ctx.Channel, $"Недостаточно {shop.Items[name].Name} x{count}");
             }
             return false;
         }
@@ -164,9 +172,7 @@ namespace fs24bot3.Core
 
         public int CountItem(string itemname)
         {
-            // full qualified item name
-            var itemFullName = Shop.GetItem(itemname).Name;
-            var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemFullName));
+            var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemname));
             return item == null ? 0 : item.ItemCount;
         }
 
@@ -221,77 +227,6 @@ namespace fs24bot3.Core
                 throw new Exceptions.UserNotFoundException();
             }
         }
-
-
-        /// <summary>
-        /// Gets user fishing rod
-        /// </summary>
-        /// <returns>SQL.UserFishingRods - if rod found, null if not found </returns>
-        public SQL.UserFishingRods GetRod()
-        {
-            var query = Connect.Table<SQL.UserFishingRods>().Where(v => v.Username.Equals(Username)).FirstOrDefault();
-            return query;
-        }
-
-        public FishingError.RodErrors AddRod(string rodname)
-        {
-            var query = Connect.Table<SQL.FishingRods>().Where(v => v.RodName.Equals(rodname)).ToList();
-
-            if (query.Any())
-            {
-                var userod = GetRod();
-
-                if (userod == null)
-                {
-                    //Log.Verbose("INSERTING rod {0}", rodname);
-                    Connect.Insert(new SQL.UserFishingRods { Username = Username, RodName = rodname, RodDurabillity = query[0].RodDurabillity });
-                    return FishingError.RodErrors.RodOk;
-                }
-                else
-                {
-                    Log.Warning("Rod aready exsist {0}", rodname);
-                    return FishingError.RodErrors.RodAreadyExists;
-                }
-            }
-            Log.Warning("Cannot insert rod! {0}", rodname);
-            return FishingError.RodErrors.RodNotFound;
-        }
-
-        public (FishingError.RodErrors, SQL.FishingNests) SetNest(string nest)
-        {
-            var query = Connect.Table<SQL.FishingNests>().Where(v => v.Name.Equals(nest)).FirstOrDefault();
-            if (query != null)
-            {
-                if (GetRod() != null)
-                {
-                    Connect.Execute("UPDATE UserFishingRods SET Nest = ? WHERE Username = ?", nest, Username);
-                    return (FishingError.RodErrors.RodOk, query);
-                }
-                else
-                {
-                    return (FishingError.RodErrors.RodNotFound, null);
-                }
-            }
-            return (FishingError.RodErrors.RodUnknownError, null);
-        }
-
-        public (FishingError.RodErrors, SQL.UserFishingRods) DelRod()
-        {
-            var userod = GetRod();
-
-            if (userod == null)
-            {
-                Log.Warning("Rod not found for {0}", Username);
-                return (FishingError.RodErrors.RodNotFound, null);
-            }
-            else
-            {
-                Log.Verbose("Rod removed for {0}", Username);
-                Connect.Execute("DELETE FROM UserFishingRods WHERE Username = ?", Username);
-                return (FishingError.RodErrors.RodOk, userod);
-            }
-        }
-
 
         public bool AddTag(string name, int count)
         {

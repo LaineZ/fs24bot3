@@ -15,7 +15,7 @@ namespace fs24bot3.Core
 
         }
 
-        internal Models.SQL.Tag GetTagByName()
+        public Models.SQL.Tag GetTagByName()
         {
             var query = Connection.Table<Models.SQL.Tag>().Where(v => v.TagName.Equals(Name));
             foreach (var tag in query)
