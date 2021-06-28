@@ -26,7 +26,7 @@ namespace fs24bot3
             foreach (var users in query)
             {
                 User user = new User(users.Nick, Connect);
-                var itemToCount = user.GetInventory().Find(item => item.Item.Equals(Shop.GetItem(itemname).Name));
+                var itemToCount = user.GetInventory().Find(item => item.Item.Equals(item.Item));
                 if (itemToCount != null)
                 {
                     money.Add(itemToCount.ItemCount);

@@ -65,7 +65,7 @@ namespace fs24bot3
                 if (!result.IsSuccessful && ppc)
                 {
                     await client.SendAsync(new PrivMsgMessage(target, $"{nick}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ"));
-                    new Core.User(nick, Botara.Connection).AddItemToInv("beer", 1);
+                    new Core.User(nick, Botara.Connection).AddItemToInv(Botara.Shop, "beer", 1);
                 }
 
                 switch (result)
@@ -91,8 +91,7 @@ namespace fs24bot3
                         await Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
                         break;
                     case CommandExecutionFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, $"{IrcColors.Red}Ошибка: {err.Exception.Message}"));
-                        await client.SendAsync(new PrivMsgMessage(target, err.Exception.StackTrace));
+                        await client.SendAsync(new PrivMsgMessage(target, $"{IrcColors.Red}Ошибка: {err.Exception.Message}{err.Exception.StackTrace}"));
                         Botara.Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, nick, message.Trailing.TrimEnd()));
                         break;
                 }

@@ -1,8 +1,10 @@
+using fs24bot3.BotSystems;
 using fs24bot3.Core;
 using NetIRC;
 using NetIRC.Messages;
 using Serilog;
 using System;
+using System.Linq;
 
 namespace fs24bot3.EventProcessors
 {
@@ -24,7 +26,7 @@ namespace fs24bot3.EventProcessors
             User = new Core.User(nick, Connection);
         }
 
-        public void LevelInscrease()
+        public void LevelInscrease(Shop shop)
         {
             User.CreateAccountIfNotExist();
             User.SetLastMessage();
@@ -32,21 +34,22 @@ namespace fs24bot3.EventProcessors
             if (newLevel)
             {
                 var random = new Random();
-                int index = random.Next(Shop.ShopItems.Count);
-                User.AddItemToInv(Shop.ShopItems[index].Slug, 1);
-                Client.SendAsync(new PrivMsgMessage(Target, User.Username + ": У вас новый уровень! Вы получили за это: " + Shop.ShopItems[index].Name));
+                int index = random.Next(shop.Items.Count);
+                var item = shop.Items.ElementAt(index);
+                User.AddItemToInv(shop, item.Key, 1);
+                Client.SendAsync(new PrivMsgMessage(Target, User.Username + ": У вас новый уровень! Вы получили за это: " + item.Value.Name));
             }
         }
 
-        public async void DestroyWallRandomly()
+        public async void DestroyWallRandomly(Shop shop)
         {
-            if (Rand.Next(0, 10) == 1 && await User.RemItemFromInv("wall", 1))
+            if (Rand.Next(0, 10) == 1 && await User.RemItemFromInv(shop, "wall", 1))
             {
                 Log.Information("Breaking wall for {0}", User.Username);
             }
         }
 
-        public async void GiveWaterFromPumps()
+        public async void GiveWaterFromPumps(Shop shop)
         {
             if (User.GetInventory() != null)
             {
@@ -56,11 +59,11 @@ namespace fs24bot3.EventProcessors
                     if (item.Item == "pump")
                     {
                         Log.Information("Giving water!");
-                        User.AddItemToInv("water", Rand.Next(1, 2));
+                        User.AddItemToInv(shop, "water", Rand.Next(1, 2));
 
                         if (Rand.Next(1, 3) == 3)
                         {
-                            await User.RemItemFromInv("pump", 1);
+                            await User.RemItemFromInv(shop, "pump", 1);
                         }
                         break;
                     }

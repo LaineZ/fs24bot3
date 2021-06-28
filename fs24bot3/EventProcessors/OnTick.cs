@@ -1,9 +1,7 @@
-﻿using fs24bot3.Core;
+﻿using fs24bot3.BotSystems;
+using fs24bot3.Core;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 
 namespace fs24bot3.EventProcessors
 {
@@ -19,29 +17,26 @@ namespace fs24bot3.EventProcessors
             User = new User(username, connection);
         }
 
-        public async void UpdateUserPaydays()
+        public async void UpdateUserPaydays(Shop shop)
         {
-            DateTime start = DateTime.Now;
             int checkPayday = Rand.Next(0, 10);
 
-            if (checkPayday == 8 && MultiUser.GetItemAvg() < Shop.MaxCap)
+            if (checkPayday == 8 && MultiUser.GetItemAvg() < shop.MaxCap)
             {
                 var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalHours;
 
                 if (subst > 10)
                 {
                     Log.Information("Tax fine for user: {0}", User.Username);
-                    await User.RemItemFromInv("money", User.GetUserInfo().Level * Rand.Next(1, 2));
+                    await User.RemItemFromInv(shop, "money", User.GetUserInfo().Level * Rand.Next(1, 2));
                 }
                 else
                 {
-                    User.AddItemToInv("money", User.GetUserInfo().Level);
+                    User.AddItemToInv(shop, "money", User.GetUserInfo().Level);
                 }
             }
 
-            Shop.PaydaysCount++;
-            DateTime elapsed = DateTime.Now;
-            Shop.TickSpeed = elapsed.Subtract(start);
+            shop.PaydaysCount++;
         }
 
         public void RemoveLevelOneAccs()

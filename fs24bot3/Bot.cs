@@ -1,4 +1,5 @@
-﻿using fs24bot3.Commands;
+﻿using fs24bot3.BotSystems;
+using fs24bot3.Commands;
 using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Connection;
@@ -23,7 +24,8 @@ namespace fs24bot3
         public readonly CommandService Service = new CommandService();
         public Client BotClient { get; }
         readonly HttpTools http = new HttpTools();
-
+        public BotSystems.Shop Shop;
+        public int Tickrate = 15000;
         public Bot()
         {
             Service.AddModule<GenericCommandsModule>();
@@ -31,7 +33,6 @@ namespace fs24bot3
             Service.AddModule<InventoryCommandsModule>();
             Service.AddModule<InternetCommandsModule>();
             Service.AddModule<NetstalkingCommandsModule>();
-            Service.AddModule<FishCommandsModule>();
             Service.AddModule<CustomCommandsModule>();
             Service.AddModule<StatCommandModule>();
             Service.AddModule<BandcampCommandsModule>();
@@ -66,14 +67,17 @@ namespace fs24bot3
 
         public void ProccessInfinite()
         {
+            // start shop
+            Shop = new Shop(this);
+
             while (true)
             {
-                Thread.Sleep(Shop.Tickrate);
+                Thread.Sleep(Tickrate);
                 var query = Connection.Table<SQL.UserStats>();
                 foreach (var users in query)
                 {
                     var onTick = new EventProcessors.OnTick(users.Nick, Connection);
-                    onTick.UpdateUserPaydays();
+                    onTick.UpdateUserPaydays(Shop);
                     onTick.RemoveLevelOneAccs();
                 }
                 Shop.UpdateShop();
@@ -98,9 +102,9 @@ namespace fs24bot3
                     if (target != BotClient.User.Nick)
                     {
                         EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(BotClient, nick, target, message.Trailing.Trim(), Connection);
-                        events.DestroyWallRandomly();
-                        events.LevelInscrease();
-                        events.GiveWaterFromPumps();
+                        events.DestroyWallRandomly(Shop);
+                        events.LevelInscrease(Shop);
+                        events.GiveWaterFromPumps(Shop);
                     }
                 }).Start();
             }

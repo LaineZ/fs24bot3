@@ -27,7 +27,7 @@ namespace fs24bot3.QmmandsProcessors
                 if (perfppc)
                 {
                     var usr = new Core.User(Sender, bot.Connection, this);
-                    PerformPpc = usr.RemItemFromInv("beer", 1).Result;
+                    PerformPpc = usr.RemItemFromInv(BotCtx.Shop, "beer", 1).Result;
                 }
             }
 

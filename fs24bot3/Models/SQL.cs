@@ -3,9 +3,9 @@ using System;
 
 namespace fs24bot3.Models
 {
-    internal class SQL
+    public class SQL
     {
-        internal class UserStats
+        public class UserStats
         {
             [PrimaryKey]
             public string Nick { get; set; }
@@ -18,19 +18,21 @@ namespace fs24bot3.Models
         }
 
         // ultimate table 99999
-        internal class Item
+        public class Item
         {
             [PrimaryKey]
             public string Name { get; set; }
 
-            public static explicit operator Item(ItemInventory.Shop v)
+            public string ShopID { get; set; }
+
+            public static explicit operator Item(ItemInventory.BasicItem v)
             {
                 return new Item() { Name = v.Name };
             }
         }
 
 
-        internal class ScriptStorage
+        public class ScriptStorage
         {
             [PrimaryKey]
             public string Command { get; set; }
@@ -38,7 +40,7 @@ namespace fs24bot3.Models
             public string Data { get; set; }
         }
 
-        internal class Reminds
+        public class Reminds
         {
             [PrimaryKey]
             public int RemindDate { get; set; }
@@ -47,25 +49,14 @@ namespace fs24bot3.Models
             public string Message { get; set; }
         }
 
-        internal class Inventory
+        public class Inventory
         {
             public string Nick { get; set; }
             public string Item { get; set; }
             [Column("Count")]
             public int ItemCount { get; set; }
         }
-
-
-        internal class UserShop
-        {
-            public string Nick { get; set; }
-            public string Item { get; set; }
-            [Column("Count")]
-            public int ItemCount { get; set; }
-            public int ItemPrice { get; set; }
-        }
-
-        internal class CustomUserCommands
+        public class CustomUserCommands
         {
             [PrimaryKey]
             public string Command { get; set; }
@@ -75,7 +66,7 @@ namespace fs24bot3.Models
             public int IsLua { get; set; }
         }
 
-        internal class Tag
+        public class Tag
         {
             [PrimaryKey]
             public string TagName { get; set; }
@@ -86,7 +77,7 @@ namespace fs24bot3.Models
             public int TagCount { get; set; }
         }
 
-        internal class Tags
+        public class Tags
         {
             [PrimaryKey]
             public string Username { get; set; }
@@ -94,13 +85,13 @@ namespace fs24bot3.Models
         }
 
         // ultimate table99999
-        internal class Ignore
+        public class Ignore
         {
             [PrimaryKey]
             public string Username { get; set; }
         }
 
-        internal class LyricsCache
+        public class LyricsCache
         {
             [Column("track")]
             public string Track { get; set; }
@@ -112,27 +103,7 @@ namespace fs24bot3.Models
             public string AddedBy { get; set; }
         }
 
-        internal class UserFishingRods
-        {
-            [PrimaryKey]
-            public string Username { get; set; }
-            public string RodName { get; set; }
-            public int RodDurabillity { get; set; }
-            public string Nest { get; set; }
-        }
-
-        internal class FishingRods
-        {
-            [PrimaryKey]
-            public string RodName { get; set; }
-            public int RodDurabillity { get; set; }
-            public int FishingLine { get; set; }
-            public int HookSize { get; set; }
-            public int Price { get; set; }
-        }
-
-
-        internal class UtfCharacters
+        public class UtfCharacters
         {
             [PrimaryKey]
             public string HexCode { get; set; }
@@ -140,7 +111,7 @@ namespace fs24bot3.Models
             public string Symbol { get; set; }
         }
 
-        internal class FishingNests
+        public class FishingNests
         {
             [PrimaryKey]
             public string Name { get; set; }
@@ -149,7 +120,7 @@ namespace fs24bot3.Models
             public int FishCount { get; set; }
         }
 
-        internal class UnhandledExceptions
+        public class UnhandledExceptions
         {
             [PrimaryKey]
             public string Date { get; set; }

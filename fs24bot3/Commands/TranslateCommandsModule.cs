@@ -3,6 +3,7 @@ using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
@@ -53,7 +54,7 @@ namespace fs24bot3.Commands
         public async Task GenAI(uint max = 200)
         {
             var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
-            if (await user.RemItemFromInv("beer", 1))
+            if (await user.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
             {
                 AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
             }
@@ -83,11 +84,36 @@ namespace fs24bot3.Commands
         public async Task TranslatePpc([Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
-            if (await usr.RemItemFromInv("beer", 2))
+            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
             {
                 try
                 {
                     await Context.SendMessage(Context.Channel, Transalator.TranslatePpc(text).Result);
+                }
+                catch (FormatException)
+                {
+                    await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                }
+            }
+        }
+
+        [Command("genprojname", "projname", "thinkproj")]
+        [Checks.UnPpcable]
+        public async Task GenProjName([Remainder] string keywords)
+        {
+            var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
+
+            if (keywords.Length < 4) {
+                Context.SendSadMessage(Context.Channel, "Придумайте более длинные ключевые слова для генерации имени...");
+                return;
+            }
+
+            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
+            {
+                try
+                {
+                    var words = Transalator.TranslatePpc(keywords, "en").Result.Split("").Where(x => x.Length > 2);
+                    await Context.SendMessage(Context.Channel, string.Join(" ", words));
                 }
                 catch (FormatException)
                 {
@@ -142,7 +168,7 @@ namespace fs24bot3.Commands
                     string translated = await lyrics.GetLyrics();
                     var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
-                    if (await usr.RemItemFromInv("beer", 4))
+                    if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
                     {
                         string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
 
@@ -182,7 +208,7 @@ namespace fs24bot3.Commands
 
                     string lyricsOut = await lyrics.GetLyrics();
 
-                    if (await user.RemItemFromInv("money", 1000 + lyricsOut.Length))
+                    if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000 + lyricsOut.Length))
                     {
                         var (from, to) = ParseLang(lang);
                         var resultTranslated = await Transalator.Translate(lyricsOut, from, to);

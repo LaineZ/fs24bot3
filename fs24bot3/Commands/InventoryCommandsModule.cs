@@ -24,11 +24,11 @@ namespace fs24bot3.Commands
             {
                 if (!useSlugs)
                 {
-                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item} x{x.ItemCount}")));
+                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Shop.GetItem(x.Item).Slug}) x{x.ItemCount}")));
+                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
                 }
             }
             else
@@ -42,21 +42,15 @@ namespace fs24bot3.Commands
         public async Task Buy(string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.BotCtx.Connection);
+            var (success, price) = await Context.BotCtx.Shop.Buy(user, itemname, count);
 
-            int buyprice = Shop.GetItem(itemname).Price * count;
-
-            bool sucessfully = await user.RemItemFromInv("money", buyprice);
-
-            if (sucessfully)
+            if (success)
             {
-                user.AddItemToInv(itemname, count);
-                await Context.SendMessage(Context.Channel, "Вы успешно купили " + Shop.GetItem(itemname).Name + " за " + buyprice + " денег");
-                Shop.GetItem(itemname).Price += 5;
-                Shop.Buys++;
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Green}Вы успешно купили {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, "Недостаточно денег: " + buyprice);
+                Context.SendSadMessage(Context.Channel, $"Недостаточно денег: {price} чтобы купить {Context.BotCtx.Shop.Items[itemname].Name} x{count}");
             }
         }
 
@@ -66,17 +60,15 @@ namespace fs24bot3.Commands
         {
             User user = new User(Context.Sender, Context.BotCtx.Connection);
 
-            if (await user.RemItemFromInv(itemname, count) && Shop.GetItem(itemname).Sellable)
+            var (success, price) = await Context.BotCtx.Shop.Sell(user, itemname, count);
+
+            if (success)
             {
-                // tin
-                int sellprice = (int)Math.Floor((decimal)(Shop.GetItem(itemname).Price * count) / 2);
-                user.AddItemToInv("money", sellprice);
-                await Context.SendMessage(Context.Channel, "Вы успешно продали " + Shop.GetItem(itemname).Name + " за " + sellprice + " денег");
-                Shop.Sells++;
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Green}Вы успешно продали {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, "Вы не можете это продать!");
+                Context.SendSadMessage(Context.Channel, $"Такого предмета у вас нет!");
             }
         }
 
@@ -90,27 +82,24 @@ namespace fs24bot3.Commands
 
             foreach (var item in inv)
             {
-                if (Shop.GetItem(item.Item).Sellable && await user.RemItemFromInv(Shop.GetItem(item.Item).Slug, item.ItemCount))
-                {
-                    totalPrice += (int)Math.Floor((decimal)(Shop.GetItem(item.Item).Price * item.ItemCount) / 2);
-                }
+                var (_, sellprice) = await Context.BotCtx.Shop.Sell(user, item.Item, item.ItemCount);
+                totalPrice += sellprice;
             }
 
-            user.AddItemToInv("money", totalPrice);
             await Context.SendMessage(Context.Channel, $"Вы продали всё! За {totalPrice} денег!");
         }
 
         [Command("transfer")]
-        [Description("Передатать вещи")]
+        [Description("Передать вещи")]
         public async Task Transfer(string destanationNick, string itemname, int count = 1)
         {
             User user = new User(Context.Sender, Context.BotCtx.Connection);
             User destanation = new User(destanationNick, Context.BotCtx.Connection);
 
-            if (await user.RemItemFromInv(Shop.GetItem(itemname).Name, count))
+            if (await user.RemItemFromInv(Context.BotCtx.Shop, itemname, count))
             {
-                destanation.AddItemToInv(itemname, count);
-                await Context.SendMessage(Context.Channel, $"Вы успешно передали {Shop.GetItem(itemname).Name} x{count} пользователю {destanationNick}");
+                destanation.AddItemToInv(Context.BotCtx.Shop, itemname, count);
+                await Context.SendMessage(Context.Channel, $"Вы успешно передали {itemname} x{count} пользователю {destanationNick}");
             }
             else
             {
@@ -134,7 +123,7 @@ namespace fs24bot3.Commands
 
             var result = top.OrderByDescending(p => p.Count).ToList();
 
-            await Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + Shop.GetItem(itemname).Name);
+            await Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + itemname);
 
             foreach (var (Name, Count) in result.Take(5))
             {
@@ -173,143 +162,22 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("wrench")]
-        [Description("Cтарая добрая игра по отъему денег у населения... Слишком жестокая игра...")]
-        [Remarks("Стройте укрепления чтобы не получить гаечный ключ в лицо!!! И покупайте колонки чтобы не пропустить сообщения вашей оборонительной системы!!!")]
-        public async Task Wrench([Remainder] string username)
+        [Command("use")]
+        [Description("Использовать предмет")]
+        public void Use(string itemname, string nick = null)
         {
-            try
+            User user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+            if (user.RemItemFromInv(Context.BotCtx.Shop, itemname, 1).Result)
             {
-                User user = new User(Context.Sender, Context.BotCtx.Connection);
-                int dmg = 0;
-                string wrname = string.Empty;
-
-                List<(string, int)> wrenches = new List<(string, int)>()
+                if (nick != null)
                 {
-                    // Wrench damage. Sorted in ascend order by damage
-                    ("wrenchadv", 8),
-                    ("hammer", 5),
-                    ("wrench", 3),
-                    ("dj", 1)
-                };
-
-                foreach ((string wrench, int wrdmg) in wrenches)
-                {
-                    if (await user.RemItemFromInv(wrench, 1))
-                    {
-                        dmg = wrdmg;
-                        wrname = Shop.GetItem(wrench).Name;
-                        break;
-                    }
-                }
-
-                // wrench not found...... 😥
-                if (dmg == 0)
-                {
-                    await Context.SendMessage(Context.Channel, $"У вас нету: {string.Join(" или ", wrenches.Select(x => Shop.GetItem(x.Item1).Name))}");
-                    return;
-                }
-
-                User userDest = new User(username, Context.BotCtx.Connection);
-                var takeItems = userDest.GetInventory();
-
-                var rand = new Random();
-
-                if (rand.Next(0, 10 + userDest.CountItem("wall") - dmg) == 0 && username != Context.Sender)
-                {
-                    int indexItem = rand.Next(takeItems.Count);
-                    int itemCount = 1;
-
-                    if (takeItems[indexItem].ItemCount / (15 - dmg) > 0)
-                    {
-                        itemCount = rand.Next(1, takeItems[indexItem].ItemCount / (15 - dmg));
-                    }
-
-                    user.AddItemToInv(takeItems[indexItem].Item, itemCount);
-                    await userDest.RemItemFromInv(takeItems[indexItem].Item, itemCount);
-
-                    int xp = rand.Next(100, 500 + user.GetUserInfo().Level);
-
-                    user.IncreaseXp(xp);
-
-                    await Context.SendMessage(Context.Channel, $"Вы кинули {wrname} с уроном {dmg} в пользователя {username} при этом он потерял {takeItems[indexItem].Item} x{itemCount} и за это вам +{xp} XP");
-                    if (rand.Next(0, 7) == 2)
-                    {
-                        await Context.SendMessage(username, $"Вас атакует {Context.Sender} гаечными ключами! Вы уже потеряли {takeItems[indexItem].Item} x{itemCount} возможно он вас продолжает атаковать!");
-                    }
-                    else
-                    {
-                        if (rand.Next(0, 1) == 1 || await userDest.RemItemFromInv("speaker", 1))
-                        {
-                            await Context.SendMessage(username, $"Вас атакует {Context.Sender} гаечными ключами! Вы потеряли {takeItems[indexItem].Item} x{itemCount}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
-                        }
-                    }
+                    User targetUser = new User(nick, Context.BotCtx.Connection);
+                    Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, user, targetUser);
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.MissMessages));
+                    Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, user);
                 }
-            }
-            catch (Exceptions.UserNotFoundException)
-            {
-                await Context.SendMessage(Context.Channel, $"Вы кинули гаечный ключ в {username}!");
-            }
-        }
-
-        [Command("break")]
-        [Description("С определенным шансом позволяет пробить укрепления - требуется пистолет или 💣")]
-        public async Task Shot(string username)
-        {
-            try
-            {
-                User user = new User(Context.Sender, Context.BotCtx.Connection);
-                int dmg = 0;
-                string brname = String.Empty;
-
-                List<(string, int)> wrenches = new List<(string, int)>()
-                {
-                    // Walls damage. Sorted in ascend order by damage
-                    ("bomb", 9),
-                    ("pistol", 7),
-                };
-
-                foreach ((string wrench, int wrdmg) in wrenches)
-                {
-                    if (await user.RemItemFromInv(wrench, 1))
-                    {
-                        dmg = wrdmg;
-                        brname = Shop.GetItem(wrench).Name;
-                        break;
-                    }
-                }
-
-                // destroy item not found...... 😥
-                if (dmg == 0)
-                {
-                    await Context.SendMessage(Context.Channel, $"У вас нету пистолета или бомбы!");
-                    return;
-                }
-
-                User userDest = new User(username, Context.BotCtx.Connection);
-                var rand = new Random();
-
-                if (userDest.CountItem("wall") > 0 && rand.Next(0, 10 - dmg) == 0 && username != Context.Sender)
-                {
-                    await userDest.RemItemFromInv("wall", 1);
-                    await Context.SendMessage(Context.Channel, $"Вы атаковали с помощью {brname} уроном {dmg} укрепления пользователя {username} и сломали 1 укрепление!");
-                    if (rand.Next(0, 3) == 2)
-                    {
-                        await Context.SendMessage(username, $"Вас атакует {Context.Sender}!");
-                    }
-                }
-                else
-                {
-                    await Context.SendMessage(Context.Channel, "Вы не попали по укреплению или их вообще нет!");
-                }
-            }
-            catch (Exceptions.UserNotFoundException)
-            {
-                await Context.SendMessage(Context.Channel, $"Вы потеряли себя...");
             }
         }
     }
