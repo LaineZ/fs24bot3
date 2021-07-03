@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Models
 {
@@ -10,13 +11,15 @@ namespace fs24bot3.Models
             public string Name { get; }
             public int Price { get; set; }
             public bool Sellable { get; set; }
-            public async void OnUseMyself(Bot botCtx, string channel, Core.User user)
+            public async Task<bool> OnUseMyself(Bot botCtx, string channel, Core.User user)
             {
                 await botCtx.SendMessage(channel, "Этот предмет невозможно использовать на себе!");
+                return false;
             }
-            public async void OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
+            public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
             {
                 await botCtx.SendMessage(channel, "Этот предмет невозможно применить на другом пользователе!");
+                return false;
             }
         }
 

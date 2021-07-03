@@ -36,7 +36,7 @@ namespace fs24bot3.Commands
         [Description("Список команд")]
         public async Task Help()
         {
-            // TODO: Rewrite help!!!
+
         }
 
         [Command("helpcmd")]
@@ -120,91 +120,99 @@ namespace fs24bot3.Commands
             }
         }
 
-        // [Command("songame", "songg", "sg")]
-        // [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
-        // public async Task Songame([Remainder] string translated = "")
-        // {
-        //     var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
-        //     int timeout = 10;
+        [Command("songame", "songg", "sg")]
+        [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
+        public async Task Songame([Remainder] string translated = "")
+        {
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+            int timeout = 10;
+            var dataVal = Context.BotCtx.Connection.Table<SQL.Songame>().FirstOrDefault();
 
-        //     if (Context.BotCtx.Shop.SongameTries <= 0)
-        //     {
-        //         await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
-        //         Context.BotCtx.Shop.SongameString = "";
-        //         Context.BotCtx.Shop.SongameTries = 5;
-        //         await user.RemItemFromInv(Context.BotCtx.Shop"money", 1000);
-        //         return;
-        //     }
-        //     Random rand = new Random();
-        //     List<SQL.LyricsCache> query = Context.BotCtx.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
+            if (dataVal == null)
+            {
+                Context.BotCtx.Connection.Insert(new SQL.Songame());
+                // second try
+                dataVal = Context.BotCtx.Connection.Table<SQL.Songame>().FirstOrDefault();
+            }
 
-        //     if (Context.BotCtx.Shop.SongameString.Length == 0)
-        //     {
-        //         while (Context.BotCtx.Shop.SongameString.Length == 0 && timeout > 0)
-        //         {
-        //             if (query.Count > 0)
-        //             {
-        //                 string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+            if (dataVal.Tries <= 0)
+            {
+                await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
+                await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000);
+                Context.BotCtx.Connection.Delete(dataVal);
+                return;
+            }
+            
+            Random rand = new Random();
+            List<SQL.LyricsCache> query = Context.BotCtx.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
 
-        //                 foreach (string line in lyrics)
-        //                 {
-        //                     if (Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
-        //                     {
-        //                         Context.BotCtx.Shop.SongameString = RemoveArticles(line);
-        //                         break;
-        //                     }
-        //                 }
+            if (dataVal.SongameString.Length == 0)
+            {
+                while (dataVal.SongameString.Length == 0 && timeout > 0)
+                {
+                    if (query.Count > 0)
+                    {
+                        string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
 
-        //             }
-        //             Context.BotCtx.Shop.SongameTries = 5;
-        //             timeout--;
-        //         }
-        //     }
+                        foreach (string line in lyrics)
+                        {
+                            if (Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
+                            {
+                                dataVal.SongameString = RemoveArticles(line);
+                                Context.BotCtx.Connection.Update(dataVal);
+                                break;
+                            }
+                        }
 
-        //     if (timeout <= 0)
-        //     {
-        //         Context.SendErrorMessage(Context.Channel, "Не удалось найти нормальную строку песни... Может попробуем поискать что-нибудь с помощью @lyrics?");
-        //         return;
-        //     }
+                    }
+                    timeout--;
+                }
+            }
 
-        //     if (translated.Length == 0)
-        //     {
-        //         await Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {Context.BotCtx.Shop.SongameString} попыток: {Context.BotCtx.Shop.SongameTries}");
-        //     }
-        //     else
-        //     {
-        //         if (!Regex.IsMatch(translated, @"([A-Za-z])"))
-        //         {
-        //             try
-        //             {
-        //                 var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
-        //                 string trOutFixed = RemoveArticles(translatedOutput);
+            if (timeout <= 0)
+            {
+                Context.SendErrorMessage(Context.Channel, "Не удалось найти нормальную строку песни... Может попробуем поискать что-нибудь с помощью @lyrics?");
+                return;
+            }
 
-        //                 if (trOutFixed == Context.BotCtx.Shop.SongameString)
-        //                 {
-        //                     int reward = 450 * Context.BotCtx.Shop.SongameTries;
-        //                     user.AddItemToInv("money", reward);
-        //                     await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
-        //                     // reset the game
-        //                     Context.BotCtx.Shop.SongameString = "";
-        //                 }
-        //                 else
-        //                 {
-        //                     await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Context.BotCtx.Shop.SongameString} | {trOutFixed}");
-        //                     Context.BotCtx.Shop.SongameTries--;
-        //                 }
-        //             }
-        //             catch (FormatException)
-        //             {
-        //                Context.SendErrorMessage(Context.Channel, "К сожалению, в данный момент игра недоступна...");
-        //             }
-        //         }
-        //         else
-        //         {
-        //             await Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
-        //         }
-        //     }
-        // }
+            if (translated.Length == 0)
+            {
+                await Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {dataVal.SongameString} попыток: {dataVal.Tries}");
+            }
+            else
+            {
+                if (!Regex.IsMatch(translated, @"([A-Za-z])"))
+                {
+                    try
+                    {
+                        var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
+                        string trOutFixed = RemoveArticles(translatedOutput);
+
+                        if (trOutFixed == dataVal.SongameString)
+                        {
+                            int reward = 450 * dataVal.Tries;
+                            user.AddItemToInv(Context.BotCtx.Shop, "money", reward);
+                            await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
+                            Context.BotCtx.Connection.Delete(dataVal);
+                        }
+                        else
+                        {
+                            await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {dataVal.SongameString} | {trOutFixed}");
+                            dataVal.Tries--;
+                            Context.BotCtx.Connection.Update(dataVal);
+                        }
+                    }
+                    catch (FormatException)
+                    {
+                        Context.SendErrorMessage(Context.Channel, "К сожалению, в данный момент игра недоступна...");
+                    }
+                }
+                else
+                {
+                    await Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
+                }
+            }
+        }
 
         [Command("genname")]
         [Description("Генератор имен")]

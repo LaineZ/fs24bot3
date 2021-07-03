@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using fs24bot3.Models;
 
 namespace fs24bot3.ItemTraits
@@ -17,7 +18,7 @@ namespace fs24bot3.ItemTraits
                 Sellable = sellabe;
                 Damage = damage;
             }
-            public async void OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
+            public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
             {
                 var rand = new Random();
                 var takeItems = targetUser.GetInventory();
@@ -58,6 +59,8 @@ namespace fs24bot3.ItemTraits
                 {
                     await botCtx.SendMessage(channel, RandomMsgs.GetRandomMessage(RandomMsgs.MissMessages));
                 }
+
+                return true;
             }
         }
 }

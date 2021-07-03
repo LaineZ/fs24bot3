@@ -164,19 +164,19 @@ namespace fs24bot3.Commands
 
         [Command("use")]
         [Description("Использовать предмет")]
-        public void Use(string itemname, string nick = null)
+        public async Task Use(string itemname, string nick = null)
         {
             User user = new User(Context.Sender, Context.BotCtx.Connection, Context);
             if (user.RemItemFromInv(Context.BotCtx.Shop, itemname, 1).Result)
             {
-                if (nick != null)
+                if (nick != null && nick != Context.Sender)
                 {
                     User targetUser = new User(nick, Context.BotCtx.Connection);
-                    Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, user, targetUser);
+                    await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, user, targetUser);
                 }
                 else
                 {
-                    Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, user);
+                    await Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, user);
                 }
             }
         }
