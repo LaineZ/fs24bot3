@@ -120,6 +120,18 @@ namespace fs24bot3.Models
             public int FishCount { get; set; }
         }
 
+        public class Songame
+        {
+            public int Tries { get; set; }
+            [PrimaryKey]
+            public string SongameString { get; set; }
+
+            public Songame() {
+                Tries = 5;
+                SongameString = String.Empty;
+            }
+        }
+
         public class UnhandledExceptions
         {
             [PrimaryKey]

@@ -14,14 +14,14 @@ namespace fs24bot3.Core
             connection.CreateTable<SQL.UserStats>();
             connection.CreateTable<SQL.CustomUserCommands>();
             connection.CreateTable<SQL.Tag>();
-            connection.CreateTable<SQL.Item>();
             connection.CreateTable<SQL.Tags>();
+            connection.CreateTable<SQL.Item>();
             connection.CreateTable<SQL.Ignore>();
-            connection.CreateTable<SQL.FishingNests>();
             connection.CreateTable<SQL.ScriptStorage>();
             connection.CreateTable<SQL.Reminds>();
             connection.CreateTable<SQL.UtfCharacters>();
             connection.CreateTable<SQL.UnhandledExceptions>();
+            connection.CreateTable<SQL.Songame>();
 
             // creating ultimate inventory by @Fingercomp
             connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");

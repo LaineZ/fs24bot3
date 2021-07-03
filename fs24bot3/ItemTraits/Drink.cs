@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using fs24bot3.Models;
 
 namespace fs24bot3.ItemTraits
@@ -18,7 +19,7 @@ namespace fs24bot3.ItemTraits
             Sellable = sellabe;
             DrunkLevel = drunk;
         }
-        public async void OnUseMyself(Bot botCtx, string channel, Core.User user)
+        public async Task<bool> OnUseMyself(Bot botCtx, string channel, Core.User user)
         {
             var rand = new Random();
             var sms = botCtx.MessageBus.Where(x => x.Prefix.From == user.Username && !x.Trailing.StartsWith("@"));
@@ -33,6 +34,8 @@ namespace fs24bot3.ItemTraits
             {
                 await botCtx.SendMessage(channel, $"Вы недостаточно выпили...");
             }
+
+            return true;
         }
     }
 }
