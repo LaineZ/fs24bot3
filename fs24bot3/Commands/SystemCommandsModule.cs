@@ -21,7 +21,7 @@ namespace fs24bot3.Commands
         public async Task Version()
         {
             var os = Environment.OSVersion;
-            await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 Версия: 10.04.2021 | .NET Core: {0} Система: {1}",
+            await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 | .NET Core: {0} Система: {1}",
                 Environment.Version.ToString(), os.VersionString));
         }
 
@@ -29,7 +29,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task ResetGame()
         {
-            //Context.BotCtx.Shop.SongameString = "";
+            Context.BotCtx.SongGame = new BotSystems.Songame(Context.BotCtx.Connection);
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
 

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using fs24bot3.QmmandsProcessors;
 using fs24bot3.Core;
 using System.Globalization;
+using fs24bot3.BotSystems;
 
 namespace fs24bot3.Commands
 {
@@ -18,25 +19,22 @@ namespace fs24bot3.Commands
         public CommandService Service { get; set; }
         readonly HttpTools http = new HttpTools();
 
-        private string RemoveArticles(string line)
-        {
-            string[] art = new string[] { "the", "are", "a", "an", "i" };
-            foreach (string word in art)
-            {
-                Regex regexArticle = new Regex(@"\b" + word + @"\b");
-                line = regexArticle.Replace(line.ToLower(), " ");
-            }
-
-            // remove double spaces
-            Regex regex = new Regex("[ ]{2,}");
-            return new string(regex.Replace(line.Trim(), " ").ToCharArray().Where(c => !char.IsPunctuation(c)).ToArray());
-        }
-
         [Command("help", "commands")]
         [Description("Список команд")]
         public async Task Help()
         {
+            await Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
+            var cmds = Service.GetAllCommands();
+            string commandsOutput = File.ReadAllText("static/help.html"); ;
+            var customCommands = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().ToList();
+            string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
+            string customList = string.Join('\n', string.Join("\n", customCommands.Select(x => $"<p>{x.Command}</p>")));
 
+            commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
+            commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
+            
+            string link = await http.UploadToTrashbin(commandsOutput);
+            await Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
         }
 
         [Command("helpcmd")]
@@ -125,59 +123,24 @@ namespace fs24bot3.Commands
         public async Task Songame([Remainder] string translated = "")
         {
             var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
-            int timeout = 10;
-            var dataVal = Context.BotCtx.Connection.Table<SQL.Songame>().FirstOrDefault();
 
-            if (dataVal == null)
-            {
-                Context.BotCtx.Connection.Insert(new SQL.Songame());
-                // second try
-                dataVal = Context.BotCtx.Connection.Table<SQL.Songame>().FirstOrDefault();
-            }
-
-            if (dataVal.Tries <= 0)
-            {
-                await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
-                await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000);
-                Context.BotCtx.Connection.Delete(dataVal);
-                return;
-            }
-            
-            Random rand = new Random();
-            List<SQL.LyricsCache> query = Context.BotCtx.Connection.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
-
-            if (dataVal.SongameString.Length == 0)
-            {
-                while (dataVal.SongameString.Length == 0 && timeout > 0)
-                {
-                    if (query.Count > 0)
-                    {
-                        string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
-
-                        foreach (string line in lyrics)
-                        {
-                            if (Regex.IsMatch(line, @"^([A-Za-z\s]*)$"))
-                            {
-                                dataVal.SongameString = RemoveArticles(line);
-                                Context.BotCtx.Connection.Update(dataVal);
-                                break;
-                            }
-                        }
-
-                    }
-                    timeout--;
-                }
-            }
-
-            if (timeout <= 0)
+            if (Context.BotCtx.SongGame.SongameString.Length <= 0)
             {
                 Context.SendErrorMessage(Context.Channel, "Не удалось найти нормальную строку песни... Может попробуем поискать что-нибудь с помощью @lyrics?");
                 return;
             }
 
+            if (Context.BotCtx.SongGame.Tries <= 0)
+            {
+                await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
+                await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000);
+                Context.BotCtx.SongGame = new Songame(Context.BotCtx.Connection);
+                return;
+            }
+
             if (translated.Length == 0)
             {
-                await Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {dataVal.SongameString} попыток: {dataVal.Tries}");
+                await Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {Context.BotCtx.SongGame.SongameString} попыток: {Context.BotCtx.SongGame.Tries}");
             }
             else
             {
@@ -186,20 +149,18 @@ namespace fs24bot3.Commands
                     try
                     {
                         var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
-                        string trOutFixed = RemoveArticles(translatedOutput);
+                        string trOutFixed = Context.BotCtx.SongGame.RemoveArticles(translatedOutput);
 
-                        if (trOutFixed == dataVal.SongameString)
+                        if (trOutFixed == Context.BotCtx.SongGame.SongameString)
                         {
-                            int reward = 450 * dataVal.Tries;
+                            int reward = 450 * Context.BotCtx.SongGame.Tries;
                             user.AddItemToInv(Context.BotCtx.Shop, "money", reward);
                             await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
-                            Context.BotCtx.Connection.Delete(dataVal);
                         }
                         else
                         {
-                            await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {dataVal.SongameString} | {trOutFixed}");
-                            dataVal.Tries--;
-                            Context.BotCtx.Connection.Update(dataVal);
+                            await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Context.BotCtx.SongGame.SongameString} | {trOutFixed} // у вас осталось {Context.BotCtx.SongGame.Tries} попыток!");
+                            Context.BotCtx.SongGame.Tries--;
                         }
                     }
                     catch (FormatException)
@@ -262,7 +223,7 @@ namespace fs24bot3.Commands
 
         [Command("tag")]
         [Description("Управление тегами: параметр action: add/del")]
-        [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета, его можно узнать например с помощью команды .colors (brote@irc.esper.net)")]
+        [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета.")]
         public async Task AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
         {
             var user = new User(Context.Sender, Context.BotCtx.Connection);

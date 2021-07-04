@@ -14,6 +14,17 @@ namespace fs24bot3.Commands
 
         public CommandService Service { get; set; }
 
+        [Command("shop")]
+        [Description("Магазин")]
+        public async Task Shop(string item = "")
+        {
+            await Context.SendMessage(Context.Channel, string.Join(' ',
+            Context.BotCtx.Shop.Items
+            .Where(x => x.Key.Contains(item) || x.Value.Name.Contains(item))
+            .Where(x => x.Value.Sellable)
+            .Select(x => $"[{x.Key}] {x.Value.Name} 💰{x.Value.Price},")));
+        }
+
         [Command("inv", "inventory")]
         [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд @buy/@sell/@transfer и других")]
         public async Task Userstat(bool useSlugs = false)

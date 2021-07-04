@@ -26,7 +26,7 @@ namespace fs24bot3.BotSystems
             Items = new Dictionary<string, Models.ItemInventory.IItem>();
             ShopID = "shop";
 
-            Items.Add("money", new Models.ItemInventory.BasicItem("💰 Деньги"));
+            Items.Add("money", new Models.ItemInventory.BasicItem("💰 Деньги", 0, false));
             Items.Add("beer", new Drink("🍺 Пиво", 1, 100));
             Items.Add("wine", new Drink("🍷 Вино [МОЛДАВСКОЕ]", 3, 150));
             Items.Add("winef", new Drink("🍷 Вино [ФРАНЦУЗСКОЕ]", 2, 150));
