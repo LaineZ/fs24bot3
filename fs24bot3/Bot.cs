@@ -25,6 +25,7 @@ namespace fs24bot3
         public Client BotClient { get; }
         readonly HttpTools http = new HttpTools();
         public BotSystems.Shop Shop;
+        public BotSystems.Songame SongGame;
         public int Tickrate = 15000;
         public Bot()
         {
@@ -69,6 +70,7 @@ namespace fs24bot3
         {
             // start shop
             Shop = new Shop(this);
+            SongGame = new Songame(Connection);
 
             while (true)
             {

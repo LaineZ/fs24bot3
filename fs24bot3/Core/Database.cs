@@ -21,7 +21,6 @@ namespace fs24bot3.Core
             connection.CreateTable<SQL.Reminds>();
             connection.CreateTable<SQL.UtfCharacters>();
             connection.CreateTable<SQL.UnhandledExceptions>();
-            connection.CreateTable<SQL.Songame>();
 
             // creating ultimate inventory by @Fingercomp
             connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
