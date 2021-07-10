@@ -99,6 +99,48 @@ namespace fs24bot3.Core
             Connect.Execute("UPDATE UserStats SET Need = Level * ? WHERE Nick = ?", XP_MULTIPLER, Username);
         }
 
+        public int GetFishLevel()
+        {
+            var q = Connect.Table<SQL.Fishing>().Where(v => v.Nick == Username).FirstOrDefault();
+            if (q != null) { return q.Level; }
+            return 1;
+        }
+
+
+        public string GetFishNest()
+        {
+            var q = Connect.Table<SQL.Fishing>().Where(v => v.Nick == Username).FirstOrDefault();
+            if (q != null)
+            {
+                return q.NestName;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void IncreaseFishLevel()
+        {
+            Connect.Execute("UPDATE Fishing SET Level = Level + 1 WHERE Nick = ?", Username);
+        }
+
+        public SQL.FishingNests SetNest(string nest)
+        {
+            var query = Connect.Table<SQL.FishingNests>().Where(v => v.Name.Equals(nest)).FirstOrDefault();
+            if (query != null)
+            {
+                Connect.InsertOrReplace(new SQL.Fishing
+                {
+                    Level = GetFishLevel(),
+                    NestName = nest,
+                    Nick = Username,
+                });
+            }
+
+            return query;
+        }
+
         public void AddRemind(TimeSpan time, string title)
         {
             var remind = new SQL.Reminds()
@@ -118,7 +160,7 @@ namespace fs24bot3.Core
 
         public void AddItemToInv(Shop shop, string name, int count)
         {
-            if (!shop.Items.ContainsKey(name)) 
+            if (!shop.Items.ContainsKey(name))
             {
                 throw new Core.Exceptions.TypeNotFoundException();
             }
@@ -142,11 +184,11 @@ namespace fs24bot3.Core
         /// <returns>Success of removing</returns>
         public async Task<bool> RemItemFromInv(Shop shop, string name, int count)
         {
-            if (!shop.Items.ContainsKey(name)) 
+            if (!shop.Items.ContainsKey(name))
             {
                 throw new Core.Exceptions.TypeNotFoundException();
             }
-            
+
             count = (int)Math.Floor((decimal)count);
             var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(name));
 

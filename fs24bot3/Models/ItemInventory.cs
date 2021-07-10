@@ -21,6 +21,16 @@ namespace fs24bot3.Models
                 await botCtx.SendMessage(channel, "Этот предмет невозможно применить на другом пользователе!");
                 return false;
             }
+
+            public bool OnAdd(Bot botCtx, string channel, Core.User user, Core.User targetUser)
+            {
+                return false;
+            }
+
+            public bool OnDel(Bot botCtx, string channel, Core.User user, Core.User targetUser)
+            {
+                return false;
+            }
         }
 
         public class BasicItem : IItem
