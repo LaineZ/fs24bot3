@@ -177,18 +177,28 @@ namespace fs24bot3.Commands
         [Description("Использовать предмет")]
         public async Task Use(string itemname, string nick = null)
         {
-            User user = new User(Context.Sender, Context.BotCtx.Connection, Context);
-            if (user.RemItemFromInv(Context.BotCtx.Shop, itemname, 1).Result)
+            User user = new User(Context.Sender, Context.BotCtx.Connection);
+            bool delete = false;
+            if (user.CountItem(itemname) > 0)
             {
                 if (nick != null && nick != Context.Sender)
                 {
                     User targetUser = new User(nick, Context.BotCtx.Connection);
-                    await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, user, targetUser);
+                    delete = await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, user, targetUser);
                 }
                 else
                 {
-                    await Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, user);
+                    delete = await Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, user);
                 }
+            }
+            else
+            {
+                Context.SendSadMessage(Context.Channel, $"У вас нет предмета {Context.BotCtx.Shop.Items[itemname].Name} чтобы его использовать");
+            }   
+            
+            if (delete) { 
+                await user.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
+                await Context.SendMessage(Context.Channel, $"{IrcColors.Red}Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
             }
         }
     }

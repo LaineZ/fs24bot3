@@ -38,6 +38,7 @@ namespace fs24bot3
             Service.AddModule<StatCommandModule>();
             Service.AddModule<BandcampCommandsModule>();
             Service.AddModule<TranslateCommandModule>();
+            Service.AddModule<FishCommandsModule>();
 
             Core.Database.InitDatabase(Connection);
             BotClient = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());

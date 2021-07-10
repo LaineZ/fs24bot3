@@ -211,9 +211,9 @@ namespace fs24bot3.Commands
                     if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000 + lyricsOut.Length))
                     {
                         var (from, to) = ParseLang(lang);
-                        var resultTranslated = await Transalator.Translate(lyricsOut, from, to);
+                        var resultTranslated = await Transalator.TranslateBing(lyricsOut, from, to);
 
-                        await Context.SendMessage(Context.Channel, resultTranslated);
+                        await Context.SendMessage(Context.Channel, resultTranslated.translations[0].text);
                     }
                 }
                 catch (Exception e)

@@ -21,11 +21,23 @@ namespace fs24bot3.Core
             connection.CreateTable<SQL.Reminds>();
             connection.CreateTable<SQL.UtfCharacters>();
             connection.CreateTable<SQL.UnhandledExceptions>();
+            connection.CreateTable<SQL.Fishing>();
+            connection.CreateTable<SQL.FishingNests>();
 
             // creating ultimate inventory by @Fingercomp
             connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
 
             connection.Execute("CREATE TABLE IF NOT EXISTS LyricsCache (track TEXT, artist TEXT, lyrics TEXT, addedby TEXT, PRIMARY KEY (track, artist))");
+
+            // generate fishing nests
+            var rand = new Random();
+            if (connection.Table<SQL.FishingNests>().Count() == 0) {
+                Log.Information("Generating fishing nests...");
+                for (int i = 0; i < 100; i++)
+                {
+                    connection.InsertOrReplace(new Models.SQL.FishingNests() { Level = rand.Next(1, 3), FishCount = rand.Next(1, 20), FishingLineRequired = rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(rand.Next(2, 5)) });   
+                }
+            }
             Log.Information("Databases loaded!");
         }
 
@@ -45,7 +57,6 @@ namespace fs24bot3.Core
                     if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
                 }
             }
-
 
             return outputmsg;
         }
