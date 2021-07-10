@@ -17,7 +17,6 @@ namespace fs24bot3.Models
             public int LastMsg { get; set; }
         }
 
-        // ultimate table 99999
         public class Item
         {
             [PrimaryKey]
@@ -118,6 +117,14 @@ namespace fs24bot3.Models
             public int Level { get; set; }
             public int FishingLineRequired { get; set; }
             public int FishCount { get; set; }
+        }
+
+        public class Fishing
+        {
+            [PrimaryKey]
+            public string Nick { get; set; }
+            public int Level { get; set; }
+            public string NestName { get; set; }
         }
 
         public class UnhandledExceptions

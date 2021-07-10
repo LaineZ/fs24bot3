@@ -48,6 +48,7 @@ namespace fs24bot3.BotSystems
             Items.Add("veriplace", new Models.ItemInventory.BasicItem("🎏 Верхоплавки", 270));
             Items.Add("pike", new Models.ItemInventory.BasicItem("🦈 Щука", 1000));
             Items.Add("som", new Models.ItemInventory.BasicItem("🐬 Сом", 1200));
+            Items.Add("line", new Models.ItemInventory.BasicItem("🪢 Леска", 100));
 
             BotCtx = botCtx;
 
