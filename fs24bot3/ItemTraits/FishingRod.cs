@@ -10,7 +10,7 @@ namespace fs24bot3.ItemTraits
         public int Price { get; set; }
         public bool Sellable { get; set; }
 
-        public FishingRod(string name, int price = 0)
+        public FishingRod(string name, int price)
         {
             Name = name;
             Price = price;
@@ -20,8 +20,9 @@ namespace fs24bot3.ItemTraits
         public async Task<bool> OnUseMyself(Bot botCtx, string channel, Core.User user)
         {
             var rand = new Random();
+            var nestName = user.GetFishNest();
             var nest = botCtx.Connection.Table<SQL.FishingNests>().
-                        Where(v => v.Name.Equals(user.GetFishNest())).
+                        Where(v => v.Name.Equals(nestName)).
                         FirstOrDefault();
 
             if (nest == null)
@@ -30,9 +31,14 @@ namespace fs24bot3.ItemTraits
                 return false;
             }
 
-            if (rand.Next(0, 2) == 1)
+            if (!user.RemItemFromInv(botCtx.Shop, "worm", 1).Result)
             {
-                // TODO: Refactor
+                await botCtx.SendMessage(channel, $"{Models.IrcColors.Gray}У вас нет наживки, @buy worm");
+                return false;
+            }
+
+            if (rand.Next(1, 100) <= user.GetFishLevel())
+            {
                 string[] fish = new string[15];
 
                 if (nest.Level == 1)
@@ -58,7 +64,14 @@ namespace fs24bot3.ItemTraits
             }
 
 
-            return true;
+            if (rand.Next(0, 2) == 1) 
+            {
+                user.IncreaseFishLevel();
+                await botCtx.SendMessage(channel, $"{IrcColors.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
+            }
+
+
+            return rand.Next(0, 2) == 1;
         }
     }
 }
