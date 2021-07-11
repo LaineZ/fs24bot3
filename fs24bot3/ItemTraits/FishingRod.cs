@@ -37,7 +37,9 @@ namespace fs24bot3.ItemTraits
                 return false;
             }
 
-            if (rand.Next(1, 100) <= user.GetFishLevel())
+            int fishMult = Math.Clamp((35 * nest.Level) - nest.FishCount, 1, int.MaxValue);
+
+            if (rand.Next(1, fishMult) <= user.GetFishLevel())
             {
                 string[] fish = new string[15];
 
@@ -64,14 +66,17 @@ namespace fs24bot3.ItemTraits
             }
 
 
-            if (rand.Next(0, 2) == 1) 
+            if (rand.Next(0, 3) == 1) 
             {
                 user.IncreaseFishLevel();
                 await botCtx.SendMessage(channel, $"{IrcColors.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
             }
 
+            bool broken = rand.Next(0, 2) == 1;
 
-            return rand.Next(0, 2) == 1;
+            if (broken) { await botCtx.SendMessage(channel, "Ваша удочка сломалась!"); }
+
+            return broken;
         }
     }
 }
