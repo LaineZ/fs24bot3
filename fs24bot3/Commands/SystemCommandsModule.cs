@@ -225,7 +225,6 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Context.BotCtx.Tickrate);
         }
 
-
         [Command("loggerlevel")]
         [Checks.CheckAdmin]
         public async Task LoggerLevel(string level = "Verbose")
