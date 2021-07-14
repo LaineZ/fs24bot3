@@ -95,8 +95,8 @@ namespace fs24bot3.Core
             foreach (var tr in translations)
             {
 
-                var translatorResponse = await TranslateBing(translated, "auto", tr);
-                translated = translatorResponse.translations[0].text;
+                var translatorResponse = await Translate(translated, "auto", tr);
+                translated = translatorResponse;
             }
 
             return translated;
