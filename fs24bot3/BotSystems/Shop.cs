@@ -69,11 +69,13 @@ namespace fs24bot3.BotSystems
         {
             foreach (var BasicItem in Items)
             {
-                int check = Rand.Next(0, 10);
+                int check = Rand.Next(0, 20);
                 if (check == 5)
                 {
                     Log.Verbose("Descreaseing price for {0}", BasicItem.Value.Name);
-                    BasicItem.Value.Price -= Rand.Next(1, 3);
+                    if (BasicItem.Value.Price > 100) {
+                        BasicItem.Value.Price -= Rand.Next(1, 3);
+                    }
                 }
             }
         }
