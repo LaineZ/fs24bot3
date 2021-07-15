@@ -67,16 +67,23 @@ namespace fs24bot3.BotSystems
 
         public void UpdateShop()
         {
-            foreach (var BasicItem in Items)
+            foreach (var shopItem in Items)
             {
-                int check = Rand.Next(0, 20);
+                int check = Rand.Next(0, 30);
                 if (check == 5)
                 {
-                    Log.Verbose("Descreaseing price for {0}", BasicItem.Value.Name);
-                    if (BasicItem.Value.Price > 100) {
-                        BasicItem.Value.Price -= Rand.Next(1, 3);
+                    if (shopItem.Value.Price >= Rand.Next(5800, 100500))
+                    {
+                        Log.Verbose("Descreaseing price for {0}", shopItem.Value.Name);
+                        shopItem.Value.Price -= Rand.Next(1, 3);
+                    }
+                    else
+                    {
+                        //Log.Verbose("Incresing price for {0}", shopItem.Name);
+                        shopItem.Value.Price += Rand.Next(1, 2);
                     }
                 }
+
             }
         }
         
