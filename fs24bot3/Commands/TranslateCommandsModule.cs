@@ -84,7 +84,7 @@ namespace fs24bot3.Commands
         public async Task TranslatePpc([Remainder] string text)
         {
             var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
-            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
+            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
             {
                 try
                 {
