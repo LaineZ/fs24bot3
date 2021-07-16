@@ -23,7 +23,7 @@ namespace fs24bot3.Commands
 
         private async Task PrintResults(SearchCommandProcessor.CustomCommandContext ctx)
         {
-            if (!ctx.SearchResults.Any())
+            if (ctx.SearchResults == null || !ctx.SearchResults.Any())
             {
                 await Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
                 return;
