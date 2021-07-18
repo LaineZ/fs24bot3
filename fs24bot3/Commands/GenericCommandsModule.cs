@@ -103,7 +103,6 @@ namespace fs24bot3.Commands
                 username = Context.Sender;
             }
             var reminds = new User(username, Context.BotCtx.Connection).GetReminds();
-            reminds.Reverse();
 
             if (!reminds.Any())
             {
