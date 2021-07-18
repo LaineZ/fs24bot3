@@ -35,7 +35,7 @@ namespace fs24bot3.Core
                 Log.Information("Generating fishing nests...");
                 for (int i = 0; i < 100; i++)
                 {
-                    connection.InsertOrReplace(new Models.SQL.FishingNests() { Level = rand.Next(1, 3), FishCount = rand.Next(1, 20), FishingLineRequired = rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(rand.Next(2, 5)) });   
+                    connection.InsertOrReplace(new SQL.FishingNests() { Level = rand.Next(1, 3), FishCount = rand.Next(1, 20), FishingLineRequired = rand.Next(1, 10), Name = Core.MessageUtils.GenerateName(rand.Next(2, 5)) });   
                 }
             }
             Log.Information("Databases loaded!");

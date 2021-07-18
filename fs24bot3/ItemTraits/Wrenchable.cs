@@ -4,7 +4,7 @@ using fs24bot3.Models;
 
 namespace fs24bot3.ItemTraits
 {
-        public class Wrenchable : Models.ItemInventory.IItem
+        public class Wrenchable : ItemInventory.IItem
     {
             public string Name { get; }
             public int Price { get; set; }

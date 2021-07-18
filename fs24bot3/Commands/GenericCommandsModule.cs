@@ -94,28 +94,35 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, $"{message} через ({time})!");
         }
 
-        [Command("reminds", "ins", "rems")]
+        [Command("reminds", "rems")]
         [Description("Список напоминаний")]
-        public async Task Reminds(string username = "")
+        public async Task Reminds(string username = "", string locale = "ru-RU")
         {
             if (string.IsNullOrEmpty(username))
             {
                 username = Context.Sender;
             }
-            var reminds = new User(username, Context.BotCtx.Connection).GetReminds().Take(5);
+            var reminds = new User(username, Context.BotCtx.Connection).GetReminds();
+            reminds.Reverse();
 
             if (!reminds.Any())
             {
                 Context.SendSadMessage(Context.Channel, $"У пользователя {username} нет напоминаний!");
+                return;
             }
+
+            string rems = string.Empty;
+
             foreach (var remind in reminds)
             {
                 DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                CultureInfo rus = new CultureInfo("ru-RU", false);
+                CultureInfo rus = new CultureInfo(locale, false);
                 dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToLocalTime();
 
-                await Context.SendMessage(Context.Channel, $"Напоминание {username}: \"{remind.Message}\" в {dtDateTime.ToString(rus)}");
+                rems += $"{IrcColors.Bold}Напоминание {username}: {IrcColors.Reset}\"{remind.Message}\" в {dtDateTime.ToString(rus)}\n";
             }
+
+            await Context.SendMessage(Context.Channel, rems);
         }
 
         [Command("songame", "songg", "sg")]

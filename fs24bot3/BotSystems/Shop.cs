@@ -11,7 +11,7 @@ namespace fs24bot3.BotSystems
     public class Shop
     {
         public Dictionary<string, Models.ItemInventory.IItem> Items { get; private set; }
-        private Random Rand = new Random();
+        private readonly Random Rand = new Random();
 
         public int Sells { get; private set; }
         public int Buys { get; private set; }

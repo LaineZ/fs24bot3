@@ -13,8 +13,6 @@ namespace fs24bot3.Commands
 
         public CommandService Service { get; set; }
 
-        readonly HttpTools http = new HttpTools();
-
         private (string, string) ParseLang(string input)
         {
             string[] langs = input.Split("-");

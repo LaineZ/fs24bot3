@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace fs24bot3.Core
 {
@@ -54,13 +56,16 @@ namespace fs24bot3.Core
             return Name;
         }
 
-
         public static string GenerateName(int len)
         {
             return GenerateBaseName(len, new string[] { "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "l", "n", "p", "q", "r", "s", "sh", "zh", "t", "v", "w", "x" },
             new string[] { "a", "e", "i", "o", "u", "ae", "y" });
         }
 
+        public static string StripIRC(string input)
+        {
+            return Regex.Replace(input, @"[\x02\x1F\x0F\x16]|\x03(\d\d?(,\d\d?)?)?", String.Empty);    
+        }
 
         public static string GenerateNameRus(int len)
         {

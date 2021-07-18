@@ -83,8 +83,10 @@ namespace fs24bot3.Commands
             var paser = new Core.OneLinerOptionParser(query);
 
             SearchCommandService.AddModule<SearchQueryCommands>();
-            var ctx = new SearchCommandProcessor.CustomCommandContext();
-            ctx.PreProcess = true;
+            var ctx = new SearchCommandProcessor.CustomCommandContext
+            {
+                PreProcess = true
+            };
 
             foreach ((string opt, string value) in paser.Options)
             {

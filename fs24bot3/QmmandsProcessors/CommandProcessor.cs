@@ -39,7 +39,7 @@ namespace fs24bot3.QmmandsProcessors
                 }
                 else
                 {
-                    var txt = await Core.Transalator.TranslatePpc(Regex.Replace(message, @"[\x02\x1F\x0F\x16]|\x03(\d\d?(,\d\d?)?)?", String.Empty));
+                    var txt = await Core.Transalator.TranslatePpc(Core.MessageUtils.StripIRC(message));
                     await BotCtx.SendMessage(channel, txt);
                 }
             }

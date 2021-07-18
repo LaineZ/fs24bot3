@@ -4,7 +4,7 @@ using fs24bot3.Models;
 
 namespace fs24bot3.ItemTraits
 {
-        public class Bomb : Models.ItemInventory.IItem
+        public class Bomb : ItemInventory.IItem
     {
             public string Name { get; }
             public int Price { get; set; }
@@ -21,7 +21,6 @@ namespace fs24bot3.ItemTraits
             public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
             {
                 var rand = new Random();
-                var takeItems = targetUser.GetInventory();
 
                 if (rand.Next(0, 10 * targetUser.CountItem("wall") - Damage) == 0)
                 {

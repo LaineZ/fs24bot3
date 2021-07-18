@@ -72,14 +72,14 @@ namespace fs24bot3
                 {
                     case ChecksFailedResult err:
                         var errStr = new StringBuilder();
-                        foreach (var (check, error) in err.FailedChecks)
+                        foreach (var (_, error) in err.FailedChecks)
                         {
                             errStr.Append(error.FailureReason);
                         }
                         await client.SendAsync(new PrivMsgMessage(target, $"Требования не выполнены: {errStr}"));
                         break;
                     case TypeParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}`"));
+                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите @helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой"));
                         break;
                     case ArgumentParseFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(target, $"Ошибка парсера: `{err.FailureReason}`"));

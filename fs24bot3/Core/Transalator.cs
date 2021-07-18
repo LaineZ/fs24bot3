@@ -59,7 +59,7 @@ namespace fs24bot3.Core
 
         public async static Task<string> Translate(string text, string fromLang = "auto", string toLang = "auto")
         {
-            var data = new Models.Translate.TranslateQuery()
+            var data = new Translate.TranslateQuery()
             {
                 q = text.TrimEnd(),
                 source = fromLang,
@@ -78,7 +78,7 @@ namespace fs24bot3.Core
 
                 if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    var translatedOutput = JsonConvert.DeserializeObject<Models.Translate.TranslateOut>(responseString);
+                    var translatedOutput = JsonConvert.DeserializeObject<Translate.TranslateOut>(responseString);
                     Log.Verbose(translatedOutput.translatedText);
                     return translatedOutput.translatedText;
                 }

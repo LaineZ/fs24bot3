@@ -24,8 +24,8 @@ namespace fs24bot3
         public readonly CommandService Service = new CommandService();
         public Client BotClient { get; }
         readonly HttpTools http = new HttpTools();
-        public BotSystems.Shop Shop;
-        public BotSystems.Songame SongGame;
+        public Shop Shop;
+        public Songame SongGame;
         public int Tickrate = 15000;
         public Bot()
         {
@@ -141,7 +141,7 @@ namespace fs24bot3
                     }
                     if (count > 4)
                     {
-                        string link = await http.UploadToTrashbin(message, "addplain");
+                        string link = await http.UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
                         await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
                         break;
                     }

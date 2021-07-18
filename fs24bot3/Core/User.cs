@@ -162,7 +162,7 @@ namespace fs24bot3.Core
         {
             if (!shop.Items.ContainsKey(name))
             {
-                throw new Core.Exceptions.TypeNotFoundException();
+                throw new Exceptions.TypeNotFoundException();
             }
             count = (int)Math.Floor((decimal)count);
             try
@@ -186,7 +186,7 @@ namespace fs24bot3.Core
         {
             if (!shop.Items.ContainsKey(name))
             {
-                throw new Core.Exceptions.TypeNotFoundException();
+                throw new Exceptions.TypeNotFoundException();
             }
 
             count = (int)Math.Floor((decimal)count);

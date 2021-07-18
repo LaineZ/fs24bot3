@@ -5,7 +5,7 @@ using fs24bot3.Models;
 
 namespace fs24bot3.ItemTraits
 {
-    public class Drink : Models.ItemInventory.IItem
+    public class Drink : ItemInventory.IItem
     {
         public string Name { get; }
         public int Price { get; set; }
