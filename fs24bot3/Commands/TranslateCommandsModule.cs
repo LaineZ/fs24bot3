@@ -105,13 +105,14 @@ namespace fs24bot3.Commands
             List<string> translationsChain = new List<string>();
             var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
-            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
+            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
             {
                 for (int i = 0; i < gens; i++)
                 {
                     try
                     {
                         lastText = await Transalator.TranslatePpc(lastText);
+                        if (translationsChain.Any() && lastText == translationsChain.Last()) { break; }
                         translationsChain.Add(lastText);
                     }
                     catch (FormatException)
@@ -121,7 +122,7 @@ namespace fs24bot3.Commands
                 }
 
                 // calculating output
-                string totalOut = string.Join("->", translationsChain);
+                string totalOut = string.Join(" -> ", translationsChain);
 
                 if (totalOut.Length < 250)
                 {
