@@ -3,6 +3,7 @@ using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace fs24bot3.Commands
 
             if (langs.Length > 1)
             {
-                return (langs[0], langs[1]);                
+                return (langs[0], langs[1]);
             }
             else
             {
@@ -95,27 +96,40 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("genprojname", "projname", "thinkproj")]
+        [Command("trppcgen")]
         [Checks.UnPpcable]
-        public async Task GenProjName([Remainder] string keywords)
+        public async Task TranslatePpcGen(int gensArg, [Remainder] string text)
         {
+            int gens = Math.Clamp(gensArg, 2, 8);
+            string lastText = text;
+            List<string> translationsChain = new List<string>();
             var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
-            if (keywords.Length < 4) {
-                Context.SendSadMessage(Context.Channel, "Придумайте более длинные ключевые слова для генерации имени...");
-                return;
-            }
-
-            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
+            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
             {
-                try
+                for (int i = 0; i < gens; i++)
                 {
-                    var words = Transalator.TranslatePpc(keywords, "en").Result.Split("").Where(x => x.Length > 2);
-                    await Context.SendMessage(Context.Channel, string.Join(" ", words));
+                    try
+                    {
+                        lastText = await Transalator.TranslatePpc(lastText);
+                        translationsChain.Add(lastText);
+                    }
+                    catch (FormatException)
+                    {
+                        await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                    }
                 }
-                catch (FormatException)
+
+                // calculating output
+                string totalOut = string.Join("->", translationsChain);
+
+                if (totalOut.Length < 250)
                 {
-                    await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                    await Context.SendMessage(Context.Channel, totalOut);
+                }
+                else
+                {
+                    await Context.SendMessage(Context.Channel, lastText);
                 }
             }
         }
