@@ -5,6 +5,7 @@ using Qmmands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
@@ -50,8 +51,11 @@ namespace fs24bot3.Commands
 
         [Command("buy")]
         [Description("Купить товар")]
-        public async Task Buy(string itemname, int count = 1)
+        public async Task Buy([Remainder] string itemnamecount)
         {
+            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
+            string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
+
             User user = new User(Context.Sender, Context.BotCtx.Connection);
             var (success, price) = await Context.BotCtx.Shop.Buy(user, itemname, count);
 
@@ -67,8 +71,11 @@ namespace fs24bot3.Commands
 
         [Command("sell")]
         [Description("Продать товар")]
-        public async Task Sell(string itemname, int count = 1)
+        public async Task Sell([Remainder] string itemnamecount)
         {
+            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
+            string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
+
             User user = new User(Context.Sender, Context.BotCtx.Connection);
 
             var (success, price) = await Context.BotCtx.Shop.Sell(user, itemname, count);
@@ -102,8 +109,11 @@ namespace fs24bot3.Commands
 
         [Command("transfer")]
         [Description("Передать вещи")]
-        public async Task Transfer(string destanationNick, string itemname, int count = 1)
+        public async Task Transfer(string destanationNick, [Remainder] string itemnamecount)
         {
+            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
+            string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
+
             User user = new User(Context.Sender, Context.BotCtx.Connection);
             User destanation = new User(destanationNick, Context.BotCtx.Connection);
 
