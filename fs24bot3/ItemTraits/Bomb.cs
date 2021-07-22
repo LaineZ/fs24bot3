@@ -11,7 +11,7 @@ namespace fs24bot3.ItemTraits
             public bool Sellable { get; set; }
             private int Damage { get; }
 
-            public Bomb(string name, int damage, int price = 0, bool sellabe = true)
+            public Bomb(string name, int damage, int price, bool sellabe = true)
             {
                 Name = name;
                 Price = price;

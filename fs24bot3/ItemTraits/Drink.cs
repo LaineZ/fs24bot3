@@ -12,7 +12,7 @@ namespace fs24bot3.ItemTraits
         public bool Sellable { get; set; }
         private int DrunkLevel { get; }
 
-        public Drink(string name, int drunk, int price = 0, bool sellabe = true)
+        public Drink(string name, int drunk, int price, bool sellabe = true)
         {
             Name = name;
             Price = price;

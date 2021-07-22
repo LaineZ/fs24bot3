@@ -38,8 +38,8 @@ namespace fs24bot3.BotSystems
             Items.Add("dj", new Models.ItemInventory.BasicItem("🎛 PIONEER DJ", 320));
             Items.Add("midikey", new Models.ItemInventory.BasicItem("🎹 Native Instruments Komplete Kontrol S88", 600));
             Items.Add("wall", new Models.ItemInventory.BasicItem("🧱 Укрепление", 15000));
-            Items.Add("pistol", new Bomb("🔫 Пистолет", 5500));
-            Items.Add("bomb", new Bomb("💣 Бомба", 9500));
+            Items.Add("pistol", new Bomb("🔫 Пистолет", 5500, 5000));
+            Items.Add("bomb", new Bomb("💣 Бомба", 9500, 9000));
             Items.Add("worm", new Models.ItemInventory.BasicItem("🐍 Червь", 50));
             Items.Add("fish", new Models.ItemInventory.BasicItem("🐟 Рыба", 100));
             Items.Add("tfish", new Models.ItemInventory.BasicItem("🐠 Тропическая рыба", 1570));

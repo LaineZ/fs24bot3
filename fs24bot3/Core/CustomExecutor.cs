@@ -53,7 +53,7 @@ namespace fs24bot3.Core
                     Log.Verbose("Args string is not empty!");
                     random = new Random(args.GetHashCode());
                 }
-                index = random.Next(outputs.Length - 1);
+                index = random.Next(0, outputs.Length - 1);
             }
 
             StringBuilder argsFinal = new StringBuilder(outputs[index]);
