@@ -21,7 +21,7 @@ namespace fs24bot3.Core
             Log.Information("Custom command processor enabled!");
         }
 
-        public async Task<bool> ProcessCmd(string senderNick, string channel, string message)
+        public bool ProcessCmd(string senderNick, string channel, string message)
         {
             if (message.StartsWith("@"))
             {
@@ -36,7 +36,7 @@ namespace fs24bot3.Core
 
                     if (cmd.IsLua == 0)
                     {
-                        new CustomExecutor(Client, Connect, MessageBus, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
+                        new CustomExecutor(Client, Connect, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
                         return true;
                     }
                     else

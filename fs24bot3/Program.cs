@@ -88,7 +88,7 @@ namespace fs24bot3
                         await client.SendAsync(new PrivMsgMessage(target, "Команда выключена..."));
                         break;
                     case CommandNotFoundResult _:
-                        await Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
+                        Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
                         break;
                     case CommandExecutionFailedResult err:
                         await client.SendAsync(new PrivMsgMessage(target, $"{IrcColors.Red}Ошибка: {err.Exception.Message}{err.Exception.StackTrace}"));
