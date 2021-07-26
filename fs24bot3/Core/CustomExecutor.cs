@@ -16,25 +16,27 @@ namespace fs24bot3.Core
         private Client Client { get; }
         private SQLite.SQLiteConnection Connect { get; }
         private Random Random;
-        private SQL.CustomUserCommands Command { get; }
+        private List<int> Indices = new List<int>();
+        private SQL.CustomUserCommands LastCommand;
 
-        public CustomExecutor(Client client, SQLite.SQLiteConnection connect, SQL.CustomUserCommands command)
+        public CustomExecutor(Client client, SQLite.SQLiteConnection connect)
         {
             Random = new Random();
             Client = client;
             Connect = connect;
-            Command = command;
         }
 
-        public async void Execute(string senderNick, string channel, string message, string args)
+        public async void Execute(SQL.CustomUserCommands command, string senderNick, string channel, string args)
         {
-            string[] outputs = Command.Output.Split("||");
+            string[] outputs = command.Output.Split("||");
             var arr = Connect.Table<SQL.UserStats>().ToList();
             var nick = MessageUtils.AntiHightlight(arr[Random.Next(0, arr.Count - 1)].Nick);
-            int index = Random.Next(outputs.Length - 1);
+
+            int index = 0;
 
             if (int.TryParse(args, out int result))
             {
+                // if args contains output number
                 if (result > outputs.Length - 1 || result < 0)
                 {
                     await Client.SendAsync(new PrivMsgMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
@@ -46,10 +48,27 @@ namespace fs24bot3.Core
             }
             else
             {
+                // if args contains a string
                 if (args.Any())
                 {
                     Log.Verbose("Args string is not empty!");
-                    Random = new Random(args.GetHashCode());
+                    Random = new Random(args.GetHashCode() + senderNick.GetHashCode());
+                    index = Random.Next(outputs.Length - 1);
+                }
+                else
+                {
+                    if (LastCommand == null || command.Command != LastCommand.Command || !Indices.Any())
+                    {
+                        Random = new Random();
+                        Indices.Clear();
+                        LastCommand = command;
+                        for (int i = 0; i < outputs.Count() - 1; i++) { Indices.Add(i); }
+                        Indices = Indices.OrderBy(x => Random.Next()).ToList();
+                        Log.Verbose("Regenerating indices...");
+                    }
+
+                    index = Indices[0];
+                    Indices.RemoveAt(0);
                 }
             }
 

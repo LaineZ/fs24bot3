@@ -13,11 +13,14 @@ namespace fs24bot3.Core
         private SQLite.SQLiteConnection Connect { get; }
         private List<ParsedIRCMessage> MessageBus { get; }
 
+        private CustomExecutor CustomExecutor { get; }
+
         public CustomCommandProcessor(Client client, SQLite.SQLiteConnection connect, List<ParsedIRCMessage> messageBus)
         {
             Client = client;
             Connect = connect;
             MessageBus = messageBus;
+            CustomExecutor = new CustomExecutor(Client, Connect);
             Log.Information("Custom command processor enabled!");
         }
 
@@ -36,7 +39,7 @@ namespace fs24bot3.Core
 
                     if (cmd.IsLua == 0)
                     {
-                        new CustomExecutor(Client, Connect, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
+                        CustomExecutor.Execute(cmd, senderNick, channel, string.Join(" ", argsArray));
                         return true;
                     }
                     else
