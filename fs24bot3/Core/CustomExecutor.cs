@@ -1,13 +1,11 @@
 ﻿using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Messages;
-using NLua;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 namespace fs24bot3.Core
 {
@@ -25,7 +23,6 @@ namespace fs24bot3.Core
             Client = client;
             Connect = connect;
         }
-
         public async void Execute(SQL.CustomUserCommands command, string senderNick, string channel, string args)
         {
             string[] outputs = command.Output.Split("||");
@@ -34,41 +31,44 @@ namespace fs24bot3.Core
 
             int index = 0;
 
-            if (int.TryParse(args, out int result))
+            if (outputs.Count() > 1)
             {
-                // if args contains output number
-                if (result > outputs.Length - 1 || result < 0)
+                if (int.TryParse(args, out int result))
                 {
-                    await Client.SendAsync(new PrivMsgMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
-                }
-                else
-                {
-                    index = result;
-                }
-            }
-            else
-            {
-                // if args contains a string
-                if (args.Any())
-                {
-                    Log.Verbose("Args string is not empty!");
-                    Random = new Random(args.GetHashCode() + senderNick.GetHashCode());
-                    index = Random.Next(outputs.Length - 1);
-                }
-                else
-                {
-                    if (LastCommand == null || command.Command != LastCommand.Command || !Indices.Any())
+                    // if args contains output number
+                    if (result > outputs.Length - 1 || result < 0)
                     {
-                        Random = new Random();
-                        Indices.Clear();
-                        LastCommand = command;
-                        for (int i = 0; i < outputs.Count() - 1; i++) { Indices.Add(i); }
-                        Indices = Indices.OrderBy(x => Random.Next()).ToList();
-                        Log.Verbose("Regenerating indices...");
+                        await Client.SendAsync(new PrivMsgMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
                     }
+                    else
+                    {
+                        index = result;
+                    }
+                }
+                else
+                {
+                    // if args contains a string
+                    if (args.Any())
+                    {
+                        Log.Verbose("Args string is not empty!");
+                        Random = new Random(args.GetHashCode() + senderNick.GetHashCode());
+                        index = Random.Next(outputs.Length - 1);
+                    }
+                    else
+                    {
+                        if (LastCommand == null || command.Command != LastCommand.Command || !Indices.Any())
+                        {
+                            Random = new Random();
+                            Indices.Clear();
+                            LastCommand = command;
+                            for (int i = 0; i < outputs.Count() - 1; i++) { Indices.Add(i); }
+                            Indices = Indices.OrderBy(x => Random.Next()).ToList();
+                            Log.Verbose("Regenerating indices...");
+                        }
 
-                    index = Indices[0];
-                    Indices.RemoveAt(0);
+                        index = Indices[0];
+                        Indices.RemoveAt(0);
+                    }
                 }
             }
 
