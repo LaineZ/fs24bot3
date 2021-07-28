@@ -17,6 +17,7 @@ namespace fs24bot3
         public static bool reconnect;
         public static long port;
         public static string nickservPass;
+        public static string serverPassword;
 
         public static string jdoodleClientID;
         public static string jdoodleClientSecret;
@@ -26,6 +27,7 @@ namespace fs24bot3
         public static string translateKey;
         public static string giteaLogin;
         public static string giteaPassword;
+        
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
 
@@ -44,6 +46,7 @@ namespace fs24bot3
                         {"channel", channel },
                         {"port", port },
                         {"nickserv_pass", nickservPass },
+                        {"server_pass", serverPassword}
                     }
                 },
 
@@ -84,6 +87,7 @@ namespace fs24bot3
                         {"channel", "#fl-studio" },
                         {"port", 6667 },
                         {"nickserv_pass", "zxcvbnM1" },
+                        {"server_pass", "" },
                     }
                 },
 
@@ -118,6 +122,7 @@ namespace fs24bot3
                     channel = (string)((TomlTable)table["irc"])["channel"];
                     port = (long)((TomlTable)table["irc"])["port"];
                     nickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
+                    serverPassword = (string)((TomlTable)table["irc"])["server_pass"];
 
                     jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
                     jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];

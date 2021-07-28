@@ -103,6 +103,11 @@ namespace fs24bot3
                 Environment.Exit(1);
             }
 
+            if (message.NumericReply == IRCNumericReply.ERR_PASSWDMISMATCH)
+            {
+                await client.SendRaw("PASS " + Configuration.serverPassword);
+            }
+
             if (message.IRCCommand == IRCCommand.KICK)
             {
                 if (message.Parameters[1] == Configuration.name)
