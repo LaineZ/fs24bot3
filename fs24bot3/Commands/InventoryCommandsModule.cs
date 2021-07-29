@@ -100,8 +100,11 @@ namespace fs24bot3.Commands
 
             foreach (var item in inv)
             {
-                var (_, sellprice) = await Context.BotCtx.Shop.Sell(user, item.Item, item.ItemCount);
-                totalPrice += sellprice;
+                var (selled, sellprice) = await Context.BotCtx.Shop.Sell(user, item.Item, item.ItemCount);
+                if (selled)
+                {
+                    totalPrice += sellprice;
+                }
             }
 
             await Context.SendMessage(Context.Channel, $"Вы продали всё! За {totalPrice} денег!");
@@ -204,9 +207,10 @@ namespace fs24bot3.Commands
             else
             {
                 Context.SendSadMessage(Context.Channel, $"У вас нет предмета {Context.BotCtx.Shop.Items[itemname].Name} чтобы его использовать");
-            }   
-            
-            if (delete) { 
+            }
+
+            if (delete)
+            {
                 await user.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
                 await Context.SendMessage(Context.Channel, $"{IrcColors.Red}Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
             }

@@ -89,16 +89,17 @@ namespace fs24bot3.BotSystems
         
         public async Task<(bool, int)> Sell(User user, string itemname, int count = 1)
         {
-            if (await user.RemItemFromInv(this, itemname, count) && Items[itemname].Sellable)
+            if (Items[itemname].Sellable && await user.RemItemFromInv(this, itemname, count))
             {
                 // tin
                 int sellprice = (int)Math.Floor((decimal)(Items[itemname].Price * count) / 2);
-                user.AddItemToInv(this, "money", sellprice);
                 Sells++;
+                user.AddItemToInv(this, "money", sellprice);
                 return (true, sellprice);
             }
             else
             {
+                Log.Warning("Cannot sell {0}", itemname);
                 return (false, 0);
             }
         }
