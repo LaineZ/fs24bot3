@@ -42,7 +42,7 @@ namespace fs24bot3.Models
         public class Reminds
         {
             [PrimaryKey]
-            public int RemindDate { get; set; }
+            public uint RemindDate { get; set; }
             public string Nick { get; set; }
             public string Channel { get; set; }
             public string Message { get; set; }

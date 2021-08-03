@@ -147,7 +147,7 @@ namespace fs24bot3.Core
             {
                 Nick = Username,
                 Message = title,
-                RemindDate = (int)((DateTimeOffset)DateTime.Now.Add(time)).ToUnixTimeSeconds(),
+                RemindDate = (uint)((DateTimeOffset)DateTime.Now.Add(time)).ToUnixTimeSeconds(),
             };
 
             Connect.Insert(remind);
