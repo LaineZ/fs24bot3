@@ -70,13 +70,13 @@ namespace fs24bot3.Commands
                         switch (rezik.type)
                         {
                             case "a":
-                                await Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {IrcColors.Blue}{rezik.url}");
+                                await Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {IrcClrs.Blue}{rezik.url}");
                                 return;
                             case "b":
-                                await Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {IrcColors.Blue}{rezik.url}");
+                                await Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {IrcClrs.Blue}{rezik.url}");
                                 return;
                             case "t":
-                                await Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {IrcColors.Blue}{rezik.url}");
+                                await Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {IrcClrs.Blue}{rezik.url}");
                                 return;
                             default:
                                 continue;
@@ -158,7 +158,7 @@ namespace fs24bot3.Commands
                     {
                         foreach (var rezik in discover.items.Take(ctx.Limit))
                         {
-                            await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {IrcColors.Blue}{rezik.tralbum_url}");
+                            await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {IrcClrs.Blue}{rezik.tralbum_url}");
                         }
                         return;
                     }

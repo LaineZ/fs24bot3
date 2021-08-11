@@ -46,12 +46,12 @@ namespace fs24bot3.QmmandsProcessors
 
             public async void SendSadMessage(string channel, string message)
             {
-                await BotCtx.SendMessage(channel, IrcColors.Gray + message);
+                await BotCtx.SendMessage(channel, IrcClrs.Gray + message);
             }
 
             public async void SendErrorMessage(string channel, string message)
             {
-                await BotCtx.SendMessage(channel, IrcColors.Red + message);
+                await BotCtx.SendMessage(channel, IrcClrs.Red + message);
             }
         }
     }

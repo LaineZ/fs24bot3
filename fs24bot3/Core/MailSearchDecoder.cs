@@ -35,8 +35,8 @@ namespace fs24bot3.Core
         public static string BoldToIrc(string input)
         {
             StringBuilder textResult = new StringBuilder(input);
-            textResult.Replace("<b>", IrcColors.Bold);
-            textResult.Replace("</b>", IrcColors.Reset);
+            textResult.Replace("<b>", IrcClrs.Bold);
+            textResult.Replace("</b>", IrcClrs.Reset);
 
             HtmlDocument doc = new HtmlDocument();
 

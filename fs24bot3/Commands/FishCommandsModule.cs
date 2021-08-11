@@ -26,7 +26,7 @@ namespace fs24bot3.Commands
 
                 if (state == null)
                 {
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Такого места для рыбалки не сущесвует");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Такого места для рыбалки не сущесвует");
                     return;
                 }
                 if (state.FishingLineRequired <= user.CountItem("line"))
@@ -35,7 +35,7 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Слишком маленькая длинна лески! {state.FishingLineRequired} > {user.CountItem("line")}");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Слишком маленькая длинна лески! {state.FishingLineRequired} > {user.CountItem("line")}");
                 }
             }
             else

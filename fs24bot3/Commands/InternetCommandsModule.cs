@@ -116,7 +116,7 @@ namespace fs24bot3.Commands
             }
             catch (HttpRequestException)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не работает короче, блин........");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не работает короче, блин........");
             }
         }
 
@@ -134,12 +134,12 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось выполнить запрос...");
             }
         }
 
@@ -197,12 +197,12 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось выполнить запрос...");
             }
         }
 
@@ -283,7 +283,7 @@ namespace fs24bot3.Commands
                 foreach (var subPod in pod.SubPods.Take(2))
                 {
                     if (!string.IsNullOrEmpty(subPod.Plaintext))
-                        await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}{pod.Title}: {IrcColors.Reset}{subPod.Plaintext}");
+                        await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{pod.Title}: {IrcClrs.Reset}{subPod.Plaintext}");
                 }
             }
         }

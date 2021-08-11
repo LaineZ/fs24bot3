@@ -19,6 +19,21 @@ namespace fs24bot3.Commands
         public CommandService Service { get; set; }
         readonly HttpTools http = new HttpTools();
 
+
+        private string ToReadableString(TimeSpan span)
+        {
+            string formatted = string.Format("{0}{1}{2}{3}",
+                span.Duration().Days > 0 ? string.Format("{0:0} дн. ", span.Days) : string.Empty,
+                span.Duration().Hours > 0 ? string.Format("{0:0} ч. ", span.Hours) : string.Empty,
+                span.Duration().Minutes > 0 ? string.Format("{0:0} мин. ", span.Minutes) : string.Empty,
+                span.Duration().Seconds > 0 ? string.Format("{0:0} сек.", span.Seconds) : string.Empty);
+            if (formatted.EndsWith(", ")) formatted = formatted.Substring(0, formatted.Length - 2);
+
+            if (string.IsNullOrEmpty(formatted)) formatted = "0 seconds";
+
+            return formatted;
+        }
+
         [Command("help", "commands")]
         [Description("Список команд")]
         public async Task Help()
@@ -48,10 +63,10 @@ namespace fs24bot3.Commands
                     await Context.SendMessage(Context.Channel, "@" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                     if (cmd.Remarks != null)
                     {
-                        await Context.SendMessage(Context.Channel, IrcColors.Bold + cmd.Remarks);
+                        await Context.SendMessage(Context.Channel, IrcClrs.Bold + cmd.Remarks);
                     }
 
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Bold}Алиасы: {IrcColors.Reset}{String.Join(", ", cmd.Aliases)}");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}Алиасы: {IrcClrs.Reset}{String.Join(", ", cmd.Aliases)}");
                     break;
                 }
             }
@@ -118,7 +133,7 @@ namespace fs24bot3.Commands
                 CultureInfo rus = new CultureInfo(locale, false);
                 dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToLocalTime();
 
-                rems += $"{IrcColors.Bold}Напоминание {username}: {IrcColors.Reset}\"{remind.Message}\" в {dtDateTime.ToString(rus)}\n";
+                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dtDateTime.Subtract(DateTime.UtcNow))}\n";
             }
 
             await Context.SendMessage(Context.Channel, rems);
@@ -211,7 +226,7 @@ namespace fs24bot3.Commands
                 int octave = (int)(initialNote / 12) - 1;
                 uint noteIndex = initialNote % 12;
                 string noteName = noteString[noteIndex];
-                await Context.SendMessage(Context.Channel, $"MIDI: {note} = {IrcColors.Reset}{noteName}{octave}");
+                await Context.SendMessage(Context.Channel, $"MIDI: {note} = {IrcClrs.Reset}{noteName}{octave}");
             }
             else
             {
@@ -220,7 +235,7 @@ namespace fs24bot3.Commands
                     if (noteString[i].ToLower() == note.ToLower())
                     {
                         int noteIndex = (12 * (oct + 1)) + i;
-                        await Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {IrcColors.Reset}{noteIndex}");
+                        await Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {IrcClrs.Reset}{noteIndex}");
                         break;
                     }
                 }
@@ -249,7 +264,7 @@ namespace fs24bot3.Commands
 
                         Context.BotCtx.Connection.Insert(tag);
 
-                        await Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{IrcColors.Reset} успешно добавлен!");
+                        await Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{IrcClrs.Reset} успешно добавлен!");
                     }
                     else
                     {
@@ -265,7 +280,7 @@ namespace fs24bot3.Commands
                     }
                     else
                     {
-                        await Context.SendMessage(Context.Channel, IrcColors.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Sender}");
+                        await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Sender}");
                     }
                     break;
             }
@@ -283,7 +298,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}НЕ ПОЛУЧИЛОСЬ :(");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
         }
 
@@ -314,7 +329,7 @@ namespace fs24bot3.Commands
             {
                 tags.Add(tag);
             }
-            await Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
+            await Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcClrs.Reset}")));
         }
 
         [Command("rndl", "randomlyrics")]

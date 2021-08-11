@@ -42,12 +42,12 @@ namespace fs24bot3.Commands
                 catch (SQLiteException)
                 {
                     usr.AddItemToInv(Context.BotCtx.Shop, "money", 8000);
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте @cmdout");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте @cmdout");
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Данная команда уже существует в fs24_bot!");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Данная команда уже существует в fs24_bot!");
             }
         }
 
@@ -80,12 +80,12 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось выполнить запрос...");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось выполнить запрос...");
             }
         }
 
@@ -105,7 +105,7 @@ namespace fs24bot3.Commands
                     {
                         case CommandToggles.CommandEdit.Add:
                             Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output + "||" + value, commandConcat);
-                            await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
+                            await Context.SendMessage(Context.Channel, IrcClrs.Blue + "Команда успешно обновлена!");
                             break;
                         case CommandToggles.CommandEdit.Delete:
                             var outputlist = query[0].Output.Split("||").ToList();
@@ -116,11 +116,11 @@ namespace fs24bot3.Commands
                                 {
                                     outputlist.RemoveAt(val);
                                     Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
-                                    await Context.SendMessage(Context.Channel, IrcColors.Green + "Команда успешно обновлена!");
+                                    await Context.SendMessage(Context.Channel, IrcClrs.Green + "Команда успешно обновлена!");
                                 }
                                 else
                                 {
-                                    await Context.SendMessage(Context.Channel, IrcColors.Gray + "Максимальное число удаления: " + outputlist.Count);
+                                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Максимальное число удаления: " + outputlist.Count);
                                 }
                             }
                             catch (FormatException)
@@ -128,11 +128,11 @@ namespace fs24bot3.Commands
                                 if (outputlist.Remove(value))
                                 {
                                     Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", string.Join("||", outputlist), commandConcat);
-                                    await Context.SendMessage(Context.Channel, IrcColors.Green + "Команда успешно обновлена!");
+                                    await Context.SendMessage(Context.Channel, IrcClrs.Green + "Команда успешно обновлена!");
                                 }
                                 else
                                 {
-                                    await Context.SendMessage(Context.Channel, IrcColors.Gray + "Такой записи не существует...");
+                                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Такой записи не существует...");
                                 }
                             }
                             break;
@@ -140,12 +140,12 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует или эта команда являктся Lua-командой");
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Команды не существует или эта команда являктся Lua-командой");
             }
         }
 
@@ -156,7 +156,7 @@ namespace fs24bot3.Commands
         public async Task CmdOwn(string command, string nick)
         {
             Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Nick = ? WHERE Command = ?", nick, command);
-            await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
+            await Context.SendMessage(Context.Channel, IrcClrs.Blue + "Команда успешно обновлена!");
         }
 
         [Command("cmdinfo")]
@@ -168,10 +168,10 @@ namespace fs24bot3.Commands
             var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
             if (query != null)
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Blue + $"Команда {query.Command} Создал: `{query.Nick}` Размер вывода: {query.Output.Length} символов, строк - {query.Output.Split("||").Length} Lua: {query.IsLua}");
+                await Context.SendMessage(Context.Channel, IrcClrs.Blue + $"Команда {query.Command} Создал: `{query.Nick}` Размер вывода: {query.Output.Length} символов, строк - {query.Output.Split("||").Length} Lua: {query.IsLua}");
                 if (query.Nick.Length <= 0)
                 {
-                    await Context.SendMessage(Context.Channel, IrcColors.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Yellow + "Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте @cmdown чтобы изменить владельца команды!");
                 }
                 if (query.IsLua == 1)
                 {
@@ -210,16 +210,16 @@ namespace fs24bot3.Commands
                 if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
                 {
                     Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), commandConcat);
-                    await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Blue + "Команда успешно обновлена!");
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует");
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Команды не существует");
             }
         }
 
@@ -235,16 +235,16 @@ namespace fs24bot3.Commands
                 if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
                 {
                     Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", newstr, commandConcat);
-                    await Context.SendMessage(Context.Channel, IrcColors.Blue + "Команда успешно обновлена!");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Blue + "Команда успешно обновлена!");
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Gray + "Команды не существует");
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Команды не существует");
             }
         }
 
@@ -273,7 +273,7 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + "Этого не произошло....");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Этого не произошло....");
                 }
             }
         }
@@ -307,7 +307,7 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + "Этого не произошло....");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Этого не произошло....");
                 }
             }
             else
@@ -319,7 +319,7 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, IrcColors.Gray + "Этого не произошло....");
+                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + "Этого не произошло....");
                 }
             }
         }

@@ -1,6 +1,6 @@
 ﻿namespace fs24bot3.Models
 {
-    public static class IrcColors
+    public static class IrcClrs
     {
         public const string Bold = "";
         public const string Reset = "";

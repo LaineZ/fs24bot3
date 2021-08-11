@@ -45,7 +45,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
             }
         }
 
@@ -61,7 +61,7 @@ namespace fs24bot3.Commands
 
             if (success)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Green}Вы успешно купили {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}Вы успешно купили {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
             }
             else
             {
@@ -82,7 +82,7 @@ namespace fs24bot3.Commands
 
             if (success)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Green}Вы успешно продали {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}Вы успешно продали {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
             }
             else
             {
@@ -151,7 +151,7 @@ namespace fs24bot3.Commands
 
             foreach (var (Name, Count) in result.Take(5))
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Bold + Name + ": " + Count);
+                await Context.SendMessage(Context.Channel, IrcClrs.Bold + Name + ": " + Count);
             }
         }
 
@@ -182,7 +182,7 @@ namespace fs24bot3.Commands
 
             foreach (var (Name, Count) in result.Take(5))
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Bold + Name + ": " + Count);
+                await Context.SendMessage(Context.Channel, IrcClrs.Bold + Name + ": " + Count);
             }
         }
 
@@ -212,7 +212,7 @@ namespace fs24bot3.Commands
             if (delete)
             {
                 await user.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Red}Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
             }
         }
     }

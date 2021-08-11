@@ -83,7 +83,7 @@ namespace fs24bot3.Commands
             }
             catch (Exception e)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Конфигурацию не удалось загрузить {e.Message}");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Конфигурацию не удалось загрузить {e.Message}");
             }
         }
 
@@ -163,11 +163,11 @@ namespace fs24bot3.Commands
             {
                 case CommandToggles.Switch.Enable:
                     cmdHandle.Enable();
-                    await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcColors.Green}ВКЛЮЧЕНА!");
+                    await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcClrs.Green}ВКЛЮЧЕНА!");
                     break;
                 case CommandToggles.Switch.Disable:
                     cmdHandle.Disable();
-                    await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcColors.Red}ВЫКЛЮЧЕНА!");
+                    await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcClrs.Red}ВЫКЛЮЧЕНА!");
                     break;
             }
         }
@@ -190,11 +190,11 @@ namespace fs24bot3.Commands
             {
                 case CommandToggles.Switch.Enable:
                     modHandle.Enable();
-                    await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcColors.Green}ВКЛЮЧЕН!");
+                    await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcClrs.Green}ВКЛЮЧЕН!");
                     break;
                 case CommandToggles.Switch.Disable:
                     modHandle.Disable();
-                    await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcColors.Red}ВЫКЛЮЧЕН!");
+                    await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcClrs.Red}ВЫКЛЮЧЕН!");
                     break;
             }
         }
@@ -202,10 +202,10 @@ namespace fs24bot3.Commands
         [Command("mods", "modules")]
         public async Task Mods()
         {
-            await Context.SendMessage(Context.Channel, $"{IrcColors.Red}█{IrcColors.Reset} Выключен {IrcColors.Green}█{IrcColors.Reset} Включен. Число в скобках: количество команд в модуле");
+            await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}█{IrcClrs.Reset} Выключен {IrcClrs.Green}█{IrcClrs.Reset} Включен. Число в скобках: количество команд в модуле");
             await Context.SendMessage(Context.Channel, $"В данный момент загружено: {Service.GetAllModules().Count} модулей");
             string modi = string.Join(" ", Service.GetAllModules()
-                .Select(x => $"{(x.IsEnabled ? IrcColors.Green : IrcColors.Red)}{x.Name}{IrcColors.Reset}({x.Commands.Count()})"));
+                .Select(x => $"{(x.IsEnabled ? IrcClrs.Green : IrcClrs.Red)}{x.Name}{IrcClrs.Reset}({x.Commands.Count()})"));
             await Context.SendMessage(Context.Channel, modi);
         }
 

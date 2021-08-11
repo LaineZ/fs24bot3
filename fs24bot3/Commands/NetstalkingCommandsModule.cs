@@ -25,7 +25,7 @@ namespace fs24bot3.Commands
         {
             if (ctx.SearchResults == null || !ctx.SearchResults.Any())
             {
-                await Context.SendMessage(Context.Channel, IrcColors.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
                 return;
             }
 
@@ -33,14 +33,14 @@ namespace fs24bot3.Commands
             {
                 foreach (var item in ctx.SearchResults.Take(ctx.Limit))
                 {
-                    await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.Title)} // {IrcColors.Blue}{item.Url}");
+                    await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.Title)} // {IrcClrs.Blue}{item.Url}");
                     if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.Description)); }
                 }
             }
             else
             {
                 var rand = new Random().Next(0, ctx.SearchResults.Count - 1);
-                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Title)} // {IrcColors.Blue}{ctx.SearchResults[rand].Url}");
+                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Title)} // {IrcClrs.Blue}{ctx.SearchResults[rand].Url}");
                 if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Description)); }
             }
         }

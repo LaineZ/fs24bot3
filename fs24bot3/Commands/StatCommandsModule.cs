@@ -72,7 +72,7 @@ namespace fs24bot3.Commands
                     var userTags = usr.GetUserTags();
                     if (userTags.Count > 0)
                     {
-                        await Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcColors.Reset}")));
+                        await Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcClrs.Reset}")));
                     }
                 }
                 catch (Exceptions.UserNotFoundException)

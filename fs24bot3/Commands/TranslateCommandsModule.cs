@@ -44,7 +44,7 @@ namespace fs24bot3.Commands
             }
             catch (Exception e)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcColors.Gray}Не удалось перевести текст..... =( {e.Message}");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось перевести текст..... =( {e.Message}");
             }
         }
 
@@ -149,7 +149,7 @@ namespace fs24bot3.Commands
 
                 if (splitted.Length > 35)
                 {
-                    await Context.SendMessage(Context.Channel, $"{IrcColors.Royal}У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Royal}У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
                 }
 
                 // Forech statement cannot be modified WHY???????

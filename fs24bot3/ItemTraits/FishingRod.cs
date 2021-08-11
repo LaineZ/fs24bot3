@@ -27,13 +27,13 @@ namespace fs24bot3.ItemTraits
 
             if (nest == null)
             {
-                await botCtx.SendMessage(channel, $"{Models.IrcColors.Gray}Место рыбалки не установлено, используйте @nest");
+                await botCtx.SendMessage(channel, $"{Models.IrcClrs.Gray}Место рыбалки не установлено, используйте @nest");
                 return false;
             }
 
             if (!user.RemItemFromInv(botCtx.Shop, "worm", 1).Result)
             {
-                await botCtx.SendMessage(channel, $"{Models.IrcColors.Gray}У вас нет наживки, @buy worm");
+                await botCtx.SendMessage(channel, $"{Models.IrcClrs.Gray}У вас нет наживки, @buy worm");
                 return false;
             }
 
@@ -62,14 +62,14 @@ namespace fs24bot3.ItemTraits
             }
             else
             {
-                await botCtx.SendMessage(channel, $"{IrcColors.Gray}Рыба сорвалась!");
+                await botCtx.SendMessage(channel, $"{IrcClrs.Gray}Рыба сорвалась!");
             }
 
 
             if (rand.Next(0, 3) == 1) 
             {
                 user.IncreaseFishLevel();
-                await botCtx.SendMessage(channel, $"{IrcColors.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
+                await botCtx.SendMessage(channel, $"{IrcClrs.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
             }
 
             bool broken = rand.Next(0, 2) == 1;
