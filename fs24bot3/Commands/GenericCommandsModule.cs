@@ -106,7 +106,7 @@ namespace fs24bot3.Commands
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
             var user = new User(Context.Sender, Context.BotCtx.Connection);
             user.AddRemind(ts, message);
-            await Context.SendMessage(Context.Channel, $"{message} через ({time})!");
+            await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}!");
         }
 
         [Command("reminds", "rems")]
