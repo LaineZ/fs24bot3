@@ -84,7 +84,7 @@ namespace fs24bot3.Core
                 }
             }
 
-            throw new Exception("Translate server error! " + response.StatusCode);
+            throw new InvalidOperationException("Translate server error! " + response.StatusCode);
         }
 
         public async static Task<string> TranslatePpc(string text, string targetLang = "ru")
@@ -94,9 +94,15 @@ namespace fs24bot3.Core
 
             foreach (var tr in translations)
             {
-
-                var translatorResponse = await Translate(translated, "auto", tr);
-                translated = translatorResponse;
+                try
+                {
+                    var translatorResponse = await Translate(translated, "auto", tr);
+                    translated = translatorResponse;
+                }
+                catch (InvalidOperationException)
+                {
+                    break;
+                }
             }
 
             return translated;

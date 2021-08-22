@@ -86,7 +86,14 @@ namespace fs24bot3.Commands
             }
             else
             {
-                Context.SendSadMessage(Context.Channel, $"Такого предмета у вас нет!");
+                if (Context.BotCtx.Shop.Items[itemname].Sellable)
+                {
+                    Context.SendSadMessage(Context.Channel, $"Такой предмет не продается!");
+                }
+                else
+                {
+                    Context.SendSadMessage(Context.Channel, $"У вас нет такого предмета!");
+                }
             }
         }
 
