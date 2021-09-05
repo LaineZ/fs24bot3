@@ -278,7 +278,26 @@ namespace fs24bot3.Commands
                 return;
             }
 
+            var result = results.Pods[0].SubPods[0].Plaintext;
+
             foreach (var pod in results.Pods.Take(3))
+            {
+                if (pod.IsPrimary)
+                {
+                    foreach (var subPod in pod.SubPods)
+                    {
+                        if (!string.IsNullOrEmpty(subPod.Plaintext))
+                        {
+                            var output = subPod.Plaintext.Split("\n");
+                            await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{result}{IrcClrs.Reset} = {string.Join(" ", output)}");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // falling back to old view
+            foreach (var pod in results.Pods.Take(2))
             {
                 foreach (var subPod in pod.SubPods.Take(2))
                 {

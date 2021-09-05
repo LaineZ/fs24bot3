@@ -85,6 +85,9 @@ namespace fs24bot3.Commands
                     case 'y':
                         totalSecs += 31556926 * uint.Parse(part.Trim('y'));
                         break;
+                    case 'w':
+                        totalSecs += 604800 * uint.Parse(part.Trim('w'));
+                        break;
                     case 'd':
                         totalSecs += 86400 * uint.Parse(part.Trim('d'));
                         break;
@@ -131,7 +134,7 @@ namespace fs24bot3.Commands
             {
                 DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                 CultureInfo rus = new CultureInfo(locale, false);
-                dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToLocalTime();
+                dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToUniversalTime();
 
                 rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dtDateTime.Subtract(DateTime.UtcNow))}\n";
             }
