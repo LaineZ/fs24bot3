@@ -10,6 +10,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -113,37 +114,57 @@ namespace fs24bot3
             }
         }
 
+
+        private string LimitByteLength(String input, Int32 maxLength)
+        {
+            return new String(input
+                .TakeWhile((c, i) =>
+                    Encoding.UTF8.GetByteCount(input.Substring(0, i + 1)) <= maxLength)
+                .ToArray());
+        }
+
+        private List<string> SplitMessage(string value, int chunkLength)
+        {
+            if (value.Length < chunkLength) { return new List<string>() { value }; }
+
+            List<string> splitted = new List<string>();
+
+            byte[] stringByte = Encoding.UTF8.GetBytes(value);
+
+            byte[][] chunks = stringByte.Select((value, index) =>
+            new { PairNum = Math.Floor(index / (decimal)chunkLength), value })
+                .GroupBy(pair => pair.PairNum)
+                .Select(grp => grp.Select(g => g.value).ToArray())
+                .ToArray();
+
+            foreach (var chunk in chunks)
+            {
+                string converted = Encoding.UTF8.GetString(chunk, 0, chunk.Length);
+                splitted.Add(LimitByteLength(converted, chunkLength));
+            }
+            return splitted;
+        }
+
         public async Task SendMessage(string channel, string message)
         {
-            if (!message.Contains("\n"))
+            List<string> msgLines = message.Split("\n").ToList();
+            int count = 0;
+
+            foreach (string outputstr in msgLines)
             {
-                if (message.Length > 250)
+                if (!string.IsNullOrWhiteSpace(outputstr))
                 {
-                    foreach (var slice in Core.MessageUtils.SplitMessage(message, 450))
+                    foreach (var msg in SplitMessage(outputstr, 250))
                     {
-                        await BotClient.SendAsync(new PrivMsgMessage(channel, slice));
-                    }
-                }
-                else
-                {
-                    await BotClient.SendAsync(new PrivMsgMessage(channel, message));
-                }
-            }
-            else
-            {
-                int count = 0;
-                foreach (string outputstr in message.Split("\n"))
-                {
-                    if (!string.IsNullOrWhiteSpace(outputstr))
-                    {
-                        await BotClient.SendAsync(new PrivMsgMessage(channel, outputstr));
+                        await BotClient.SendAsync(new PrivMsgMessage(channel, msg));
                         count++;
-                    }
-                    if (count > 4)
-                    {
-                        string link = await http.UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
-                        await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
-                        break;
+
+                        if (count > 4)
+                        {
+                            string link = await http.UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
+                            await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
+                            return;
+                        }
                     }
                 }
             }
