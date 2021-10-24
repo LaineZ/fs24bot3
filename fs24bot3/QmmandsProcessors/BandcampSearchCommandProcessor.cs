@@ -14,8 +14,6 @@ namespace fs24bot3.QmmandsProcessors
             public int Max = 5;
             public string Sort = "pop";
 
-
-            // Pass your service provider to the base command context.
             public CustomCommandContext(IServiceProvider provider = null) : base(provider)
             {
             }
