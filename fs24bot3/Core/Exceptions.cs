@@ -17,13 +17,13 @@ namespace fs24bot3.Core
         }
 
 
-        public class TypeNotFoundException : Exception
+        public class ItemNotFoundException : Exception
         {
             public override string Message
             {
                 get
                 {
-                    return "Предмет с данным типом не найден!";
+                    return "Такого предмета не существует в базе данных!";
                 }
             }
         }

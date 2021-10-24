@@ -162,7 +162,7 @@ namespace fs24bot3.Core
         {
             if (!shop.Items.ContainsKey(name))
             {
-                throw new Exceptions.TypeNotFoundException();
+                throw new Exceptions.ItemNotFoundException();
             }
             count = (int)Math.Floor((decimal)count);
             try
@@ -186,7 +186,7 @@ namespace fs24bot3.Core
         {
             if (!shop.Items.ContainsKey(name))
             {
-                throw new Exceptions.TypeNotFoundException();
+                throw new Exceptions.ItemNotFoundException();
             }
 
             count = (int)Math.Floor((decimal)count);
@@ -234,7 +234,7 @@ namespace fs24bot3.Core
 
         public SQL.UserStats GetUserInfo()
         {
-            var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
+            var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).FirstOrDefault();
             if (query != null)
             {
                 return query;

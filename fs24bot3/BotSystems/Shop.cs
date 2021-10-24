@@ -27,29 +27,29 @@ namespace fs24bot3.BotSystems
             ShopID = "shop";
 
             Items.Add("money", new Models.ItemInventory.BasicItem("💰 Деньги", 0, false));
-            Items.Add("beer", new Drink("🍺 Пиво", 1, 100));
-            Items.Add("wine", new Drink("🍷 Вино [МОЛДАВСКОЕ]", 3, 150));
-            Items.Add("winef", new Drink("🍷 Вино [ФРАНЦУЗСКОЕ]", 2, 150));
-            Items.Add("wineg", new Drink("🍷 Вино [ГРУЗИНСКОЕ]", 4, 298));
-            Items.Add("wrench", new Wrenchable("🔧 Гаечный ключ", 4, 3000));
-            Items.Add("wrenchadv", new Wrenchable("🛠 Гаечный ключ и молоток", 8, 5000));
-            Items.Add("hammer", new Wrenchable("🔨 Молоток", 5, 3500));
-            Items.Add("speaker", new Models.ItemInventory.BasicItem("🔊 Мониторные колонки", 320));
-            Items.Add("dj", new Models.ItemInventory.BasicItem("🎛 PIONEER DJ", 320));
-            Items.Add("midikey", new Models.ItemInventory.BasicItem("🎹 Native Instruments Komplete Kontrol S88", 600));
-            Items.Add("wall", new Models.ItemInventory.BasicItem("🧱 Укрепление", 15000));
-            Items.Add("pistol", new Bomb("🔫 Пистолет", 5500, 5000));
-            Items.Add("bomb", new Bomb("💣 Бомба", 9500, 9000));
-            Items.Add("worm", new Models.ItemInventory.BasicItem("🐍 Червь", 50));
-            Items.Add("fish", new Models.ItemInventory.BasicItem("🐟 Рыба", 100));
-            Items.Add("tfish", new Models.ItemInventory.BasicItem("🐠 Тропическая рыба", 1570));
-            Items.Add("weirdfishes", new Models.ItemInventory.BasicItem("🍥 СТРАННАЯ РЫБА", 10000));
-            Items.Add("ffish", new Models.ItemInventory.BasicItem("🐡 Рыба-фугу", 370));
-            Items.Add("veriplace", new Models.ItemInventory.BasicItem("🎏 Верхоплавки", 270));
-            Items.Add("pike", new Models.ItemInventory.BasicItem("🦈 Щука", 1000));
-            Items.Add("som", new Models.ItemInventory.BasicItem("🐬 Сом", 1200));
-            Items.Add("line", new Models.ItemInventory.BasicItem("🪢 Леска", 100));
-            Items.Add("rod", new FishingRod("🎣 Удочка", 2000));
+            Items.Add("beer", new Drink("🍺 Пиво", 1, 1000));
+            Items.Add("wine", new Drink("🍷 Вино [МОЛДАВСКОЕ]", 3, 1500));
+            Items.Add("winef", new Drink("🍷 Вино [ФРАНЦУЗСКОЕ]", 2, 1500));
+            Items.Add("wineg", new Drink("🍷 Вино [ГРУЗИНСКОЕ]", 4, 2980));
+            Items.Add("wrench", new Wrenchable("🔧 Гаечный ключ", 4, 30000));
+            Items.Add("wrenchadv", new Wrenchable("🛠 Гаечный ключ и молоток", 8, 50000));
+            Items.Add("hammer", new Wrenchable("🔨 Молоток", 5, 35000));
+            Items.Add("speaker", new Models.ItemInventory.BasicItem("🔊 Мониторные колонки", 3200));
+            Items.Add("dj", new Models.ItemInventory.BasicItem("🎛 PIONEER DJ", 3200));
+            Items.Add("midikey", new Models.ItemInventory.BasicItem("🎹 Native Instruments Komplete Kontrol S88", 6000));
+            Items.Add("wall", new Models.ItemInventory.BasicItem("🧱 Укрепление", 150000));
+            Items.Add("pistol", new Bomb("🔫 Пистолет", 5500, 50000));
+            Items.Add("bomb", new Bomb("💣 Бомба", 9500, 90000));
+            Items.Add("worm", new Models.ItemInventory.BasicItem("🐍 Червь", 500));
+            Items.Add("fish", new Models.ItemInventory.BasicItem("🐟 Рыба", 1000));
+            Items.Add("tfish", new Models.ItemInventory.BasicItem("🐠 Тропическая рыба", 15700));
+            Items.Add("weirdfishes", new Models.ItemInventory.BasicItem("🍥 СТРАННАЯ РЫБА", 100000));
+            Items.Add("ffish", new Models.ItemInventory.BasicItem("🐡 Рыба-фугу", 3700));
+            Items.Add("veriplace", new Models.ItemInventory.BasicItem("🎏 Верхоплавки", 2700));
+            Items.Add("pike", new Models.ItemInventory.BasicItem("🦈 Щука", 10000));
+            Items.Add("som", new Models.ItemInventory.BasicItem("🐬 Сом", 12000));
+            Items.Add("line", new Models.ItemInventory.BasicItem("🪢 Леска", 1000));
+            Items.Add("rod", new FishingRod("🎣 Удочка", 20000));
 
             BotCtx = botCtx;
 
@@ -77,11 +77,6 @@ namespace fs24bot3.BotSystems
                         Log.Verbose("Descreaseing price for {0}", shopItem.Value.Name);
                         shopItem.Value.Price -= Rand.Next(1, 3);
                     }
-                    else
-                    {
-                        //Log.Verbose("Incresing price for {0}", shopItem.Name);
-                        shopItem.Value.Price += Rand.Next(1, 2);
-                    }
                 }
 
             }
@@ -89,6 +84,11 @@ namespace fs24bot3.BotSystems
         
         public async Task<(bool, int)> Sell(User user, string itemname, int count = 1)
         {
+            if (!Items.ContainsKey(itemname))
+            {
+                throw new Exceptions.ItemNotFoundException();
+            }
+
             if (Items[itemname].Sellable && await user.RemItemFromInv(this, itemname, count))
             {
                 // tin
@@ -106,13 +106,18 @@ namespace fs24bot3.BotSystems
 
         public async Task<(bool, int)> Buy(User user, string itemname, int count = 1)
         {
+            if (!Items.ContainsKey(itemname))
+            {
+                throw new Exceptions.ItemNotFoundException();
+            }
+
             int buyprice = Items[itemname].Price * count;
             bool sucessfully = await user.RemItemFromInv(this, "money", buyprice);
 
             if (sucessfully)
             {
                 user.AddItemToInv(this, itemname, count);
-                Items[itemname].Price += 5;
+                Items[itemname].Price += Rand.Next(1, 1000);
                 Buys++;
             }
             return (sucessfully, buyprice);
