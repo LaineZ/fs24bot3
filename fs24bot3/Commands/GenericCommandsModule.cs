@@ -313,11 +313,11 @@ namespace fs24bot3.Commands
             TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
             if (date.Days < 1000)
             {
-                await Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {date.Days} дн. {date.Hours} час. {date.Minutes} мин. {date.Seconds} сек. назад");
+                await Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {ToReadableString(date)} назад");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"Я уже не помню как выглядит {destination}... Даже не помню когда я его видел");
+                await Context.SendMessage(Context.Channel, $"Я никогда не видел {destination}...");
             }
 
         }

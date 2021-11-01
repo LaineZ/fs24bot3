@@ -100,7 +100,6 @@ namespace fs24bot3
             var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Count();
             if (queryIfExt <= 0)
             {
-                MessageBus.Add(message);
                 new Thread(() =>
                 {
                     if (target != BotClient.User.Nick)
@@ -108,10 +107,11 @@ namespace fs24bot3
                         EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(BotClient, nick, target, message.Trailing.Trim(), Connection);
                         events.DestroyWallRandomly(Shop);
                         events.LevelInscrease(Shop);
-                        events.GiveWaterFromPumps(Shop);
                     }
                 }).Start();
             }
+
+            MessageBus.Add(message);
         }
 
 

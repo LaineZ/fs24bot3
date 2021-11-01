@@ -21,7 +21,7 @@ namespace fs24bot3.Commands
         public async Task Version()
         {
             var os = Environment.OSVersion;
-            await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 | .NET Core: {0} Система: {1}",
+            await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 by @140bpmdubstep | .NET Core: {0} Система: {1}",
                 Environment.Version.ToString(), os.VersionString));
         }
 

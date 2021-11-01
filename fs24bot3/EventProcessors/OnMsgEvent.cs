@@ -48,27 +48,5 @@ namespace fs24bot3.EventProcessors
                 Log.Information("Breaking wall for {0}", User.Username);
             }
         }
-
-        public async void GiveWaterFromPumps(Shop shop)
-        {
-            if (User.GetInventory() != null)
-            {
-                foreach (var item in User.GetInventory())
-                {
-                    // if user have a PUMP!
-                    if (item.Item == "pump")
-                    {
-                        Log.Information("Giving water!");
-                        User.AddItemToInv(shop, "water", Rand.Next(1, 2));
-
-                        if (Rand.Next(1, 3) == 3)
-                        {
-                            await User.RemItemFromInv(shop, "pump", 1);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
     }
 }
