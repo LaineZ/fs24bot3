@@ -41,7 +41,7 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
             var cmds = Service.GetAllCommands();
             string commandsOutput = File.ReadAllText("static/help.html"); ;
-            var customCommands = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().ToList();
+            var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
             string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
             string customList = string.Join('\n', string.Join("\n", customCommands.Select(x => $"<p>{x.Command}</p>")));
 

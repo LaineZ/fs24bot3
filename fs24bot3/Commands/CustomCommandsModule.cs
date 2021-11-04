@@ -183,7 +183,7 @@ namespace fs24bot3.Commands
                     string output = "";
                     string[] splitted = query.Output.Split("||");
 
-                    for (int i = 0; i < splitted.Length - 1; i++)
+                    for (int i = 0; i < splitted.Length; i++)
                     {
                         output += $"[{i}]: {splitted[i]}\n";
                     }
