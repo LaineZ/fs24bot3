@@ -154,7 +154,7 @@ namespace fs24bot3
             {
                 if (!string.IsNullOrWhiteSpace(outputstr))
                 {
-                    foreach (var msg in SplitMessage(outputstr, 250))
+                    foreach (var msg in SplitMessage(outputstr, 255))
                     {
                         await BotClient.SendAsync(new PrivMsgMessage(channel, msg));
                         count++;

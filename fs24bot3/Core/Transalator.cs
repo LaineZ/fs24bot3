@@ -30,8 +30,6 @@ namespace fs24bot3.Core
                 Content = new StringContent("[ { \"Text\": \"" + text + "\" } ]", Encoding.UTF8, "application/json"),
             };
 
-            //request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-
             var response = await client.SendAsync(request);
             var responseString = await response.Content.ReadAsStringAsync();
 
@@ -68,7 +66,7 @@ namespace fs24bot3.Core
 
             HttpResponseMessage response = new HttpResponseMessage();
 
-            foreach (var url in new string[] { "https://translate.dafnik.me/", "https://translate.astian.org/" })
+            foreach (var url in new string[] { "https://libretranslate.com/", "https://translate.astian.org/" })
             {
                 HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 response = await client.PostAsync(url + "translate", c);

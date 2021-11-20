@@ -76,7 +76,6 @@ namespace fs24bot3.Commands
         [Description("Напоминание. time вводится в формате 1m;30s (1 минута и 30 секунд = 90 секунд)")]
         public async Task Remind(string time = "1m", [Remainder] string message = "Remind")
         {
-            // sorry for this idk how to make more coolest code!!!!
             double totalSecs = 0;
             foreach (var part in time.Split(';'))
             {
@@ -109,7 +108,7 @@ namespace fs24bot3.Commands
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
             var user = new User(Context.Sender, Context.BotCtx.Connection);
             user.AddRemind(ts, message);
-            await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}!");
+            await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
         }
 
         [Command("reminds", "rems")]
@@ -136,7 +135,7 @@ namespace fs24bot3.Commands
                 CultureInfo rus = new CultureInfo(locale, false);
                 dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToUniversalTime();
 
-                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dtDateTime.Subtract(DateTime.UtcNow))}\n";
+                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} UTC {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dtDateTime.Subtract(DateTime.UtcNow))}\n";
             }
 
             await Context.SendMessage(Context.Channel, rems);
