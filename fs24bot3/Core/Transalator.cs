@@ -66,7 +66,7 @@ namespace fs24bot3.Core
 
             HttpResponseMessage response = new HttpResponseMessage();
 
-            foreach (var url in new string[] { "https://libretranslate.com/", "https://translate.astian.org/" })
+            foreach (var url in new string[] { "https://libretranslate.com/", "https://libretranslate.de/", "https://translate.nexlight.be/" })
             {
                 HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 response = await client.PostAsync(url + "translate", c);
