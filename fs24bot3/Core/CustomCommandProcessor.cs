@@ -9,18 +9,14 @@ namespace fs24bot3.Core
 {
     public class CustomCommandProcessor
     {
-        private Client Client { get; }
-        private SQLite.SQLiteConnection Connect { get; }
-        private List<ParsedIRCMessage> MessageBus { get; }
+        private Bot Context;
 
         private CustomExecutor CustomExecutor { get; }
 
-        public CustomCommandProcessor(Client client, SQLite.SQLiteConnection connect, List<ParsedIRCMessage> messageBus)
+        public CustomCommandProcessor(Bot context)
         {
-            Client = client;
-            Connect = connect;
-            MessageBus = messageBus;
-            CustomExecutor = new CustomExecutor(Client, Connect);
+            Context = context;
+            CustomExecutor = new CustomExecutor(Context.BotClient, Context.Connection);
             Log.Information("Custom command processor enabled!");
         }
 
@@ -31,7 +27,7 @@ namespace fs24bot3.Core
                 var argsArray = message.Split(" ").ToList();
                 string cmdname = argsArray[0];
                 //Log.Verbose("Issused command: {0}", cmdname);
-                var cmd = Connect.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == cmdname);
+                var cmd = Context.Connection.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == cmdname);
 
                 if (cmd != null)
                 {
@@ -44,12 +40,11 @@ namespace fs24bot3.Core
                     }
                     else
                     {
-                        new LuaExecutor(Client, Connect, MessageBus, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
+                        new LuaExecutor(Context, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
                         return true;
                     }
                 }
             }
-
             return false;
         }
     }

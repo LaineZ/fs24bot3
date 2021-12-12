@@ -13,22 +13,18 @@ namespace fs24bot3.Core
 {
     class LuaExecutor
     {
-        private Client Client { get; }
-        private SQLite.SQLiteConnection Connect { get; }
-        private List<ParsedIRCMessage> MessageBus { get; }
+        private Bot Context;
         private SQL.CustomUserCommands Command { get; }
 
-        public LuaExecutor(Client client, SQLite.SQLiteConnection connect, List<ParsedIRCMessage> messageBus, SQL.CustomUserCommands command)
+        public LuaExecutor(Bot context, SQL.CustomUserCommands command)
         {
-            Client = client;
-            Connect = connect;
-            MessageBus = messageBus;
+            Context = context;
             Command = command;
         }
 
         public void Execute(string senderNick, string channel, string message, string args)
         {
-            var arr = Connect.Table<SQL.UserStats>().ToList();
+            var arr = Context.Connection.Table<SQL.UserStats>().ToList();
             var nick = MessageUtils.AntiHightlight(arr[new Random().Next(0, arr.Count - 1)].Nick);
 
             Lua lua = new Lua();
@@ -56,7 +52,7 @@ namespace fs24bot3.Core
             lua["CMD_NAME"] = Command.Command;
             lua["CMD_OWNER"] = Command.Nick;
             lua["CMD_ARGS"] = args;
-            LuaFunctions luaFunctions = new LuaFunctions(Connect, senderNick, Command.Command);
+            LuaFunctions luaFunctions = new LuaFunctions(Context.Connection, senderNick, Command.Command);
             lua["Cmd"] = luaFunctions;
 
             Thread thread = new Thread(async () =>
@@ -64,34 +60,11 @@ namespace fs24bot3.Core
                 try
                 {
                     var res = (string)lua.DoString(Command.Output)[0];
-                    int count = 0;
-
-                    if (res.Length < 20000)
-                    {
-                        foreach (string outputstr in res.Split("\n"))
-                        {
-                            if (!string.IsNullOrWhiteSpace(outputstr))
-                            {
-                                await Client.SendAsync(new PrivMsgMessage(channel, outputstr[..Math.Min(350, outputstr.Length)]));
-                            }
-                            count++;
-                            if (count > 5)
-                            {
-                                string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                                await Client.SendAsync(new PrivMsgMessage(channel, senderNick + ": Полный вывод здесь: " + link));
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        string link = await new HttpTools().UploadToTrashbin(res, "addplain");
-                        await Client.SendAsync(new PrivMsgMessage(channel, senderNick + ": Полный вывод здесь: " + link));
-                    }
+                    await Context.SendMessage(channel, res);
                 }
                 catch (Exception e)
                 {
-                    await Client.SendAsync(new PrivMsgMessage(channel, $"Ошибка в Lua: {e.Message}"));
+                    await Context.SendMessage(channel, $"Ошибка Lua скрипта: {e.Message}");
                     lua.Close();
                     lua.Dispose();
                 }

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -21,7 +21,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     <PackageReference Include="Tomlyn" Version="0.1.2" />
-    <PackageReference Include="NLua" Version="1.5.9" />
+    <PackageReference Include="NLua" Version="1.6.0" />
   </ItemGroup>
 
 </Project>
