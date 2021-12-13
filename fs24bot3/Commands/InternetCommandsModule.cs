@@ -3,6 +3,7 @@ using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Genbox.WolframAlpha;
 using HtmlAgilityPack;
+using MCQuery;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,6 +39,20 @@ namespace fs24bot3.Commands
             return str; //completely decoded string
         }
 
+        private IPEndPoint ParseHostname(string host)
+        {
+            var hostname = host.Split(":");
+            var port = 25565;
+            if (hostname.Length > 1) { _ = int.TryParse(hostname[1], out port); }
+            if (IPAddress.TryParse(hostname[0], out IPAddress ip))
+            {
+                return new IPEndPoint(ip, port);
+            }
+            else
+            {
+                return new IPEndPoint(Dns.GetHostEntry(hostname[0]).AddressList[0], port);
+            }
+        }
 
         private async Task<string> InPearlsGetter(string category = "", int page = 0)
         {
@@ -317,6 +333,17 @@ namespace fs24bot3.Commands
             {
                 await Context.SendMessage(Context.Channel, output);
             }
+        }
+
+        [Command("mc", "minecraft", "mineserver", "mineserv")]
+        [Description("Информация о сервере Minecraft")]
+        public async Task MinecraftQuery(string ipaddr)
+        {
+            var hostname = ParseHostname(ipaddr);
+            MCServer server = new MCServer(hostname.Address.ToString(), hostname.Port);
+            ServerStatus status = server.Status();
+            double ping = server.Ping();
+            await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{ipaddr}{IrcClrs.Reset}: ({status.Version.Name}): Игроки: {IrcClrs.Bold}{status.Players.Online}/{status.Players.Max}{IrcClrs.Reset} {IrcClrs.Green}Пинг: {ping} мс");
         }
     }
 }

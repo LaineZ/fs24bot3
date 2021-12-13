@@ -14,6 +14,7 @@
     <PackageReference Include="Genbox.WolframAlpha" Version="3.0.0-alpha1" />
     <PackageReference Include="Gitea.API" Version="1.0.20" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.38" />
+    <PackageReference Include="MCQuery" Version="2020.5.21.133155" />
     <PackageReference Include="NetIRC" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Qmmands" Version="4.0.0" />
