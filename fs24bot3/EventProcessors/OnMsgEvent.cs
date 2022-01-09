@@ -33,11 +33,8 @@ namespace fs24bot3.EventProcessors
             bool newLevel = User.IncreaseXp(Message.Length * new Random().Next(1, 3) + 1);
             if (newLevel)
             {
-                var random = new Random();
-                int index = random.Next(shop.Items.Count);
-                var item = shop.Items.ElementAt(index);
-                User.AddItemToInv(shop, item.Key, 1);
-                Client.SendAsync(new PrivMsgMessage(Target, User.Username + ": У вас новый уровень! Вы получили за это: " + item.Value.Name));
+                var report = User.AddRandomRarityItem(shop, Models.ItemInventory.ItemRarity.Rare);
+                Client.SendAsync(new PrivMsgMessage(Target, $"{User.Username}: У вас теперь {User.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!"));
             }
         }
 

@@ -11,11 +11,9 @@ namespace fs24bot3.QmmandsProcessors
     {
         public sealed class CustomCommandContext : CommandContext
         {
-            public Client Client { get; }
-
             public string Channel;
             public string Sender;
-            public Bot BotCtx;
+            public Bot BotCtx { get; }
             public bool PerformPpc = false;
 
             // Pass your service provider to the base command context.

@@ -10,12 +10,14 @@ namespace fs24bot3.ItemTraits
             public int Price { get; set; }
             public bool Sellable { get; set; }
             private int Damage { get; }
+        public ItemInventory.ItemRarity Rarity { get; set; }
 
-            public Bomb(string name, int damage, int price, bool sellabe = true)
+        public Bomb(string name, int damage, int price, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Rare)
             {
                 Name = name;
                 Price = price;
-                Sellable = sellabe;
+            Rarity = rarity;
+                Sellable = true;
                 Damage = damage;
             }
             public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)

@@ -10,12 +10,14 @@ namespace fs24bot3.ItemTraits
             public int Price { get; set; }
             public bool Sellable { get; set; }
             private int Damage { get; }
+            public ItemInventory.ItemRarity Rarity { get; set; }
 
-            public Wrenchable(string name, int damage, int price, bool sellabe = true)
+        public Wrenchable(string name, int damage, int price, ItemInventory.ItemRarity rarity)
             {
                 Name = name;
                 Price = price;
-                Sellable = sellabe;
+                Sellable = true;
+            Rarity = rarity;
                 Damage = damage;
             }
             public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)

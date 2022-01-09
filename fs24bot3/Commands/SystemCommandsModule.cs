@@ -102,7 +102,7 @@ namespace fs24bot3.Commands
         public async Task JoinChannel(string channel)
         {
             await Context.SendMessage(Context.Channel, $"Зашел на: {channel}");
-            await Context.Client.SendRaw("JOIN " + channel);
+            await Context.BotCtx.BotClient.SendRaw("JOIN " + channel);
             await Context.SendMessage(channel, $"Всем перепривет с вами {Configuration.name}");
         }
 
@@ -112,7 +112,7 @@ namespace fs24bot3.Commands
         public async Task PartChannel(string channel)
         {
             await Context.SendMessage(channel, "Простите я ухожу, всем пока...");
-            await Context.Client.SendRaw("PART " + channel);
+            await Context.BotCtx.BotClient.SendRaw("PART " + channel);
             await Context.SendMessage(Context.Channel, $"Вышел из: {channel}");
         }
 

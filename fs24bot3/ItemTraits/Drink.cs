@@ -11,12 +11,14 @@ namespace fs24bot3.ItemTraits
         public int Price { get; set; }
         public bool Sellable { get; set; }
         private int DrunkLevel { get; }
+        public ItemInventory.ItemRarity Rarity { get; set; }
 
-        public Drink(string name, int drunk, int price, bool sellabe = true)
+        public Drink(string name, int drunk, int price, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Common)
         {
             Name = name;
             Price = price;
-            Sellable = sellabe;
+            Sellable = true;
+            Rarity = rarity;
             DrunkLevel = drunk;
         }
         public async Task<bool> OnUseMyself(Bot botCtx, string channel, Core.User user)

@@ -27,33 +27,6 @@ namespace fs24bot3.Commands
 
         readonly HttpTools http = new HttpTools();
 
-        private string RecursiveHtmlDecode(string str)
-        {
-            if (string.IsNullOrWhiteSpace(str)) return str;
-            var tmp = HttpUtility.HtmlDecode(str);
-            while (tmp != str)
-            {
-                str = tmp;
-                tmp = HttpUtility.HtmlDecode(str);
-            }
-            return str; //completely decoded string
-        }
-
-        private IPEndPoint ParseHostname(string host)
-        {
-            var hostname = host.Split(":");
-            var port = 25565;
-            if (hostname.Length > 1) { _ = int.TryParse(hostname[1], out port); }
-            if (IPAddress.TryParse(hostname[0], out IPAddress ip))
-            {
-                return new IPEndPoint(ip, port);
-            }
-            else
-            {
-                return new IPEndPoint(Dns.GetHostEntry(hostname[0]).AddressList[0], port);
-            }
-        }
-
         private async Task<string> InPearlsGetter(string category = "", int page = 0)
         {
             if (page == 0)
@@ -76,7 +49,7 @@ namespace fs24bot3.Commands
                 {
                     if (node.InnerText.Split("\n").Length <= 2)
                     {
-                        pearls.Add(RecursiveHtmlDecode(node.InnerText));
+                        pearls.Add(http.RecursiveHtmlDecode(node.InnerText));
                     }
                 }
 
@@ -339,7 +312,7 @@ namespace fs24bot3.Commands
         [Description("Информация о сервере Minecraft")]
         public async Task MinecraftQuery(string ipaddr)
         {
-            var hostname = ParseHostname(ipaddr);
+            var hostname = http.ParseHostname(ipaddr);
             MCServer server = new MCServer(hostname.Address.ToString(), hostname.Port);
             ServerStatus status = server.Status();
             double ping = server.Ping();

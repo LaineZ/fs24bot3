@@ -57,6 +57,11 @@ namespace fs24bot3.Core
             Connect.Execute("DELETE FROM Inventory WHERE Nick = ?", Username);
         }
 
+        /// <summary>
+        /// Increases user XP
+        /// </summary>
+        /// <param name="count">Returns true if user gets new level</param>
+        /// <returns></returns>
         public bool IncreaseXp(int count)
         {
             var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
@@ -120,6 +125,21 @@ namespace fs24bot3.Core
             }
         }
 
+        public Dictionary<string, ItemInventory.IItem> AddRandomRarityItem(Shop shop, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Uncommon, int mincount = 1, int maxcount = 1, int iterations = 1)
+        {
+            var rng = new Random();
+            var dict = new Dictionary<string, ItemInventory.IItem>();
+
+            for (int i = 0; i < iterations; i++)
+            {
+                var item = shop.Items.Where(x => x.Value.Rarity >= rarity).Random();
+                dict.Add(item.Key, item.Value);
+                AddItemToInv(shop, item.Key, rng.Next(mincount, maxcount));
+            }
+
+            return dict;
+        }
+
         public void IncreaseFishLevel()
         {
             Connect.Execute("UPDATE Fishing SET Level = Level + 1 WHERE Nick = ?", Username);
@@ -174,7 +194,6 @@ namespace fs24bot3.Core
                 Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, name, Username);
             }
         }
-
 
         /// <summary>
         /// Removes item from inventory

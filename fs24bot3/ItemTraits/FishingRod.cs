@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using fs24bot3.Models;
 
@@ -9,11 +11,13 @@ namespace fs24bot3.ItemTraits
         public string Name { get; }
         public int Price { get; set; }
         public bool Sellable { get; set; }
+        public ItemInventory.ItemRarity Rarity { get; set; }
 
-        public FishingRod(string name, int price)
+        public FishingRod(string name, int price, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Rare)
         {
             Name = name;
             Price = price;
+            Rarity = rarity;
             Sellable = true;
         }
 
@@ -27,38 +31,37 @@ namespace fs24bot3.ItemTraits
 
             if (nest == null)
             {
-                await botCtx.SendMessage(channel, $"{Models.IrcClrs.Gray}Место рыбалки не установлено, используйте @nest");
+                await botCtx.SendMessage(channel, $"{IrcClrs.Gray}Место рыбалки не установлено, используйте @nest");
                 return false;
             }
 
             if (!user.RemItemFromInv(botCtx.Shop, "worm", 1).Result)
             {
-                await botCtx.SendMessage(channel, $"{Models.IrcClrs.Gray}У вас нет наживки, @buy worm");
+                await botCtx.SendMessage(channel, $"{IrcClrs.Gray}У вас нет наживки, @buy worm");
                 return false;
             }
 
-            int fishMult = Math.Clamp((35 * nest.Level) - nest.FishCount, 1, int.MaxValue);
+            int fishMult = Math.Clamp((20 * nest.Level) - nest.FishCount, 1, int.MaxValue);
 
             if (rand.Next(1, fishMult) <= user.GetFishLevel())
             {
-                string[] fish = new string[15];
+
+                var report = new Dictionary<string, ItemInventory.IItem>();
 
                 if (nest.Level == 1)
                 {
-                    fish = new string[] { "fish", "veriplace", "ffish" };
+                    report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Uncommon, 1, 1, 1);
                 }
                 if (nest.Level == 2)
                 {
-                    fish = new string[] { "fish", "veriplace", "ffish", "pike", "som" };
+                    report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Common, 1, 1, 1);
                 }
                 if (nest.Level == 3)
                 {
-                    fish = new string[] { "fish", "veriplace", "ffish", "pike", "som", "weirdfishes", "worm", "wrench", "wrenchadv" };
+                    report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Rare, 1, 1, 1);
                 }
 
-                string catched = fish[rand.Next(0, fish.Length)];
-                user.AddItemToInv(botCtx.Shop, catched, 1);
-                await botCtx.SendMessage(channel, $"Вы поймали {botCtx.Shop.Items[catched].Name}!");
+                await botCtx.SendMessage(channel, $"Вы поймали {report.First().Value.Name}");
             }
             else
             {
@@ -72,7 +75,7 @@ namespace fs24bot3.ItemTraits
                 await botCtx.SendMessage(channel, $"{IrcClrs.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
             }
 
-            bool broken = rand.Next(0, 2) == 1;
+            bool broken = rand.Next(0, 5) == 1;
 
             if (broken) { await botCtx.SendMessage(channel, "Ваша удочка сломалась!"); }
 

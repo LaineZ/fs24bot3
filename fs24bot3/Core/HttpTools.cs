@@ -1,16 +1,47 @@
-﻿using Serilog;
+﻿using HtmlAgilityPack;
+using Serilog;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace fs24bot3
 {
     class HttpTools
     {
         readonly CookieContainer cookies = new CookieContainer();
+
+        public string RecursiveHtmlDecode(string str)
+        {
+            if (string.IsNullOrWhiteSpace(str)) return str;
+            var tmp = HttpUtility.HtmlDecode(str);
+            while (tmp != str)
+            {
+                str = tmp;
+                tmp = HttpUtility.HtmlDecode(str);
+            }
+            return str; //completely decoded string
+        }
+
+        public IPEndPoint ParseHostname(string host)
+        {
+            var hostname = host.Split(":");
+            var port = 25565;
+            if (hostname.Length > 1) { _ = int.TryParse(hostname[1], out port); }
+            if (IPAddress.TryParse(hostname[0], out IPAddress ip))
+            {
+                return new IPEndPoint(ip, port);
+            }
+            else
+            {
+                return new IPEndPoint(Dns.GetHostEntry(hostname[0]).AddressList[0], port);
+            }
+        }
 
         public async Task<String> MakeRequestAsync(String url)
         {
