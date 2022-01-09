@@ -74,8 +74,6 @@ namespace fs24bot3.Commands
         [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
         public async Task ExecuteAPI(string lang, [Remainder] string code)
         {
-            HttpClient client = new HttpClient();
-
             APIExec.Input codeData = new APIExec.Input
             {
                 clientId = Configuration.jdoodleClientID,
@@ -86,11 +84,8 @@ namespace fs24bot3.Commands
 
             try
             {
-                HttpContent c = new StringContent(JsonConvert.SerializeObject(codeData), Encoding.UTF8, "application/json");
-
-                var response = await client.PostAsync("https://api.jdoodle.com/v1/execute", c);
-                var responseString = await response.Content.ReadAsStringAsync();
-                var jsonOutput = JsonConvert.DeserializeObject<APIExec.Output>(responseString);
+                var output = await http.PostJson("https://api.jdoodle.com/v1/execute", codeData);
+                var jsonOutput = JsonConvert.DeserializeObject<APIExec.Output>(output);
 
 
                 if (jsonOutput.output != null)
@@ -100,7 +95,7 @@ namespace fs24bot3.Commands
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, "Сервер вернул: " + responseString);
+                    await Context.SendMessage(Context.Channel, "Сервер вернул: " + output);
                 }
             }
             catch (HttpRequestException)
@@ -216,6 +211,35 @@ namespace fs24bot3.Commands
             else
             {
                 await Context.SendMessage(Context.Channel, "Instumental");
+            }
+        }
+
+        [Command("isblocked", "blocked", "block", "blk")]
+        [Description("Заблокирован ли сайт в росии?")]
+        public async Task IsBlocked([Remainder] string url)
+        {
+            var output = await http.PostJson("http://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
+            var jsonOutput = JsonConvert.DeserializeObject<IsBlockedInRussia.Root>(output);
+
+            int totalblocks = 0;
+            int totalips = jsonOutput.ips.Count;
+
+            foreach (var item in jsonOutput.ips)
+            {
+                if (item.blocked.Any())
+                {
+                    totalblocks += 1;
+                }
+            }
+
+            if (totalblocks > 0)
+            {
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{url}{IrcClrs.Reset}: заблокировано {IrcClrs.Green}{totalblocks}{IrcClrs.Reset} айпишников из {IrcClrs.Red}{totalips}{IrcClrs.Reset}!!! " +
+                    $"Подробнее: https://isitblockedinrussia.com/?host={url}");
+            }
+            else
+            {
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}{url}: Не заблокирован!");
             }
         }
 

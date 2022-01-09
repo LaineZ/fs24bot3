@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace fs24bot3
     class HttpTools
     {
         readonly CookieContainer cookies = new CookieContainer();
+        HttpClient Client = new HttpClient();
 
         public string RecursiveHtmlDecode(string str)
         {
@@ -41,6 +43,15 @@ namespace fs24bot3
             {
                 return new IPEndPoint(Dns.GetHostEntry(hostname[0]).AddressList[0], port);
             }
+        }
+
+        public async Task<String> PostJson(string url, object jsonObj)
+        {
+            HttpContent c = new StringContent(JsonConvert.SerializeObject(jsonObj), Encoding.UTF8, "application/json");
+
+            var response = await Client.PostAsync(url, c);
+            var responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
         }
 
         public async Task<String> MakeRequestAsync(String url)
