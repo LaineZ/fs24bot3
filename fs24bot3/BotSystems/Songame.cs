@@ -32,8 +32,6 @@ namespace fs24bot3.BotSystems
         {
             Tries = 5;
             SongameString = string.Empty;
-
-            Random rand = new Random();
             int timeout = 10;
             List<SQL.LyricsCache> query = connect.Query<SQL.LyricsCache>("SELECT * FROM LyricsCache");
 
@@ -43,7 +41,7 @@ namespace fs24bot3.BotSystems
                 {
                     if (query.Count > 0)
                     {
-                        string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
+                        string[] lyrics = query.Random().Lyrics.Split("\n");
 
                         foreach (string line in lyrics)
                         {

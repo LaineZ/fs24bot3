@@ -342,12 +342,11 @@ namespace fs24bot3.Commands
 
             if (query.Count > 0)
             {
-                Random rand = new Random();
-                string[] lyrics = query[rand.Next(0, query.Count - 1)].Lyrics.Split("\n");
-                int baseoffset = rand.Next(0, lyrics.Length - 1);
+                string[] lyrics = query.Random().Lyrics.Split("\n");
+                int baseoffset = Context.Random.Next(0, lyrics.Length - 1);
                 string outputmsg = "";
 
-                for (int i = 0; i < rand.Next(1, 5); i++)
+                for (int i = 0; i < Context.Random.Next(1, 5); i++)
                 {
                     if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
                 }

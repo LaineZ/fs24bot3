@@ -33,10 +33,9 @@ namespace fs24bot3.Commands
             try
             {
                 string rndWord = "";
-                Random rnd = new Random();
-                for (uint i = 0; i < rnd.Next(10, (int)Math.Clamp(max, 10, 400)); i++)
+                for (uint i = 0; i < Context.Random.Next(10, (int)Math.Clamp(max, 10, 400)); i++)
                 {
-                    rndWord += chars[rnd.Next(0, chars.Length - 1)];
+                    rndWord += chars[Context.Random.Next(0, chars.Length - 1)];
                 }
 
                 var translatedOutput = await Core.Transalator.Translate(rndWord, lang, "ru");
@@ -91,7 +90,7 @@ namespace fs24bot3.Commands
                 }
                 catch (FormatException)
                 {
-                    await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                    await Context.SendMessage(Context.Channel, RandomMsgs.BanMessages.Random());
                 }
             }
         }
@@ -117,7 +116,7 @@ namespace fs24bot3.Commands
                     }
                     catch (FormatException)
                     {
-                        await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                        await Context.SendMessage(Context.Channel, RandomMsgs.BanMessages.Random());
                     }
                 }
 
@@ -163,7 +162,7 @@ namespace fs24bot3.Commands
             }
             catch (FormatException)
             {
-                await Context.SendMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                await Context.SendMessage(Context.Channel, RandomMsgs.BanMessages.Random());
             }
         }
 

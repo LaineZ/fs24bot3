@@ -107,13 +107,13 @@ namespace fs24bot3
                 HttpClient client = new HttpClient();
                 HttpContent c = new StringContent(data, Encoding.UTF8);
 
-                var response = await client.PostAsync(Configuration.trashbinUrl + "/" + route, c);
+                var response = await client.PostAsync(Configuration.TrashbinUrl + "/" + route, c);
 
                 var responseString = await response.Content.ReadAsStringAsync();
 
                 if (int.TryParse(responseString, out _))
                 {
-                    return Configuration.trashbinUrl + "/" + responseString;
+                    return Configuration.TrashbinUrl + "/" + responseString;
                 }
                 else
                 {
@@ -122,7 +122,7 @@ namespace fs24bot3
             }
             catch (Exception)
             {
-                return "Сервер недоступен for some reason: " + Configuration.trashbinUrl;
+                return "Сервер недоступен for some reason: " + Configuration.TrashbinUrl;
             }
         }
 

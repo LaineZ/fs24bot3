@@ -103,7 +103,7 @@ namespace fs24bot3.Commands
         {
             await Context.SendMessage(Context.Channel, $"Зашел на: {channel}");
             await Context.BotCtx.BotClient.SendRaw("JOIN " + channel);
-            await Context.SendMessage(channel, $"Всем перепривет с вами {Configuration.name}");
+            await Context.SendMessage(channel, $"Всем перепривет с вами {Configuration.Name}");
         }
 
 

@@ -4,6 +4,7 @@ using Qmmands;
 using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace fs24bot3.QmmandsProcessors
 {
@@ -11,8 +12,9 @@ namespace fs24bot3.QmmandsProcessors
     {
         public sealed class CustomCommandContext : CommandContext
         {
-            public string Channel;
-            public string Sender;
+            public string Channel { get; }
+            public string Sender { get; }
+            public Random Random { get; }
             public Bot BotCtx { get; }
             public bool PerformPpc = false;
 
@@ -22,6 +24,7 @@ namespace fs24bot3.QmmandsProcessors
                 BotCtx = bot;
                 Channel = target;
                 Sender = message.Prefix.From;
+                Random = new Random();
                 if (perfppc)
                 {
                     var usr = new Core.User(Sender, bot.Connection, this);
@@ -42,9 +45,16 @@ namespace fs24bot3.QmmandsProcessors
                 }
             }
 
-            public async void SendSadMessage(string channel, string message)
+            public async void SendSadMessage(string channel, string message = "")
             {
-                await BotCtx.SendMessage(channel, IrcClrs.Gray + message);
+                if (!message.Any())
+                {
+                    await BotCtx.SendMessage(channel, IrcClrs.Gray + RandomMsgs.NotFoundMessages.Random());
+                }
+                else
+                {
+                    await BotCtx.SendMessage(channel, IrcClrs.Gray + message);
+                }
             }
 
             public async void SendErrorMessage(string channel, string message)

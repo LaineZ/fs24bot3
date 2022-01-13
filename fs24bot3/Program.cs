@@ -35,8 +35,8 @@ namespace fs24bot3
             Botara.BotClient.OnIRCMessageParsed += Client_OnIRCMessageParsed;
             Botara.BotClient.RegistrationCompleted += Client_OnRegister;
 
-            Log.Information("Connecting to: {0}:{1}", Configuration.network, (int)Configuration.port);
-            Task.Run(() => Botara.BotClient.ConnectAsync(Configuration.network, (int)Configuration.port));
+            Log.Information("Connecting to: {0}:{1}", Configuration.Network, (int)Configuration.Port);
+            Task.Run(() => Botara.BotClient.ConnectAsync(Configuration.Network, (int)Configuration.Port));
             Log.Information("First init is ok!");
 
             Botara.ProccessInfinite();
@@ -105,25 +105,27 @@ namespace fs24bot3
 
             if (message.NumericReply == IRCNumericReply.ERR_PASSWDMISMATCH)
             {
-                await client.SendRaw("PASS " + Configuration.serverPassword);
+                await client.SendRaw("PASS " + Configuration.ServerPassword);
             }
 
             if (message.IRCCommand == IRCCommand.KICK)
             {
-                if (message.Parameters[1] == Configuration.name)
+                if (message.Parameters[1] == Configuration.Name)
                 {
                     Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
-                    await client.SendRaw("JOIN " + Configuration.channel);
-                    await client.SendAsync(new PrivMsgMessage(Configuration.channel, "За что?"));
+                    await client.SendRaw("JOIN " + message.Parameters[0]);
+                    await client.SendAsync(new PrivMsgMessage(Configuration.Channel, "За что?"));
                 }
             }
         }
 
         private async static void Client_OnRegister(object sender, EventArgs _)
         {
-            await Botara.BotClient.SendRaw("JOIN " + Configuration.channel);
-            await Botara.SendMessage("Nickserv", "IDENTIFY " + Configuration.nickservPass);
-            await Botara.SendMessage(Configuration.channel, Core.Database.GetRandomLyric(Botara.Connection));
+            await Botara.BotClient.SendRaw("JOIN " + Configuration.Channel);
+            await Botara.SendMessage("Nickserv", "IDENTIFY " + Configuration.NickservPass);
+
+            var res = new Helpers.InternetServicesHelper().InPearls().Result.Random();
+            await Botara.SendMessage(Configuration.Channel, res);
         }
 
         private static void Client_OnRawDataReceived(Client client, string rawData)

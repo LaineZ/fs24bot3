@@ -11,18 +11,18 @@ namespace fs24bot3
 {
     public static class Configuration
     {
-        public static string name;
-        public static string network;
-        public static string channel;
-        public static bool reconnect;
-        public static long port;
-        public static string nickservPass;
-        public static string serverPassword;
+        public static string Name { get; private set; }
+        public static string Network { get; private set; }
+        public static string Channel { get; private set; }
+        public static bool Reconnect { get; private set; } 
+        public static long Port { get; private set; }
+        public static string NickservPass { get; private set; }
+        public static string ServerPassword { get; private set; }
 
-        public static string jdoodleClientID;
-        public static string jdoodleClientSecret;
-        public static string trashbinUrl;
-        public static string wolframID;
+        public static string JdoodleClientID { get; private set; }
+        public static string JdoodleClientSecret { get; private set; }
+        public static string TrashbinUrl { get; private set; }
+        public static string WolframID { get; private set; }
 
         public static string translateKey;
         
@@ -39,12 +39,12 @@ namespace fs24bot3
                 {
                     Items =
                     {
-                        {"name", name},
-                        {"network", network},
-                        {"channel", channel },
-                        {"port", port },
-                        {"nickserv_pass", nickservPass },
-                        {"server_pass", serverPassword}
+                        {"name", Name},
+                        {"network", Network},
+                        {"channel", Channel },
+                        {"port", Port },
+                        {"nickserv_pass", NickservPass },
+                        {"server_pass", ServerPassword},
                     }
                 },
 
@@ -52,10 +52,10 @@ namespace fs24bot3
                 {
                     Items =
                     {
-                        {"jdoodle_client_id", jdoodleClientID},
-                        {"jdoodle_client_secret", jdoodleClientSecret},
-                        {"trashbin_url", trashbinUrl },
-                        {"wolfram_id", wolframID },
+                        {"jdoodle_client_id", JdoodleClientID},
+                        {"jdoodle_client_secret", JdoodleClientSecret},
+                        {"trashbin_url", TrashbinUrl },
+                        {"wolfram_id", WolframID },
                         {"translate_key", translateKey },
                     }
                 }
@@ -111,17 +111,17 @@ namespace fs24bot3
                 var table = config.ToModel();
                 try
                 {
-                    name = (string)((TomlTable)table["irc"])["name"];
-                    network = (string)((TomlTable)table["irc"])["network"];
-                    channel = (string)((TomlTable)table["irc"])["channel"];
-                    port = (long)((TomlTable)table["irc"])["port"];
-                    nickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
-                    serverPassword = (string)((TomlTable)table["irc"])["server_pass"];
+                    Name = (string)((TomlTable)table["irc"])["name"];
+                    Network = (string)((TomlTable)table["irc"])["network"];
+                    Channel = (string)((TomlTable)table["irc"])["channel"];
+                    Port = (long)((TomlTable)table["irc"])["port"];
+                    NickservPass = (string)((TomlTable)table["irc"])["nickserv_pass"];
+                    ServerPassword = (string)((TomlTable)table["irc"])["server_pass"];
 
-                    jdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
-                    jdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
-                    trashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
-                    wolframID = (string)((TomlTable)table["services"])["wolfram_id"];
+                    JdoodleClientID = (string)((TomlTable)table["services"])["jdoodle_client_id"];
+                    JdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
+                    TrashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
+                    WolframID = (string)((TomlTable)table["services"])["wolfram_id"];
                     translateKey = (string)((TomlTable)table["services"])["translate_key"];
                 }
                 catch (KeyNotFoundException e)

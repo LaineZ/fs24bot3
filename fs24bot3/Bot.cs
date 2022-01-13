@@ -42,7 +42,7 @@ namespace fs24bot3
             Service.AddModule<FishCommandsModule>();
 
             Core.Database.InitDatabase(Connection);
-            BotClient = new Client(new User(Configuration.name, "Sopli IRC 3.0"), new TcpClientConnection());
+            BotClient = new Client(new User(Configuration.Name, "Sopli IRC 3.0"), new TcpClientConnection());
             CustomCommandProcessor = new Core.CustomCommandProcessor(this);
 
             new Thread(async () =>
@@ -59,7 +59,7 @@ namespace fs24bot3
                         dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
                         if (dtDateTime <= DateTime.Now)
                         {
-                            string ch = item.Channel ?? Configuration.channel;
+                            string ch = item.Channel ?? Configuration.Channel;
                             await SendMessage(ch, $"{item.Nick}: {item.Message}!");
                             Connection.Delete(item);
                         }

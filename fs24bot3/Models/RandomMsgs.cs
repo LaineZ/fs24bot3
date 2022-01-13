@@ -48,13 +48,5 @@ namespace fs24bot3.Models
             "По вашему запросу ничего не найдено. Проверьте, написан ли запрос без ошибок, или уменьшите количество слов в запросе",
             "Ничего не найдено попробуйте изменить опции поиска",
         };
-
-
-        public static string GetRandomMessage(List<string> list)
-        {
-            var random = new Random();
-            int index = random.Next(list.Count);
-            return list[index];
-        }
     }
 }

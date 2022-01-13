@@ -12,11 +12,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace fs24bot3.Commands
 {
@@ -24,51 +21,9 @@ namespace fs24bot3.Commands
     {
 
         public CommandService Service { get; set; }
+        private readonly HttpTools http = new HttpTools();
+        private readonly Helpers.InternetServicesHelper InternetServicesHelper = new Helpers.InternetServicesHelper();
 
-        readonly HttpTools http = new HttpTools();
-
-        private async Task<string> InPearlsGetter(string category = "", int page = 0)
-        {
-            if (page == 0)
-            {
-                page = new Random().Next(1, 35);
-            }
-            var web = new HtmlWeb();
-            var doc = await web.LoadFromWebAsync("https://www.inpearls.ru/" + category + "?page=" + page);
-            HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"text\"]");
-            var nodes = doc.DocumentNode.SelectNodes("//br");
-
-            List<string> pearls = new List<string>();
-            Log.Verbose("Page: {0}", page);
-            if (divContainer != null && nodes != null)
-            {
-                foreach (HtmlNode node in nodes)
-                    node.ParentNode.ReplaceChild(doc.CreateTextNode("\n"), node);
-
-                foreach (var node in divContainer)
-                {
-                    if (node.InnerText.Split("\n").Length <= 2)
-                    {
-                        pearls.Add(http.RecursiveHtmlDecode(node.InnerText));
-                    }
-                }
-
-                if (pearls.Any())
-                {
-                    return RandomMsgs.GetRandomMessage(pearls);
-                }
-                else
-                {
-                    Context.SendSadMessage(Context.Channel, $"Подходящие сообщения в категории `{category}` не найдены!");
-                }
-            }
-            else
-            {
-                Context.SendSadMessage(Context.Channel, $"Категории: `{category}` не существует!");
-            }
-
-            return null;
-        }
 
         [Command("execute", "exec")]
         [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
@@ -76,8 +31,8 @@ namespace fs24bot3.Commands
         {
             APIExec.Input codeData = new APIExec.Input
             {
-                clientId = Configuration.jdoodleClientID,
-                clientSecret = Configuration.jdoodleClientSecret,
+                clientId = Configuration.JdoodleClientID,
+                clientSecret = Configuration.JdoodleClientSecret,
                 language = lang,
                 script = code
             };
@@ -90,7 +45,7 @@ namespace fs24bot3.Commands
 
                 if (jsonOutput.output != null)
                 {
-                    await Context.SendMessage(Context.Channel, "CPU: " + jsonOutput.cpuTime + " Mem: " + jsonOutput.memory);
+                    await Context.SendMessage(Context.Channel, $"CPU: {jsonOutput.cpuTime * 1000} ms Mem: {jsonOutput.memory} KiB");
                     await Context.SendMessage(Context.Channel, jsonOutput.output);
                 }
                 else
@@ -276,7 +231,7 @@ namespace fs24bot3.Commands
         [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Не является поисковой системой.")]
         public async Task Wolfram([Remainder] string query)
         {
-            WolframAlphaClient client = new WolframAlphaClient(Configuration.wolframID);
+            WolframAlphaClient client = new WolframAlphaClient(Configuration.WolframID);
             var results = await client.QueryAsync(query);
 
             if (results.IsError)
@@ -287,7 +242,7 @@ namespace fs24bot3.Commands
 
             if (!results.IsSuccess || !results.Pods.Any())
             {
-                Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
                 return;
             }
 
@@ -325,10 +280,23 @@ namespace fs24bot3.Commands
         [Description("Самые душевные цитаты в мире!")]
         public async Task InPearls(string category = "", int page = 0)
         {
-            var output = await InPearlsGetter(category, page);
-            if (output != null)
+            var pagenum = Context.Random.Next(page, 36);
+            try
             {
-                await Context.SendMessage(Context.Channel, output);
+                var output = await InternetServicesHelper.InPearls(category, pagenum);
+
+                if (output.Any())
+                {
+                    await Context.SendMessage(Context.Channel, output.Random());
+                }
+                else
+                {
+                    Context.SendSadMessage(Context.Channel);
+                }
+            }
+            catch (InvalidOperationException e)
+            {
+                Context.SendSadMessage(Context.Channel, $"Не удалось получить цитаты с inpearls: {e.Message}");
             }
         }
 

@@ -84,11 +84,11 @@ namespace fs24bot3.Commands
                     }
                 }
 
-                Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
             }
             catch (JsonSerializationException)
             {
-                Context.SendSadMessage(Context.Channel, RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
             }
         }
 

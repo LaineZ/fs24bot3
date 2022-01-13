@@ -25,7 +25,7 @@ namespace fs24bot3.Commands
         {
             if (ctx.SearchResults == null || !ctx.SearchResults.Any())
             {
-                await Context.SendMessage(Context.Channel, IrcClrs.Gray + RandomMsgs.GetRandomMessage(RandomMsgs.NotFoundMessages));
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + RandomMsgs.NotFoundMessages.Random());
                 return;
             }
 
@@ -39,9 +39,9 @@ namespace fs24bot3.Commands
             }
             else
             {
-                var rand = new Random().Next(0, ctx.SearchResults.Count - 1);
-                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Title)} // {IrcClrs.Blue}{ctx.SearchResults[rand].Url}");
-                if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(ctx.SearchResults[rand].Description)); }
+                var rand = ctx.SearchResults.Random();
+                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(rand.Title)} // {IrcClrs.Blue}{rand.Url}");
+                if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(rand.Description)); }
             }
         }
 
@@ -122,7 +122,7 @@ namespace fs24bot3.Commands
                 if (items.antirobot.blocked)
                 {
                     Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
-                    await Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.GetRandomMessage(RandomMsgs.BanMessages));
+                    await Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.BanMessages.Random());
                     return;
                 }
                 else

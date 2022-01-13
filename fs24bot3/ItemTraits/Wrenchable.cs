@@ -59,7 +59,7 @@ namespace fs24bot3.ItemTraits
                 }
                 else
                 {
-                    await botCtx.SendMessage(channel, RandomMsgs.GetRandomMessage(RandomMsgs.MissMessages));
+                    await botCtx.SendMessage(channel, RandomMsgs.MissMessages.Random());
                 }
 
                 return true;
