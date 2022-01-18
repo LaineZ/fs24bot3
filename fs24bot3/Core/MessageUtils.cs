@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -66,6 +67,84 @@ namespace fs24bot3.Core
             inputBuilder.Replace('о', 'o');
 
             return inputBuilder.ToString();
+        }
+
+        public static byte[] GetSection(ref byte[] array, int start, int end)
+        {
+            var result = new byte[end - start];
+            for (var i = 0; i < result.Length; i++)
+            {
+                result[i] = array[i + start];
+            }
+            return result;
+        }
+
+        public static int GetCharStart(ref byte[] arr, int index)
+        {
+            if (index > arr.Length)
+            {
+                index = arr.Length - 1;
+            }
+
+            return (arr[index] & 0xC0) == 0x80 ? GetCharStart(ref arr, index - 1) : index;
+        }
+
+        public static IEnumerable<byte[]> GetByteSections(byte[] utf8Array, int sectionCount)
+        {
+            var sectionStart = 0;
+            var sectionEnd = 0;
+            var sectionSize = (int)Math.Ceiling((double)utf8Array.Length / sectionCount);
+
+            for (var i = 0; i < sectionCount; i++)
+            {
+                if (i == (sectionCount - 1))
+                {
+                    var lengthRem = utf8Array.Length - i * sectionSize;
+                    sectionEnd = GetCharStart(ref utf8Array, i * sectionSize);
+                    yield return GetSection(ref utf8Array, sectionStart, sectionEnd);
+                    sectionStart = sectionEnd;
+                    sectionEnd = utf8Array.Length;
+                    yield return GetSection(ref utf8Array, sectionStart, sectionEnd);
+                }
+                else
+                {
+                    sectionEnd = GetCharStart(ref utf8Array, i * sectionSize);
+                    yield return GetSection(ref utf8Array, sectionStart, sectionEnd);
+                    sectionStart = sectionEnd;
+                }
+            }
+        }
+
+
+        public static List<string> LimitByteLength(string message, int maxLength)
+        {
+
+            List<string> results = new List<string>();
+
+            if (string.IsNullOrEmpty(message) || Encoding.UTF8.GetByteCount(message) <= maxLength)
+            {
+                results.Add(message);
+                return results;
+            }
+
+            var enumerator = StringInfo.GetTextElementEnumerator(message);
+            var result = new StringBuilder();
+            int lengthBytes = 0;
+            while (enumerator.MoveNext())
+            {
+                lengthBytes += Encoding.UTF8.GetByteCount(enumerator.GetTextElement());
+                if (lengthBytes <= maxLength)
+                {
+                    result.Append(enumerator.GetTextElement());
+                }
+                else
+                {
+                    results.Add(result.ToString());
+                    lengthBytes = 0;
+                }
+            }
+
+            return results;
         }
     }
 }

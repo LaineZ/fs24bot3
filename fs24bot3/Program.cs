@@ -64,34 +64,29 @@ namespace fs24bot3
 
                 if (!result.IsSuccessful && ppc)
                 {
-                    await client.SendAsync(new PrivMsgMessage(target, $"{nick}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ"));
+                    await Botara.SendMessage(target, $"{nick}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ");
                     new Core.User(nick, Botara.Connection).AddItemToInv(Botara.Shop, "beer", 1);
                 }
 
                 switch (result)
                 {
                     case ChecksFailedResult err:
-                        var errStr = new StringBuilder();
-                        foreach (var (_, error) in err.FailedChecks)
-                        {
-                            errStr.Append(error.FailureReason);
-                        }
-                        await client.SendAsync(new PrivMsgMessage(target, $"Требования не выполнены: {errStr}"));
+                        await Botara.SendMessage(target, $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
                         break;
                     case TypeParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите @helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой"));
+                        await Botara.SendMessage(target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите @helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
                         break;
                     case ArgumentParseFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, $"Ошибка парсера: `{err.FailureReason}`"));
+                        await Botara.SendMessage(target, $"Ошибка парсера: `{err.FailureReason}`");
                         break;
-                    case OverloadsFailedResult _:
-                        await client.SendAsync(new PrivMsgMessage(target, "Команда выключена..."));
+                    case OverloadsFailedResult:
+                        await Botara.SendMessage(target, "Команда выключена...");
                         break;
-                    case CommandNotFoundResult _:
+                    case CommandNotFoundResult:
                         Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
                         break;
                     case CommandExecutionFailedResult err:
-                        await client.SendAsync(new PrivMsgMessage(target, $"{IrcClrs.Red}Ошибка: {err.Exception.Message}{err.Exception.StackTrace}"));
+                        await Botara.SendMessage(target, $"{IrcClrs.Red}Ошибка: {err.Exception.Message}{err.Exception.StackTrace}");
                         Botara.Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, nick, message.Trailing.TrimEnd()));
                         break;
                 }
@@ -99,8 +94,13 @@ namespace fs24bot3
 
             if (message.IRCCommand == IRCCommand.ERROR)
             {
-                Log.Error("Connection closed due to error... Exiting");
-                Environment.Exit(1);
+                Log.Error("Connection closed due to error... RECONNECTION!!!");
+                Botara.Reconnect();
+            }
+
+            if (message.NumericReply == IRCNumericReply.ERR_NICKNAMEINUSE)
+            {
+                await Botara.BotClient.SendRaw("NICK " + Configuration.Name + new Random().Next(int.MinValue, int.MaxValue));
             }
 
             if (message.NumericReply == IRCNumericReply.ERR_PASSWDMISMATCH)
@@ -114,7 +114,7 @@ namespace fs24bot3
                 {
                     Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
                     await client.SendRaw("JOIN " + message.Parameters[0]);
-                    await client.SendAsync(new PrivMsgMessage(Configuration.Channel, "За что?"));
+                    await Botara.SendMessage(Configuration.Channel, "За что?");
                 }
             }
         }

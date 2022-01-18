@@ -8,6 +8,7 @@ using Qmmands;
 using Serilog;
 using SQLite;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,11 +24,13 @@ namespace fs24bot3
         public List<ParsedIRCMessage> MessageBus = new List<ParsedIRCMessage>();
         public Core.CustomCommandProcessor CustomCommandProcessor;
         public readonly CommandService Service = new CommandService();
-        public Client BotClient { get; }
-        readonly HttpTools http = new HttpTools();
+        public Client BotClient { get; private set; }
         public Shop Shop;
         public Songame SongGame;
+
         public int Tickrate = 15000;
+        private const int MESSAGE_LENGTH = 450;
+
         public Bot()
         {
             Service.AddModule<GenericCommandsModule>();
@@ -66,6 +69,12 @@ namespace fs24bot3
                     }
                 }
             }).Start();
+        }
+
+        public void Reconnect()
+        {
+            BotClient.Dispose();
+            BotClient = new Client(new User(Configuration.Name, "Sopli IRC 3.0"), new TcpClientConnection());
         }
 
         public void ProccessInfinite()
@@ -114,37 +123,6 @@ namespace fs24bot3
             MessageBus.Add(message);
         }
 
-
-        private string LimitByteLength(String input, Int32 maxLength)
-        {
-            return new String(input
-                .TakeWhile((c, i) =>
-                    Encoding.UTF8.GetByteCount(input.Substring(0, i + 1)) <= maxLength)
-                .ToArray());
-        }
-
-        private List<string> SplitMessage(string value, int chunkLength)
-        {
-            if (value.Length < chunkLength) { return new List<string>() { value }; }
-
-            List<string> splitted = new List<string>();
-
-            byte[] stringByte = Encoding.UTF8.GetBytes(value);
-
-            byte[][] chunks = stringByte.Select((value, index) =>
-            new { PairNum = Math.Floor(index / (decimal)chunkLength), value })
-                .GroupBy(pair => pair.PairNum)
-                .Select(grp => grp.Select(g => g.value).ToArray())
-                .ToArray();
-
-            foreach (var chunk in chunks)
-            {
-                string converted = Encoding.UTF8.GetString(chunk, 0, chunk.Length);
-                splitted.Add(LimitByteLength(converted, chunkLength));
-            }
-            return splitted;
-        }
-
         public async Task SendMessage(string channel, string message)
         {
             List<string> msgLines = message.Split("\n").ToList();
@@ -154,15 +132,15 @@ namespace fs24bot3
             {
                 if (!string.IsNullOrWhiteSpace(outputstr))
                 {
-                    foreach (var msg in SplitMessage(outputstr, 255))
+                    foreach (var msg in Core.MessageUtils.LimitByteLength(message, 480))
                     {
                         await BotClient.SendAsync(new PrivMsgMessage(channel, msg));
                         count++;
 
                         if (count > 4)
                         {
-                            string link = await http.UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
-                            await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
+                            //string link = await http.UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
+                            //await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
                             return;
                         }
                     }
