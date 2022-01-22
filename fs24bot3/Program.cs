@@ -1,12 +1,10 @@
 ﻿using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using NetIRC;
-using NetIRC.Messages;
 using Qmmands;
 using Serilog;
 using System;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace fs24bot3
@@ -22,12 +20,12 @@ namespace fs24bot3
             .MinimumLevel.ControlledBy(Configuration.LoggerSw)
             .CreateLogger();
 
-            Log.Information("fs24_bot 3 by 140bpmdubstep");
-
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 Console.OutputEncoding = Encoding.Unicode;
             }
+
+            Log.Information("fs24_bot 3 by 140bpmdubstep");
 
             Botara = new Bot();
 
@@ -124,7 +122,7 @@ namespace fs24bot3
             await Botara.BotClient.SendRaw("JOIN " + Configuration.Channel);
             await Botara.SendMessage("Nickserv", "IDENTIFY " + Configuration.NickservPass);
 
-            var res = new Helpers.InternetServicesHelper().InPearls().Result.Random();
+            var res = new Helpers.InternetServicesHelper().InPearls("алкоголь").Result.Random();
             await Botara.SendMessage(Configuration.Channel, res);
         }
 

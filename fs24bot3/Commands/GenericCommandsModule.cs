@@ -171,7 +171,7 @@ namespace fs24bot3.Commands
                 {
                     try
                     {
-                        var translatedOutput = await Core.Transalator.Translate(translated, "ru", "en");
+                        var translatedOutput = Transalator.TranslateBing(translated, "ru", "en").Result.translations.First().text;
                         string trOutFixed = Context.BotCtx.SongGame.RemoveArticles(translatedOutput);
 
                         if (trOutFixed == Context.BotCtx.SongGame.SongameString)

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace fs24bot3.Core
 {
-    public static class MailSearchDecoder
+    public class MailSearchDecoder
     {
         public static MailSearch.RootObject PerformDecode(string code)
         {

@@ -89,10 +89,11 @@ namespace fs24bot3.Core
             return (arr[index] & 0xC0) == 0x80 ? GetCharStart(ref arr, index - 1) : index;
         }
 
-        public static IEnumerable<byte[]> GetByteSections(byte[] utf8Array, int sectionCount)
+        public static IEnumerable<byte[]> GetByteSections(byte[] utf8Array, int byteSize)
         {
             var sectionStart = 0;
             var sectionEnd = 0;
+            var sectionCount = (utf8Array.Length / byteSize) + 1;
             var sectionSize = (int)Math.Ceiling((double)utf8Array.Length / sectionCount);
 
             for (var i = 0; i < sectionCount; i++)
@@ -113,38 +114,6 @@ namespace fs24bot3.Core
                     sectionStart = sectionEnd;
                 }
             }
-        }
-
-
-        public static List<string> LimitByteLength(string message, int maxLength)
-        {
-
-            List<string> results = new List<string>();
-
-            if (string.IsNullOrEmpty(message) || Encoding.UTF8.GetByteCount(message) <= maxLength)
-            {
-                results.Add(message);
-                return results;
-            }
-
-            var enumerator = StringInfo.GetTextElementEnumerator(message);
-            var result = new StringBuilder();
-            int lengthBytes = 0;
-            while (enumerator.MoveNext())
-            {
-                lengthBytes += Encoding.UTF8.GetByteCount(enumerator.GetTextElement());
-                if (lengthBytes <= maxLength)
-                {
-                    result.Append(enumerator.GetTextElement());
-                }
-                else
-                {
-                    results.Add(result.ToString());
-                    lengthBytes = 0;
-                }
-            }
-
-            return results;
         }
     }
 }

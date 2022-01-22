@@ -29,7 +29,7 @@ namespace fs24bot3
         public Songame SongGame;
 
         public int Tickrate = 15000;
-        private const int MESSAGE_LENGTH = 450;
+        private const int MESSAGE_LENGTH = 480;
 
         public Bot()
         {
@@ -104,6 +104,7 @@ namespace fs24bot3
                 }
             }
         }
+
         public void MessageTrigger(string nick, string target, ParsedIRCMessage message)
         {
             var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Count();
@@ -130,19 +131,20 @@ namespace fs24bot3
 
             foreach (string outputstr in msgLines)
             {
-                if (!string.IsNullOrWhiteSpace(outputstr))
+                foreach (var msg in Core.MessageUtils.GetByteSections(Encoding.UTF8.GetBytes(outputstr), MESSAGE_LENGTH))
                 {
-                    foreach (var msg in Core.MessageUtils.LimitByteLength(message, 480))
+                    var finalMsg = Encoding.UTF8.GetString(msg);
+                    if (!string.IsNullOrWhiteSpace(Encoding.UTF8.GetString(msg)))
                     {
-                        await BotClient.SendAsync(new PrivMsgMessage(channel, msg));
+                        await BotClient.SendAsync(new PrivMsgMessage(channel, Encoding.UTF8.GetString(msg)));
                         count++;
+                    }
 
-                        if (count > 4)
-                        {
-                            //string link = await http.UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
-                            //await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
-                            return;
-                        }
+                    if (count > 4)
+                    {
+                        string link = await new HttpTools().UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
+                        await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
+                        return;
                     }
                 }
             }

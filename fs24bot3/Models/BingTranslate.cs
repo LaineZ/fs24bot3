@@ -12,6 +12,11 @@ namespace fs24bot3.Models
             public string to { get; set; }
         }
 
+        public class Request
+        {
+            public string Text { get; set; }
+        }
+
         public class Root
         {
             public List<Translation> translations { get; set; }

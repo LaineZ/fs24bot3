@@ -5,7 +5,7 @@ using System;
 
 namespace fs24bot3.Core
 {
-    public static class Database
+    public class Database
     {
         public static void InitDatabase(SQLiteConnection connection)
         {

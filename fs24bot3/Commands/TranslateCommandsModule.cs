@@ -38,7 +38,7 @@ namespace fs24bot3.Commands
                     rndWord += chars[Context.Random.Next(0, chars.Length - 1)];
                 }
 
-                var translatedOutput = await Core.Transalator.Translate(rndWord, lang, "ru");
+                var translatedOutput = Transalator.TranslateBing(rndWord, lang, "ru").Result.translations.First().text;
                 await Context.SendMessage(Context.Channel, translatedOutput);
             }
             catch (Exception e)
@@ -186,7 +186,7 @@ namespace fs24bot3.Commands
 
                         foreach (var tr in translations)
                         {
-                            var translatorResponse = await Core.Transalator.Translate(translated, "auto-detect", tr);
+                            var translatorResponse = await Core.Transalator.TranslatePpc(translated, tr);
                             translated = translatorResponse;
                         }
 

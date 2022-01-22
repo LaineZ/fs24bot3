@@ -9,7 +9,7 @@ using Tomlyn.Syntax;
 
 namespace fs24bot3
 {
-    public static class Configuration
+    public class Configuration
     {
         public static string Name { get; private set; }
         public static string Network { get; private set; }
@@ -23,8 +23,7 @@ namespace fs24bot3
         public static string JdoodleClientSecret { get; private set; }
         public static string TrashbinUrl { get; private set; }
         public static string WolframID { get; private set; }
-
-        public static string translateKey;
+        public static string translateKey { get; private set; }
         
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();

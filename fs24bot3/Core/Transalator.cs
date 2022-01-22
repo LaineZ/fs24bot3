@@ -5,6 +5,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -20,6 +21,8 @@ namespace fs24bot3.Core
         public async static Task<BingTranlate.Root> TranslateBing(string text, string from = "", string to = "")
         {
 
+            string content = "[" + JsonConvert.SerializeObject(new BingTranlate.Request() { Text = text }) + "]";
+
             var request = new HttpRequestMessage() {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri("https://microsoft-translator-text.p.rapidapi.com/translate?api-version=3.0&to=" + to + "&textType=plain&profanityAction=NoAction&from=" + from),
@@ -27,7 +30,7 @@ namespace fs24bot3.Core
                     { "x-rapidapi-key", Configuration.translateKey },
                     { "x-rapidapi-host", "microsoft-translator-text.p.rapidapi.com" },
                 },
-                Content = new StringContent("[ { \"Text\": \"" + text + "\" } ]", Encoding.UTF8, "application/json"),
+                Content = new StringContent(content, Encoding.UTF8, "application/json"),
             };
 
             var response = await client.SendAsync(request);
@@ -48,41 +51,10 @@ namespace fs24bot3.Core
                     },
                 };
 
-                return JsonConvert.DeserializeObject<BingTranlate.Root>(responseString.Substring(1, responseString.Length-2));
+                return JsonConvert.DeserializeObject<BingTranlate.Root>(responseString[1..^1]);
             }
 
             throw new Exception(responseString);
-        }
-
-
-        public async static Task<string> Translate(string text, string fromLang = "auto", string toLang = "auto")
-        {
-            var data = new Translate.TranslateQuery()
-            {
-                q = text.TrimEnd(),
-                source = fromLang,
-                target = toLang
-            };
-
-            HttpResponseMessage response = new HttpResponseMessage();
-
-            foreach (var url in new string[] { "https://libretranslate.com/", "https://translate.nexlight.be/" })
-            {
-                HttpContent c = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                response = await client.PostAsync(url + "translate", c);
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                Log.Verbose("CODE: {0}", response.StatusCode);
-
-                if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    var translatedOutput = JsonConvert.DeserializeObject<Translate.TranslateOut>(responseString);
-                    Log.Verbose(translatedOutput.translatedText);
-                    return translatedOutput.translatedText;
-                }
-            }
-
-            throw new InvalidOperationException("Translate server error! " + response.StatusCode);
         }
 
         public async static Task<string> TranslatePpc(string text, string targetLang = "ru")
@@ -94,12 +66,12 @@ namespace fs24bot3.Core
             {
                 try
                 {
-                    var translatorResponse = await Translate(translated, "auto", tr);
-                    translated = translatorResponse;
+                    var translatorResponse = await TranslateBing(translated, "auto-detect", tr);
+                    translated = translatorResponse.translations.First().text;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    break;
+                    continue;
                 }
             }
 
