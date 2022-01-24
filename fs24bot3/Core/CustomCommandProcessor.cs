@@ -16,7 +16,7 @@ namespace fs24bot3.Core
         public CustomCommandProcessor(Bot context)
         {
             Context = context;
-            CustomExecutor = new CustomExecutor(Context.BotClient, Context.Connection);
+            CustomExecutor = new CustomExecutor(Context);
             Log.Information("Custom command processor enabled!");
         }
 

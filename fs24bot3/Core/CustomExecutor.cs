@@ -11,23 +11,22 @@ namespace fs24bot3.Core
 {
     class CustomExecutor
     {
-        private Client Client { get; }
-        private SQLite.SQLiteConnection Connect { get; }
         private Random Random;
         private List<int> Indices = new List<int>();
         private SQL.CustomUserCommands LastCommand;
+        private Bot Bot;
 
-        public CustomExecutor(Client client, SQLite.SQLiteConnection connect)
+        public CustomExecutor(Bot botCtx)
         {
             Random = new Random();
-            Client = client;
-            Connect = connect;
+            Bot = botCtx;
         }
+
         public async void Execute(SQL.CustomUserCommands command, string senderNick, string channel, string args)
         {
             string[] outputs = command.Output.Split("||");
-            var arr = Connect.Table<SQL.UserStats>().ToList();
-            var nick = MessageUtils.AntiHightlight(arr[Random.Next(0, arr.Count - 1)].Nick);
+            var arr = Bot.Connection.Table<SQL.UserStats>().ToList();
+            var nick = MessageUtils.AntiHightlight(arr.Random().Nick);
 
             int index = 0;
 
@@ -38,7 +37,7 @@ namespace fs24bot3.Core
                     // if args contains output number
                     if (result > outputs.Length - 1 || result < 0)
                     {
-                        await Client.SendAsync(new PrivMsgMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение"));
+                        await Bot.SendMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение");
                     }
                     else
                     {
@@ -78,7 +77,7 @@ namespace fs24bot3.Core
             argsFinal.Replace("#RNDNICK", nick);
             argsFinal.Replace("#RNG", Random.Next(int.MinValue, int.MaxValue).ToString());
 
-            await Client.SendAsync(new PrivMsgMessage(channel, argsFinal.ToString()));
+            await Bot.SendMessage(channel, argsFinal.ToString());
         }
     }
 }

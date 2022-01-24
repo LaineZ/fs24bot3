@@ -29,7 +29,7 @@ namespace fs24bot3
         public Songame SongGame;
 
         public int Tickrate = 15000;
-        private const int MESSAGE_LENGTH = 480;
+        private const int MESSAGE_LENGTH = 450;
 
         public Bot()
         {
