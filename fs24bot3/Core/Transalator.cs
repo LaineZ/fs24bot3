@@ -66,7 +66,7 @@ namespace fs24bot3.Core
             {
                 try
                 {
-                    var translatorResponse = await TranslateBing(translated, "auto-detect", tr);
+                    var translatorResponse = await TranslateBing(translated, "", tr);
                     translated = translatorResponse.translations.First().text;
                 }
                 catch (Exception e)

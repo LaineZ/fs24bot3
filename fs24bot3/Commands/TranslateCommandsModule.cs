@@ -68,7 +68,7 @@ namespace fs24bot3.Commands
             {
                 var (from, to) = ParseLang(lang);
                 var translatedOutput = await Transalator.TranslateBing(text, from, to);
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.translations[0].text} ({translatedOutput.translations[0].to})");
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.translations[0].text} ({translatedOutput.detectedLanguage.language}-{translatedOutput.translations[0].to})");
             }
             catch (ArgumentException)
             {
