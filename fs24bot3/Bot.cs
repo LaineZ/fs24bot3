@@ -1,5 +1,6 @@
 ﻿using fs24bot3.BotSystems;
 using fs24bot3.Commands;
+using fs24bot3.Helpers;
 using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Connection;
@@ -131,7 +132,7 @@ namespace fs24bot3
 
             foreach (string outputstr in msgLines)
             {
-                foreach (var msg in Core.MessageUtils.GetByteSections(Encoding.UTF8.GetBytes(outputstr), MESSAGE_LENGTH))
+                foreach (var msg in MessageHelper.GetByteSections(Encoding.UTF8.GetBytes(outputstr), MESSAGE_LENGTH))
                 {
                     var finalMsg = Encoding.UTF8.GetString(msg);
                     if (!string.IsNullOrWhiteSpace(Encoding.UTF8.GetString(msg)))
@@ -142,7 +143,7 @@ namespace fs24bot3
 
                     if (count > 4)
                     {
-                        string link = await new HttpTools().UploadToTrashbin(Core.MessageUtils.StripIRC(message), "addplain");
+                        string link = await new HttpTools().UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
                         await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
                         return;
                     }

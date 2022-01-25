@@ -12,8 +12,6 @@ IRC бот, разработан для использования на IRC ка
 
 ``./fs24bot3/build-linux-shared.bat``,  ``./fs24bot3/build-linux-shared.sh`` - собирает .NET бинарь для linux x64, для его работы необходим пакет ``dotnet-runtime``
 
-``./fs24bot3/build-linux-shared-dbg.bat`` - собирает дебаг версию .NET бинари для linux x64, для его работы необходим пакет ``dotnet-runtime``
-
 Результат сборки будет в папке ``./fs24bot3/bin/``
 
 Далее просто запускаем бота и ждем начальной инициализации...

@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Linq;
+using fs24bot3.Helpers;
 
 namespace fs24bot3.QmmandsProcessors
 {
@@ -40,7 +41,7 @@ namespace fs24bot3.QmmandsProcessors
                 }
                 else
                 {
-                    var txt = await Core.Transalator.TranslatePpc(Core.MessageUtils.StripIRC(message));
+                    var txt = await Core.Transalator.TranslatePpc(MessageHelper.StripIRC(message));
                     await BotCtx.SendMessage(channel, txt);
                 }
             }

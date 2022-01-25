@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Helpers;
+using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Messages;
 using NLua;
@@ -25,7 +26,7 @@ namespace fs24bot3.Core
         public void Execute(string senderNick, string channel, string message, string args)
         {
             var arr = Context.Connection.Table<SQL.UserStats>().ToList();
-            var nick = MessageUtils.AntiHightlight(arr[new Random().Next(0, arr.Count - 1)].Nick);
+            var nick = MessageHelper.AntiHightlight(arr[new Random().Next(0, arr.Count - 1)].Nick);
 
             Lua lua = new Lua();
             lua.State.Encoding = Encoding.UTF8;

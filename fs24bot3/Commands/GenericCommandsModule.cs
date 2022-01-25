@@ -11,6 +11,7 @@ using fs24bot3.QmmandsProcessors;
 using fs24bot3.Core;
 using System.Globalization;
 using fs24bot3.BotSystems;
+using fs24bot3.Helpers;
 
 namespace fs24bot3.Commands
 {
@@ -207,11 +208,11 @@ namespace fs24bot3.Commands
             {
                 if (!isRussian)
                 {
-                    names.Add(MessageUtils.GenerateName(Math.Clamp(maxlen, 5, 20)));
+                    names.Add(MessageHelper.GenerateName(Math.Clamp(maxlen, 5, 20)));
                 }
                 else
                 {
-                    names.Add(MessageUtils.GenerateNameRus(Math.Clamp(maxlen, 5, 20)));
+                    names.Add(MessageHelper.GenerateNameRus(Math.Clamp(maxlen, 5, 20)));
                 }
             }
             await Context.SendMessage(Context.Channel, string.Join(",", names));

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace fs24bot3.Core
+namespace fs24bot3.Helpers
 {
-    class MessageUtils
+    class MessageHelper
     {
         private static string GenerateBaseName(int len, string[] consonants, string[] vowels)
         {
@@ -43,6 +43,11 @@ namespace fs24bot3.Core
         {
             return GenerateBaseName(len, new string[] { "б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "р", "с", "т", "ф", "х", "ц", "ч", "ш", "щ" },
             new string[] { "а", "у", "о", "ы", "и", "э", "я", "ю", "ё", "е" });
+        }
+
+        public static string AllEnumOptionsToString(Enum en)
+        {
+            return string.Join(", ", Enum.GetValues(en.GetType()));
         }
 
         public static string AntiHightlight(string input)

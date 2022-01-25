@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Helpers;
+using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Messages;
 using Serilog;
@@ -29,7 +30,7 @@ namespace fs24bot3.Core
 
             Random random = new Random();
             var arr = Connection.Table<SQL.UserStats>().ToList();
-            var nick = MessageUtils.AntiHightlight(arr[random.Next(0, arr.Count - 1)].Nick);
+            var nick = MessageHelper.AntiHightlight(arr[random.Next(0, arr.Count - 1)].Nick);
 
             argsFinal.Replace("#USERINPUT", input);
             argsFinal.Replace("#USERNAME", Caller);

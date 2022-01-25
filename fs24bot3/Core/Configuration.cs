@@ -23,7 +23,7 @@ namespace fs24bot3
         public static string JdoodleClientSecret { get; private set; }
         public static string TrashbinUrl { get; private set; }
         public static string WolframID { get; private set; }
-        public static string translateKey { get; private set; }
+        public static string TranslateKey { get; private set; }
         
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
@@ -55,7 +55,7 @@ namespace fs24bot3
                         {"jdoodle_client_secret", JdoodleClientSecret},
                         {"trashbin_url", TrashbinUrl },
                         {"wolfram_id", WolframID },
-                        {"translate_key", translateKey },
+                        {"translate_key", TranslateKey },
                     }
                 }
             }
@@ -121,7 +121,7 @@ namespace fs24bot3
                     JdoodleClientSecret = (string)((TomlTable)table["services"])["jdoodle_client_secret"];
                     TrashbinUrl = (string)((TomlTable)table["services"])["trashbin_url"];
                     WolframID = (string)((TomlTable)table["services"])["wolfram_id"];
-                    translateKey = (string)((TomlTable)table["services"])["translate_key"];
+                    TranslateKey = (string)((TomlTable)table["services"])["translate_key"];
                 }
                 catch (KeyNotFoundException e)
                 {

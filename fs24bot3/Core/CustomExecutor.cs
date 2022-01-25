@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Helpers;
+using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Messages;
 using Serilog;
@@ -26,7 +27,7 @@ namespace fs24bot3.Core
         {
             string[] outputs = command.Output.Split("||");
             var arr = Bot.Connection.Table<SQL.UserStats>().ToList();
-            var nick = MessageUtils.AntiHightlight(arr.Random().Nick);
+            var nick = MessageHelper.AntiHightlight(arr.Random().Nick);
 
             int index = 0;
 

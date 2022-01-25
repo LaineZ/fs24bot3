@@ -27,7 +27,7 @@ namespace fs24bot3.Core
                 Method = HttpMethod.Post,
                 RequestUri = new Uri("https://microsoft-translator-text.p.rapidapi.com/translate?api-version=3.0&to=" + to + "&textType=plain&profanityAction=NoAction&from=" + from),
                 Headers = {
-                    { "x-rapidapi-key", Configuration.translateKey },
+                    { "x-rapidapi-key", Configuration.TranslateKey },
                     { "x-rapidapi-host", "microsoft-translator-text.p.rapidapi.com" },
                 },
                 Content = new StringContent(content, Encoding.UTF8, "application/json"),
@@ -59,7 +59,7 @@ namespace fs24bot3.Core
 
         public async static Task<string> TranslatePpc(string text, string targetLang = "ru")
         {
-            string[] translations = { "en", "pt", "ja", "de", targetLang };
+            string[] translations = { "en", "pl", "pt", "ja", "de", targetLang };
             string translated = text;
 
             foreach (var tr in translations)
@@ -69,7 +69,7 @@ namespace fs24bot3.Core
                     var translatorResponse = await TranslateBing(translated, "", tr);
                     translated = translatorResponse.translations.First().text;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     continue;
                 }
