@@ -11,7 +11,6 @@ namespace fs24bot3.Core
         public static void InitDatabase(SQLiteConnection connection)
         {
             Log.Information("Initializing databases");
-            Configuration.LoadConfiguration();
             connection.CreateTable<SQL.UserStats>();
             connection.CreateTable<SQL.CustomUserCommands>();
             connection.CreateTable<SQL.Tag>();

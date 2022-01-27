@@ -32,8 +32,12 @@ namespace fs24bot3
         public int Tickrate = 15000;
         private const int MESSAGE_LENGTH = 450;
 
+        public string Name { get; private set; }
+
         public Bot()
         {
+            Name = Configuration.Name;
+
             Service.AddModule<GenericCommandsModule>();
             Service.AddModule<SystemCommandModule>();
             Service.AddModule<InventoryCommandsModule>();
@@ -70,6 +74,12 @@ namespace fs24bot3
                     }
                 }
             }).Start();
+        }
+
+        public async void SetupNick(string nickname)
+        {
+            await BotClient.SendRaw("NICK " + nickname);
+            Name = nickname;
         }
 
         public void Reconnect()

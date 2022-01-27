@@ -26,6 +26,7 @@ namespace fs24bot3
             }
 
             Log.Information("fs24_bot 3 by 140bpmdubstep");
+            Configuration.LoadConfiguration();
 
             Botara = new Bot();
 
@@ -98,7 +99,7 @@ namespace fs24bot3
 
             if (message.NumericReply == IRCNumericReply.ERR_NICKNAMEINUSE)
             {
-                await Botara.BotClient.SendRaw("NICK " + Configuration.Name + new Random().Next(int.MinValue, int.MaxValue));
+                Botara.SetupNick(Botara.Name + new Random().Next(int.MinValue, int.MaxValue));
             }
 
             if (message.NumericReply == IRCNumericReply.ERR_PASSWDMISMATCH)
@@ -108,7 +109,7 @@ namespace fs24bot3
 
             if (message.IRCCommand == IRCCommand.KICK)
             {
-                if (message.Parameters[1] == Configuration.Name)
+                if (message.Parameters[1] == Botara.Name)
                 {
                     Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
                     await client.SendRaw("JOIN " + message.Parameters[0]);

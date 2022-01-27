@@ -189,7 +189,7 @@ namespace fs24bot3.Commands
 
             if (totalblocks > 0)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{url}{IrcClrs.Reset}: заблокировано {IrcClrs.Green}{totalblocks}{IrcClrs.Reset} айпишников из {IrcClrs.Red}{totalips}{IrcClrs.Reset}!!! " +
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{url}{IrcClrs.Reset}: заблокировано {IrcClrs.Red}{totalblocks}{IrcClrs.Reset} айпишников из {IrcClrs.Green}{totalips}{IrcClrs.Reset}!!! " +
                     $"Подробнее: https://isitblockedinrussia.com/?host={url}");
             }
             else

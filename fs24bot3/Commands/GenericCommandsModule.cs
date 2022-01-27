@@ -220,7 +220,7 @@ namespace fs24bot3.Commands
 
         [Command("midi")]
         [Description("Миди ноты")]
-        public async Task Midi(string note, int oct = 4)
+        public async Task Midi(string note = "a", int oct = 4)
         {
             string[] noteString = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
