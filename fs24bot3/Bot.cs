@@ -11,6 +11,7 @@ using SQLite;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -137,15 +138,14 @@ namespace fs24bot3
 
         public async Task SendMessage(string channel, string message)
         {
-            List<string> msgLines = message.Split("\n").ToList();
+            List<string> msgLines = message.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
             int count = 0;
 
             foreach (string outputstr in msgLines)
             {
                 foreach (var msg in MessageHelper.GetByteSections(Encoding.UTF8.GetBytes(outputstr), MESSAGE_LENGTH))
                 {
-                    var finalMsg = Encoding.UTF8.GetString(msg);
-                    if (!string.IsNullOrWhiteSpace(Encoding.UTF8.GetString(msg)))
+                    if (!string.IsNullOrWhiteSpace(outputstr))
                     {
                         await BotClient.SendAsync(new PrivMsgMessage(channel, Encoding.UTF8.GetString(msg)));
                         count++;
@@ -153,7 +153,7 @@ namespace fs24bot3
 
                     if (count > 4)
                     {
-                        string link = await new HttpTools().UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
+                        string link = await new HttpTools().UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");  
                         await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
                         return;
                     }
