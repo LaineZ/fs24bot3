@@ -59,10 +59,13 @@ namespace fs24bot3.Core
 
         public async static Task<string> TranslatePpc(string text, string targetLang = "ru")
         {
-            string[] translations = { "en", "pl", "pt", "ja", "de", targetLang };
-            string translated = text;
+            string[] translations = { "en", "pl", "pt", "ja", "de", "ru" };
+            Random random = new Random();
+            var translationsShuffled = translations.OrderBy(x => random.Next()).ToList();
+            translationsShuffled.Add(targetLang);
+            string translated = string.Join(" ", text.Split(" ").OrderBy(x => random.Next()).ToList());
 
-            foreach (var tr in translations)
+            foreach (var tr in translationsShuffled)
             {
                 try
                 {

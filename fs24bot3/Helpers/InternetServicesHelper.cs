@@ -21,6 +21,7 @@ namespace fs24bot3.Helpers
 
             List<string> pearls = new List<string>();
             Log.Verbose("Page: {0}", page);
+
             if (divContainer != null && nodes != null)
             {
                 foreach (HtmlNode node in nodes)
