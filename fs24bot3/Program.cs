@@ -81,8 +81,16 @@ namespace fs24bot3
                     case OverloadsFailedResult:
                         await Botara.SendMessage(target, "Команда выключена...");
                         break;
-                    case CommandNotFoundResult:
-                        Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd());
+                    case CommandNotFoundResult cmd:
+                        if (!Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd()))
+                        {
+                            string cmdName = message.Trailing.Split(" ")[0].Replace("@", "");
+                            var cmds = Botara.CommandSuggestion(cmdName);
+                            if (!string.IsNullOrWhiteSpace(cmds))
+                            {
+                                await Botara.SendMessage(target, $"Команда {IrcClrs.Bold}@{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
+                            }
+                        }
                         break;
                     case CommandExecutionFailedResult err:
                         await Botara.SendMessage(target, $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");

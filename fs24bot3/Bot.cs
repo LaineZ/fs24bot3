@@ -89,6 +89,24 @@ namespace fs24bot3
             BotClient = new Client(new User(Configuration.Name, "Sopli IRC 3.0"), new TcpClientConnection());
         }
 
+        public string CommandSuggestion(string command)
+        {
+            var totalCommands = new List<string>();
+
+
+            foreach (var cmd in Service.GetAllCommands())
+            {
+                totalCommands.AddRange(cmd.Aliases.Select(x => "@" + x));
+            } 
+
+            foreach (var cmd in Connection.Table<SQL.CustomUserCommands>())
+            {
+                totalCommands.Add(cmd.Command);
+            }
+
+            return string.Join(" ", totalCommands.SkipWhile(x => MessageHelper.LevenshteinDistance(command, x) >= 10).OrderBy(i => MessageHelper.LevenshteinDistance(command, i)).Take(5));
+        }
+
         public void ProccessInfinite()
         {
             // start shop
