@@ -22,10 +22,11 @@ namespace fs24bot3.Core
 
         public bool ProcessCmd(string senderNick, string channel, string message)
         {
-            if (message.StartsWith("@"))
+            if (message.StartsWith(ConfigurationProvider.Config.Prefix))
             {
                 var argsArray = message.Split(" ").ToList();
-                string cmdname = argsArray[0];
+                // remove command prefix
+                string cmdname = argsArray[0][1..];
                 //Log.Verbose("Issused command: {0}", cmdname);
                 var cmd = Context.Connection.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == cmdname);
 

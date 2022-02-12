@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using fs24bot3.Core;
 using fs24bot3.Models;
 
 namespace fs24bot3.ItemTraits
@@ -21,10 +22,10 @@ namespace fs24bot3.ItemTraits
             Rarity = rarity;
             DrunkLevel = drunk;
         }
-        public async Task<bool> OnUseMyself(Bot botCtx, string channel, Core.User user)
+        public async Task<bool> OnUseMyself(Bot botCtx, string channel, User user)
         {
             var rand = new Random();
-            var sms = botCtx.MessageBus.Where(x => x.Prefix.From == user.Username && !x.Trailing.StartsWith("@")).OrderBy(s => rand.Next(0, 2) == 1);
+            var sms = botCtx.MessageBus.Where(x => x.Prefix.From == user.Username && !x.Trailing.StartsWith(ConfigurationProvider.Config.Prefix)).OrderBy(s => rand.Next(0, 2) == 1);
 
             if (sms.Any())
             {

@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using fs24bot3.Core;
+using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -107,13 +108,13 @@ namespace fs24bot3
                 HttpClient client = new HttpClient();
                 HttpContent c = new StringContent(data, Encoding.UTF8);
 
-                var response = await client.PostAsync(Configuration.TrashbinUrl + "/" + route, c);
+                var response = await client.PostAsync(ConfigurationProvider.Config.TrashbinUrl + "/" + route, c);
 
                 var responseString = await response.Content.ReadAsStringAsync();
 
                 if (int.TryParse(responseString, out _))
                 {
-                    return Configuration.TrashbinUrl + "/" + responseString;
+                    return ConfigurationProvider.Config.TrashbinUrl + "/" + responseString;
                 }
                 else
                 {
@@ -122,7 +123,7 @@ namespace fs24bot3
             }
             catch (Exception)
             {
-                return "Сервер недоступен for some reason: " + Configuration.TrashbinUrl;
+                return "Сервер недоступен for some reason: " + ConfigurationProvider.Config.TrashbinUrl;
             }
         }
 

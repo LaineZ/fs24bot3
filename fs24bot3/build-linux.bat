@@ -3,12 +3,12 @@ mkdir releases
 rmdir /S /Q bin\Release
 rmdir /S /Q releases\linux-x64-bundle
 
-dotnet publish -c Release -p:Platform="x64" -r linux-x64
+dotnet publish -c Release -p:Platform="x64" -r linux-x64 /p:PublishSingleFile=true
 
 mkdir releases\linux-x64-bundle
 
 copy static releases\linux-x64-bundle
-copy bin\Release\net5.0\linux-x64\publish releases\linux-x64-bundle
+copy bin\x64\Release\net5.0\linux-x64\publish releases\linux-x64-bundle
 
 del releases\linux-x64-bundle.zip
 

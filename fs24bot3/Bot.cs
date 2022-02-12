@@ -1,5 +1,6 @@
 ﻿using fs24bot3.BotSystems;
 using fs24bot3.Commands;
+using fs24bot3.Core;
 using fs24bot3.Helpers;
 using fs24bot3.Models;
 using NetIRC;
@@ -12,10 +13,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Tomlyn;
 
 namespace fs24bot3
 {
@@ -24,21 +27,18 @@ namespace fs24bot3
 
         public SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
         public List<ParsedIRCMessage> MessageBus = new List<ParsedIRCMessage>();
-        public Core.CustomCommandProcessor CustomCommandProcessor;
+        public CustomCommandProcessor CustomCommandProcessor;
         public readonly CommandService Service = new CommandService();
         public Client BotClient { get; private set; }
-        public Shop Shop;
-        public Songame SongGame;
+        public Shop Shop { get; set; }
+        public Songame SongGame { get; set; }
 
         public int Tickrate = 15000;
-        private const int MESSAGE_LENGTH = 450;
 
         public string Name { get; private set; }
 
         public Bot()
         {
-            Name = Configuration.Name;
-
             Service.AddModule<GenericCommandsModule>();
             Service.AddModule<SystemCommandModule>();
             Service.AddModule<InventoryCommandsModule>();
@@ -50,9 +50,9 @@ namespace fs24bot3
             Service.AddModule<TranslateCommandModule>();
             Service.AddModule<FishCommandsModule>();
 
-            Core.Database.InitDatabase(Connection);
-            BotClient = new Client(new User(Configuration.Name, "Sopli IRC 3.0"), new TcpClientConnection());
-            CustomCommandProcessor = new Core.CustomCommandProcessor(this);
+            Database.InitDatabase(Connection);
+            BotClient = new Client(new NetIRC.User(ConfigurationProvider.Config.Name, "Sopli IRC 3.0"), new TcpClientConnection(ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port));
+            CustomCommandProcessor = new CustomCommandProcessor(this);
 
             new Thread(async () =>
             {
@@ -68,7 +68,7 @@ namespace fs24bot3
                         dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
                         if (dtDateTime <= DateTime.Now)
                         {
-                            string ch = item.Channel ?? Configuration.Channel;
+                            string ch = item.Channel ?? ConfigurationProvider.Config.Channel;
                             await SendMessage(ch, $"{item.Nick}: {item.Message}!");
                             Connection.Delete(item);
                         }
@@ -83,12 +83,6 @@ namespace fs24bot3
             Name = nickname;
         }
 
-        public void Reconnect()
-        {
-            BotClient.Dispose();
-            BotClient = new Client(new User(Configuration.Name, "Sopli IRC 3.0"), new TcpClientConnection());
-        }
-
         public string CommandSuggestion(string command)
         {
             var totalCommands = new List<string>();
@@ -96,7 +90,7 @@ namespace fs24bot3
 
             foreach (var cmd in Service.GetAllCommands())
             {
-                totalCommands.AddRange(cmd.Aliases.Select(x => "@" + x));
+                totalCommands.AddRange(cmd.Aliases.Select(x => ConfigurationProvider.Config.Prefix + x));
             } 
 
             foreach (var cmd in Connection.Table<SQL.CustomUserCommands>())
@@ -161,20 +155,14 @@ namespace fs24bot3
 
             foreach (string outputstr in msgLines)
             {
-                foreach (var msg in MessageHelper.GetByteSections(Encoding.UTF8.GetBytes(outputstr), MESSAGE_LENGTH))
-                {
-                    if (!string.IsNullOrWhiteSpace(outputstr))
-                    {
-                        await BotClient.SendAsync(new PrivMsgMessage(channel, Encoding.UTF8.GetString(msg)));
-                        count++;
-                    }
+                await BotClient.SendAsync(new PrivMsgMessage(channel, outputstr));
+                count++;
 
-                    if (count > 4)
-                    {
-                        string link = await new HttpTools().UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");  
-                        await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
-                        return;
-                    }
+                if (count > 4)
+                {
+                    string link = await new HttpTools().UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
+                    await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
+                    return;
                 }
             }
         }

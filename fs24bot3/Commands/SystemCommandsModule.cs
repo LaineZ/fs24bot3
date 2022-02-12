@@ -33,6 +33,14 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
 
+        [Command("fixcommand")]
+        [Checks.CheckAdmin]
+        public async Task FixCommands()
+        {
+            Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Command = REPLACE(Command, '@', '')");
+            await Context.SendMessage(Context.Channel, "Команды починены");
+        }
+
         [Command("toggleppc")]
         [Checks.CheckAdmin]
         public async Task TooglePpc()
@@ -47,13 +55,6 @@ namespace fs24bot3.Commands
         public void Exit()
         {
             Environment.Exit(0);
-        }
-
-        [Command("reconnect", "reco")]
-        [Checks.CheckAdmin]
-        public void Reconnect()
-        {
-            Context.BotCtx.Reconnect();
         }
 
         [Command("gc")]
@@ -78,6 +79,15 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Вы выдали себе все предметы!");
         }
 
+        [Command("loggerlevel")]
+        [Checks.CheckAdmin]
+        public async Task LoggerLevel(string level = "Verbose")
+        {
+            Enum.TryParse(level, out LogEventLevel lvlToSet);
+            ConfigurationProvider.LoggerSw.MinimumLevel = lvlToSet;
+            await Context.SendMessage(Context.Channel, $"Установлен уровень лога `{level}`");
+        }
+
         [Command("updconfig")]
         [Checks.CheckAdmin]
         [Description("Обновление файла конфигурации")]
@@ -85,7 +95,7 @@ namespace fs24bot3.Commands
         {
             try
             {
-                Configuration.LoadConfiguration();
+                ConfigurationProvider.LoadConfiguration();
                 await Context.SendMessage(Context.Channel, "Конфигурация успешно загружена");
             }
             catch (Exception e)
@@ -154,7 +164,7 @@ namespace fs24bot3.Commands
 
 
         [Command("command", "cmd")]
-        [Description("Управление копоандами, параметр `command` вводить без @")]
+        [Description("Управление копоандами, параметр `command` вводить без")]
         [Checks.CheckAdmin]
         public async Task CommandMgmt(CommandToggles.Switch action, string command)
         {
@@ -162,7 +172,7 @@ namespace fs24bot3.Commands
 
             if (cmdHandle == null)
             {
-                Context.SendErrorMessage(Context.Channel, $"Команда @{command} не найдена!");
+                Context.SendErrorMessage(Context.Channel, $"Команда {ConfigurationProvider.Config.Prefix}{command} не найдена!");
                 return;
             }
 
@@ -230,15 +240,6 @@ namespace fs24bot3.Commands
         {
             Context.BotCtx.Tickrate = speed;
             await Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Context.BotCtx.Tickrate);
-        }
-
-        [Command("loggerlevel")]
-        [Checks.CheckAdmin]
-        public async Task LoggerLevel(string level = "Verbose")
-        {
-            Enum.TryParse(level, out LogEventLevel lvlToSet);
-            Configuration.LoggerSw.MinimumLevel = lvlToSet;
-            await Context.SendMessage(Context.Channel, $"Установлен уровень лога `{level}`");
         }
 
         [Command("sqlt")]

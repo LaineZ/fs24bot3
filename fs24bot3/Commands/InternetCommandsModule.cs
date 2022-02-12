@@ -31,8 +31,8 @@ namespace fs24bot3.Commands
         {
             APIExec.Input codeData = new APIExec.Input
             {
-                clientId = Configuration.JdoodleClientID,
-                clientSecret = Configuration.JdoodleClientSecret,
+                clientId = ConfigurationProvider.Config.JdoodleClientID,
+                clientSecret = ConfigurationProvider.Config.JdoodleClientSecret,
                 language = lang,
                 script = code
             };
@@ -61,7 +61,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("executeurl", "execurl")]
-        [Description("Тоже самое что и @exec только работает через URL")]
+        [Description("Тоже самое что и exec только работает через URL")]
         public async Task ExecuteAPIUrl(string code, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
@@ -232,7 +232,7 @@ namespace fs24bot3.Commands
         [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Не является поисковой системой.")]
         public async Task Wolfram([Remainder] string query)
         {
-            WolframAlphaClient client = new WolframAlphaClient(Configuration.WolframID);
+            WolframAlphaClient client = new WolframAlphaClient(ConfigurationProvider.Config.WolframID);
             var results = await client.QueryAsync(query);
 
             if (results.IsError)

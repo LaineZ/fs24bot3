@@ -27,7 +27,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("inv", "inventory")]
-        [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд @buy/@sell/@transfer и других")]
+        [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд buy/sell/transfer и других")]
         public async Task Userstat(bool useSlugs = false)
         {
             var userop = new User(Context.Sender, Context.BotCtx.Connection);
@@ -45,7 +45,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? @help -> @helpcmd buy");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? {ConfigurationProvider.Config.Prefix}help -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
             }
         }
 

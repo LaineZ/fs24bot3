@@ -43,14 +43,14 @@ namespace fs24bot3.Commands
             var cmds = Service.GetAllCommands();
             string commandsOutput = File.ReadAllText("static/help.html"); ;
             var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
-            string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>@{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
-            string customList = string.Join('\n', string.Join("\n", customCommands.Select(x => $"<p>{x.Command}</p>")));
+            string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>{ConfigurationProvider.Config.Prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
+            string customList = string.Join('\n', string.Join("\n", customCommands.Select(x => $"<p>{ConfigurationProvider.Config.Prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {x.IsLua == 1} </p>")));
 
             commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
             commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
             
             string link = await http.UploadToTrashbin(commandsOutput);
-            await Context.SendMessage(Context.Channel, "Выложены команды по этой ссылке: " + link + " также вы можете написать @helpcmd имякоманды для получение дополнительной помощи");
+            await Context.SendMessage(Context.Channel, $"Выложены команды по этой ссылке: {link} также вы можете написать {ConfigurationProvider.Config.Prefix}helpcmd имякоманды для получение дополнительной помощи");
         }
 
         [Command("helpcmd")]
@@ -61,16 +61,18 @@ namespace fs24bot3.Commands
             {
                 if (cmd.Aliases.Contains(command))
                 {
-                    await Context.SendMessage(Context.Channel, "@" + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
+                    await Context.SendMessage(Context.Channel, ConfigurationProvider.Config.Prefix + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                     if (cmd.Remarks != null)
                     {
                         await Context.SendMessage(Context.Channel, IrcClrs.Bold + cmd.Remarks);
                     }
 
                     await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}Алиасы: {IrcClrs.Reset}{String.Join(", ", cmd.Aliases)}");
-                    break;
+                    return;
                 }
             }
+
+            Context.SendSadMessage(Context.Channel, $"К сожалению команда не найдена, если вы пытаетесь найти кастом команду: используйте {ConfigurationProvider.Config.Prefix}cmdinfo");
         }
 
         [Command("remind", "in")]
@@ -150,7 +152,7 @@ namespace fs24bot3.Commands
 
             if (Context.BotCtx.SongGame.SongameString.Length <= 0)
             {
-                Context.SendErrorMessage(Context.Channel, "Не удалось найти нормальную строку песни... Может попробуем поискать что-нибудь с помощью @lyrics?");
+                Context.SendErrorMessage(Context.Channel, $"Не удалось найти нормальную строку песни... Может попробуем поискать что-нибудь с помощью {ConfigurationProvider.Config.Prefix}lyrics?");
                 return;
             }
 
@@ -328,10 +330,7 @@ namespace fs24bot3.Commands
         {
             List<SQL.Tag> tags = new List<SQL.Tag>();
             var query = Context.BotCtx.Connection.Table<SQL.Tag>();
-            foreach (var tag in query)
-            {
-                tags.Add(tag);
-            }
+            foreach (var tag in query) { tags.Add(tag); }
             await Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcClrs.Reset}")));
         }
 

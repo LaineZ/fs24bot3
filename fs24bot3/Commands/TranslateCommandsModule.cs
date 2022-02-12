@@ -72,7 +72,7 @@ namespace fs24bot3.Commands
             }
             catch (ArgumentException)
             {
-                Context.SendSadMessage(Context.Channel, "Вы указали неверный язык при переводе. Используйте @helpcmd tr чтобы узнать как пользоваться командой!");
+                Context.SendSadMessage(Context.Channel, $"Вы указали неверный язык при переводе. Используйте {ConfigurationProvider.Config.Prefix}helpcmd tr чтобы узнать как пользоваться командой!");
             }
         }
 
@@ -136,7 +136,7 @@ namespace fs24bot3.Commands
 
         [Command("trppclite", "trl")]
         [Checks.UnPpcable]
-        [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в @tr")]
+        [Description("Переводчик (ппц lite). Параметр lang вводится так же как и в tr")]
         public async Task TranslatePpc2(string lang, [Remainder] string text)
         {
 
