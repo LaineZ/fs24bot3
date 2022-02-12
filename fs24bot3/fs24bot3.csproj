@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="Genbox.WolframAlpha" Version="3.0.0-alpha1" />
-    <PackageReference Include="Gitea.API" Version="1.0.20" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.40" />
     <PackageReference Include="MCQuery" Version="2020.5.21.133155" />
     <PackageReference Include="NetIRC" Version="1.1.2-preview.2" />

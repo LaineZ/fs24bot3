@@ -79,17 +79,19 @@ namespace fs24bot3
                     case ArgumentParseFailedResult err:
                         var parserResult = err.ParserResult as DefaultArgumentParserResult;
 
-                        if (parserResult.Failure == DefaultArgumentParserFailure.TooManyArguments)
+                        switch (parserResult.Failure)
                         {
-                            await Botara.SendMessage(target, $"Перегрузка парсера: Слишком много аргрументов!!!");
+                            case DefaultArgumentParserFailure.NoWhitespaceBetweenArguments:
+                                await Botara.SendMessage(target, $"Нет пробелов между аргументами!");
+                                break;
+                            case DefaultArgumentParserFailure.TooManyArguments:
+                                await Botara.SendMessage(target, $"Перегрузка парсера: Слишком много аргрументов!!!");
+                                break;
+                            default:
+                                await Botara.SendMessage(target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
+                                break;
                         }
-
-                        if (parserResult.Failure == DefaultArgumentParserFailure.NoWhitespaceBetweenArguments)
-                        {
-                            await Botara.SendMessage(target, $"Нет пробелов между аргументами!");
-                        }
-
-                        await Botara.SendMessage(target, $"Ошибка парсера: `{err.ParserResult}`");
+                        
                         break;
                     case OverloadsFailedResult:
                         await Botara.SendMessage(target, "Команда выключена...");
