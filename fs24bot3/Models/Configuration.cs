@@ -39,7 +39,7 @@ namespace fs24bot3.Models
 
         public Configuration()
         {
-            Name = "fs24bot3";
+            Name = "fs24bot";
             Network = "irc.esper.net";
             Channel = "#fl-studio";
             Port = 6667;

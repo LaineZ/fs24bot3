@@ -13,7 +13,7 @@ namespace fs24bot3.Core
 {
     public static class ConfigurationProvider
     {
-        public static Configuration Config = new Configuration();
+        public static Configuration Config;
 
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
 
@@ -21,11 +21,20 @@ namespace fs24bot3.Core
         {
             if (File.Exists("settings.toml"))
             {
-                Config = Toml.ToModel<Configuration>(File.ReadAllText("settings.toml"));
-                Log.Information("Configuration loaded!");
+                var loadedconfig = Toml.ToModel<Configuration>(File.ReadAllText("settings.toml"));
+                if (loadedconfig != null)
+                {
+                    Config = loadedconfig;
+                    Log.Information("Configuration loaded!");
+                }
+                else
+                {
+                    Log.Error("Configuration loading error!");
+                }
             }
             else
             {
+                Config = new Configuration();
                 Log.Warning("Unable to find configuration file, creating new");
                 File.WriteAllText("settings.toml", Toml.FromModel(Config));
             }

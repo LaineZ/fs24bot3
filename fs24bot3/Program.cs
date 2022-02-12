@@ -16,8 +16,6 @@ namespace fs24bot3
 
         static void Main()
         {
-            Botara = new Bot();
-
             Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .MinimumLevel.Verbose()
@@ -30,6 +28,8 @@ namespace fs24bot3
 
             Log.Information("fs24_bot 3 by 140bpmdubstep");
             ConfigurationProvider.LoadConfiguration();
+
+            Botara = new Bot();
 
             Botara.BotClient.RawDataReceived += Client_OnRawDataReceived;
             Botara.BotClient.IRCMessageParsed += Client_OnIRCMessageParsed;
