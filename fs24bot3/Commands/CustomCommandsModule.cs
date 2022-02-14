@@ -42,7 +42,7 @@ namespace fs24bot3.Commands
                 catch (SQLiteException)
                 {
                     usr.AddItemToInv(Context.BotCtx.Shop, "money", 8000);
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте {ConfigurationProvider.Config.Prefix}cmdout");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте {Context.User.GetUserPrefix()}cmdout");
                 }
             }
             else
@@ -168,7 +168,7 @@ namespace fs24bot3.Commands
                 await Context.SendMessage(Context.Channel, IrcClrs.Blue + $"Команда {query.Command} Создал: `{query.Nick}` Размер вывода: {query.Output.Length} символов, строк - {query.Output.Split("||").Length} Lua: {query.IsLua}");
                 if (query.Nick.Length <= 0)
                 {
-                    await Context.SendMessage(Context.Channel, $"Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте {ConfigurationProvider.Config.Prefix}cmdown чтобы изменить владельца команды!");
+                    await Context.SendMessage(Context.Channel, $"Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте {Context.User.GetUserPrefix()}cmdown чтобы изменить владельца команды!");
                 }
                 if (query.IsLua == 1)
                 {

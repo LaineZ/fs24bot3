@@ -51,6 +51,21 @@ namespace fs24bot3.Core
             }
         }
 
+        public string GetUserPrefix()
+        {
+            var userInfo = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).FirstOrDefault();
+            if (userInfo != null && !string.IsNullOrEmpty(userInfo.Prefix) && !string.IsNullOrWhiteSpace(userInfo.Prefix))
+            {
+                return userInfo.Prefix;
+            }
+            return ConfigurationProvider.Config.Prefix;
+        }
+
+        public void SetUserPrefix(string prefix = "#")
+        {
+            Connect.Execute("UPDATE UserStats SET Prefix = ? WHERE Nick = ?", prefix, Username);
+        }
+
         public void RemoveUserAccount()
         {
             Connect.Execute("DELETE FROM UserStats WHERE Nick = ?", Username);

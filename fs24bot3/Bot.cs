@@ -83,14 +83,14 @@ namespace fs24bot3
             Name = nickname;
         }
 
-        public string CommandSuggestion(string command)
+        public string CommandSuggestion(string prefix, string command)
         {
             var totalCommands = new List<string>();
 
 
             foreach (var cmd in Service.GetAllCommands())
             {
-                totalCommands.AddRange(cmd.Aliases.Select(x => ConfigurationProvider.Config.Prefix + x));
+                totalCommands.AddRange(cmd.Aliases.Select(x => prefix + x));
             } 
 
             foreach (var cmd in Connection.Table<SQL.CustomUserCommands>())
@@ -98,7 +98,10 @@ namespace fs24bot3
                 totalCommands.Add(cmd.Command);
             }
 
-            return string.Join(" ", totalCommands.SkipWhile(x => MessageHelper.LevenshteinDistance(command, x) >= 10).OrderBy(i => MessageHelper.LevenshteinDistance(command, i)).Take(5));
+            return string.Join(" ", totalCommands.SkipWhile(x => MessageHelper.LevenshteinDistance(command, x) >= 10)
+                .OrderBy(i => MessageHelper.LevenshteinDistance(command, i))
+                .Take(5)
+                .Select(x => prefix + x));
         }
 
         public void ProccessInfinite()

@@ -72,7 +72,7 @@ namespace fs24bot3.Commands
             }
             catch (ArgumentException)
             {
-                Context.SendSadMessage(Context.Channel, $"Вы указали неверный язык при переводе. Используйте {ConfigurationProvider.Config.Prefix}helpcmd tr чтобы узнать как пользоваться командой!");
+                Context.SendSadMessage(Context.Channel, $"Вы указали неверный язык при переводе. Используйте {Context.User.GetUserPrefix()}helpcmd tr чтобы узнать как пользоваться командой!");
             }
         }
 
@@ -81,8 +81,7 @@ namespace fs24bot3.Commands
         [Description("Переводчик (ппц)")]
         public async Task TranslatePpc([Remainder] string text)
         {
-            var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
-            if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
+            if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
             {
                 try
                 {

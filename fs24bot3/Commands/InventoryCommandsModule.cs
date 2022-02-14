@@ -30,8 +30,7 @@ namespace fs24bot3.Commands
         [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд buy/sell/transfer и других")]
         public async Task Userstat(bool useSlugs = false)
         {
-            var userop = new User(Context.Sender, Context.BotCtx.Connection);
-            var userInv = userop.GetInventory();
+            var userInv = Context.User.GetInventory();
             if (userInv.Count > 0)
             {
                 if (!useSlugs)
@@ -45,7 +44,7 @@ namespace fs24bot3.Commands
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? {ConfigurationProvider.Config.Prefix}help -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? {Context.User.GetUserPrefix()}shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
             }
         }
 
@@ -55,9 +54,7 @@ namespace fs24bot3.Commands
         {
             int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
             string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
-
-            User user = new User(Context.Sender, Context.BotCtx.Connection);
-            var (success, price) = await Context.BotCtx.Shop.Buy(user, itemname, count);
+            var (success, price) = await Context.BotCtx.Shop.Buy(Context.User, itemname, count);
 
             if (success)
             {
@@ -76,9 +73,7 @@ namespace fs24bot3.Commands
             int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
             string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
 
-            User user = new User(Context.Sender, Context.BotCtx.Connection);
-
-            var (success, price) = await Context.BotCtx.Shop.Sell(user, itemname, count);
+            var (success, price) = await Context.BotCtx.Shop.Sell(Context.User, itemname, count);
 
             if (success)
             {
@@ -101,13 +96,12 @@ namespace fs24bot3.Commands
         [Description("Продать весь товар")]
         public async Task SellAll()
         {
-            User user = new User(Context.Sender, Context.BotCtx.Connection);
-            var inv = user.GetInventory();
+            var inv = Context.User.GetInventory();
             int totalPrice = 0;
 
             foreach (var item in inv)
             {
-                var (selled, sellprice) = await Context.BotCtx.Shop.Sell(user, item.Item, item.ItemCount);
+                var (selled, sellprice) = await Context.BotCtx.Shop.Sell(Context.User, item.Item, item.ItemCount);
                 if (selled)
                 {
                     totalPrice += sellprice;
@@ -123,11 +117,9 @@ namespace fs24bot3.Commands
         {
             int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
             string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
-
-            User user = new User(Context.Sender, Context.BotCtx.Connection);
             User destanation = new User(destanationNick, Context.BotCtx.Connection);
 
-            if (await user.RemItemFromInv(Context.BotCtx.Shop, itemname, count))
+            if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, count))
             {
                 destanation.AddItemToInv(Context.BotCtx.Shop, itemname, count);
                 await Context.SendMessage(Context.Channel, $"Вы успешно передали {itemname} x{count} пользователю {destanationNick}");
@@ -197,18 +189,17 @@ namespace fs24bot3.Commands
         [Description("Использовать предмет")]
         public async Task Use(string itemname, string nick = null)
         {
-            User user = new User(Context.Sender, Context.BotCtx.Connection);
             bool delete = false;
-            if (user.CountItem(itemname) > 0)
+            if (Context.User.CountItem(itemname) > 0)
             {
                 if (nick != null && nick != Context.Sender)
                 {
                     User targetUser = new User(nick, Context.BotCtx.Connection);
-                    delete = await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, user, targetUser);
+                    delete = await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, Context.User, targetUser);
                 }
                 else
                 {
-                    delete = await Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, user);
+                    delete = await Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, Context.User);
                 }
             }
             else
@@ -218,7 +209,7 @@ namespace fs24bot3.Commands
 
             if (delete)
             {
-                await user.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
+                await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
                 await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
             }
         }

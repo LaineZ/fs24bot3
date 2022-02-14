@@ -20,9 +20,9 @@ namespace fs24bot3.Core
             Log.Information("Custom command processor enabled!");
         }
 
-        public bool ProcessCmd(string senderNick, string channel, string message)
+        public bool ProcessCmd(string prefix, string senderNick, string channel, string message)
         {
-            if (message.StartsWith(ConfigurationProvider.Config.Prefix))
+            if (message.StartsWith(prefix))
             {
                 var argsArray = message.Split(" ").ToList();
                 // remove command prefix

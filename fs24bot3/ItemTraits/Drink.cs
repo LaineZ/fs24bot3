@@ -25,7 +25,7 @@ namespace fs24bot3.ItemTraits
         public async Task<bool> OnUseMyself(Bot botCtx, string channel, User user)
         {
             var rand = new Random();
-            var sms = botCtx.MessageBus.Where(x => x.Prefix.From == user.Username && !x.Trailing.StartsWith(ConfigurationProvider.Config.Prefix)).OrderBy(s => rand.Next(0, 2) == 1);
+            var sms = botCtx.MessageBus.Where(x => x.Prefix.From == user.Username && !x.Trailing.StartsWith(user.GetUserPrefix())).OrderBy(s => rand.Next(0, 2) == 1);
 
             if (sms.Any())
             {

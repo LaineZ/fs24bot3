@@ -49,6 +49,8 @@ namespace fs24bot3
                 string nick = message.Prefix.From;
                 string target = message.Parameters[0];
 
+                var user = new Core.User(nick, Botara.Connection, null);
+
                 if (message.Parameters[0] == client.User.Nick)
                 {
                     target = message.Prefix.From;
@@ -56,10 +58,10 @@ namespace fs24bot3
 
                 Botara.MessageTrigger(nick, target, message);
 
-                if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd().TrimStart('p'), ConfigurationProvider.Config.Prefix, out string output))
+                if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd().TrimStart('p'), user.GetUserPrefix(), out string output))
                     return;
 
-                bool ppc = message.Trailing.StartsWith("p") && Core.Transalator.AlloPpc;
+                bool ppc = message.Trailing.StartsWith("p") && Transalator.AlloPpc;
                 var result = await Botara.Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, Botara, ppc));
 
                 if (!result.IsSuccessful && ppc)
@@ -74,7 +76,7 @@ namespace fs24bot3
                         await Botara.SendMessage(target, $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
                         break;
                     case TypeParseFailedResult err:
-                        await Botara.SendMessage(target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите @helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
+                        await Botara.SendMessage(target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите #helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
                         break;
                     case ArgumentParseFailedResult err:
                         var parserResult = err.ParserResult as DefaultArgumentParserResult;
@@ -85,7 +87,7 @@ namespace fs24bot3
                                 await Botara.SendMessage(target, $"Нет пробелов между аргументами!");
                                 break;
                             case DefaultArgumentParserFailure.TooManyArguments:
-                                await Botara.SendMessage(target, $"Перегрузка парсера: Слишком много аргрументов!!!");
+                                await Botara.SendMessage(target, $"Слишком много аргрументов!!!");
                                 break;
                             default:
                                 await Botara.SendMessage(target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
@@ -97,10 +99,10 @@ namespace fs24bot3
                         await Botara.SendMessage(target, "Команда выключена...");
                         break;
                     case CommandNotFoundResult cmd:
-                        if (!Botara.CustomCommandProcessor.ProcessCmd(nick, target, message.Trailing.TrimEnd()))
+                        if (!Botara.CustomCommandProcessor.ProcessCmd(user.GetUserPrefix(), nick, target, message.Trailing.TrimEnd()))
                         {
                             string cmdName = message.Trailing.Split(" ")[0].Replace(ConfigurationProvider.Config.Prefix, "");
-                            var cmds = Botara.CommandSuggestion(cmdName);
+                            var cmds = Botara.CommandSuggestion(user.GetUserPrefix(), cmdName);
                             if (!string.IsNullOrWhiteSpace(cmds))
                             {
                                 await Botara.SendMessage(target, $"Команда {IrcClrs.Bold}{ConfigurationProvider.Config.Prefix}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");

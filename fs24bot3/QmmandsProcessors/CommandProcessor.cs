@@ -18,6 +18,7 @@ namespace fs24bot3.QmmandsProcessors
             public Random Random { get; }
             public Bot BotCtx { get; }
             public bool PerformPpc = false;
+            public Core.User User { get; set; }
 
             // Pass your service provider to the base command context.
             public CustomCommandContext(string target, ParsedIRCMessage message, Bot bot, bool perfppc = false, IServiceProvider provider = null) : base(provider)
@@ -26,10 +27,10 @@ namespace fs24bot3.QmmandsProcessors
                 Channel = target;
                 Sender = message.Prefix.From;
                 Random = new Random();
+                User = new Core.User(Sender, bot.Connection, this);
                 if (perfppc)
                 {
-                    var usr = new Core.User(Sender, bot.Connection, this);
-                    PerformPpc = usr.RemItemFromInv(BotCtx.Shop, "beer", 1).Result;
+                    PerformPpc = User.RemItemFromInv(BotCtx.Shop, "beer", 1).Result;
                 }
             }
 

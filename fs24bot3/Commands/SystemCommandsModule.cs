@@ -172,7 +172,7 @@ namespace fs24bot3.Commands
 
             if (cmdHandle == null)
             {
-                Context.SendErrorMessage(Context.Channel, $"Команда {ConfigurationProvider.Config.Prefix}{command} не найдена!");
+                Context.SendErrorMessage(Context.Channel, $"Команда {Context.User.GetUserPrefix()}{command} не найдена!");
                 return;
             }
 
@@ -224,6 +224,14 @@ namespace fs24bot3.Commands
             string modi = string.Join(" ", Service.GetAllModules()
                 .Select(x => $"{(x.IsEnabled ? IrcClrs.Green : IrcClrs.Red)}{x.Name}{IrcClrs.Reset}({x.Commands.Count()})"));
             await Context.SendMessage(Context.Channel, modi);
+        }
+
+        [Command("setprefix", "prefix", "pfx")]
+        [Description("Устанавливает префикс, на который отвечает бот")]
+        public async Task Prefix(string prefix = "#")
+        {
+            Context.User.SetUserPrefix(prefix);
+            await Context.SendMessage(Context.Channel, $"{Context.Sender}: Вы установили себе префекс {prefix}! Теперь бот для вас будет отвечать на него!");
         }
 
         [Command("setcap")]
