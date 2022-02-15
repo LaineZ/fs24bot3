@@ -32,7 +32,7 @@ namespace fs24bot3.EventProcessors
                 }
                 else
                 {
-                    User.AddItemToInv(shop, "money", User.GetUserInfo().Level);
+                    User.AddItemToInv(shop, "money", User.GetUserInfo().Level / Rand.Next(1, 4));
                 }
             }
 

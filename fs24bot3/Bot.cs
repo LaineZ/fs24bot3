@@ -95,13 +95,12 @@ namespace fs24bot3
 
             foreach (var cmd in Connection.Table<SQL.CustomUserCommands>())
             {
-                totalCommands.Add(cmd.Command);
+                totalCommands.Add(prefix + cmd.Command);
             }
 
             return string.Join(" ", totalCommands.SkipWhile(x => MessageHelper.LevenshteinDistance(command, x) >= 10)
                 .OrderBy(i => MessageHelper.LevenshteinDistance(command, i))
-                .Take(5)
-                .Select(x => prefix + x));
+                .Take(5));
         }
 
         public void ProccessInfinite()
