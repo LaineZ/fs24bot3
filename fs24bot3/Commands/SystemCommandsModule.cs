@@ -231,7 +231,7 @@ namespace fs24bot3.Commands
         public async Task Prefix(string prefix = "#")
         {
             Context.User.SetUserPrefix(prefix);
-            await Context.SendMessage(Context.Channel, $"{Context.Sender}: Вы установили себе префекс {prefix}! Теперь бот для вас будет отвечать на него!");
+            await Context.SendMessage(Context.Channel, $"{Context.Sender}: Вы установили себе префикс {prefix}! Теперь бот для вас будет отвечать на него!");
         }
 
         [Command("setcap")]
