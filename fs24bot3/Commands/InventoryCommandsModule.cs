@@ -96,6 +96,7 @@ namespace fs24bot3.Commands
         [Description("Продать весь товар")]
         public async Task SellAll()
         {
+            Context.User.EnableSilentMode();
             var inv = Context.User.GetInventory();
             int totalPrice = 0;
 
@@ -115,6 +116,7 @@ namespace fs24bot3.Commands
         [Description("Передать вещи")]
         public async Task Transfer(string destanationNick, [Remainder] string itemnamecount)
         {
+            Context.User.EnableSilentMode();
             int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
             string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
             User destanation = new User(destanationNick, Context.BotCtx.Connection);

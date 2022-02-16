@@ -28,6 +28,12 @@ namespace fs24bot3.Core
             Ctx = ctx;
         }
 
+
+        public void EnableSilentMode()
+        {
+            Ctx = null;
+        }
+
         public void CreateAccountIfNotExist()
         {
             int query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).Count();
