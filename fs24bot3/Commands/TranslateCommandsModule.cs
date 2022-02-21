@@ -78,6 +78,7 @@ namespace fs24bot3.Commands
 
         [Command("trppc")]
         [Checks.UnPpcable]
+        [Checks.FullAccount]
         [Description("Переводчик (ппц)")]
         public async Task TranslatePpc([Remainder] string text)
         {
@@ -96,6 +97,7 @@ namespace fs24bot3.Commands
 
         [Command("trppcgen")]
         [Checks.UnPpcable]
+        [Checks.FullAccount]
         public async Task TranslatePpcGen(int gensArg, [Remainder] string text)
         {
             int gens = Math.Clamp(gensArg, 2, 8);
@@ -165,46 +167,9 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("dmlyrics", "dmlyr")]
-        [Checks.UnPpcable]
-        [Description("Текст песни (ппц)")]
-        public async Task LyricsPpc([Remainder] string song)
-        {
-            var data = song.Split(" - ");
-            if (data.Length > 0)
-            {
-                try
-                {
-                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.BotCtx.Connection);
-                    string translated = await lyrics.GetLyrics();
-                    var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
-
-                    if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
-                    {
-                        string[] translations = { "ru", "ar", "pl", "fr", "ja", "es", "ro", "de", "ru" };
-
-                        foreach (var tr in translations)
-                        {
-                            var translatorResponse = await Core.Transalator.TranslatePpc(translated, tr);
-                            translated = translatorResponse;
-                        }
-
-                        await Context.SendMessage(Context.Channel, translated);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Context.SendErrorMessage(Context.Channel, "Ошибка при получении слов: " + e.Message);
-                }
-            }
-            else
-            {
-                await Context.SendMessage(Context.Channel, "Instumental");
-            }
-        }
-
         [Command("trlyrics", "trlyr")]
         [Checks.UnPpcable]
+        [Checks.FullAccount]
         [Description("Текст песни (Перевод)")]
         public async Task LyricsTr(string lang, [Remainder] string song)
         {

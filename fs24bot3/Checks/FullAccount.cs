@@ -5,23 +5,23 @@ using System.Threading.Tasks;
 
 namespace fs24bot3.Checks
 {
-    public sealed class CheckAdmin : CheckAttribute
+    public sealed class FullAccount : CheckAttribute
     {
-        public CheckAdmin()
+        public FullAccount()
         { }
 
         public override ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
             var context = _ as CommandProcessor.CustomCommandContext;
 
-            return context.User.GetUserInfo().Admin == 2
+            return context.User.UserIsIgnored() && context.User != null
                 ? CheckResult.Successful
-                : CheckResult.Failed("Это команда только для админов!");
+                : CheckResult.Failed("Это команда требует аккаунт пользователя fs24_bot!");
         }
 
         public override string ToString()
         {
-            return "Права администратора";
+            return "Аккаунт пользователя";
         }
     }
 }

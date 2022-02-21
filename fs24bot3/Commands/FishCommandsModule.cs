@@ -16,6 +16,7 @@ namespace fs24bot3.Commands
         [Command("nest")]
         [Description("Установить место рыбалки - если параметр nestname пуст, напишет список мест")]
         [Remarks("RLF - требуемый размер лески F - количество рыбы")]
+        [Checks.FullAccount]
         public async Task SetNest(string nestname = "")
         {
             var user = new User(Context.Sender, Context.BotCtx.Connection, Context);

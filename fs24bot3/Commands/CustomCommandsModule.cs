@@ -54,6 +54,7 @@ namespace fs24bot3.Commands
         [Command("regcmd")]
         [Description("Регистрация команды (Параметр command вводится без префикса)")]
         [Remarks("Пользовательские команды позволяют добавлять вам собстенные команды которые будут выводить случайный текст с некоторыми шаблонами. Вывод команды можно разнообразить с помощью '||' - данный набор символов разделяют вывод команды, и при вводе пользователем команды будет выводить случайные фразы разделенные '||'\nЗаполнители (placeholders, patterns) - Позволяют динамически изменять вывод команды:\n#USERINPUT - Ввод пользователя после команды\n#USERNAME - Имя пользователя который вызвал команду\n#RNDNICK - рандомный ник в базе данных пользователей\n#RNG - генереатор случайных чисел")]
+        [Checks.FullAccount]
         public async Task CustomCmdRegister(string command, [Remainder] string output)
         {
             await CustomCmdRegisterpublic(command, false, output);
@@ -61,6 +62,7 @@ namespace fs24bot3.Commands
 
         [Command("regcmdlua", "regcmdl", "reglua")]
         [Description("Регистрация команды (Параметр command вводится без префикса). Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
+        [Checks.FullAccount]
         public async Task CustomCmdRegisterLua(string command, [Remainder] string code)
         {
             await CustomCmdRegisterpublic(command, true, code);
@@ -68,6 +70,7 @@ namespace fs24bot3.Commands
 
         [Command("regcmdurl", "regluaurl")]
         [Description("Регистрация команды (Параметр command вводится без префикса) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
+        [Checks.FullAccount]
         public async Task CustomCmdRegisterUrlAsync(string command, string rawurl)
         {
             var response = await http.GetResponseAsync(rawurl);
@@ -92,6 +95,7 @@ namespace fs24bot3.Commands
         [Command("cmdout")]
         [Description("Редактор строки вывода команды: параметр action: add, delete")]
         [Remarks("Параметр action отвечает за действие команды:\nadd - добавить вывод команды при этом параметр value отвечает за строку вывода\ndelete - удалить вывод команды, параметр value принимает как числовые значения вывода от 0-n, так и строку вывода которую небоходимо удалить (без ||)")]
+        [Checks.FullAccount]
         public async Task CustomCmdEdit(string command, CommandToggles.CommandEdit action, [Remainder] string value)
         {
             var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
@@ -197,6 +201,7 @@ namespace fs24bot3.Commands
         [Command("cmdrep")]
         [Description("Заменитель строки вывода команды (используете кавычки если замена с пробелом)")]
         [Remarks("Если параметр newstr не заполнен - происходит просто удаление oldstr из команды")]
+        [Checks.FullAccount]
         public async Task CustomCmdRepl(string command, string oldstr, string newstr = "")
         {
             var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
@@ -221,6 +226,7 @@ namespace fs24bot3.Commands
 
         [Command("cmdupd")]
         [Description("Полное обновление вывода команды")]
+        [Checks.FullAccount]
         public async Task LuaUpdCoommand(string command, [Remainder] string newstr)
         {
             var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
@@ -245,6 +251,7 @@ namespace fs24bot3.Commands
 
         [Command("delcmd")]
         [Description("Удалить команду")]
+        [Checks.FullAccount]
         public async Task CustomCmdRem(string command)
         {
             User usr = new User(Context.Sender, Context.BotCtx.Connection);
@@ -274,6 +281,7 @@ namespace fs24bot3.Commands
 
         [Command("dellrc", "deletelyrics", "removelyrics", "remlyr", "dellyr")]
         [Description("Удалить свои слова из базы бота: параметр song должен быть в формате `artist - trackname`")]
+        [Checks.FullAccount]
         public async Task CustomLyrRem([Remainder] string song)
         {
             var data = song.Split(" - ");

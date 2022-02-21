@@ -36,6 +36,8 @@ namespace fs24bot3.Models
         public string WolframID { get; set; }
         [DataMember(Name = "translate_key")]
         public string TranslateKey { get; set; }
+        [DataMember(Name = "bridge_nickname")]
+        public string BridgeNickname { get; set; }
 
         public Configuration()
         {
@@ -52,6 +54,7 @@ namespace fs24bot3.Models
             TrashbinUrl = "http://trashbin.140.ted.ge";
             WolframID = "0";
             TranslateKey = "0";
+            BridgeNickname = "cheburator";
         }
     }
 }

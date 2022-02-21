@@ -27,6 +27,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("inv", "inventory")]
+        [Checks.FullAccount]
         [Description("Инвентарь. Параметр useSlugs отвечает за показ id предмета для команд buy/sell/transfer и других")]
         public async Task Userstat(bool useSlugs = false)
         {
@@ -49,6 +50,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("buy")]
+        [Checks.FullAccount]
         [Description("Купить товар")]
         public async Task Buy([Remainder] string itemnamecount)
         {
@@ -67,6 +69,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("sell")]
+        [Checks.FullAccount]
         [Description("Продать товар")]
         public async Task Sell([Remainder] string itemnamecount)
         {
@@ -93,6 +96,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("sellall")]
+        [Checks.FullAccount]
         [Description("Продать весь товар")]
         public async Task SellAll()
         {
@@ -113,6 +117,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("transfer")]
+        [Checks.FullAccount]
         [Description("Передать вещи")]
         public async Task Transfer(string destanationNick, [Remainder] string itemnamecount)
         {
@@ -188,6 +193,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("use")]
+        [Checks.FullAccount]
         [Description("Использовать предмет")]
         public async Task Use(string itemname, string nick = null)
         {

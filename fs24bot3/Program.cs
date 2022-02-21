@@ -7,6 +7,7 @@ using Serilog;
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace fs24bot3
 {
@@ -50,18 +51,32 @@ namespace fs24bot3
                 string target = message.Parameters[0];
 
                 var user = new Core.User(nick, Botara.Connection, null);
+                var prefix = user.GetUserPrefix();
+                var messageString = message.Trailing.TrimEnd();
+
+                if (nick == ConfigurationProvider.Config.BridgeNickname || user.UserIsIgnored())
+                {
+                    // trim bridged user nickname like
+                    // <cheburator> //bpm140//: @ms привет
+                    var msg = messageString.Split(" ").ToList();
+                    msg.RemoveAt(0);
+                    messageString = string.Join(" ", msg);
+                    Log.Verbose("Message from the bridge: {0}", messageString);
+                }
+                else
+                {
+                    Botara.MessageTrigger(nick, target, message);
+                }
 
                 if (message.Parameters[0] == client.User.Nick)
                 {
                     target = message.Prefix.From;
                 }
 
-                Botara.MessageTrigger(nick, target, message);
-
-                if (!CommandUtilities.HasPrefix(message.Trailing.TrimEnd().TrimStart('p'), user.GetUserPrefix(), out string output))
+                if (!CommandUtilities.HasPrefix(messageString.TrimStart('p'), prefix, out string output))
                     return;
 
-                bool ppc = message.Trailing.StartsWith("p") && Transalator.AlloPpc;
+                bool ppc = messageString.StartsWith("p") && Transalator.AlloPpc;
                 var result = await Botara.Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, Botara, ppc));
 
                 if (!result.IsSuccessful && ppc)
@@ -99,10 +114,10 @@ namespace fs24bot3
                         await Botara.SendMessage(target, "Команда выключена...");
                         break;
                     case CommandNotFoundResult _:
-                        if (!Botara.CustomCommandProcessor.ProcessCmd(user.GetUserPrefix(), nick, target, message.Trailing.TrimEnd()))
+                        if (!Botara.CustomCommandProcessor.ProcessCmd(prefix, nick, target, messageString))
                         {
-                            string cmdName = message.Trailing.Split(" ")[0].Replace(ConfigurationProvider.Config.Prefix, "");
-                            var cmds = Botara.CommandSuggestion(user.GetUserPrefix(), cmdName);
+                            string cmdName = message.Trailing.Split(" ")[0];
+                            var cmds = Botara.CommandSuggestion(prefix, cmdName);
                             if (!string.IsNullOrWhiteSpace(cmds))
                             {
                                 await Botara.SendMessage(target, $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
