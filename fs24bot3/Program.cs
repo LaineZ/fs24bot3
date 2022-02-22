@@ -58,9 +58,9 @@ namespace fs24bot3
                 {
                     // trim bridged user nickname like
                     // <cheburator> //bpm140//: @ms привет
-                    var msg = messageString.Split(" ").ToList();
+                    var msg = messageString.Split(":").ToList();
                     msg.RemoveAt(0);
-                    messageString = string.Join(" ", msg);
+                    messageString = msg[0].TrimStart(' ');
                     Log.Verbose("Message from the bridge: {0}", messageString);
                 }
                 else
