@@ -14,9 +14,9 @@ namespace fs24bot3.Checks
         {
             var context = _ as CommandProcessor.CustomCommandContext;
 
-            return context.User.UserIsIgnored() && context.User != null
+            return !context.User.UserIsIgnored() && context.User != null
                 ? CheckResult.Successful
-                : CheckResult.Failed("Это команда требует аккаунт пользователя fs24_bot!");
+                : CheckResult.Failed("Эта команда требует аккаунт пользователя fs24_bot!");
         }
 
         public override string ToString()
