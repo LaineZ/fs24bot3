@@ -12,6 +12,7 @@ using fs24bot3.Core;
 using System.Globalization;
 using fs24bot3.BotSystems;
 using fs24bot3.Helpers;
+using fs24bot3.Properties;
 
 namespace fs24bot3.Commands
 {
@@ -43,7 +44,7 @@ namespace fs24bot3.Commands
 
             await Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
             var cmds = Service.GetAllCommands();
-            string commandsOutput = File.ReadAllText("static/help.html"); ;
+            string commandsOutput = Resources.help;
             var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
             string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>{prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
             string customList = string.Join('\n', string.Join("\n", customCommands.Select(x => $"<p>{prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {x.IsLua == 1} </p>")));

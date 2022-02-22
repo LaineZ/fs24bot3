@@ -1,5 +1,6 @@
 ﻿using fs24bot3.Core;
 using fs24bot3.Models;
+using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System.Collections.Generic;
@@ -17,27 +18,14 @@ namespace fs24bot3.Commands
         [Description("Статистика за час")]
         public async Task Hourstat()
         {
-            List<string> stopwords = new List<string>() { "что", "как", "все", "она", "так", "его", "только", "мне", 
-                "было", "вот", "меня", "еще", "нет", "ему", "теперь", "когда", "даже", "вдруг", 
-                "если", "уже", "или", "быть", "был", "него", "вас", "нибудь", "опять", "вам", 
-                "ведь", "там", "потом", "себя", "ничего", "может", "они", "тут", "где", 
-                "есть", "надо", "ней", "для", "мы", "тебя", "чем", "была", "сам", "чтоб", 
-                "без", "будто", "чего", "раз", "тоже", "себе", "под", "будет", "тогда", "кто", 
-                "этот", "это", "того", "потому", "этого", "какой", "совсем", "ним", "здесь", 
-                "этом", "один", "почти", "мой", "тем", "чтобы", "нее", "сейчас", "были", 
-                "куда", "зачем", "всех", "никогда", "можно", "при", "блин", "капец",
-                "наконец", "два", "другой", "хоть", "после", "the", "then",
-                "над", "больше", "тот", "через", "эти", "нас", "про", 
-                "всего", "них", "какая", "много", "разве", "три", "эту", "моя", 
-                "впрочем", "хорошо", "свою", "этой", "перед", "иногда", "лучше", "чуть", 
-                "том", "нельзя", "такой", "более", "всегда", "конечно", "всю" };
-
+            List<string> stopwords = Resources.stopwords.Split("\n").ToList();
             int messageCount = Context.BotCtx.MessageBus.Count;
             string mostActives = string.Join(" ", Context.BotCtx.MessageBus.GroupBy(msg => msg.Prefix.From).OrderByDescending(grp => grp.Count())
                         .Select(grp => grp.Key).Take(3));
             string concatedMessage = string.Join("\n", Context.BotCtx.MessageBus.Select(x => x.Trailing.TrimEnd()));
             string[] words = concatedMessage.Split(" ");
-            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 2 && !stopwords.Any(s => word.Equals(s))).GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(5).Select(grp => grp.Key));
+            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 2 && !stopwords.Any(s => word.Equals(s)))
+                .GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(5).Select(grp => grp.Key.Replace("\n", ""))); // idk why need replacing
             await Context.SendMessage(Context.Channel, $"Статистика за текущий час: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самые активные: {mostActives}, Возможные темы: {mostUsedwords}");
         }
 
