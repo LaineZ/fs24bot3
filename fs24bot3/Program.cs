@@ -59,8 +59,7 @@ namespace fs24bot3
                     // trim bridged user nickname like
                     // <cheburator> //bpm140//: @ms привет
                     var msg = messageString.Split(":").ToList();
-                    msg.RemoveAt(0);
-                    messageString = msg[0].TrimStart(' ');
+                    messageString = msg.Last().TrimStart(' ');
                     Log.Verbose("Message from the bridge: {0}", messageString);
                 }
                 else
@@ -116,7 +115,7 @@ namespace fs24bot3
                     case CommandNotFoundResult _:
                         if (!Botara.CustomCommandProcessor.ProcessCmd(prefix, nick, target, messageString))
                         {
-                            string cmdName = message.Trailing.Split(" ")[0];
+                            string cmdName = messageString.Split(" ")[0];
                             var cmds = Botara.CommandSuggestion(prefix, cmdName);
                             if (!string.IsNullOrWhiteSpace(cmds))
                             {
