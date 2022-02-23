@@ -1,4 +1,5 @@
 ﻿using fs24bot3.Core;
+using fs24bot3.Helpers;
 using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Genbox.WolframAlpha;
@@ -22,7 +23,6 @@ namespace fs24bot3.Commands
 
         public CommandService Service { get; set; }
         private readonly HttpTools http = new HttpTools();
-        private readonly Helpers.InternetServicesHelper InternetServicesHelper = new Helpers.InternetServicesHelper();
 
 
         [Command("execute", "exec")]

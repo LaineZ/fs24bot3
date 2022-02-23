@@ -10,15 +10,10 @@ using Qmmands;
 using Serilog;
 using SQLite;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Tomlyn;
 
 namespace fs24bot3
 {
@@ -26,7 +21,6 @@ namespace fs24bot3
     {
 
         public SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
-        public List<ParsedIRCMessage> MessageBus = new List<ParsedIRCMessage>();
         public CustomCommandProcessor CustomCommandProcessor;
         public readonly CommandService Service = new CommandService();
         public Client BotClient { get; private set; }
@@ -91,7 +85,7 @@ namespace fs24bot3
             foreach (var cmd in Service.GetAllCommands())
             {
                 totalCommands.AddRange(cmd.Aliases.Select(x => prefix + x));
-            } 
+            }
 
             foreach (var cmd in Connection.Table<SQL.CustomUserCommands>())
             {
@@ -120,14 +114,6 @@ namespace fs24bot3
                     onTick.RemoveLevelOneAccs();
                 }
                 Shop.UpdateShop();
-                if (DateTime.Now.Minute == 0)
-                {
-                    if (MessageBus.Any())
-                    {
-                        Log.Verbose("Cleaning messages!");
-                        MessageBus.Clear();
-                    }
-                }
             }
         }
 
@@ -146,8 +132,6 @@ namespace fs24bot3
                     }
                 }).Start();
             }
-
-            MessageBus.Add(message);
         }
 
         public async Task SendMessage(string channel, string message)

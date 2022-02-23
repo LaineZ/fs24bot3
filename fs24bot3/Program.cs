@@ -161,7 +161,7 @@ namespace fs24bot3
             await Botara.BotClient.SendRaw("JOIN " + ConfigurationProvider.Config.Channel);
             await Botara.SendMessage("Nickserv", "IDENTIFY " + ConfigurationProvider.Config.NickservPass);
 
-            var res = new Helpers.InternetServicesHelper().InPearls("алкоголь").Result.Random();
+            var res = Helpers.InternetServicesHelper.InPearls("алкоголь").Result.Random();
             await Botara.SendMessage(ConfigurationProvider.Config.Channel, res);
         }
 

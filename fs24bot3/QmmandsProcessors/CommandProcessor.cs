@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Linq;
 using fs24bot3.Helpers;
+using System.Collections.Generic;
 
 namespace fs24bot3.QmmandsProcessors
 {

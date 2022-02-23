@@ -1,10 +1,12 @@
 ﻿using fs24bot3.Core;
+using fs24bot3.Helpers;
 using fs24bot3.Models;
 using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
@@ -13,20 +15,24 @@ namespace fs24bot3.Commands
     {
 
         public CommandService Service { get; set; }
+        private Regex WordRegex = new Regex(@"\S*");
 
-        [Command("hourstat")]
-        [Description("Статистика за час")]
-        public async Task Hourstat()
+        [Command("daystat")]
+        [Description("Статистика за день")]
+        public async Task Daystat()
         {
+            var sms = await InternetServicesHelper.GetMessages(System.DateTime.Now);
             List<string> stopwords = Resources.stopwords.Split("\n").ToList();
-            int messageCount = Context.BotCtx.MessageBus.Count;
-            string mostActives = string.Join(" ", Context.BotCtx.MessageBus.GroupBy(msg => msg.Prefix.From).OrderByDescending(grp => grp.Count())
+            int messageCount = sms.Count;
+            string mostActives = string.Join(" ", sms.GroupBy(msg => msg.Nick).OrderByDescending(grp => grp.Count())
                         .Select(grp => grp.Key).Take(3));
-            string concatedMessage = string.Join("\n", Context.BotCtx.MessageBus.Select(x => x.Trailing.TrimEnd()));
-            string[] words = concatedMessage.Split(" ");
-            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 2 && !stopwords.Any(s => word.Equals(s)))
-                .GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(5).Select(grp => grp.Key.Replace("\n", ""))); // idk why need replacing
-            await Context.SendMessage(Context.Channel, $"Статистика за текущий час: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самые активные: {mostActives}, Возможные темы: {mostUsedwords}");
+            string concatedMessage = string.Join("\n", sms.Select(x => x.Message.TrimEnd()));
+            string[] words = WordRegex.Matches(concatedMessage).Select(x => x.Value).ToArray();
+            var users = Context.BotCtx.Connection.Table<SQL.UserStats>().ToList();
+            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 3 && !stopwords.Any(s => word == s.TrimEnd()) && !users.Any(s => word.Contains(s.Nick)))
+                .GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(5).Select(grp => grp.Key));
+            await Context.SendMessage(Context.Channel, 
+                $"Статистика за текущий день: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самые активные: {mostActives}, Возможные темы: {mostUsedwords}");
         }
 
         [Command("me")]
