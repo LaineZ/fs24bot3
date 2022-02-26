@@ -3,6 +3,7 @@ using fs24bot3.Commands;
 using fs24bot3.Core;
 using fs24bot3.Helpers;
 using fs24bot3.Models;
+using fs24bot3.QmmandsProcessors;
 using NetIRC;
 using NetIRC.Connection;
 using NetIRC.Messages;
@@ -76,11 +77,9 @@ namespace fs24bot3
             await BotClient.SendRaw("NICK " + nickname);
             Name = nickname;
         }
-
         public string CommandSuggestion(string prefix, string command)
         {
             var totalCommands = new List<string>();
-
 
             foreach (var cmd in Service.GetAllCommands())
             {
@@ -141,8 +140,16 @@ namespace fs24bot3
 
             foreach (string outputstr in msgLines)
             {
-                await BotClient.SendAsync(new PrivMsgMessage(channel, outputstr));
-                count++;
+                if (outputstr.Length < 1000)
+                {
+                    await BotClient.SendAsync(new PrivMsgMessage(channel, outputstr));
+                    count++;
+                }
+                else
+                {
+                    await BotClient.SendAsync(new PrivMsgMessage(channel, $"Слишком жесткое сообщение с длинной {outputstr.Length} символов! Психанул?!?!?!"));
+                    return;
+                }
 
                 if (count > 4)
                 {
@@ -150,6 +157,65 @@ namespace fs24bot3
                     await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
                     return;
                 }
+            }
+        }
+
+        public async Task ExecuteCommand(string nick, string target, string messageString, ParsedIRCMessage message, string prefix, bool ppc = false)
+        {
+            if (!CommandUtilities.HasPrefix(messageString.TrimStart('p'), prefix, out string output))
+                return;
+
+            var result = await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, this, ppc));
+
+            if (!result.IsSuccessful && ppc)
+            {
+                await SendMessage(target, $"{nick}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ");
+                new Core.User(nick, Connection).AddItemToInv(Shop, "beer", 1);
+            }
+
+            switch (result)
+            {
+                case ChecksFailedResult err:
+                    await SendMessage(target, $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
+                    break;
+                case TypeParseFailedResult err:
+                    await SendMessage(target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите #helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
+                    break;
+                case ArgumentParseFailedResult err:
+                    var parserResult = err.ParserResult as DefaultArgumentParserResult;
+
+                    switch (parserResult.Failure)
+                    {
+                        case DefaultArgumentParserFailure.NoWhitespaceBetweenArguments:
+                            await SendMessage(target, $"Нет пробелов между аргументами!");
+                            break;
+                        case DefaultArgumentParserFailure.TooManyArguments:
+                            await SendMessage(target, $"Слишком много аргрументов!!!");
+                            break;
+                        default:
+                            await SendMessage(target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
+                            break;
+                    }
+
+                    break;
+                case OverloadsFailedResult:
+                    await SendMessage(target, "Команда выключена...");
+                    break;
+                case CommandNotFoundResult _:
+                    if (!CustomCommandProcessor.ProcessCmd(prefix, nick, target, messageString))
+                    {
+                        string cmdName = messageString.Split(" ")[0];
+                        var cmds = CommandSuggestion(prefix, cmdName);
+                        if (!string.IsNullOrWhiteSpace(cmds))
+                        {
+                            await SendMessage(target, $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
+                        }
+                    }
+                    break;
+                case CommandExecutionFailedResult err:
+                    await SendMessage(target, $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
+                    Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, nick, message.Trailing.TrimEnd()));
+                    break;
             }
         }
     }

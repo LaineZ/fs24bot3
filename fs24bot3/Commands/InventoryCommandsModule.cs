@@ -1,5 +1,6 @@
 ﻿using fs24bot3.Core;
 using fs24bot3.Models;
+using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System;
@@ -17,13 +18,18 @@ namespace fs24bot3.Commands
 
         [Command("shop")]
         [Description("Магазин")]
-        public async Task Shop(string item = "")
+        public async Task Shop()
         {
-            await Context.SendMessage(Context.Channel, string.Join(' ',
+            var shopitems = string.Join(' ',
             Context.BotCtx.Shop.Items
-            .Where(x => x.Key.Contains(item) || x.Value.Name.Contains(item))
             .Where(x => x.Value.Sellable)
-            .Select(x => $"[{x.Key}] {x.Value.Name} 💰{x.Value.Price},")));
+            .Select(x => $"<div class=\"shopbox\"><p>{x.Value.Name} {x.Key}</p><h1></h1><p> Цена: {x.Value.Price}</p></div>"));
+
+            var shopTemplate = Resources.shop.Replace("[SHOPITEMS]", shopitems);
+
+            var http = new HttpTools();
+
+            await Context.SendMessage(Context.Channel, await http.UploadToTrashbin(shopTemplate));
         }
 
         [Command("inv", "inventory")]

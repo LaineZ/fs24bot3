@@ -72,62 +72,9 @@ namespace fs24bot3
                     target = message.Prefix.From;
                 }
 
-                if (!CommandUtilities.HasPrefix(messageString.TrimStart('p'), prefix, out string output))
-                    return;
-
                 bool ppc = messageString.StartsWith("p") && Transalator.AlloPpc;
-                var result = await Botara.Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, Botara, ppc));
 
-                if (!result.IsSuccessful && ppc)
-                {
-                    await Botara.SendMessage(target, $"{nick}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ");
-                    new Core.User(nick, Botara.Connection).AddItemToInv(Botara.Shop, "beer", 1);
-                }
-
-                switch (result)
-                {
-                    case ChecksFailedResult err:
-                        await Botara.SendMessage(target, $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
-                        break;
-                    case TypeParseFailedResult err:
-                        await Botara.SendMessage(target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите #helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
-                        break;
-                    case ArgumentParseFailedResult err:
-                        var parserResult = err.ParserResult as DefaultArgumentParserResult;
-
-                        switch (parserResult.Failure)
-                        {
-                            case DefaultArgumentParserFailure.NoWhitespaceBetweenArguments:
-                                await Botara.SendMessage(target, $"Нет пробелов между аргументами!");
-                                break;
-                            case DefaultArgumentParserFailure.TooManyArguments:
-                                await Botara.SendMessage(target, $"Слишком много аргрументов!!!");
-                                break;
-                            default:
-                                await Botara.SendMessage(target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
-                                break;
-                        }
-                        
-                        break;
-                    case OverloadsFailedResult:
-                        await Botara.SendMessage(target, "Команда выключена...");
-                        break;
-                    case CommandNotFoundResult _:
-                        if (!Botara.CustomCommandProcessor.ProcessCmd(prefix, nick, target, messageString))
-                        {
-                            string cmdName = messageString.Split(" ")[0];
-                            var cmds = Botara.CommandSuggestion(prefix, cmdName);
-                            if (!string.IsNullOrWhiteSpace(cmds))
-                            {
-                                await Botara.SendMessage(target, $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
-                            }
-                        }
-                        break;
-                    case CommandExecutionFailedResult err:
-                        await Botara.SendMessage(target, $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
-                        Botara.Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, nick, message.Trailing.TrimEnd()));
-                        break;
-                }
+                await Botara.ExecuteCommand(nick, target, messageString, message, prefix, ppc);
             }
 
             if (message.IRCCommand == IRCCommand.ERROR)

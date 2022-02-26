@@ -42,7 +42,11 @@ namespace fs24bot3.Commands
                 var output = await http.PostJson("https://api.jdoodle.com/v1/execute", codeData);
                 var jsonOutput = JsonConvert.DeserializeObject<APIExec.Output>(output);
 
-                await Context.SendMessage(Context.Channel, $"CPU: {jsonOutput.cpuTime * 1000} ms Mem: {jsonOutput.memory} KiB");
+
+                if (jsonOutput.cpuTime != null && jsonOutput.memory != null)
+                {
+                    await Context.SendMessage(Context.Channel, $"CPU: {jsonOutput.cpuTime * 1000} ms Mem: {jsonOutput.memory} KiB");
+                }
 
 
                 if (jsonOutput.output != null)

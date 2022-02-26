@@ -90,12 +90,49 @@ namespace fs24bot3.Properties {
         ///
         ///    .menuItem {
         ///      padding-left: 1em;
-        ///      padding-bottom: 0.5em;
         /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string help {
             get {
                 return ResourceManager.GetString("help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;
+        ///&lt;html&gt;
+        ///
+        ///&lt;head&gt;
+        ///  &lt;meta charset=&apos;utf-8&apos;&gt;
+        ///  &lt;meta http-equiv=&apos;X-UA-Compatible&apos; content=&apos;IE=edge&apos;&gt;
+        ///  &lt;title&gt;FS24BOT: Shop&lt;/title&gt;
+        ///  &lt;meta name=&apos;viewport&apos; content=&apos;width=device-width, initial-scale=1&apos;&gt;
+        ///  &lt;style&gt;
+        ///    body {
+        ///      margin: 0px;
+        ///      padding: 0px;
+        ///    }
+        ///
+        ///    a {
+        ///      text-decoration: none;
+        ///      color: #86796b;
+        ///    }
+        ///    
+        ///    h1 {
+        ///      font-size: 70px;
+        ///    }
+        ///
+        ///    a:hover {
+        ///      color: #3A405A;
+        ///    }
+        ///
+        ///    .menu {
+        ///      background-color: #fbf1c7;
+        ///    } [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string shop {
+            get {
+                return ResourceManager.GetString("shop", resourceCulture);
             }
         }
         
@@ -159,6 +196,7 @@ namespace fs24bot3.Properties {
         ///будут
         ///будучи
         ///будь
+        ///блин
         ///будьте
         ///бы
         ///был
@@ -196,8 +234,7 @@ namespace fs24bot3.Properties {
         ///ее
         ///её
         ///ей
-        ///ел
-        ///ела        /// [rest of string was truncated]&quot;;.
+        ///ел [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string stopwords {
             get {
