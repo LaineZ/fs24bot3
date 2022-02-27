@@ -81,10 +81,9 @@ namespace fs24bot3.Commands
 
         [Command("loggerlevel")]
         [Checks.CheckAdmin]
-        public async Task LoggerLevel(string level = "Verbose")
+        public async Task LoggerLevel(LogEventLevel level = LogEventLevel.Verbose)
         {
-            Enum.TryParse(level, out LogEventLevel lvlToSet);
-            ConfigurationProvider.LoggerSw.MinimumLevel = lvlToSet;
+            ConfigurationProvider.LoggerSw.MinimumLevel = level;
             await Context.SendMessage(Context.Channel, $"Установлен уровень лога `{level}`");
         }
 

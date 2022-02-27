@@ -17,10 +17,17 @@ namespace fs24bot3
 
         static void Main()
         {
+#if DEBUG
             Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .MinimumLevel.Verbose()
             .CreateLogger();
+#else
+             Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .MinimumLevel.Information()
+            .CreateLogger();
+#endif
 
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
