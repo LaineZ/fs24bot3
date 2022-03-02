@@ -29,7 +29,7 @@ namespace fs24bot3.Commands
             string concatedMessage = string.Join("\n", sms.Select(x => x.Message.TrimEnd()));
             string[] words = WordRegex.Matches(concatedMessage).Select(x => x.Value).ToArray();
             var users = Context.BotCtx.Connection.Table<SQL.UserStats>().ToList();
-            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 3 && !stopwords.Any(s => word == s.TrimEnd()) && !users.Any(s => word.Contains(s.Nick)))
+            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 4 && !stopwords.Any(s => word == s.TrimEnd()) && !users.Any(s => word.Contains(s.Nick)))
                 .GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(5).Select(grp => grp.Key));
             await Context.SendMessage(Context.Channel, 
                 $"Статистика за текущий день: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самые активные: {mostActives}, Возможные темы: {mostUsedwords}");
