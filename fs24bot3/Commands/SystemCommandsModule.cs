@@ -1,5 +1,6 @@
 ﻿using fs24bot3.Core;
 using fs24bot3.Models;
+using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using Serilog;
@@ -31,6 +32,13 @@ namespace fs24bot3.Commands
         {
             Context.BotCtx.SongGame = new BotSystems.Songame(Context.BotCtx.Connection);
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
+        }
+
+        [Command("printstopwords")]
+        public async Task PrintStopWords()
+        {
+            Log.Information("{0}", Resources.stopwords.Replace("\n", ", "));
+            await Context.SendMessage(Context.Channel, "Посмотрите в консоль");
         }
 
         [Command("fixcommand")]

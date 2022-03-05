@@ -178,7 +178,7 @@ namespace fs24bot3.Commands
         [Description("Заблокирован ли сайт в росии?")]
         public async Task IsBlocked([Remainder] string url)
         {
-            var output = await http.PostJson("http://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
+            var output = await http.PostJson("https://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
             var jsonOutput = JsonConvert.DeserializeObject<IsBlockedInRussia.Root>(output);
 
             int totalblocks = 0;
@@ -192,10 +192,12 @@ namespace fs24bot3.Commands
                 }
             }
 
-            if (totalblocks > 0)
+
+
+            if (totalblocks > 0 || jsonOutput.domain.blocked.Any())
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{url}{IrcClrs.Reset}: заблокировано {IrcClrs.Red}{totalblocks}{IrcClrs.Reset} айпишников из {IrcClrs.Green}{totalips}{IrcClrs.Reset}!!! " +
-                    $"Подробнее: https://isitblockedinrussia.com/?host={url}");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{url}{IrcClrs.Reset}: заблокировано {IrcClrs.Red}{totalblocks}{IrcClrs.Reset} айпишников из {IrcClrs.Green}{totalips}{IrcClrs.Reset}!!!" +
+                    $" Также заблочено доменов: {IrcClrs.Bold}{IrcClrs.Red}{jsonOutput.domain.blocked.Count}{IrcClrs.Reset} Подробнее: https://isitblockedinrussia.com/?host={url}");
             }
             else
             {
