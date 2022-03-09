@@ -4,6 +4,7 @@ using fs24bot3.Models;
 using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -19,20 +20,39 @@ namespace fs24bot3.Commands
 
         [Command("daystat")]
         [Description("Статистика за день")]
-        public async Task Daystat()
+        public async Task Daystat(string dateString = "")
         {
-            var sms = await InternetServicesHelper.GetMessages(System.DateTime.Now);
+            DateTime date;
+            var res = DateTime.TryParse(dateString, out date);
+
+            if (!res) { date = DateTime.Now; }
+
+            var sms = await InternetServicesHelper.GetMessages(date);
             List<string> stopwords = Resources.stopwords.Split("\n").ToList();
             int messageCount = sms.Count;
             string mostActives = string.Join(" ", sms.GroupBy(msg => msg.Nick).OrderByDescending(grp => grp.Count())
                         .Select(grp => grp.Key).Take(3));
-            string concatedMessage = string.Join("\n", sms.Select(x => x.Message.TrimEnd()));
-            string[] words = WordRegex.Matches(concatedMessage).Select(x => x.Value).ToArray();
+            string concatedMessage = string.Join("\n", sms.Select(x => x.Message.TrimEnd())).ToLower();
+            List<(string, string)> words = new List<(string, string)>();
+
             var users = Context.BotCtx.Connection.Table<SQL.UserStats>().ToList();
-            string mostUsedwords = string.Join(", ", words.Where(word => word.Length > 4 && !stopwords.Any(s => word == s.TrimEnd()) && !users.Any(s => word.Contains(s.Nick)))
-                .GroupBy(word => word).OrderByDescending(grp => grp.Count()).Take(5).Select(grp => grp.Key));
-            await Context.SendMessage(Context.Channel, 
-                $"Статистика за текущий день: Сообщений: {messageCount}, Слов: {words.Length}, Символов: {concatedMessage.Length}, Самые активные: {mostActives}, Возможные темы: {mostUsedwords}");
+
+
+            foreach (Match match in WordRegex.Matches(concatedMessage))
+            {
+                string word = match.Value;
+                if (word.Length > 4 && !stopwords.Any(s => word == s.TrimEnd()) && !stopwords.Any(s => word == s.TrimEnd())
+                    && !users.Any(s => word.ToLower().Contains(s.Nick.ToLower())))
+                {
+                    words.Add((word, PorterHelper.TransformingWord(word)));
+                }
+            }
+
+            var str = res ? date.ToString() : "сегодня";
+
+            string mostUsedwords = string.Join(", ", words.GroupBy(word => word.Item2).OrderByDescending(grp => grp.Count()).Take(20).Select(value => value.Select(x => x.Item1).First()));
+            await Context.SendMessage(Context.Channel,
+                $"Статистика за {str}: Сообщений: {messageCount}, Слов: {words.Count}, Символов: {concatedMessage.Length}, Самые активные: {mostActives}, Возможные темы: {mostUsedwords}");
         }
 
         [Command("me")]
@@ -78,6 +98,6 @@ namespace fs24bot3.Commands
             {
                 await Context.SendMessage(Context.Channel, "Пользователя не существует (это как вообще? даже тебя что ли не существует?)");
             }
-        }        
+        }
     }
 }

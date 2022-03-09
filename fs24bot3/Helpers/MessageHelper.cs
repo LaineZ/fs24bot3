@@ -1,4 +1,6 @@
-﻿using Serilog;
+﻿using fs24bot3.Models;
+using HtmlAgilityPack;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -110,6 +112,20 @@ namespace fs24bot3.Helpers
             }
             //Log.Verbose("{0} {1} score: {2}", s, t, d[n, m]);
             return d[n, m];
+        }
+        public static string BoldToIrc(string input)
+        {
+            // very sketchy html-like irc message formatter =)
+            StringBuilder textResult = new StringBuilder(input);
+
+            textResult.Replace("<b>", IrcClrs.Bold);
+            textResult.Replace("</b>", IrcClrs.Reset);
+
+            HtmlDocument doc = new HtmlDocument();
+
+            doc.LoadHtml(textResult.ToString());
+
+            return doc.DocumentNode.InnerText;
         }
     }
 }

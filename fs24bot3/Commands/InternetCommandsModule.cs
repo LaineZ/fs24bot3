@@ -192,8 +192,6 @@ namespace fs24bot3.Commands
                 }
             }
 
-
-
             if (totalblocks > 0 || jsonOutput.domain.blocked.Any())
             {
                 await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{url}{IrcClrs.Reset}: заблокировано {IrcClrs.Red}{totalblocks}{IrcClrs.Reset} айпишников из {IrcClrs.Green}{totalips}{IrcClrs.Reset}!!!" +

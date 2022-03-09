@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Helpers;
+using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Qmmands;
@@ -33,15 +34,15 @@ namespace fs24bot3.Commands
             {
                 foreach (var item in ctx.SearchResults.Take(ctx.Limit))
                 {
-                    await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(item.Title)} // {IrcClrs.Blue}{item.Url}");
-                    if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(item.Description)); }
+                    await Context.SendMessage(Context.Channel, $"{MessageHelper.BoldToIrc(item.Title)} // {IrcClrs.Blue}{item.Url}");
+                    if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, MessageHelper.BoldToIrc(item.Description)); }
                 }
             }
             else
             {
                 var rand = ctx.SearchResults.Random();
-                await Context.SendMessage(Context.Channel, $"{Core.MailSearchDecoder.BoldToIrc(rand.Title)} // {IrcClrs.Blue}{rand.Url}");
-                if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, Core.MailSearchDecoder.BoldToIrc(rand.Description)); }
+                await Context.SendMessage(Context.Channel, $"{MessageHelper.BoldToIrc(rand.Title)} // {IrcClrs.Blue}{rand.Url}");
+                if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, MessageHelper.BoldToIrc(rand.Description)); }
             }
         }
 
@@ -115,7 +116,7 @@ namespace fs24bot3.Commands
                     return;
                 }
 
-                var items = Core.MailSearchDecoder.PerformDecode(response);
+                var items = InternetServicesHelper.PerformDecode(response);
 
                 if (items == null) { continue; }
 

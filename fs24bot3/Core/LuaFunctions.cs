@@ -83,7 +83,5 @@ namespace fs24bot3.Core
                 return false;
             }
         }
-
-        // TODO: back GetMessageBus function
     }
 }
