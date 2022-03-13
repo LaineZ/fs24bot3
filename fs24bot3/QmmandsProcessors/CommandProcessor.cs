@@ -48,6 +48,19 @@ namespace fs24bot3.QmmandsProcessors
                 }
             }
 
+            public async Task SendMessage(string message)
+            {
+                if (!PerformPpc)
+                {
+                    await BotCtx.SendMessage(Channel, message);
+                }
+                else
+                {
+                    var txt = await Core.Transalator.TranslatePpc(MessageHelper.StripIRC(message));
+                    await BotCtx.SendMessage(Channel, txt);
+                }
+            }
+
             public async void SendSadMessage(string channel, string message = "")
             {
                 if (!message.Any())

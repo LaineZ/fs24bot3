@@ -314,11 +314,20 @@ namespace fs24bot3.Commands
         [Description("Когда последний раз пользователь писал сообщения")]
         public async Task LastSeen(string destination)
         {
+            if (destination == Context.BotCtx.Name)
+            {
+                await Context.SendMessage(Context.Channel, "Я ЗДЕСЬ!");
+                return;
+            }
+
             var user = new User(destination, Context.BotCtx.Connection);
             TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
+
             if (date.Days < 1000)
             {
                 await Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {ToReadableString(date)} назад");
+                var messages = await InternetServicesHelper.GetMessages(user.GetLastMessage());
+                await Context.SendMessage(Context.Channel, $"Последнее сообщение от пользователя: {messages.Where(x => x.Nick == destination).FirstOrDefault().Message}");
             }
             else
             {
@@ -331,10 +340,8 @@ namespace fs24bot3.Commands
         [Description("Список всех тегов")]
         public async Task AllTags()
         {
-            List<SQL.Tag> tags = new List<SQL.Tag>();
-            var query = Context.BotCtx.Connection.Table<SQL.Tag>();
-            foreach (var tag in query) { tags.Add(tag); }
-            await Context.SendMessage(Context.Channel, string.Join(' ', tags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcClrs.Reset}")));
+            var query = Context.BotCtx.Connection.Table<SQL.Tag>().ToList();
+            await Context.SendMessage(Context.Channel, string.Join(' ', query.Select(x => $"00,{x.Color}⚫{x.TagName}{IrcClrs.Reset}")));
         }
 
         [Command("rndl", "randomlyrics")]

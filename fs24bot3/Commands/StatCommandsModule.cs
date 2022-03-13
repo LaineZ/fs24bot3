@@ -28,6 +28,13 @@ namespace fs24bot3.Commands
             if (!res) { date = DateTime.Now; }
 
             var sms = await InternetServicesHelper.GetMessages(date);
+
+            if (!sms.Any())
+            {
+                Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
+                return;
+            }
+
             List<string> stopwords = Resources.stopwords.Split("\n").ToList();
             int messageCount = sms.Count;
             string mostActives = string.Join(" ", sms.GroupBy(msg => msg.Nick).OrderByDescending(grp => grp.Count())
@@ -36,23 +43,25 @@ namespace fs24bot3.Commands
             List<(string, string)> words = new List<(string, string)>();
 
             var users = Context.BotCtx.Connection.Table<SQL.UserStats>().ToList();
+            var caputures = WordRegex.Matches(concatedMessage);
 
-
-            foreach (Match match in WordRegex.Matches(concatedMessage))
+            foreach (Match match in caputures)
             {
-                string word = match.Value;
+                string word = MessageHelper.StripIRC(match.Value);
                 if (word.Length > 4 && !stopwords.Any(s => word == s.TrimEnd()) && !stopwords.Any(s => word == s.TrimEnd())
-                    && !users.Any(s => word.ToLower().Contains(s.Nick.ToLower())))
+                    && !users.Any(s => word.ToLower().Contains(s.Nick.ToLower())) && !word.EndsWith(":"))
                 {
                     words.Add((word, PorterHelper.TransformingWord(word)));
                 }
             }
 
-            var str = res ? date.ToString() : "сегодня";
+            var str = res ? date.ToString() : "Cегодня";
+            float avgWords = caputures.Count / messageCount;
 
-            string mostUsedwords = string.Join(", ", words.GroupBy(word => word.Item2).OrderByDescending(grp => grp.Count()).Take(20).Select(value => value.Select(x => x.Item1).First()));
+
+            string mostUsedwords = string.Join(", ", words.GroupBy(word => word.Item2).OrderByDescending(grp => grp.Count()).Take(4).Select(value => value.Select(x => x.Item1).First()));
             await Context.SendMessage(Context.Channel,
-                $"Статистика за {str}: Сообщений: {messageCount}, Слов: {words.Count}, Символов: {concatedMessage.Length}, Самые активные: {mostActives}, Возможные темы: {mostUsedwords}");
+                $"{str}: {messageCount} строк, {caputures.Count} слов, {concatedMessage.Length} символов, {avgWords} слов в строке. Самые активные: {mostActives}. Возможные темы: {mostUsedwords}");
         }
 
         [Command("me")]
@@ -86,7 +95,7 @@ namespace fs24bot3.Commands
                     var userTags = usr.GetUserTags();
                     if (userTags.Count > 0)
                     {
-                        await Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"{x.Color},00⚫{x.TagName}{IrcClrs.Reset}")));
+                        await Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"00,{x.Color}⚫{x.TagName}{IrcClrs.Reset}")));
                     }
                 }
                 catch (Exceptions.UserNotFoundException)
