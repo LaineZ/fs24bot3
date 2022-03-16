@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -175,7 +176,7 @@ namespace fs24bot3.Commands
         }
 
         [Command("isblocked", "blocked", "block", "blk")]
-        [Description("Заблокирован ли сайт в росии?")]
+        [Description("Заблокирован ли сайт в России?")]
         public async Task IsBlocked([Remainder] string url)
         {
             var output = await http.PostJson("https://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
@@ -199,7 +200,16 @@ namespace fs24bot3.Commands
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}{url}: Не заблокирован!");
+                var urik = new UriBuilder(url);
+                bool response = await http.PingHost(urik.Host);
+                if (response)
+                {
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}{urik.Host}: Не заблокирован!");
+                }
+                else
+                {
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}{urik.Host}: Не смог установить соединение с сайтом, возможно сайт заблокирован.");
+                }
             }
         }
 

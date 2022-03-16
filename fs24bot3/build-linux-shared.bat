@@ -1,8 +1,7 @@
-mkdir releases
+rmdir /S /Q releases
 mkdir releases
 
 rmdir /S /Q bin\Release
-rmdir /S /Q releases\linux-x64-shared
 
 dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true --self-contained false
 

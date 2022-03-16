@@ -15,7 +15,7 @@ namespace fs24bot3.Checks
 
             return context.PreProcess
                 ? CheckResult.Successful
-                : CheckResult.Failed("препроц");
+                : CheckResult.Failed(string.Empty);
         }
     }
 }

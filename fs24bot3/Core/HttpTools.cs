@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -91,14 +92,41 @@ namespace fs24bot3
                     request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0";
                     return request.GetResponse();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    Log.Warning("Request failed to address: {0}", url);
+                    Log.Warning("Request failed to address: {0} exception: {1}: {2}", url, e.Message, e.InnerException.Message);
                     return null;
                 }
             });
 
             return response;
+        }
+
+        public async Task<bool> PingHost(string nameOrAddress)
+        {
+            bool pingable = false;
+            Ping pinger = null;
+
+            try
+            {
+                pinger = new Ping();
+                PingReply reply = await pinger.SendPingAsync(nameOrAddress);
+                pingable = reply.Status == IPStatus.Success;
+            }
+            catch (PingException e)
+            {
+                Log.Warning("Ping failed to address: {0} exception: {1}", nameOrAddress, e.Message);
+                return false;
+            }
+            finally
+            {
+                if (pinger != null)
+                {
+                    pinger.Dispose();
+                }
+            }
+
+            return pingable;
         }
 
         public async Task<string> UploadToTrashbin(string data, string route = "add")
