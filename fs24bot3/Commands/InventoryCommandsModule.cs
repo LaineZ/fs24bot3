@@ -29,7 +29,7 @@ namespace fs24bot3.Commands
 
             var http = new HttpTools();
 
-            await Context.SendMessage(Context.Channel, await http.UploadToTrashbin(shopTemplate));
+            await Context.SendMessage(Context.Channel, await Helpers.InternetServicesHelper.UploadToTrashbin(shopTemplate));
         }
 
         [Command("inv", "inventory")]

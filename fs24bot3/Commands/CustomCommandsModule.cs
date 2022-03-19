@@ -176,7 +176,7 @@ namespace fs24bot3.Commands
                 }
                 if (query.IsLua == 1)
                 {
-                    string url = await http.UploadToTrashbin(query.Output, "addplain");
+                    string url = await Helpers.InternetServicesHelper.UploadToTrashbin(query.Output, "addplain");
                     await Context.SendMessage(Context.Channel, $"Исходник команды: {url}");
                 }
                 else
@@ -188,7 +188,7 @@ namespace fs24bot3.Commands
                     {
                         output += $"[{i}]: {splitted[i]}\n";
                     }
-                    string url = await http.UploadToTrashbin(output, "addplain");
+                    string url = await Helpers.InternetServicesHelper.UploadToTrashbin(output, "addplain");
                     await Context.SendMessage(Context.Channel, $"Исходник команды: {url}");
                 }
             }

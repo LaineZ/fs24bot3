@@ -34,6 +34,30 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
 
+
+        [Command("timezone")]
+        [Description("Установка своего часового пояса, если параметр timeZone пуст - выводит список таймзон")]
+        public async Task SetTimeZone([Remainder] string timeZone = "")
+        {
+            if (string.IsNullOrWhiteSpace(timeZone))
+            {
+                var tz = string.Join("\n", TimeZoneInfo.GetSystemTimeZones().Select(x => $"id: `{x.Id}` название: {x.DisplayName}"));
+                await Context.SendMessage(Context.Channel, $"Таймзоны: {Helpers.InternetServicesHelper.UploadToTrashbin(tz, "addplain").Result}");
+                return;
+            }
+
+            if (TimeZoneInfo.FindSystemTimeZoneById(timeZone) != null)
+            {
+                Context.User.SetTimeZone(timeZone);
+                await Context.SendMessage(Context.Channel, "Часовой пояс установлен!");
+            }
+            else
+            {
+                Context.SendSadMessage(Context.Channel, "Такого часового пояса не существует");
+            }
+
+        }
+
         [Command("printstopwords")]
         public async Task PrintStopWords()
         {

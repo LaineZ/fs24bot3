@@ -153,7 +153,7 @@ namespace fs24bot3
 
                 if (count > 4)
                 {
-                    string link = await new HttpTools().UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
+                    string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
                     await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
                     return;
                 }

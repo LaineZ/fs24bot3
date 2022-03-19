@@ -8,6 +8,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Net.Http;
+using fs24bot3.Core;
 
 namespace fs24bot3.Helpers
 {
@@ -99,6 +101,32 @@ namespace fs24bot3.Helpers
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        public static async Task<string> UploadToTrashbin(string data, string route = "add")
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpContent c = new StringContent(data, Encoding.UTF8);
+
+                var response = await client.PostAsync(ConfigurationProvider.Config.TrashbinUrl + "/" + route, c);
+
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                if (int.TryParse(responseString, out _))
+                {
+                    return ConfigurationProvider.Config.TrashbinUrl + "/" + responseString;
+                }
+                else
+                {
+                    return responseString + " Статус код: " + response.StatusCode;
+                }
+            }
+            catch (Exception)
+            {
+                return "Сервер недоступен for some reason: " + ConfigurationProvider.Config.TrashbinUrl;
             }
         }
     }

@@ -43,7 +43,7 @@ namespace fs24bot3.Commands
             {
                 var queryFish = Context.BotCtx.Connection.Table<SQL.FishingNests>().ToList();
 
-                string link = await new HttpTools().UploadToTrashbin(string.Join("\n", queryFish.Select(x => $"{x.Name}\tТребуемая длинна лески:{x.FishingLineRequired}\tКоличество рыбы:{x.FishCount} ")), "addplain");
+                string link = await Helpers.InternetServicesHelper.UploadToTrashbin(string.Join("\n", queryFish.Select(x => $"{x.Name}\tТребуемая длинна лески:{x.FishingLineRequired}\tКоличество рыбы:{x.FishCount} ")), "addplain");
                 await Context.SendMessage(Context.Channel, "Все места для рыбалки: " + link);
             }
         }

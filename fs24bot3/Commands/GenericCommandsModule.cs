@@ -52,7 +52,7 @@ namespace fs24bot3.Commands
             commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
             commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
             
-            string link = await http.UploadToTrashbin(commandsOutput);
+            string link = await InternetServicesHelper.UploadToTrashbin(commandsOutput);
             await Context.SendMessage(Context.Channel, $"Выложены команды по этой ссылке: {link} также вы можете написать {prefix}helpcmd имякоманды для получение дополнительной помощи");
         }
 
@@ -117,6 +117,22 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
         }
 
+        [Command("time")]
+        [Description("Время")]
+        public async Task UserTime(string username = "")
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                username = Context.Sender;
+            }
+
+            var usr = new User(username, Context.BotCtx.Connection);
+            var timezone = usr.GetTimeZone();
+            var time = DateTime.Now.ToUniversalTime();
+
+            await Context.SendMessage($"Сейчас у {username} {TimeZoneInfo.ConvertTimeFromUtc(time, timezone)} {timezone.DisplayName}");
+        }
+
         [Command("reminds", "rems")]
         [Description("Список напоминаний")]
         public async Task Reminds(string username = "", string locale = "ru-RU")
@@ -125,7 +141,11 @@ namespace fs24bot3.Commands
             {
                 username = Context.Sender;
             }
-            var reminds = new User(username, Context.BotCtx.Connection).GetReminds();
+
+            var usr = new User(username, Context.BotCtx.Connection);
+
+            var reminds = usr.GetReminds();
+            var timezone = usr.GetTimeZone();
 
             if (!reminds.Any())
             {
@@ -137,11 +157,12 @@ namespace fs24bot3.Commands
 
             foreach (var remind in reminds)
             {
-                DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                 CultureInfo rus = new CultureInfo(locale, false);
-                dtDateTime = dtDateTime.AddSeconds(remind.RemindDate).ToUniversalTime();
+                dt = dt.AddSeconds(remind.RemindDate).ToUniversalTime();
+                var dtDateTime = TimeZoneInfo.ConvertTimeFromUtc(dt, timezone);
 
-                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} UTC {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dtDateTime.Subtract(DateTime.UtcNow))}\n";
+                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {timezone.DisplayName} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dtDateTime.Subtract(DateTime.UtcNow))}\n";
             }
 
             await Context.SendMessage(Context.Channel, rems);

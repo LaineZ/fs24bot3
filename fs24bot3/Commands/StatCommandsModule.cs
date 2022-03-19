@@ -55,7 +55,7 @@ namespace fs24bot3.Commands
                 }
             }
 
-            var str = res ? date.ToString() : "Cегодня";
+            var str = res ? $"{date.Date.Year}-{date.Date.Month}-{date.Date.Day}" : "Cегодня";
             float avgWords = caputures.Count / messageCount;
 
 

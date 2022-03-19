@@ -34,6 +34,19 @@ namespace fs24bot3.Core
             Ctx = null;
         }
 
+        public TimeZoneInfo GetTimeZone()
+        {
+            if (GetUserInfo().Timezone == null)
+            {
+                return TimeZoneInfo.Local;
+            }
+            else
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById(GetUserInfo().Timezone);
+            }
+        }
+
+
         public void CreateAccountIfNotExist()
         {
             int query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).Count();
@@ -70,6 +83,11 @@ namespace fs24bot3.Core
         public void SetUserPrefix(string prefix = "#")
         {
             Connect.Execute("UPDATE UserStats SET Prefix = ? WHERE Nick = ?", prefix, Username);
+        }
+
+        public void SetTimeZone(string timezone)
+        {
+            Connect.Execute("UPDATE UserStats SET TimeZone = ? WHERE Nick = ?", timezone, Username);
         }
 
         public void RemoveUserAccount()

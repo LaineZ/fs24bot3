@@ -129,32 +129,6 @@ namespace fs24bot3
             return pingable;
         }
 
-        public async Task<string> UploadToTrashbin(string data, string route = "add")
-        {
-            try
-            {
-                HttpClient client = new HttpClient();
-                HttpContent c = new StringContent(data, Encoding.UTF8);
-
-                var response = await client.PostAsync(ConfigurationProvider.Config.TrashbinUrl + "/" + route, c);
-
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                if (int.TryParse(responseString, out _))
-                {
-                    return ConfigurationProvider.Config.TrashbinUrl + "/" + responseString;
-                }
-                else
-                {
-                    return responseString + " Статус код: " + response.StatusCode;
-                }
-            }
-            catch (Exception)
-            {
-                return "Сервер недоступен for some reason: " + ConfigurationProvider.Config.TrashbinUrl;
-            }
-        }
-
         public async Task<string> GetTextPlainResponse(string rawurl)
         {
             var response = await GetResponseAsync(rawurl);
