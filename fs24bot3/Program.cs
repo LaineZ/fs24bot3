@@ -45,7 +45,7 @@ namespace fs24bot3
 
             Log.Information("Connecting to: {0}:{1}", ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port);
             Task.Run(() => Botara.BotClient.ConnectAsync());
-            Log.Information("First init is ok!");
+            Log.Information("First initialization is okay!");
 
             Botara.ProccessInfinite();
         }
@@ -87,6 +87,7 @@ namespace fs24bot3
             if (message.IRCCommand == IRCCommand.ERROR)
             {
                 Log.Error("Connection closed due to error...");
+                Environment.Exit(1);
             }
 
             if (message.NumericReply == IRCNumericReply.ERR_NICKNAMEINUSE)

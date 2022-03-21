@@ -48,6 +48,21 @@ namespace fs24bot3
             Database.InitDatabase(Connection);
             BotClient = new Client(new NetIRC.User(ConfigurationProvider.Config.Name, "Sopli IRC 3.0"), new TcpClientConnection(ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port));
             CustomCommandProcessor = new CustomCommandProcessor(this);
+            Name = ConfigurationProvider.Config.Name;
+
+            // check for custom commands used in a bot
+            Log.Information("Checking for user commands with incorrect names");
+            foreach (var command in Connection.Table<SQL.CustomUserCommands>())
+            {
+                bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a == command.Command));
+
+                if (commandIntenral)
+                {
+                    var user = new Core.User(command.Nick, Connection);
+                    Log.Warning("User {0} have a command with internal name {1}!", user.Username, command.Command);
+                    user.AddWarning($"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot добавилась команда с таким же именем, ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте {user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем");
+                }
+            }
 
             new Thread(async () =>
             {
@@ -70,6 +85,7 @@ namespace fs24bot3
                     }
                 }
             }).Start();
+            Log.Information("Bot: Construction complete!");
         }
 
         public async void SetupNick(string nickname)
@@ -162,7 +178,8 @@ namespace fs24bot3
 
         public async Task ExecuteCommand(string nick, string target, string messageString, ParsedIRCMessage message, string prefix, bool ppc = false)
         {
-            if (!CommandUtilities.HasPrefix(messageString.TrimStart('p'), prefix, out string output))
+            var prefixes = new string[] { prefix, Name + ":" };
+            if (!CommandUtilities.HasAnyPrefix(messageString.TrimStart('p'), prefixes, out string pfx, out string output))
                 return;
 
             var result = await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, message, this, ppc));

@@ -80,6 +80,36 @@ namespace fs24bot3.Core
             return ConfigurationProvider.Config.Prefix;
         }
 
+        public void AddWarning(string message)
+        {
+            Connect.Execute("UPDATE UserStats SET WarningAcknown = 0 WHERE Nick = ?", Username);
+
+            var warning = new SQL.Warnings()
+            {
+                Nick = Username,
+                Message = message,
+            };
+
+            Connect.Insert(warning);
+        }
+
+        public List<SQL.Warnings> GetWarnings()
+        {
+            SetAcknown();
+            Connect.Execute("DELETE FROM Warnings WHERE Nick = ?", Username);
+            return Connect.Table<SQL.Warnings>().Where(v => v.Nick.Equals(Username)).ToList();
+        }
+
+        public void SetAcknown()
+        {
+            Connect.Execute("UPDATE UserStats SET WarningAcknown = 1 WHERE Nick = ?", Username);
+        }
+
+        public bool GetAcknown()
+        {
+            return GetUserInfo().WarningAcknown == 0 && Connect.Table<SQL.Warnings>().Where(v => v.Nick.Equals(Username)).Any();
+        }
+
         public void SetUserPrefix(string prefix = "#")
         {
             Connect.Execute("UPDATE UserStats SET Prefix = ? WHERE Nick = ?", prefix, Username);
@@ -92,8 +122,11 @@ namespace fs24bot3.Core
 
         public void RemoveUserAccount()
         {
+            Connect.Execute("DELETE FROM Reminds WHERE Nick = ?", Username);
+            Connect.Execute("DELETE FROM Warnings WHERE Nick = ?", Username);
             Connect.Execute("DELETE FROM UserStats WHERE Nick = ?", Username);
             Connect.Execute("DELETE FROM Inventory WHERE Nick = ?", Username);
+            Connect.Execute("VACCUM");
         }
 
         /// <summary>

@@ -45,5 +45,15 @@ namespace fs24bot3.EventProcessors
                 Log.Information("Breaking wall for {0}", User.Username);
             }
         }
+
+        public async void PrintWarningInformation()
+        {
+            if (!User.GetAcknown())
+            {
+                await Client.SendAsync(new PrivMsgMessage(Target, $"{Models.IrcClrs.Gray}{User.Username}: У вас есть предупреждения используйте {User.GetUserPrefix()}warnings чтобы их прочесть!"));
+                User.SetAcknown();
+            }
+
+        }
     }
 }

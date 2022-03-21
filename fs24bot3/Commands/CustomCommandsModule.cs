@@ -16,6 +16,11 @@ namespace fs24bot3.Commands
 
         readonly HttpTools http = new HttpTools();
 
+        /// <summary>
+        /// Cost needed for creating command
+        /// </summary>
+        const int COMMAND_COST = 10000;
+
         private async Task CustomCmdRegisterpublic(string command, bool isLua, [Remainder] string output)
         {
             User usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
@@ -33,7 +38,7 @@ namespace fs24bot3.Commands
                 };
                 try
                 {
-                    if (await usr.RemItemFromInv(Context.BotCtx.Shop, "money", 8000))
+                    if (await usr.RemItemFromInv(Context.BotCtx.Shop, "money", COMMAND_COST))
                     {
                         Context.BotCtx.Connection.Insert(commandInsert);
                         await Context.SendMessage(Context.Channel, "Команда успешно создана");
@@ -41,7 +46,7 @@ namespace fs24bot3.Commands
                 }
                 catch (SQLiteException)
                 {
-                    usr.AddItemToInv(Context.BotCtx.Shop, "money", 8000);
+                    usr.AddItemToInv(Context.BotCtx.Shop, "money", COMMAND_COST);
                     await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте {Context.User.GetUserPrefix()}cmdout");
                 }
             }
@@ -271,6 +276,7 @@ namespace fs24bot3.Commands
                 {
                     Context.BotCtx.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(command)).Delete();
                     await Context.SendMessage(Context.Channel, "Команда удалена!");
+                    usr.AddItemToInv(Context.BotCtx.Shop, "money", COMMAND_COST);
                 }
                 else
                 {

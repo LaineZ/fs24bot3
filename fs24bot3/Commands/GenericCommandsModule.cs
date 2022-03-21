@@ -168,6 +168,26 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, rems);
         }
 
+
+        [Command("warnings", "warns")]
+        public async Task GetWarns()
+        {
+            var warns = Context.User.GetWarnings();
+            var warnsStr = string.Empty;
+
+            if (!warns.Any())
+            {
+                Context.SendSadMessage(Context.Channel, $"У вас нет предупреждений!");
+                return;
+            }
+            foreach (var warn in warns)
+            {
+                warnsStr += $"{Context.Sender}: {warn.Message}\n";
+            }
+
+            await Context.SendMessage(Context.Channel, warnsStr);
+        }
+
         [Command("songame", "songg", "sg")]
         [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
         public async Task Songame([Remainder] string translated = "")
