@@ -162,7 +162,7 @@ namespace fs24bot3.Commands
                 dt = dt.AddSeconds(remind.RemindDate).ToUniversalTime();
                 var dtDateTime = TimeZoneInfo.ConvertTimeFromUtc(dt, timezone);
 
-                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {timezone.DisplayName} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dtDateTime.Subtract(DateTime.UtcNow))}\n";
+                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {timezone.DisplayName} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n";
             }
 
             await Context.SendMessage(Context.Channel, rems);
