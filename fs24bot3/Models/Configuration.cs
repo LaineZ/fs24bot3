@@ -36,6 +36,9 @@ namespace fs24bot3.Models
         public string WolframID { get; set; }
         [DataMember(Name = "translate_key")]
         public string TranslateKey { get; set; }
+
+        [DataMember(Name = "finnhub_key")]
+        public string FinnhubKey { get; set; }
         [DataMember(Name = "bridge_nickname")]
         public string BridgeNickname { get; set; }
 
@@ -55,6 +58,7 @@ namespace fs24bot3.Models
             WolframID = "0";
             TranslateKey = "0";
             BridgeNickname = "cheburator";
+            FinnhubKey = "0";
         }
     }
 }

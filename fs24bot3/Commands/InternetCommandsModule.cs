@@ -225,7 +225,7 @@ namespace fs24bot3.Commands
         [Description("Конвертер валют")]
         public async Task Currency(float amount = 1, string codeFirst = "USD", string codeSecond = "RUB", string bankProvider = "")
         {
-            var resp = await new HttpTools().MakeRequestAsync("https://api.exchangerate.host/latest?base=" + codeFirst + "&amount=" + amount + "&symbols=" + codeSecond + "&format=csv&source=" + bankProvider);
+            var resp = await http.MakeRequestAsync("https://api.exchangerate.host/latest?base=" + codeFirst + "&amount=" + amount + "&symbols=" + codeSecond + "&format=csv&source=" + bankProvider);
 
             // "code","rate","base","date"
             // "RUB","82,486331","USD","2022-04-07" -- this
@@ -254,6 +254,49 @@ namespace fs24bot3.Commands
             }
         }
 
+        [Command("stocks", "stock")]
+        public async Task Stocks(string stock = "AAPL")
+        {
+            var resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/search?q=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+
+            if (resp == null)
+            {
+                Context.SendSadMessage(Context.Channel, "Сервак не пашет");
+                return;
+            }
+
+            SymbolLookup.Root symbolLookup = JsonConvert.DeserializeObject<SymbolLookup.Root>(resp);
+            var lookup = symbolLookup.result.FirstOrDefault();
+
+            if (lookup == null)
+            {
+                Context.SendSadMessage(Context.Channel);
+                return;
+            }
+
+            resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+
+            if (resp == null)
+            {
+                // trying just find stock by symbol
+                resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+                if (resp == null)
+                {
+                    // give up
+                    return;
+                }
+            }
+
+            Stock.Root stockObj = JsonConvert.DeserializeObject<Stock.Root>(resp);
+
+            if (stockObj == null)
+            {
+                Context.SendSadMessage(Context.Channel, "Не удалось найти акцию!");
+            }
+
+            await Context.SendMessage($"({lookup.description}) {lookup.symbol} {IrcClrs.Bold}{stockObj.c} USD{IrcClrs.Reset} (низ: {IrcClrs.Red}{stockObj.l} {IrcClrs.Reset}/ выс: {IrcClrs.Green}{stockObj.h})");
+        }
+        
         [Command("curcmp", "currencycomapre", "currencycomp", "curcompare", "ccmp")]
         public async Task CurrencyCompare(float amount = 1, string codeFirst = "USD", string codeSecond = "RUB")
         {
