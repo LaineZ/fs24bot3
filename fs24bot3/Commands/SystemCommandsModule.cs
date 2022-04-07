@@ -42,7 +42,7 @@ namespace fs24bot3.Commands
             if (string.IsNullOrWhiteSpace(timeZone))
             {
                 var tz = string.Join("\n", TimeZoneInfo.GetSystemTimeZones().Select(x => $"id: `{x.Id}` название: {x.DisplayName}"));
-                await Context.SendMessage(Context.Channel, $"Таймзоны: {Helpers.InternetServicesHelper.UploadToTrashbin(tz, "addplain").Result}");
+                await Context.SendMessage(Context.Channel, $"Часовые пояса: {Helpers.InternetServicesHelper.UploadToTrashbin(tz, "addplain").Result}");
                 return;
             }
 

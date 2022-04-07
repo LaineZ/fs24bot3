@@ -220,6 +220,49 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, resp.ResponseUri.ToString());
         }
 
+
+        [Command("cur", "currency", "coin")]
+        [Description("Конвертер валют")]
+        public async Task Currency(float amount = 1, string codeFirst = "USD", string codeSecond = "RUB", string bankProvider = "")
+        {
+            var resp = await new HttpTools().MakeRequestAsync("https://api.exchangerate.host/latest?base=" + codeFirst + "&amount=" + amount + "&symbols=" + codeSecond + "&format=csv&source=" + bankProvider);
+
+            // "code","rate","base","date"
+            // "RUB","82,486331","USD","2022-04-07" -- this
+
+            if (resp == null)
+            {
+                Context.SendSadMessage(Context.Channel, "Сервак не пашет");
+                return;
+            }
+
+            try
+            {
+                string currency = resp.Split("\n")[1];
+                var info = currency.Split("\",\"");
+                string gotConvCode = info[0].Replace("\"", "");
+                string valueString = info[1].Replace("\"", "");
+                string gotCode = info[2].Replace("\"", "");
+
+                if (valueString == "NaN") { valueString = "∞"; }
+
+                await Context.SendMessage(bankProvider.ToUpper() + ": " + amount + " " + gotCode + " -> " + valueString + " " + gotConvCode);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                Context.SendSadMessage(Context.Channel);
+            }
+        }
+
+        [Command("curcmp", "currencycomapre", "currencycomp", "curcompare", "ccmp")]
+        public async Task CurrencyCompare(float amount = 1, string codeFirst = "USD", string codeSecond = "RUB")
+        {
+            foreach (string bank in new string[] { "boc", "nbu", "bnro", "nob" })
+            {
+                await Currency(amount, codeFirst, codeSecond, bank);
+            }
+        }
+
         [Command("wh", "wikihow")]
         public async Task WikiHow([Remainder] string query)
         {
