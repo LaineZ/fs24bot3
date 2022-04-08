@@ -22,11 +22,11 @@ namespace fs24bot3.QmmandsProcessors
             public Core.User User { get; set; }
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(string target, ParsedIRCMessage message, Bot bot, bool perfppc = false, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(string target, string sender, Bot bot, bool perfppc = false, IServiceProvider provider = null) : base(provider)
             {
                 BotCtx = bot;
                 Channel = target;
-                Sender = message.Prefix.From;
+                Sender = sender;
                 Random = new Random();
                 User = new Core.User(Sender, bot.Connection, this);
                 if (perfppc)

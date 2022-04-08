@@ -8,6 +8,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using fs24bot3.Helpers;
 
 namespace fs24bot3
 {
@@ -67,7 +68,8 @@ namespace fs24bot3
                     // <cheburator> //bpm140//: @ms привет
                     var msg = messageString.Split(":").ToList();
                     messageString = msg.Last().TrimStart(' ');
-                    Log.Verbose("Message from the bridge: {0}", messageString);
+                    nick = "@[" + MessageHelper.StripIRC(msg.First()) + "]";
+                    Log.Verbose("Message from the bridge: {0} from {1}", messageString, nick);
                 }
                 else
                 {
