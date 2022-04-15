@@ -280,7 +280,7 @@ namespace fs24bot3.Core
                 throw new Exceptions.ItemNotFoundException();
             }
 
-            count = (int)Math.Floor((decimal)count);
+            count = (int)Math.Floor(count * shop.Mul);
             var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(name));
 
             if (item != null && item.ItemCount >= count && count > 0)

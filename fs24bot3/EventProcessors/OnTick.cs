@@ -21,22 +21,29 @@ namespace fs24bot3.EventProcessors
         {
             int checkPayday = Rand.Next(0, 10);
 
-            if (checkPayday == 8 && MultiUser.GetItemAvg() < shop.MaxCap)
+            if (MultiUser.GetItemAvg() < shop.MaxCap)
             {
-                var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalHours;
+                if (checkPayday == 8)
+                {
+                    var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalHours;
 
-                if (subst > 10)
-                {
-                    Log.Information("Tax fine for user: {0}", User.Username);
-                    await User.RemItemFromInv(shop, "money", User.GetUserInfo().Level * Rand.Next(1, 2));
-                }
-                else
-                {
-                    User.AddItemToInv(shop, "money", User.GetUserInfo().Level / Rand.Next(1, 4));
+                    if (subst > 10)
+                    {
+                        Log.Information("Tax fine for user: {0}", User.Username);
+                        await User.RemItemFromInv(shop, "money", User.GetUserInfo().Level * Rand.Next(1, 2));
+                    }
+                    else
+                    {
+                        User.AddItemToInv(shop, "money", User.GetUserInfo().Level / Rand.Next(1, 4));
+                    }
+
+                    shop.PaydaysCount++;
                 }
             }
-
-            shop.PaydaysCount++;
+            else
+            {
+                shop.Mul += 0.01F;
+            }
         }
 
         public void RemoveLevelOneAccs()

@@ -19,6 +19,10 @@ namespace fs24bot3.BotSystems
         private Bot BotCtx { get; }
         public int MaxCap = 250000;
         public int PaydaysCount = 0;
+        /// <summary>
+        /// Price multipler
+        /// </summary>
+        public float Mul = 1.0F;
 
         public string ShopID { get; }
 
@@ -82,7 +86,7 @@ namespace fs24bot3.BotSystems
 
             }
         }
-        
+                
         public async Task<(bool, int)> Sell(User user, string itemname, int count = 1)
         {
             if (!Items.ContainsKey(itemname))
@@ -96,6 +100,7 @@ namespace fs24bot3.BotSystems
                 int sellprice = (int)Math.Floor((decimal)(Items[itemname].Price * count) / 2);
                 Sells++;
                 user.AddItemToInv(this, "money", sellprice);
+                Items[itemname].Price -= Rand.Next(1, sellprice);
                 return (true, sellprice);
             }
             else
