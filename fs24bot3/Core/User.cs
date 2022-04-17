@@ -250,6 +250,12 @@ namespace fs24bot3.Core
             return Connect.Table<SQL.Reminds>().Where(x => x.Nick == Username).ToList();
         }
 
+        public bool DeleteRemind(uint id)
+        {
+            var affected = Connect.Execute("DELETE FROM Reminds WHERE Nick = ? AND RemindDate = ?", Username, id);
+            return affected > 0;
+        }
+
         public void AddItemToInv(Shop shop, string name, int count)
         {
             if (!shop.Items.ContainsKey(name))

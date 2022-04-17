@@ -117,9 +117,22 @@ namespace fs24bot3.Commands
             }
 
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
-            var user = new User(Context.Sender, Context.BotCtx.Connection);
-            user.AddRemind(ts, message);
+            Context.User.AddRemind(ts, message);
             await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
+        }
+
+        [Command("delmind", "delremind", "deleteremind")]
+        [Description("Удалить напоминание")]
+        public async Task DeleteRemind(uint id)
+        {
+            if (Context.User.DeleteRemind(id))
+            {
+                await Context.SendMessage(Context.Channel, $"Напоминание удалено!");
+            }
+            else
+            {
+                Context.SendSadMessage(Context.Channel);
+            }
         }
 
         [Command("time")]
@@ -159,7 +172,7 @@ namespace fs24bot3.Commands
                 return;
             }
 
-            string rems = string.Empty;
+            string rems = $"{IrcClrs.Bold}Напоминания {username}:\n";
 
             foreach (var remind in reminds)
             {
@@ -168,7 +181,14 @@ namespace fs24bot3.Commands
                 dt = dt.AddSeconds(remind.RemindDate).ToUniversalTime();
                 var dtDateTime = TimeZoneInfo.ConvertTimeFromUtc(dt, timezone);
 
-                rems += $"{IrcClrs.Bold}Напоминание {username}: {IrcClrs.Reset}\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n";
+                if (usr.Username == Context.Sender)
+                {
+                    rems += $"id: {remind.RemindDate}: \"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n";
+                }
+                else
+                {
+                    rems += $"\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n";
+                }
             }
 
             await Context.SendMessage(Context.Channel, rems);
