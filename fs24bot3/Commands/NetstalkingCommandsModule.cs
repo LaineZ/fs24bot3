@@ -108,7 +108,7 @@ namespace fs24bot3.Commands
                 Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
 
                 if (ctx.SearchResults.Count >= ctx.Limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query + "&sf=" + (i * 10) + "&site=" + ctx.Site);
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query + "&sf=" + (i * 10));
 
                 if (response == null)
                 {
@@ -123,7 +123,7 @@ namespace fs24bot3.Commands
                 if (items.antirobot.blocked)
                 {
                     Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
-                    await Context.SendMessage(Context.Channel, "Вы были забанены reason: " + RandomMsgs.BanMessages.Random());
+                    await Context.SendMessage(Context.Channel, $"Вы были забанены reason: {RandomMsgs.BanMessages.Random()} Пожалуйста, используйте команду {IrcClrs.Bold}{Context.User.GetUserPrefix()}sx {query}");
                     return;
                 }
                 else
@@ -147,8 +147,8 @@ namespace fs24bot3.Commands
             await PrintResults(ctx);
         }
 
-        [Command("sx")]
-        [Description("Еще один инструмент нетсталкинга")]
+        [Command("sx", "searx")]
+        [Description("SearX - Еще один инструмент нетсталкинга")]
         [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`. Все параметры с типом String, кроме `regex` - регистронезависимы\n" +
             "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; site:String - Поиск по адресу сайта; multi:Boolean - Мульти вывод (сразу 5 результатов);\n" +
             "random:Boolean - Рандомная выдача (не работает с multi); include:String - Включить результаты с данной подстрокой; exclude:String - Исключить результаты с данной подстрокой;\n" +

@@ -19,10 +19,6 @@ namespace fs24bot3.BotSystems
         private Bot BotCtx { get; }
         public int MaxCap = 250000;
         public int PaydaysCount = 0;
-        /// <summary>
-        /// Price multipler
-        /// </summary>
-        public float Mul = 1.0F;
 
         public string ShopID { get; }
 

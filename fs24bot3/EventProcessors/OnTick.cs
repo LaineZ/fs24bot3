@@ -40,10 +40,6 @@ namespace fs24bot3.EventProcessors
                     shop.PaydaysCount++;
                 }
             }
-            else
-            {
-                shop.Mul += 0.01F;
-            }
         }
 
         public void RemoveLevelOneAccs()

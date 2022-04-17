@@ -144,6 +144,8 @@ namespace fs24bot3
                         EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(BotClient, nick, target, message.Trailing.Trim(), Connection);
                         events.DestroyWallRandomly(Shop);
                         events.LevelInscrease(Shop);
+                        //events.PrintWarningInformation();
+                        events.HandleYoutube();
                     }
                 }).Start();
             }

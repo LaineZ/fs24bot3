@@ -19,8 +19,6 @@ namespace fs24bot3.Commands
     public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
         public CommandService Service { get; set; }
-        readonly HttpTools http = new HttpTools();
-
 
         private string ToReadableString(TimeSpan span)
         {

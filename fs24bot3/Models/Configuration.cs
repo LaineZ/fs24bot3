@@ -41,6 +41,8 @@ namespace fs24bot3.Models
         public string FinnhubKey { get; set; }
         [DataMember(Name = "bridge_nickname")]
         public string BridgeNickname { get; set; }
+        [DataMember(Name = "youtube_dl_path")]
+        public string YoutubeDlPath { get; set; }
 
         public Configuration()
         {
@@ -59,6 +61,7 @@ namespace fs24bot3.Models
             TranslateKey = "0";
             BridgeNickname = "cheburator";
             FinnhubKey = "0";
+            YoutubeDlPath = "youtube-dl";
         }
     }
 }
