@@ -26,7 +26,7 @@ namespace fs24bot3.Commands
         {
             if (ctx.SearchResults == null || !ctx.SearchResults.Any())
             {
-                await Context.SendMessage(Context.Channel, IrcClrs.Gray + RandomMsgs.NotFoundMessages.Random());
+                Context.SendSadMessage(Context.Channel);
                 return;
             }
 

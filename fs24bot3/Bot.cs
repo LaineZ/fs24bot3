@@ -184,7 +184,9 @@ namespace fs24bot3
             if (!CommandUtilities.HasAnyPrefix(messageString.TrimStart('p'), prefixes, out string pfx, out string output))
                 return;
 
-            var result = await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, nick, this, ppc));
+            var bridged = nick != message.Prefix.From.TrimEnd();
+
+            var result = await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, nick, this, ppc, bridged));
 
             if (!result.IsSuccessful && ppc)
             {

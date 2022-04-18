@@ -18,16 +18,18 @@ namespace fs24bot3.QmmandsProcessors
             public string Sender { get; }
             public Random Random { get; }
             public Bot BotCtx { get; }
-            public bool PerformPpc = false;
+            public bool PerformPpc { get; }
+            public bool FromBridge { get; }
             public Core.User User { get; set; }
 
             // Pass your service provider to the base command context.
-            public CustomCommandContext(string target, string sender, Bot bot, bool perfppc = false, IServiceProvider provider = null) : base(provider)
+            public CustomCommandContext(string target, string sender, Bot bot, bool perfppc = false, bool fromBridge = false, IServiceProvider provider = null) : base(provider)
             {
                 BotCtx = bot;
                 Channel = target;
                 Sender = sender;
                 Random = new Random();
+                FromBridge = fromBridge;
                 User = new Core.User(Sender, bot.Connection, this);
                 if (perfppc)
                 {

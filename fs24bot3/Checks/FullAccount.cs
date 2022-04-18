@@ -13,7 +13,7 @@ namespace fs24bot3.Checks
         {
             var context = _ as CommandProcessor.CustomCommandContext;
 
-            return !context.User.UserIsIgnored() && context.User != null
+            return !context.FromBridge && !context.User.UserIsIgnored() && context.User != null
                 ? CheckResult.Successful
                 : CheckResult.Failed("Эта команда требует аккаунт пользователя fs24_bot!");
         }

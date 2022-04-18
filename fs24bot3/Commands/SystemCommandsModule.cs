@@ -35,6 +35,13 @@ namespace fs24bot3.Commands
         }
 
 
+        [Command("whoami")]
+        public async Task Whoami()
+        {
+            await Context.SendMessage(Context.Channel, $"{Context.Sender} Дискорднутый: {Context.FromBridge}");
+        }
+
+
         [Command("timezone")]
         [Description("Установка своего часового пояса, если параметр timeZone пуст - выводит список таймзон")]
         public async Task SetTimeZone([Remainder] string timeZone = "")
