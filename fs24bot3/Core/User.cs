@@ -80,34 +80,26 @@ namespace fs24bot3.Core
             return ConfigurationProvider.Config.Prefix;
         }
 
-        public void AddWarning(string message)
+        public void AddWarning(string message, Bot botContext)
         {
-            Connect.Execute("UPDATE UserStats SET WarningAcknown = 0 WHERE Nick = ?", Username);
-
             var warning = new SQL.Warnings()
             {
                 Nick = Username,
                 Message = message,
             };
-
+            botContext.AcknownUsers.Remove(Username);
             Connect.Insert(warning);
         }
 
         public List<SQL.Warnings> GetWarnings()
         {
-            SetAcknown();
+            var warns = Connect.Table<SQL.Warnings>().Where(v => v.Nick.Equals(Username)).ToList();
+            return warns;
+        }
+
+        public void DeleteWarnings()
+        {
             Connect.Execute("DELETE FROM Warnings WHERE Nick = ?", Username);
-            return Connect.Table<SQL.Warnings>().Where(v => v.Nick.Equals(Username)).ToList();
-        }
-
-        public void SetAcknown()
-        {
-            Connect.Execute("UPDATE UserStats SET WarningAcknown = 1 WHERE Nick = ?", Username);
-        }
-
-        public bool GetAcknown()
-        {
-            return GetUserInfo().WarningAcknown == 0 && Connect.Table<SQL.Warnings>().Where(v => v.Nick.Equals(Username)).Any();
         }
 
         public void SetUserPrefix(string prefix = "#")

@@ -17,7 +17,7 @@ namespace fs24bot3.ItemTraits
                 Name = name;
                 Price = price;
                 Sellable = true;
-            Rarity = rarity;
+                Rarity = rarity;
                 Damage = damage;
             }
             public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
@@ -47,7 +47,7 @@ namespace fs24bot3.ItemTraits
                     await botCtx.SendMessage(channel, $"Вы кинули {Name} с уроном {Damage} в пользователя {targetUser.Username} при этом он потерял {itemnameLocaled} x{itemCount} и за это вам +{xp} XP");
                     if (rand.Next(0, 7) == 2)
                     {
-                        await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username} гаечными ключами! Вы уже потеряли {itemnameLocaled} x{itemCount} возможно он вас продолжает атаковать!");
+                        await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}! Вы уже потеряли {itemnameLocaled} x{itemCount} возможно он вас продолжает атаковать!");
                     }
                     else
                     {

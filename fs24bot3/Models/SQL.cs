@@ -17,7 +17,6 @@ namespace fs24bot3.Models
             public int LastMsg { get; set; }
             public string Prefix { get; set; }
             public string Timezone { get; set; }
-            public int WarningAcknown { get; set; }
         }
 
         public class Item

@@ -27,6 +27,7 @@ namespace fs24bot3
         public Client BotClient { get; private set; }
         public Shop Shop { get; set; }
         public Songame SongGame { get; set; }
+        public List<string> AcknownUsers = new List<string>();
 
         public int Tickrate = 15000;
 
@@ -60,7 +61,7 @@ namespace fs24bot3
                 {
                     var user = new Core.User(command.Nick, Connection);
                     Log.Warning("User {0} have a command with internal name {1}!", user.Username, command.Command);
-                    user.AddWarning($"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot добавилась команда с таким же именем, ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте {user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем");
+                    user.AddWarning($"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot добавилась команда с таким же именем, ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте {user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем", this);
                 }
             }
 
@@ -141,10 +142,10 @@ namespace fs24bot3
                 {
                     if (target != BotClient.User.Nick)
                     {
-                        EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(BotClient, nick, target, message.Trailing.Trim(), Connection);
+                        EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(this, nick, target, message.Trailing.Trim());
                         events.DestroyWallRandomly(Shop);
                         events.LevelInscrease(Shop);
-                        //events.PrintWarningInformation();
+                        events.PrintWarningInformation();
                         events.HandleYoutube();
                     }
                 }).Start();

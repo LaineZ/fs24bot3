@@ -203,6 +203,7 @@ namespace fs24bot3.Commands
         [Description("Использовать предмет")]
         public async Task Use(string itemname, string nick = null)
         {
+            Context.User.EnableSilentMode();
             bool delete = false;
             if (Context.User.CountItem(itemname) > 0)
             {

@@ -14,24 +14,22 @@ namespace fs24bot3.EventProcessors
 {
     public class OnMsgEvent
     {
-        private readonly Client Client;
-        private readonly SQLite.SQLiteConnection Connection;
+        private readonly Bot BotContext;
         private readonly Core.User User;
         private readonly string Target;
         private readonly string Message;
         private readonly Random Rand = new Random();
         private readonly Regex YoutubeRegex = new Regex(@"(?:https?:)?(?:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['\""][^<>]*>|<\/a>))[?=&+%\w.-]*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
-        public OnMsgEvent(Client client, string nick, string target, string message, SQLite.SQLiteConnection connect)
+        public OnMsgEvent(Bot botCtx, string nick, string target, string message)
         {
-            Client = client;
-            Connection = connect;
+            BotContext = botCtx;
             Message = message;
             Target = target;
-            User = new Core.User(nick, Connection);
+            User = new Core.User(nick, botCtx.Connection);
         }
 
-        public void LevelInscrease(Shop shop)
+        public async void LevelInscrease(Shop shop)
         {
             User.CreateAccountIfNotExist();
             User.SetLastMessage();
@@ -39,7 +37,7 @@ namespace fs24bot3.EventProcessors
             if (newLevel)
             {
                 var report = User.AddRandomRarityItem(shop, Models.ItemInventory.ItemRarity.Rare);
-                Client.SendAsync(new PrivMsgMessage(Target, $"{User.Username}: У вас теперь {User.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!"));
+                await BotContext.SendMessage(Target, $"{User.Username}: У вас теперь {User.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!");
             }
         }
 
@@ -71,7 +69,7 @@ namespace fs24bot3.EventProcessors
                     if (jsonOutput != null)
                     {
                         var ts = TimeSpan.FromSeconds(jsonOutput.duration);
-                        await Client.SendAsync(new PrivMsgMessage(Target, $"{IrcClrs.Bold}{jsonOutput.title}{IrcClrs.Reset} от {IrcClrs.Bold}{jsonOutput.channel}{IrcClrs.Reset}. Длительность: {IrcClrs.Bold}{ts:hh\\:mm\\:ss}{IrcClrs.Reset} {IrcClrs.Green}👍{jsonOutput.like_count} {IrcClrs.Reset}Просмотров: {jsonOutput.view_count}"));
+                        await BotContext.SendMessage(Target, $"{IrcClrs.Bold}{jsonOutput.title}{IrcClrs.Reset} от {IrcClrs.Bold}{jsonOutput.channel}{IrcClrs.Reset}. Длительность: {IrcClrs.Bold}{ts:hh\\:mm\\:ss}{IrcClrs.Reset} {IrcClrs.Green}👍{jsonOutput.like_count} {IrcClrs.Reset}Просмотров: {jsonOutput.view_count}");
                     }
                 }
                 catch (Exception e)
@@ -83,12 +81,11 @@ namespace fs24bot3.EventProcessors
 
         public async void PrintWarningInformation()
         {
-            if (!User.GetAcknown())
+            if (!BotContext.AcknownUsers.Any(x => x == User.Username) && User.GetWarnings().Any())
             {
-                await Client.SendAsync(new PrivMsgMessage(Target, $"{IrcClrs.Gray}{User.Username}: У вас есть предупреждения используйте {User.GetUserPrefix()}warnings чтобы их прочесть!"));
-                User.SetAcknown();
+                await BotContext.SendMessage(Target, $"{IrcClrs.Gray}{User.Username}: У вас есть предупреждения используйте {User.GetUserPrefix()}warnings чтобы их прочесть!");
+                BotContext.AcknownUsers.Add(User.Username);
             }
-
         }
     }
 }

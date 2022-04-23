@@ -53,12 +53,12 @@ namespace fs24bot3.Models
         public static readonly List<string> MissMessages = new List<string>
         {
             "Вы не попали",
-            "Вы не удержали гаечный ключ в руках...",
+            "Вы не удержались в руках...",
+            "Пользователь увернулся",
             "Вы промахнулись и не попали...",
             "Да все...",
-            "Гаечный ключ рассыпался в руках...",
-            "Гаечный ключ не нанес никакого урона...",
-            "Гаечный ключ оказался слишком слабым"
+            "Укрепления выше 5 лвл",
+            "I have been diagnosed with the deadly I Miss You Syndrome due to which I suffer from a permanent and irreversible disability of Missing You all the time. I miss you sweetheart."
         };
 
 

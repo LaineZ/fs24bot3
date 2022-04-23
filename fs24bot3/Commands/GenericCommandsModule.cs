@@ -204,12 +204,15 @@ namespace fs24bot3.Commands
                 Context.SendSadMessage(Context.Channel, $"У вас нет предупреждений!");
                 return;
             }
+
             foreach (var warn in warns)
             {
                 warnsStr += $"{Context.Sender}: {warn.Message}\n";
             }
 
             await Context.SendMessage(Context.Channel, warnsStr);
+
+            Context.User.DeleteWarnings();
         }
 
         [Command("songame", "songg", "sg")]

@@ -118,6 +118,15 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, "Вы выдали себе все предметы!");
         }
 
+        [Command("warn", "warning")]
+        [Checks.CheckAdmin]
+        public async Task Giveall(string username, [Remainder] string message)
+        {
+            var user = new User(username, Context.BotCtx.Connection);
+            user.AddWarning(message, Context.BotCtx);
+            await Context.SendMessage(Context.Channel, $"Вы отправили предупреждение {username}!");
+        }
+
         [Command("loggerlevel")]
         [Checks.CheckAdmin]
         public async Task LoggerLevel(LogEventLevel level = LogEventLevel.Verbose)
