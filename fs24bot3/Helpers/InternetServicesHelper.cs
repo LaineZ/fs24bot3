@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Net.Http;
 using fs24bot3.Core;
+using System.Globalization;
 
 namespace fs24bot3.Helpers
 {
@@ -47,6 +48,23 @@ namespace fs24bot3.Helpers
             }
 
             return pearls;
+        }
+
+        public static async Task<Dictionary<string, float>> GetShopCurrencies()
+        {
+            var currencies = new Dictionary<string, float>();
+
+            var web = new HtmlWeb();
+            var doc = await web.LoadFromWebAsync("https://helpix.ru/currency/");
+            HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//td[@class=\"b-tabcurr__td\"]");
+
+            currencies.Add("цб-рф", float.Parse(nodes[1].InnerText, CultureInfo.InvariantCulture));
+            currencies.Add("aliexpress", float.Parse(nodes[2].InnerText,CultureInfo.InvariantCulture));
+            currencies.Add("gearbest", float.Parse(nodes[3].InnerText, CultureInfo.InvariantCulture));
+            currencies.Add("geekbuying", float.Parse(nodes[4].InnerText, CultureInfo.InvariantCulture));
+            currencies.Add("banggood", float.Parse(nodes[5].InnerText, CultureInfo.InvariantCulture));
+
+            return currencies;
         }
 
         public static async Task<List<FomalhautMessage>> GetMessages(DateTime dateTime)

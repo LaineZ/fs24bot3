@@ -89,6 +89,21 @@ namespace fs24bot3.Commands
         }
 
 
+        [Command("shopcurrency", "shopcur", "curshop", "curshp")]
+        [Description("Курсы валют различных интернет магазинов. Поддерживается только USD.")]
+        [Remarks("Параметр shop допускает следующие значения: `ЦБ-РФ`, `Aliexpress`, `GearBest`, `GeekBuying`, `Banggood`")]
+        public async Task ShopCur(float usd = 1.0f, string shop = "aliexpress")
+        {
+            var curs = await InternetServicesHelper.GetShopCurrencies();
+
+            if (!curs.ContainsKey(shop))
+            {
+                Context.SendSadMessage(Context.Channel);
+                return;
+            }
+            await Context.SendMessage($"{shop}: {usd} USD -> {curs[shop.ToLower()] * usd} RUB");
+        }
+
         [Command("addlyrics", "addlyr")]
         [Description("Добавить свои слова в базу бота: параметр song должен быть в формате `artist - trackname`")]
         public async Task Addlyrics(string rawurl, [Remainder] string song)
