@@ -14,8 +14,8 @@ mkdir releases\win-x64-shared
 
 copy static releases\win-x86-shared
 copy static releases\win-x64-shared
-copy bin\x86\Release\net5.0\win-x86\publish\ releases\win-x86-shared
-copy bin\x64\Release\net5.0\win-x64\publish\ releases\win-x64-shared
+copy bin\x86\Release\net6.0\win-x86\publish\ releases\win-x86-shared
+copy bin\x64\Release\net6.0\win-x64\publish\ releases\win-x64-shared
 
 del releases\win-x86-shared.zip
 del releases\win-x64-shared.zip

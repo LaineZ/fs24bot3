@@ -7,7 +7,7 @@ dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true --self-containe
 
 mkdir releases\linux-x64-shared
 
-copy bin\Release\net5.0\linux-x64\publish releases\linux-x64-shared
+copy bin\Release\net6.0\linux-x64\publish releases\linux-x64-shared
 
 del releases\linux-x64-shared.zip
 del releases\fs24bot3.zip

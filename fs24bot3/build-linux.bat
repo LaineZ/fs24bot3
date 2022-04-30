@@ -8,7 +8,7 @@ dotnet publish -c Release -p:Platform="x64" -r linux-x64 /p:PublishSingleFile=tr
 mkdir releases\linux-x64-bundle
 
 copy static releases\linux-x64-bundle
-copy bin\x64\Release\net5.0\linux-x64\publish releases\linux-x64-bundle
+copy bin\x64\Release\net6.0\linux-x64\publish releases\linux-x64-bundle
 
 del releases\linux-x64-bundle.zip
 
