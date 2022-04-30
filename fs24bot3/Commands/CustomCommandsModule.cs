@@ -78,23 +78,8 @@ namespace fs24bot3.Commands
         [Checks.FullAccount]
         public async Task CustomCmdRegisterUrlAsync(string command, string rawurl)
         {
-            var response = await http.GetResponseAsync(rawurl);
-            if (response != null)
-            {
-                if (response.ContentType.Contains("text/plain"))
-                {
-                    Stream responseStream = response.GetResponseStream();
-                    await CustomCmdRegisterpublic(command, true, new StreamReader(responseStream).ReadToEnd());
-                }
-                else
-                {
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
-                }
-            }
-            else
-            {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось выполнить запрос...");
-            }
+            var response = await http.GetTextPlainResponse(rawurl);
+            await CustomCmdRegisterpublic(command, true, response);
         }
 
         [Command("cmdout")]

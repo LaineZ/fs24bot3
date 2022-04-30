@@ -10,10 +10,7 @@ using Qmmands;
 using Serilog;
 using SQLite;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -69,23 +66,8 @@ namespace fs24bot3.Commands
         [Description("Тоже самое что и exec только работает через URL")]
         public async Task ExecuteAPIUrl(string code, string rawurl)
         {
-            var response = await http.GetResponseAsync(rawurl);
-            if (response != null)
-            {
-                if (response.ContentType.Contains("text/plain"))
-                {
-                    Stream responseStream = response.GetResponseStream();
-                    await ExecuteAPI(code, new StreamReader(responseStream).ReadToEnd());
-                }
-                else
-                {
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
-                }
-            }
-            else
-            {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось выполнить запрос...");
-            }
+            var response = await http.GetTextPlainResponse(rawurl);
+            await ExecuteAPI(code, response);
         }
 
 
@@ -123,46 +105,29 @@ namespace fs24bot3.Commands
                 track = data[1];
             }
 
-            var response = await http.GetResponseAsync(rawurl);
-            if (response != null)
+            var response = await http.GetTextPlainResponse(rawurl);
+            var lyric = new SQL.LyricsCache()
             {
-                if (response.ContentType.Contains("text/plain"))
+                AddedBy = Context.Sender,
+                Lyrics = response,
+                Artist = artist,
+                Track = track
+            };
+
+            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+
+            try
+            {
+                if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 2000))
                 {
-                    Stream responseStream = response.GetResponseStream();
-                    string lyricData = new StreamReader(responseStream).ReadToEnd();
-
-                    var lyric = new SQL.LyricsCache()
-                    {
-                        AddedBy = Context.Sender,
-                        Lyrics = lyricData,
-                        Artist = artist,
-                        Track = track
-                    };
-
-                    var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
-
-                    try
-                    {
-                        if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 2000))
-                        {
-                            Context.BotCtx.Connection.Insert(lyric);
-                            Context.SendErrorMessage(Context.Channel, "Добавлено!");
-                        }
-                    }
-                    catch (SQLiteException)
-                    {
-                        Context.SendErrorMessage(Context.Channel, "[ДЕНЬГИ ВОЗВРАЩЕНЫ] Такая песня уже существует в базе!");
-                        user.AddItemToInv(Context.BotCtx.Shop, "money", 2000);
-                    }
-                }
-                else
-                {
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}НЕ ПОЛУЧИЛОСЬ =( Потому что Content-Type запроса: {response.ContentType} а надо text/plain!");
+                    Context.BotCtx.Connection.Insert(lyric);
+                    Context.SendErrorMessage(Context.Channel, "Добавлено!");
                 }
             }
-            else
+            catch (SQLiteException)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось выполнить запрос...");
+                Context.SendErrorMessage(Context.Channel, "[ДЕНЬГИ ВОЗВРАЩЕНЫ] Такая песня уже существует в базе!");
+                user.AddItemToInv(Context.BotCtx.Shop, "money", 2000);
             }
         }
 
@@ -232,7 +197,7 @@ namespace fs24bot3.Commands
         public async Task WikiHowRand()
         {
             var resp = await new HttpTools().GetResponseAsync("https://ru.wikihow.com/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:Randomizer");
-            await Context.SendMessage(Context.Channel, resp.ResponseUri.ToString());
+            await Context.SendMessage(Context.Channel, resp.RequestMessage.RequestUri.ToString());
         }
 
 
@@ -311,7 +276,7 @@ namespace fs24bot3.Commands
 
             await Context.SendMessage($"({lookup.description}) {lookup.symbol} {IrcClrs.Bold}{stockObj.c} USD{IrcClrs.Reset} (низ: {IrcClrs.Red}{stockObj.l} {IrcClrs.Reset}/ выс: {IrcClrs.Green}{stockObj.h})");
         }
-        
+
         [Command("curcmp", "currencycomapre", "currencycomp", "curcompare", "ccmp")]
         public async Task CurrencyCompare(float amount = 1, string codeFirst = "USD", string codeSecond = "RUB")
         {

@@ -226,9 +226,9 @@ namespace fs24bot3.Commands
 
             if (!File.Exists("chars.sqlite"))
             {
+                var http = new HttpTools();
                 await Context.SendMessage(Context.Channel, $"Загрузка юникода, пожалуйста подождите...");
-                var cl = new WebClient();
-                cl.DownloadFile(new Uri("http://140.ted.ge/chars.sqlite"), "chars.sqlite");
+                await http.DownloadFile("chars.sqlite", "http://140.ted.ge/chars.sqlite");
                 await Context.SendMessage(Context.Channel, $"Таблица юникода, УСПЕШНО ЗАГРУЖЕНА!");
             }
             SQLiteConnection connect = new SQLiteConnection("chars.sqlite");

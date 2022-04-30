@@ -56,50 +56,42 @@ namespace fs24bot3
             return responseString;
         }
 
-        public async Task<String> MakeRequestAsync(String url)
+        public async Task<string> MakeRequestAsync(string url)
         {
-            String responseText = await Task.Run(() =>
+            using (var handler = new HttpClientHandler() { CookieContainer = cookies })
             {
                 try
                 {
-                    HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-                    request.CookieContainer = cookies;
-                    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0";
-
-                    WebResponse response = request.GetResponse();
-
-                    Stream responseStream = response.GetResponseStream();
-                    return new StreamReader(responseStream).ReadToEnd();
+                    Client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
+                    var result = await Client.GetAsync(url);
+                    return await result.Content.ReadAsStringAsync();
                 }
                 catch (Exception e)
                 {
                     Log.Warning("Request to address {0} failed: {1}", url, e.Message);
                     return null;
                 }
-            });
-
-            return responseText;
+            }
         }
 
-        public async Task<WebResponse> GetResponseAsync(String url)
+
+        public async Task<HttpResponseMessage> GetResponseAsync(string url)
         {
-            WebResponse response = await Task.Run(() =>
+            using (var handler = new HttpClientHandler() { CookieContainer = cookies })
             {
                 try
                 {
-                    HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-                    request.CookieContainer = cookies;
-                    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0";
-                    return request.GetResponse();
+                    Client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
+                    var result = await Client.GetAsync(url);
+                    result.EnsureSuccessStatusCode();
+                    return result;
                 }
                 catch (Exception e)
                 {
-                    Log.Warning("Request failed to address: {0} exception: {1}: {2}", url, e.Message, e.InnerException.Message);
+                    Log.Warning("Request to address {0} failed: {1}", url, e.Message);
                     return null;
                 }
-            });
-
-            return response;
+            }
         }
 
         public async Task<bool> PingHost(string nameOrAddress)
@@ -129,15 +121,23 @@ namespace fs24bot3
             return pingable;
         }
 
+        public async Task DownloadFile(string filename, string url)
+        {
+            var resp = await GetResponseAsync(url);
+            await File.WriteAllBytesAsync(filename, await resp.Content.ReadAsByteArrayAsync());
+        }
         public async Task<string> GetTextPlainResponse(string rawurl)
         {
             var response = await GetResponseAsync(rawurl);
             if (response != null)
             {
-                if (response.ContentType == "text/plain")
+                if (response.Content.Headers.ContentType.MediaType == "text/plain")
                 {
-                    Stream responseStream = response.GetResponseStream();
-                    return new StreamReader(responseStream).ReadToEnd();
+                    return await response.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    throw new InvalidDataException($"Ошибка в Content-Type запроса: Необходимый Content-Type: text/plain получилось: {response.Content.Headers.ContentType.MediaType}");
                 }
             }
             return null;
