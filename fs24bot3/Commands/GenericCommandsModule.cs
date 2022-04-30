@@ -13,6 +13,8 @@ using System.Globalization;
 using fs24bot3.BotSystems;
 using fs24bot3.Helpers;
 using fs24bot3.Properties;
+using SQLite;
+using System.Net;
 
 namespace fs24bot3.Commands
 {
@@ -213,6 +215,34 @@ namespace fs24bot3.Commands
             await Context.SendMessage(Context.Channel, warnsStr);
 
             Context.User.DeleteWarnings();
+        }
+
+        [Command("unicode", "u")]
+        [Description("Поиск кодпоинтов и симоволов юникода")]
+        public async Task UnicodeFind([Remainder] string find)
+        {
+
+            find = find.ToLower();
+
+            if (!File.Exists("chars.sqlite"))
+            {
+                await Context.SendMessage(Context.Channel, $"Загрузка юникода, пожалуйста подождите...");
+                var cl = new WebClient();
+                cl.DownloadFile(new Uri("http://140.ted.ge/chars.sqlite"), "chars.sqlite");
+                await Context.SendMessage(Context.Channel, $"Таблица юникода, УСПЕШНО ЗАГРУЖЕНА!");
+            }
+            SQLiteConnection connect = new SQLiteConnection("chars.sqlite");
+
+            var query = connect.Table<SQL.Chars>().Where(x => x.Symbol == find || x.Hexcode == find || x.Name.ToLower().Contains(find)).Take(10).ToList();
+
+            if (query.Any())
+            {
+                await Context.SendMessage(string.Join(", ", query.Select(x => $"{IrcClrs.Reset}{IrcClrs.Bold}{x.Name}{IrcClrs.Reset} {x.Hexcode} {IrcClrs.Green}({x.Symbol})")));
+            }
+            else
+            {
+                Context.SendSadMessage(Context.Channel, "Символы не обнаружены");
+            }
         }
 
         [Command("songame", "songg", "sg")]

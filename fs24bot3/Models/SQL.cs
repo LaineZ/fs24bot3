@@ -41,6 +41,14 @@ namespace fs24bot3.Models
             public string Data { get; set; }
         }
 
+        public class Chars
+        {
+            [PrimaryKey]
+            public string Symbol { get; set; }
+            public string Hexcode { get; set; }
+            public string Name { get; set; }
+        }
+
         public class Warnings
         {
             [PrimaryKey]
