@@ -102,6 +102,17 @@ namespace fs24bot3.Commands
         public async Task CollectGarbage()
         {
             GC.Collect();
+            Context.BotCtx.Connection.Execute("VACUUM");
+            await Context.SendMessage(Context.Channel, "Мусор вывезли!");
+        }
+
+
+        [Command("viewunhandledexcepitions", "viewunhandled", "execeptions", "exception")]
+        [Checks.CheckAdmin]
+        public async Task UnhandledExceptionRead()
+        {
+            GC.Collect();
+            Context.BotCtx.Connection.Execute("VACUUM");
             await Context.SendMessage(Context.Channel, "Мусор вывезли!");
         }
 

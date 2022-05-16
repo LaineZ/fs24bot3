@@ -1,8 +1,5 @@
 ﻿using fs24bot3.Core;
-using fs24bot3.Models;
-using fs24bot3.QmmandsProcessors;
 using NetIRC;
-using Qmmands;
 using Serilog;
 using System;
 using System.Text;
@@ -62,7 +59,7 @@ namespace fs24bot3
                 var prefix = user.GetUserPrefix();
                 var messageString = message.Trailing.TrimEnd();
 
-                if (nick == ConfigurationProvider.Config.BridgeNickname || user.UserIsIgnored())
+                if (nick == ConfigurationProvider.Config.BridgeNickname)
                 {
                     // trim bridged user nickname like
                     // <cheburator> //bpm140//: @ms привет
@@ -73,7 +70,7 @@ namespace fs24bot3
                 }
                 else
                 {
-                    Botara.MessageTrigger(nick, target, message);
+                    if (!user.UserIsIgnored()) { Botara.MessageTrigger(nick, target, message); }
                 }
 
                 if (message.Parameters[0] == client.User.Nick)
@@ -81,9 +78,11 @@ namespace fs24bot3
                     target = message.Prefix.From;
                 }
 
-                bool ppc = messageString.StartsWith("p") && Transalator.AlloPpc;
-
-                await Botara.ExecuteCommand(nick, target, messageString, message, prefix, ppc);
+                if (!user.UserIsIgnored())
+                {
+                    bool ppc = messageString.StartsWith("p") && Transalator.AlloPpc;
+                    await Botara.ExecuteCommand(nick, target, messageString, message, prefix, ppc);
+                }
             }
 
             if (message.IRCCommand == IRCCommand.ERROR)

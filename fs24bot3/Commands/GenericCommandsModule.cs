@@ -14,7 +14,6 @@ using fs24bot3.BotSystems;
 using fs24bot3.Helpers;
 using fs24bot3.Properties;
 using SQLite;
-using System.Net;
 
 namespace fs24bot3.Commands
 {
@@ -51,8 +50,10 @@ namespace fs24bot3.Commands
             var cmds = Service.GetAllCommands();
             string commandsOutput = Resources.help;
             var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
-            string commandList = string.Join('\n', Service.GetAllCommands().Select(x => $"<strong>{prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
-            string customList = string.Join('\n', string.Join("\n", customCommands.Select(x => $"<p>{prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {x.IsLua == 1} </p>")));
+            string commandList = string.Join('\n', Service.GetAllCommands().Where(x => !x.Checks.Any(x => x is Checks.CheckAdmin)).
+                Select(x => $"<strong>{prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
+            string customList = string.Join('\n', string.Join("\n", customCommands.
+                Select(x => $"<p>{prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {x.IsLua == 1} </p>")));
 
             commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
             commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
@@ -75,12 +76,12 @@ namespace fs24bot3.Commands
                         await Context.SendMessage(Context.Channel, IrcClrs.Bold + cmd.Remarks);
                     }
 
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}Алиасы: {IrcClrs.Reset}{String.Join(", ", cmd.Aliases)}");
+                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}Алиасы: {IrcClrs.Reset}{string.Join(", ", cmd.Aliases)}");
                     return;
                 }
             }
 
-            Context.SendSadMessage(Context.Channel, $"К сожалению команда не найдена, если вы пытаетесь найти кастом команду: используйте {Context.User.GetUserPrefix()}cmdinfo");
+            Context.SendSadMessage(Context.Channel, $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {Context.User.GetUserPrefix()}cmdinfo");
         }
 
         [Command("remind", "in")]
@@ -151,6 +152,23 @@ namespace fs24bot3.Commands
 
             await Context.SendMessage($"Сейчас у {username} {TimeZoneInfo.ConvertTimeFromUtc(time, timezone).ToString(rus)} {TrimTimezoneName(timezone.DisplayName)}");
         }
+
+        [Command("at")]
+        [Description("Создать напоминание в опредленную дату")]
+        public async Task RemindAt(string time, [Remainder] string message = "Remind")
+        {
+            bool parsed = DateTime.TryParse(time, out DateTime timeparsed);
+            if (!parsed)
+            {
+                Context.SendSadMessage(Context.Channel, "Невозможно пропарсить ту жесть которую ты написал...");
+                return;
+            }
+            var timezone = Context.User.GetTimeZone();
+            Context.User.AddRemindAbs(timeparsed, message);
+
+            await Context.SendMessage(Context.Channel, $"{message} в {timeparsed}");
+        }
+
 
         [Command("reminds", "rems")]
         [Description("Список напоминаний")]

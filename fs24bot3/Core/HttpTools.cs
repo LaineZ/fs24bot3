@@ -39,6 +39,7 @@ namespace fs24bot3
             if (hostname.Length > 1) { _ = int.TryParse(hostname[1], out port); }
             if (IPAddress.TryParse(hostname[0], out IPAddress ip))
             {
+                Log.Verbose("parsed addr: {0}:{1}", ip, port);
                 return new IPEndPoint(ip, port);
             }
             else

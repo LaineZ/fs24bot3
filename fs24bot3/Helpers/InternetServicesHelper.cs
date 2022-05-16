@@ -57,12 +57,22 @@ namespace fs24bot3.Helpers
             var web = new HtmlWeb();
             var doc = await web.LoadFromWebAsync("https://helpix.ru/currency/");
             HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//td[@class=\"b-tabcurr__td\"]");
+            //Log.Verbose("{0}", doc.ParsedText);
 
-            currencies.Add("цб-рф", float.Parse(nodes[1].InnerText, CultureInfo.InvariantCulture));
-            currencies.Add("aliexpress", float.Parse(nodes[2].InnerText,CultureInfo.InvariantCulture));
-            currencies.Add("gearbest", float.Parse(nodes[3].InnerText, CultureInfo.InvariantCulture));
-            currencies.Add("geekbuying", float.Parse(nodes[4].InnerText, CultureInfo.InvariantCulture));
-            currencies.Add("banggood", float.Parse(nodes[5].InnerText, CultureInfo.InvariantCulture));
+            int idx = 1;
+
+            foreach (var item in new string[] { "цб-рф", "aliexpress", "gearbest", "geekbuying", "banggood" })
+            {
+                try
+                {
+                    currencies.Add(item, float.Parse(nodes[idx].InnerText, CultureInfo.InvariantCulture));
+                }
+                catch (FormatException)
+                {
+                    Log.Error("Failed to get price for {0}! excepted floating point got: {1} id: {2}", item, nodes[idx].InnerText, idx);
+                }
+                idx++;
+            }
 
             return currencies;
         }

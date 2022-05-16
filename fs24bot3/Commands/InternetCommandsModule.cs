@@ -18,7 +18,6 @@ namespace fs24bot3.Commands
 {
     public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
-
         public CommandService Service { get; set; }
         private readonly HttpTools http = new HttpTools();
 
@@ -235,7 +234,8 @@ namespace fs24bot3.Commands
         }
 
         [Command("stocks", "stock")]
-        public async Task Stocks(string stock = "AAPL")
+        [Description("Акции. параметр lookUpOnlySymbol позволяет сразу искать акцию по символу, а не названию компании")]
+        public async Task Stocks(string stock = "AAPL", bool lookUpOnlySymbol = false)
         {
             var resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/search?q=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);
 
@@ -256,7 +256,7 @@ namespace fs24bot3.Commands
 
             resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + "&token=" + ConfigurationProvider.Config.FinnhubKey);
 
-            if (resp == null)
+            if (resp == null || lookUpOnlySymbol)
             {
                 // trying just find stock by symbol
                 resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);

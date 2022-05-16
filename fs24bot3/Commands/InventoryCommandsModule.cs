@@ -79,7 +79,9 @@ namespace fs24bot3.Commands
         [Description("Продать товар")]
         public async Task Sell([Remainder] string itemnamecount)
         {
-            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
+            Context.User.EnableSilentMode();
+            int count = 1;
+            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out count);
             string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
 
             var (success, price) = await Context.BotCtx.Shop.Sell(Context.User, itemname, count);

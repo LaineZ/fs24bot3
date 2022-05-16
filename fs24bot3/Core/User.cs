@@ -6,6 +6,7 @@ using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +20,6 @@ namespace fs24bot3.Core
         private CommandProcessor.CustomCommandContext Ctx;
 
         const int XP_MULTIPLER = 150;
-
 
         public User(string username, SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
         {
@@ -45,7 +45,6 @@ namespace fs24bot3.Core
                 return TimeZoneInfo.FindSystemTimeZoneById(GetUserInfo().Timezone);
             }
         }
-
 
         public void CreateAccountIfNotExist()
         {
@@ -159,6 +158,7 @@ namespace fs24bot3.Core
 
         public bool UserIsIgnored()
         {
+            Log.Verbose("Ignored: {0}", Connect.Table<SQL.Ignore>().Where(v => v.Username.Equals(Username)).Any());
             return Connect.Table<SQL.Ignore>().Where(v => v.Username.Equals(Username)).Any();
         }
 
@@ -232,6 +232,19 @@ namespace fs24bot3.Core
                 Nick = Username,
                 Message = title,
                 RemindDate = (uint)((DateTimeOffset)DateTime.Now.Add(time)).ToUnixTimeSeconds(),
+            };
+
+            Connect.Insert(remind);
+        }
+
+
+        public void AddRemindAbs(DateTime time, string title)
+        {
+            var remind = new SQL.Reminds()
+            {
+                Nick = Username,
+                Message = title,
+                RemindDate = (uint)((DateTimeOffset)time).ToUnixTimeSeconds(),
             };
 
             Connect.Insert(remind);
