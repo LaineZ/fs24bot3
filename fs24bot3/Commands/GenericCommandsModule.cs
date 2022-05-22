@@ -426,7 +426,7 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("seen")]
+        [Command("seen", "see", "lastseen")]
         [Description("Когда последний раз пользователь писал сообщения")]
         public async Task LastSeen(string destination)
         {
@@ -441,9 +441,9 @@ namespace fs24bot3.Commands
 
             if (date.Days < 1000)
             {
-                await Context.SendMessage(Context.Channel, $"Последний раз я видел {destination} {ToReadableString(date)} назад");
+                await Context.SendMessage(Context.Channel, $"Последний раз я видел {IrcClrs.Bold}{destination}{IrcClrs.Reset} {ToReadableString(date)} назад");
                 var messages = await InternetServicesHelper.GetMessages(user.GetLastMessage());
-                await Context.SendMessage(Context.Channel, $"Последнее сообщение от пользователя: {messages.Where(x => x.Nick == destination).FirstOrDefault().Message}");
+                await Context.SendMessage(Context.Channel, $"Последнее сообщение от пользователя: {messages.Where(x => x.Nick == destination).LastOrDefault().Message}");
             }
             else
             {
