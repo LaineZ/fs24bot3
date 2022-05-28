@@ -356,7 +356,6 @@ namespace fs24bot3.Commands
             }
         }
 
-
         [Command("pearls", "inpearls", "inp", "ip")]
         [Description("Самые душевные цитаты в мире!")]
         public async Task InPearls(string category = "", int page = 0)

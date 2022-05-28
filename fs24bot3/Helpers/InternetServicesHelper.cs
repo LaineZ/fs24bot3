@@ -79,7 +79,7 @@ namespace fs24bot3.Helpers
 
         public static async Task<List<FomalhautMessage>> GetMessages(DateTime dateTime)
         {
-            var output = await http.MakeRequestAsync("https://logs.fomalhaut.me/download/" + dateTime.ToString("yyyy-MM-dd") + ".log");
+            var output = await http.MakeRequestAsyncNoCookie("https://logs.fomalhaut.me/download/" + dateTime.ToString("yyyy-MM-dd") + ".log");
 
             var list = new List<FomalhautMessage>();
 

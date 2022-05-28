@@ -20,6 +20,11 @@ namespace fs24bot3
         readonly CookieContainer cookies = new CookieContainer();
         HttpClient Client = new HttpClient();
 
+        public HttpTools()
+        {
+            Client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
+        }
+
         public string RecursiveHtmlDecode(string str)
         {
             if (string.IsNullOrWhiteSpace(str)) return str;
@@ -57,21 +62,41 @@ namespace fs24bot3
             return responseString;
         }
 
-        public async Task<string> MakeRequestAsync(string url)
+        public async Task<string> MakeRequestAsyncNoCookie(string url)
         {
-            using (var handler = new HttpClientHandler() { CookieContainer = cookies })
+            using var handler = new HttpClientHandler();
+            try
             {
-                try
+                var result = await Client.GetAsync(url);
+                if (result.IsSuccessStatusCode)
                 {
-                    Client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
-                    var result = await Client.GetAsync(url);
                     return await result.Content.ReadAsStringAsync();
                 }
-                catch (Exception e)
+                throw new InvalidDataException($"{result.StatusCode}: {result.Content.ReadAsStringAsync().Result}");
+            }
+            catch (Exception e)
+            {
+                Log.Warning("Request to address {0} failed: {1}", url, e.Message);
+                return null;
+            }
+        }
+
+        public async Task<string> MakeRequestAsync(string url)
+        {
+            using var handler = new HttpClientHandler() { CookieContainer = cookies };
+            try
+            {
+                var result = await Client.GetAsync(url);
+                if (result.IsSuccessStatusCode)
                 {
-                    Log.Warning("Request to address {0} failed: {1}", url, e.Message);
-                    return null;
+                    return await result.Content.ReadAsStringAsync();
                 }
+                throw new InvalidDataException($"{result.StatusCode}: {result.Content}");
+            }
+            catch (Exception e)
+            {
+                Log.Warning("Request to address {0} failed: {1}", url, e.Message);
+                return null;
             }
         }
 
@@ -82,7 +107,6 @@ namespace fs24bot3
             {
                 try
                 {
-                    Client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
                     var result = await Client.GetAsync(url);
                     result.EnsureSuccessStatusCode();
                     return result;

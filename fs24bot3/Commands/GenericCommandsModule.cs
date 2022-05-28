@@ -14,6 +14,7 @@ using fs24bot3.BotSystems;
 using fs24bot3.Helpers;
 using fs24bot3.Properties;
 using SQLite;
+using System.Diagnostics;
 
 namespace fs24bot3.Commands
 {
@@ -33,6 +34,12 @@ namespace fs24bot3.Commands
             if (string.IsNullOrEmpty(formatted)) formatted = "0 seconds";
 
             return formatted;
+        }
+
+        private IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
+        {
+            for (var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
+                yield return day;
         }
 
         private string TrimTimezoneName(string name)
@@ -424,6 +431,60 @@ namespace fs24bot3.Commands
             {
                 await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}НЕ ПОЛУЧИЛОСЬ :(");
             }
+        }
+
+        [Command("getimages")]
+        [Description("Получает изображение из логов")]
+        public async Task GetImagesFromLogs(string nickname, string dStart, string dEnd, bool htmlOutput = true)
+        {
+            Regex regex = new("https?://.*.(png|jpg|gif|webp|jpeg)");
+            var dateStart = DateTime.Now;
+            DateTime.TryParse(dStart, out dateStart);
+
+            Stopwatch stopWatch = new Stopwatch();
+            var result = DateTime.TryParse(dEnd, out DateTime dateEnd);
+            string output = "";
+
+            if (!result)
+            {
+                await Context.SendMessage(Context.Channel, "Ошибка ввода конечной даты!");
+                return;
+            }
+
+            var totalDays = EachDay(dateStart, dateEnd).Count();
+            int current = 0;
+
+            foreach (var date in EachDay(dateStart, dateEnd))
+            {
+                stopWatch.Start();
+                var messages = await InternetServicesHelper.GetMessages(date);
+                foreach (var message in messages)
+                {
+                    var captures = regex.Match(message.Message);
+                    if (message.Nick == nickname && captures.Success)
+                    {
+                        if (htmlOutput)
+                        {
+                            output += $"<p>{message.Date} from <strong>{message.Nick}</strong></p><img src='{captures.Value}' alt='{captures.Value}'>\n";
+                        }
+                        else
+                        {
+                            output += $"{captures.Value}\n";
+                        }
+                    }
+                }
+                stopWatch.Stop();
+                current++;
+
+                if (Context.Random.Next(0, 10) == 1)
+                {
+                   var left = stopWatch.ElapsedTicks * (totalDays - current);
+                   await Context.SendMessage(Context.Channel, $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
+                }
+
+                stopWatch.Restart();
+            }
+            await Context.SendMessage(Context.Channel, await InternetServicesHelper.UploadToTrashbin(output, htmlOutput ? "add" : "addplain"));
         }
 
         [Command("seen", "see", "lastseen")]
