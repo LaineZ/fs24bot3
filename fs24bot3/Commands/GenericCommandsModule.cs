@@ -64,7 +64,7 @@ namespace fs24bot3.Commands
 
             commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
             commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
-            
+
             string link = await InternetServicesHelper.UploadToTrashbin(commandsOutput);
             await Context.SendMessage(Context.Channel, $"Выложены команды по этой ссылке: {link} также вы можете написать {prefix}helpcmd имякоманды для получение дополнительной помощи");
         }
@@ -433,7 +433,7 @@ namespace fs24bot3.Commands
             }
         }
 
-        [Command("getimages")]
+        [Command("getimages", "images", "img", "imagefind", "findimage")]
         [Description("Получает изображение из логов")]
         public async Task GetImagesFromLogs(string nickname, string dStart, string dEnd, bool htmlOutput = true)
         {
@@ -465,7 +465,7 @@ namespace fs24bot3.Commands
                     {
                         if (htmlOutput)
                         {
-                            output += $"<p>{message.Date} from <strong>{message.Nick}</strong></p><img src='{captures.Value}' alt='{captures.Value}'>\n";
+                            output += $"<p>{message.Date} from <strong>{message.Nick}</strong></p><img src='{captures.Value}' alt='{captures.Value}' style='width: auto; height: 100%;'>\n";
                         }
                         else
                         {
@@ -478,8 +478,8 @@ namespace fs24bot3.Commands
 
                 if (Context.Random.Next(0, 10) == 1)
                 {
-                   var left = stopWatch.ElapsedTicks * (totalDays - current);
-                   await Context.SendMessage(Context.Channel, $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
+                    var left = stopWatch.ElapsedTicks * (totalDays - current);
+                    await Context.SendMessage(Context.Channel, $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
                 }
 
                 stopWatch.Restart();
