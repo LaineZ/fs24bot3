@@ -8,10 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace fs24bot3.Properties {
+namespace fs24bot3.Properties
+{
     using System;
-    
-    
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -22,44 +23,52 @@ namespace fs24bot3.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
-        
+    internal class Resources
+    {
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        internal Resources()
+        {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
-            get {
-                if (object.ReferenceEquals(resourceMan, null)) {
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if (object.ReferenceEquals(resourceMan, null))
+                {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("fs24bot3.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
-            get {
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
                 return resourceCulture;
             }
-            set {
+            set
+            {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;
         ///&lt;html&gt;
@@ -92,12 +101,14 @@ namespace fs24bot3.Properties {
         ///      padding-left: 1em;
         /// [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string help {
-            get {
+        internal static string help
+        {
+            get
+            {
                 return ResourceManager.GetString("help", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;
         ///&lt;html&gt;
@@ -130,12 +141,14 @@ namespace fs24bot3.Properties {
         ///      background-color: #fbf1c7;
         ///    } [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string shop {
-            get {
+        internal static string shop
+        {
+            get
+            {
                 return ResourceManager.GetString("shop", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to a
         ///about
@@ -236,9 +249,27 @@ namespace fs24bot3.Properties {
         ///ей
         ///ел [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string stopwords {
-            get {
+        internal static string stopwords
+        {
+            get
+            {
                 return ResourceManager.GetString("stopwords", resourceCulture);
+            }
+        }
+
+        internal static string adjectives
+        {
+            get
+            {
+                return ResourceManager.GetString("adjectives", resourceCulture);
+            }
+        }
+
+        internal static string nouns
+        {
+            get
+            {
+                return ResourceManager.GetString("nouns", resourceCulture);
             }
         }
     }

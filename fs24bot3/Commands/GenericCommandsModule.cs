@@ -12,9 +12,10 @@ using fs24bot3.Core;
 using System.Globalization;
 using fs24bot3.BotSystems;
 using fs24bot3.Helpers;
-using fs24bot3.Properties;
 using SQLite;
 using System.Diagnostics;
+using fs24bot3.Properties;
+using System.Text;
 
 namespace fs24bot3.Commands
 {
@@ -540,6 +541,27 @@ namespace fs24bot3.Commands
 
                 await Context.SendMessage(Context.Channel, outputmsg);
             }
+        }
+
+        [Command("dtfnamegen", "dtfname")]
+        [Description("Генератор имен")]
+        public async Task Namegen(uint count = 1)
+        {
+            count = Math.Clamp(count, 1, 10);
+            var output = new StringBuilder();
+            var nouns = Resources.nouns.Split("\n");
+            var adjectives = Resources.adjectives.Split("\n");
+
+            for (int i = 0; i < count; i++)
+            {
+                if (i > 0)
+                {
+                    output.Append(", ");
+                }
+                output.Append(adjectives.Random()).Append(' ').Append(nouns.Random());
+
+            }
+            await Context.SendMessage(output.ToString());
         }
     }
 }

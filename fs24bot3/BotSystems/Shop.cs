@@ -75,7 +75,7 @@ namespace fs24bot3.BotSystems
                 {
                     if (shopItem.Value.Price >= Rand.Next(5800, 100500))
                     {
-                        Log.Verbose("Descreaseing price for {0}", shopItem.Value.Name);
+                        Log.Verbose("Decreasing price for {0}", shopItem.Value.Name);
                         shopItem.Value.Price -= Rand.Next(1, 3);
                     }
                 }
