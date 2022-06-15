@@ -16,6 +16,42 @@ namespace fs24bot3.Commands
 
         public CommandService Service { get; set; }
 
+        private async Task BuyOrSellInternal(string itemnamecount, bool sell = false) 
+        {
+            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out var count);
+            count = Math.Clamp(count, 1, int.MaxValue);
+            string itemname = Regex.Replace(itemnamecount, @"\d+", string.Empty).Trim();
+
+            var (success, price) = (false, 0);
+
+            if (sell)
+            {
+                (success, price) = await Context.BotCtx.Shop.Sell(Context.User, itemname, count);
+            }
+            else
+            {
+                (success, price) = await Context.BotCtx.Shop.Buy(Context.User, itemname, count);
+            }
+
+            if (success)
+            {
+                await Context.SendMessage(Context.Channel, 
+                $"{IrcClrs.Green}Вы успешно {(sell ? "продали" : "купили")} {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
+            }
+            else
+            {
+                if (Context.BotCtx.Shop.Items[itemname].Sellable)
+                {
+                    Context.SendSadMessage(Context.Channel, 
+                    $"Данный предмет невозможно {(sell ? "продать" : $"купить. Недостаточно денег: {price}")}.");
+                }
+                else
+                {
+                    Context.SendSadMessage(Context.Channel, $"У вас нет такого предмета!");
+                }
+            }
+        }
+
         [Command("shop")]
         [Description("Магазин")]
         public async Task Shop()
@@ -42,16 +78,19 @@ namespace fs24bot3.Commands
             {
                 if (!useSlugs)
                 {
-                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
+                    await Context.SendMessage(Context.Channel, 
+                    Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
                 }
                 else
                 {
-                    await Context.SendMessage(Context.Channel, Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
+                    await Context.SendMessage(Context.Channel, 
+                    Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
                 }
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? {Context.User.GetUserPrefix()}shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
+                await Context.SendMessage(Context.Channel, 
+                $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? {Context.User.GetUserPrefix()}shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
             }
         }
 
@@ -60,18 +99,8 @@ namespace fs24bot3.Commands
         [Description("Купить товар")]
         public async Task Buy([Remainder] string itemnamecount)
         {
-            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
-            string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
-            var (success, price) = await Context.BotCtx.Shop.Buy(Context.User, itemname, count);
-
-            if (success)
-            {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}Вы успешно купили {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
-            }
-            else
-            {
-                Context.SendSadMessage(Context.Channel, $"Недостаточно денег: {price} чтобы купить {Context.BotCtx.Shop.Items[itemname].Name} x{count}");
-            }
+            Context.User.EnableSilentMode();
+            await BuyOrSellInternal(itemnamecount, false);
         }
 
         [Command("sell")]
@@ -80,27 +109,7 @@ namespace fs24bot3.Commands
         public async Task Sell([Remainder] string itemnamecount)
         {
             Context.User.EnableSilentMode();
-            int count = 1;
-            int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out count);
-            string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
-
-            var (success, price) = await Context.BotCtx.Shop.Sell(Context.User, itemname, count);
-
-            if (success)
-            {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}Вы успешно продали {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
-            }
-            else
-            {
-                if (Context.BotCtx.Shop.Items[itemname].Sellable)
-                {
-                    Context.SendSadMessage(Context.Channel, $"Такой предмет не продается!");
-                }
-                else
-                {
-                    Context.SendSadMessage(Context.Channel, $"У вас нет такого предмета!");
-                }
-            }
+            await BuyOrSellInternal(itemnamecount, true);
         }
 
         [Command("sellall")]
@@ -161,7 +170,7 @@ namespace fs24bot3.Commands
 
             var result = top.OrderByDescending(p => p.Count).ToList();
 
-            await Context.SendMessage(Context.Channel, "ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: " + itemname);
+            await Context.SendMessage(Context.Channel, $"ТОП 5 ПОЛЬЗОВАТЕЛЕЙ У КОТОРЫХ ЕСТЬ: {itemname}");
 
             foreach (var (Name, Count) in result.Take(5))
             {

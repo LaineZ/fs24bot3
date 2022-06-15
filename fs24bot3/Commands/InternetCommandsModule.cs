@@ -387,7 +387,8 @@ namespace fs24bot3.Commands
             MCServer server = new MCServer(hostname.Address.ToString(), hostname.Port);
             ServerStatus status = server.Status();
             double ping = server.Ping();
-            await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{ipaddr}{IrcClrs.Reset}: ({status.Version.Name}): Игроки: {IrcClrs.Bold}{status.Players.Online}/{status.Players.Max}{IrcClrs.Reset} {IrcClrs.Green}Пинг: {ping} мс");
+            await Context.SendMessage(Context.Channel, 
+            $"{IrcClrs.Bold}{ipaddr}{IrcClrs.Reset}: ({status.Version.Name}): Игроки: {IrcClrs.Bold}{status.Players.Online}/{status.Players.Max}{IrcClrs.Reset} {IrcClrs.Green}Пинг: {ping} мс");
         }
     }
 }

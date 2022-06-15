@@ -29,6 +29,9 @@ namespace fs24bot3.Core
         }
 
 
+        /// <summary>
+        /// Disables Chat-context related messages. (just sets to null Ctx variable, lol)
+        /// </summary>
         public void EnableSilentMode()
         {
             Ctx = null;

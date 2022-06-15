@@ -16,14 +16,13 @@ namespace fs24bot3.Commands
     {
 
         public CommandService Service { get; set; }
-        private Regex WordRegex = new Regex(@"\S*");
+        private readonly Regex WordRegex = new Regex(@"\S*");
 
         [Command("daystat")]
         [Description("Статистика за день")]
         public async Task Daystat(string dateString = "")
         {
-            DateTime date;
-            var res = DateTime.TryParse(dateString, out date);
+            var res = DateTime.TryParse(dateString, out DateTime date);
 
             if (!res) { date = DateTime.Now; }
 
@@ -40,7 +39,7 @@ namespace fs24bot3.Commands
             string mostActives = string.Join(" ", sms.GroupBy(msg => msg.Nick).OrderByDescending(grp => grp.Count())
                         .Select(grp => grp.Key).Take(3));
             string concatedMessage = string.Join("\n", sms.Select(x => x.Message.TrimEnd())).ToLower();
-            List<(string, string)> words = new List<(string, string)>();
+            List<(string, string)> words = new();
 
             var users = Context.BotCtx.Connection.Table<SQL.UserStats>().ToList();
             var caputures = WordRegex.Matches(concatedMessage);

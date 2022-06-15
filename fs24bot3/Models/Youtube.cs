@@ -49,7 +49,7 @@ namespace fs24bot3.Models
             public string url { get; set; }
             public string ext { get; set; }
             public int quality { get; set; }
-            public int filesize { get; set; }
+            public long filesize { get; set; }
             public string protocol { get; set; }
             public DownloaderOptions downloader_options { get; set; }
             public double? abr { get; set; }
@@ -72,7 +72,7 @@ namespace fs24bot3.Models
             public string ext { get; set; }
             public int? height { get; set; }
             public string url { get; set; }
-            public int filesize { get; set; }
+            public long filesize { get; set; }
             public int quality { get; set; }
             public string protocol { get; set; }
             public DownloaderOptions downloader_options { get; set; }
