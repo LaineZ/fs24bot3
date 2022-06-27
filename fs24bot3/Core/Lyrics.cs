@@ -5,6 +5,7 @@ using Serilog;
 using SQLite;
 using System;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -35,7 +36,7 @@ namespace fs24bot3.Core
             else
             {
                 Log.Verbose("Using internet");
-                string lyric = string.Empty;
+                var lyric = new StringBuilder();
                 string url = string.Empty;
                 Regex removeVerse = new Regex("\\[.*\\]");
 
@@ -78,21 +79,23 @@ namespace fs24bot3.Core
 
                 foreach (var node in divContainer)
                 {
-                    lyric += HttpUtility.HtmlDecode(node.InnerHtml.Replace("<br>", "\n"));
+                    lyric.Append(HttpUtility.HtmlDecode(node.InnerHtml.Replace("<br>", "\n")));
                 }
 
-                lyric = Regex.Replace(lyric, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
-                lyric = Regex.Replace(lyric, @"<[^>]*>", String.Empty, RegexOptions.Multiline);
+                string lyricFinal = lyric.ToString();
+
+                lyricFinal = Regex.Replace(lyricFinal, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
+                lyricFinal = Regex.Replace(lyricFinal, @"<[^>]*>", String.Empty, RegexOptions.Multiline);
 
                 var lyricsToCache = new SQL.LyricsCache()
                 {
                     AddedBy = null,
                     Artist = Artist,
                     Track = Track,
-                    Lyrics = lyric
+                    Lyrics = lyricFinal
                 };
                 Connection.Insert(lyricsToCache);
-                return lyric;
+                return lyricFinal;
             }
         }
     }

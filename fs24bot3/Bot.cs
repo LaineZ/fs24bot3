@@ -1,4 +1,4 @@
-﻿using fs24bot3.BotSystems;
+﻿using fs24bot3.Systems;
 using fs24bot3.Commands;
 using fs24bot3.Core;
 using fs24bot3.Helpers;
@@ -28,11 +28,9 @@ namespace fs24bot3
         public Shop Shop { get; set; }
         public Songame SongGame { get; set; }
         public List<string> AcknownUsers = new List<string>();
-
-        public int Tickrate = 15000;
-
         public string Name { get; private set; }
 
+        public Profiler PProfiler { get; private set; }
         public Bot()
         {
             Service.AddModule<GenericCommandsModule>();
@@ -50,6 +48,10 @@ namespace fs24bot3
             BotClient = new Client(new NetIRC.User(ConfigurationProvider.Config.Name, "Sopli IRC 3.0"), new TcpClientConnection(ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port));
             CustomCommandProcessor = new CustomCommandProcessor(this);
             Name = ConfigurationProvider.Config.Name;
+            PProfiler = new Profiler();
+
+            PProfiler.AddMetric("update");
+            PProfiler.AddMetric("command");
 
             // check for custom commands used in a bot
             Log.Information("Checking for user commands with incorrect names");
@@ -64,28 +66,6 @@ namespace fs24bot3
                     user.AddWarning($"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot добавилась команда с таким же именем, ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте {user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем", this);
                 }
             }
-
-            new Thread(async () =>
-            {
-                Log.Information("Reminds thread started!");
-                while (true)
-                {
-                    Thread.Sleep(1000);
-                    var query = Connection.Table<SQL.Reminds>();
-
-                    foreach (var item in query)
-                    {
-                        DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                        dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
-                        if (dtDateTime <= DateTime.Now)
-                        {
-                            string ch = item.Channel ?? ConfigurationProvider.Config.Channel;
-                            await SendMessage(ch, $"{item.Nick}: {item.Message}!");
-                            Connection.Delete(item);
-                        }
-                    }
-                }
-            }).Start();
             Log.Information("Bot: Construction complete!");
         }
 
@@ -94,6 +74,7 @@ namespace fs24bot3
             await BotClient.SendRaw("NICK " + nickname);
             Name = nickname;
         }
+
         public string CommandSuggestion(string prefix, string command)
         {
             var totalCommands = new List<string>();
@@ -113,7 +94,7 @@ namespace fs24bot3
                 .Take(5));
         }
 
-        public void ProccessInfinite()
+        public async void ProccessInfinite()
         {
             // start shop
             Shop = new Shop(this);
@@ -121,15 +102,31 @@ namespace fs24bot3
 
             while (true)
             {
-                Thread.Sleep(Tickrate);
-                var query = Connection.Table<SQL.UserStats>();
-                foreach (var users in query)
+                Thread.Sleep(1000);
+                PProfiler.BeginMeasure("update");
+                var users = Connection.Table<SQL.UserStats>();
+                foreach (var user in users)
                 {
-                    var onTick = new EventProcessors.OnTick(users.Nick, Connection);
+                    var onTick = new EventProcessors.OnTick(user.Nick, Connection);
                     onTick.UpdateUserPaydays(Shop);
                     onTick.RemoveLevelOneAccs();
                 }
                 Shop.UpdateShop();
+
+                var query = Connection.Table<SQL.Reminds>();
+
+                foreach (var item in query)
+                {
+                    DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                    dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
+                    if (dtDateTime <= DateTime.Now)
+                    {
+                        string ch = item.Channel ?? ConfigurationProvider.Config.Channel;
+                        await SendMessage(ch, $"{item.Nick}: {item.Message}!");
+                        Connection.Delete(item);
+                    }
+                }
+                PProfiler.EndMeasure("update");
             }
         }
 
@@ -181,6 +178,7 @@ namespace fs24bot3
 
         public async Task ExecuteCommand(string nick, string target, string messageString, ParsedIRCMessage message, string prefix, bool ppc = false)
         {
+            PProfiler.BeginMeasure("command");
             var prefixes = new string[] { prefix, Name + ":" };
             if (!CommandUtilities.HasAnyPrefix(messageString.TrimStart('p'), prefixes, out string pfx, out string output))
                 return;
@@ -239,6 +237,7 @@ namespace fs24bot3
                     Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, nick, message.Trailing.TrimEnd()));
                     break;
             }
+            PProfiler.EndMeasure("command");
         }
     }
 }

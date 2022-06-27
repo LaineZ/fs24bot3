@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using fs24bot3.QmmandsProcessors;
 using fs24bot3.Core;
 using System.Globalization;
-using fs24bot3.BotSystems;
+using fs24bot3.Systems;
 using fs24bot3.Helpers;
 using SQLite;
 using System.Diagnostics;

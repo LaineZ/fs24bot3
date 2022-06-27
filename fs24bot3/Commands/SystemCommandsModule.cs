@@ -30,7 +30,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task ResetGame()
         {
-            Context.BotCtx.SongGame = new BotSystems.Songame(Context.BotCtx.Connection);
+            Context.BotCtx.SongGame = new Systems.Songame(Context.BotCtx.Connection);
             await Context.SendMessage(Context.Channel, "Игра перезагружена!");
         }
 
@@ -39,6 +39,13 @@ namespace fs24bot3.Commands
         public async Task Whoami()
         {
             await Context.SendMessage(Context.Channel, $"{Context.Sender} Дискорднутый: {Context.FromBridge}");
+        }
+
+        [Command("profiler", "prof")]
+        public async Task Profiler()
+        {
+            await Context.SendMessage(Context.Channel, $"{Context.BotCtx.PProfiler.Fmt("update")}");
+            await Context.SendMessage(Context.Channel, $"{Context.BotCtx.PProfiler.Fmt("command")}");
         }
 
 
@@ -298,14 +305,6 @@ namespace fs24bot3.Commands
         {
             Context.BotCtx.Shop.MaxCap = cap;
             await Context.SendMessage(Context.Channel, "Установлен лимит невыплаты при: " + Context.BotCtx.Shop.MaxCap);
-        }
-
-        [Command("tickrate")]
-        [Checks.CheckAdmin]
-        public async Task Tickrate(int speed = 5000)
-        {
-            Context.BotCtx.Tickrate = speed;
-            await Context.SendMessage(Context.Channel, "Установлен тикрейт (мс): " + Context.BotCtx.Tickrate);
         }
 
         [Command("sqlt")]

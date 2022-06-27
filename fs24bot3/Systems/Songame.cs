@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using fs24bot3.Models;
 using SQLite;
 
-namespace fs24bot3.BotSystems
+namespace fs24bot3.Systems
 {
     public class Songame
     {

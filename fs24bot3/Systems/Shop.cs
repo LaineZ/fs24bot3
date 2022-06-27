@@ -7,7 +7,7 @@ using fs24bot3.ItemTraits;
 using fs24bot3.Models;
 using Serilog;
 
-namespace fs24bot3.BotSystems
+namespace fs24bot3.Systems
 {
     public class Shop
     {

@@ -1,4 +1,4 @@
-﻿using fs24bot3.BotSystems;
+﻿using fs24bot3.Systems;
 using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;

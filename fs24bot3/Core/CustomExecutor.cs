@@ -31,7 +31,7 @@ namespace fs24bot3.Core
 
             int index = 0;
 
-            if (outputs.Count() > 1)
+            if (outputs.Length > 1)
             {
                 if (int.TryParse(args, out int result))
                 {
@@ -61,7 +61,7 @@ namespace fs24bot3.Core
                             Random = new Random();
                             Indices.Clear();
                             LastCommand = command;
-                            for (int i = 0; i < outputs.Count() - 1; i++) { Indices.Add(i); }
+                            for (int i = 0; i < outputs.Length - 1; i++) { Indices.Add(i); }
                             Indices = Indices.OrderBy(x => Random.Next()).ToList();
                             Log.Verbose("Regenerating indices...");
                         }
