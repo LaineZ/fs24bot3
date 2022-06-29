@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace fs24bot3.Systems
 {
@@ -23,7 +24,8 @@ namespace fs24bot3.Systems
         public void EndMeasure(string measure)
         {
             Metrics[measure].Item2.Stop();
-            Metrics[measure].Item1.Add(Metrics[measure].Item2.ElapsedTicks);
+            Metrics[measure].Item1.Add(Metrics[measure].Item2.ElapsedMilliseconds);
+            Metrics[measure].Item2.Reset();
             if (Metrics[measure].Item1.Count > WindowSize)
             {
                 Metrics[measure].Item1.RemoveAt(0);
@@ -32,27 +34,39 @@ namespace fs24bot3.Systems
 
         public float GetMeasureLast(string metric)
         {
-            return (float)Metrics[metric].Item1.Last() * 10000.0f;
+            return (float)Metrics[metric].Item1.Last();
         }
 
         public float GetMeasureAvg(string metric)
         {
-            return (float)Metrics[metric].Item1.Average() * 10000.0f;
+            return (float)Metrics[metric].Item1.Average();
         }
 
         public float GetMeasureMin(string metric)
         {
-            return (float)Metrics[metric].Item1.Min() * 10000.0f;
+            return Metrics[metric].Item1.Min();
         }
 
         public float GetMeasureMax(string metric)
         {
-            return (float)Metrics[metric].Item1.Max() * 10000.0f;
+            return Metrics[metric].Item1.Max();
         }
 
         public string Fmt(string metric)
         {
             return $"{metric}:	last:	{GetMeasureLast(metric)} ms |	avg: {GetMeasureAvg(metric)} ms	|	min: {GetMeasureMin(metric)}	|	max: {GetMeasureMax(metric)}";
+        }
+
+        public string FmtAll()
+        {
+            var sb = new StringBuilder();
+            foreach (var metric in Metrics)
+            {
+                sb.Append(Fmt(metric.Key));
+                sb.Append('\n');
+            }
+
+            return sb.ToString();
         }
     }
 }

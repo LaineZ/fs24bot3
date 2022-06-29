@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace fs24bot3.Core
@@ -35,10 +36,10 @@ namespace fs24bot3.Core
             Options = new List<(string, string)>();
 
             Match match = SearchTermRegex.Match(input);
-            foreach (Capture term in match.Groups["term"].Captures)
+            foreach (Capture term in match.Groups["term"].Captures.Cast<Capture>())
             {
                 Capture prefix = null;
-                foreach (Capture prefixMatch in match.Groups["prefix"].Captures)
+                foreach (Capture prefixMatch in match.Groups["prefix"].Captures.Cast<Capture>())
                     if (prefixMatch.Index >= term.Index && prefixMatch.Index <= term.Index + term.Length)
                     {
                         prefix = prefixMatch;
@@ -46,7 +47,7 @@ namespace fs24bot3.Core
                     }
 
                 Capture termString = null;
-                foreach (Capture termStringMatch in match.Groups["termString"].Captures)
+                foreach (Capture termStringMatch in match.Groups["termString"].Captures.Cast<Capture>())
                     if (termStringMatch.Index >= term.Index && termStringMatch.Index <= term.Index + term.Length)
                     {
                         termString = termStringMatch;

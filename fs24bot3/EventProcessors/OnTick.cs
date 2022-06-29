@@ -19,11 +19,11 @@ namespace fs24bot3.EventProcessors
 
         public async void UpdateUserPaydays(Shop shop)
         {
-            int checkPayday = Rand.Next(0, 10);
+            int checkPayday = Rand.Next(0, 20);
 
-            if (MultiUser.GetItemAvg() < shop.MaxCap)
+            if (checkPayday == 8)
             {
-                if (checkPayday == 8)
+                if (MultiUser.GetItemAvg() < shop.MaxCap)
                 {
                     var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalHours;
 
@@ -46,7 +46,7 @@ namespace fs24bot3.EventProcessors
         {
             var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalDays;
 
-            if (subst > 30 && User.GetUserInfo().Level == 1 && User.CountItem("money") > 2000)
+            if (subst >= 30 && User.GetUserInfo().Level == 1 && User.CountItem("money") < 2000)
             {
                 Log.Warning("Removing user account: {0}", User.Username);
                 User.RemoveUserAccount();

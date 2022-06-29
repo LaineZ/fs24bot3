@@ -20,19 +20,8 @@ namespace fs24bot3
 
         public double GetItemAvg(string itemname = "money")
         {
-            List<int> money = new List<int>();
-
-            var query = Connect.Table<SQL.UserStats>();
-            foreach (var users in query)
-            {
-                User user = new User(users.Nick, Connect);
-                var itemToCount = user.GetInventory().Find(item => item.Item == itemname);
-                if (itemToCount != null)
-                {
-                    money.Add(itemToCount.ItemCount);
-                }
-            }
-            return money.Any() ? money.Average() : 0;
+            var query = Connect.Table<SQL.Inventory>().Where(x => x.Item == itemname).Average(x => x.ItemCount);
+            return query;
         }
     }
 }

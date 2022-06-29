@@ -63,7 +63,7 @@ namespace fs24bot3.Commands
                 $"{str}: {messageCount} строк, {caputures.Count} слов, {concatedMessage.Length} символов, {avgWords} слов в строке. Самые активные: {mostActives}. Возможные темы: {mostUsedwords}");
         }
 
-        [Command("me")]
+        [Command("me")] 
         [Description("Макроэкономические показатели")]
         public async Task Economy()
         {

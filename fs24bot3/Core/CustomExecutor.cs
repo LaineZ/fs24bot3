@@ -2,6 +2,7 @@
 using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Messages;
+using Qommon.Collections;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -26,8 +27,8 @@ namespace fs24bot3.Core
         public async void Execute(SQL.CustomUserCommands command, string senderNick, string channel, string args)
         {
             string[] outputs = command.Output.Split("||");
-            var arr = Bot.Connection.Table<SQL.UserStats>().ToList();
-            var nick = MessageHelper.AntiHightlight(arr.Random().Nick);
+            var arr = Bot.Connection.Table<SQL.UserStats>().Select(x => x.Nick).ToList();
+            var nick = MessageHelper.AntiHightlight(arr.Random());
 
             int index = 0;
 
@@ -62,7 +63,7 @@ namespace fs24bot3.Core
                             Indices.Clear();
                             LastCommand = command;
                             for (int i = 0; i < outputs.Length - 1; i++) { Indices.Add(i); }
-                            Indices = Indices.OrderBy(x => Random.Next()).ToList();
+                            Indices.Shuffle();
                             Log.Verbose("Regenerating indices...");
                         }
 

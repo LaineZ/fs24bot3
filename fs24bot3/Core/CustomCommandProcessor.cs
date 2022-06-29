@@ -37,13 +37,12 @@ namespace fs24bot3.Core
                     if (cmd.IsLua == 0)
                     {
                         CustomExecutor.Execute(cmd, senderNick, channel, string.Join(" ", argsArray));
-                        return true;
                     }
                     else
                     {
                         new LuaExecutor(Context, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
-                        return true;
                     }
+                    return true;
                 }
             }
             return false;

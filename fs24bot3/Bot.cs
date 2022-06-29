@@ -51,6 +51,8 @@ namespace fs24bot3
             PProfiler = new Profiler();
 
             PProfiler.AddMetric("update");
+            PProfiler.AddMetric("update_stats");
+            PProfiler.AddMetric("update_reminds");
             PProfiler.AddMetric("command");
 
             // check for custom commands used in a bot
@@ -104,6 +106,7 @@ namespace fs24bot3
             {
                 Thread.Sleep(1000);
                 PProfiler.BeginMeasure("update");
+                PProfiler.BeginMeasure("update_stats");
                 var users = Connection.Table<SQL.UserStats>();
                 foreach (var user in users)
                 {
@@ -112,10 +115,11 @@ namespace fs24bot3
                     onTick.RemoveLevelOneAccs();
                 }
                 Shop.UpdateShop();
+                PProfiler.EndMeasure("update_stats");
+                PProfiler.BeginMeasure("update_reminds");
 
-                var query = Connection.Table<SQL.Reminds>();
-
-                foreach (var item in query)
+                var reminds = Connection.Table<SQL.Reminds>();
+                foreach (var item in reminds)
                 {
                     DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                     dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
@@ -126,6 +130,7 @@ namespace fs24bot3
                         Connection.Delete(item);
                     }
                 }
+                PProfiler.EndMeasure("update_reminds");
                 PProfiler.EndMeasure("update");
             }
         }
@@ -163,14 +168,16 @@ namespace fs24bot3
                 }
                 else
                 {
+                    string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
                     await BotClient.SendAsync(new PrivMsgMessage(channel, $"Слишком жесткое сообщение с длинной {outputstr.Length} символов! Психанул?!?!?!"));
+                    await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
                     return;
                 }
 
                 if (count > 4)
                 {
                     string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
-                    await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод здесь: " + link));
+                    await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
                     return;
                 }
             }

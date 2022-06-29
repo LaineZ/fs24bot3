@@ -34,10 +34,12 @@ namespace fs24bot3.Core
             var rand = new Random();
             if (connection.Table<SQL.FishingNests>().Count() == 0) {
                 Log.Information("Generating fishing nests...");
+                connection.BeginTransaction();
                 for (int i = 0; i < 100; i++)
                 {
                     connection.InsertOrReplace(new SQL.FishingNests() { Level = rand.Next(1, 3), FishCount = rand.Next(1, 20), FishingLineRequired = rand.Next(1, 10), Name = MessageHelper.GenerateName(rand.Next(2, 5)) });   
                 }
+                connection.Commit();
             }
             Log.Information("Databases loaded!");
         }

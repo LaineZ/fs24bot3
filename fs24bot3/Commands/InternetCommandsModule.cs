@@ -138,7 +138,7 @@ namespace fs24bot3.Commands
             {
                 try
                 {
-                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.BotCtx.Connection);
+                    Helpers.Lyrics lyrics = new Helpers.Lyrics(data[0], data[1], Context.BotCtx.Connection);
 
                     await Context.SendMessage(Context.Channel, await lyrics.GetLyrics());
                 }

@@ -149,12 +149,12 @@ namespace fs24bot3.Helpers
                 }
                 else
                 {
-                    return responseString + " Статус код: " + response.StatusCode;
+                    return "Полный вывод недоступен: " + responseString + " Статус код: " + response.StatusCode;
                 }
             }
             catch (Exception)
             {
-                return "Сервер недоступен for some reason: " + ConfigurationProvider.Config.TrashbinUrl;
+                return "Полный вывод недоступен: " + ConfigurationProvider.Config.TrashbinUrl;
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace fs24bot3.Core
+namespace fs24bot3.Models
 {
     public class Exceptions
     {

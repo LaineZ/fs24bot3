@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace fs24bot3.Core
+namespace fs24bot3.Helpers
 {
     public class Lyrics
     {

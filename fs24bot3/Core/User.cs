@@ -64,7 +64,7 @@ namespace fs24bot3.Core
                     AdminPassword = "changeme",
                     Level = 1,
                     Xp = 0,
-                    Need = 300,
+                    Need = 1000,
                     LastMsg = (int)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(),
                 };
 
@@ -120,7 +120,7 @@ namespace fs24bot3.Core
             Connect.Execute("DELETE FROM Warnings WHERE Nick = ?", Username);
             Connect.Execute("DELETE FROM UserStats WHERE Nick = ?", Username);
             Connect.Execute("DELETE FROM Inventory WHERE Nick = ?", Username);
-            Connect.Execute("VACCUM");
+            Connect.Execute("VACUUM");
         }
 
         /// <summary>

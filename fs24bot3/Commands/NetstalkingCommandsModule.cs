@@ -103,12 +103,14 @@ namespace fs24bot3.Commands
 
             // execute pre process commands
             await ExecuteCommands(searchOptions, ctx);
+            // weird visibility bug
+            string inp = paser.RetainedInput;
             for (int i = ctx.Page; i < ctx.Page + ctx.Max; i++)
             {
                 Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
 
                 if (ctx.SearchResults.Count >= ctx.Limit) { break; }
-                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + query + "&sf=" + (i * 10));
+                string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + inp + "&sf=" + (i * 10));
 
                 if (response == null)
                 {

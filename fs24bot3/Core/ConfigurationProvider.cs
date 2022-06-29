@@ -14,7 +14,6 @@ namespace fs24bot3.Core
     public static class ConfigurationProvider
     {
         public static Configuration Config;
-
         public static LoggingLevelSwitch LoggerSw = new LoggingLevelSwitch();
 
         public static void LoadConfiguration()

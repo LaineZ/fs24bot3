@@ -6,7 +6,6 @@ using Qmmands;
 using Serilog;
 using Serilog.Events;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,7 +13,6 @@ namespace fs24bot3.Commands
 {
     public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomCommandContext>
     {
-
         public CommandService Service { get; set; }
 
         [Command("info", "about", "credits")]
@@ -44,8 +42,7 @@ namespace fs24bot3.Commands
         [Command("profiler", "prof")]
         public async Task Profiler()
         {
-            await Context.SendMessage(Context.Channel, $"{Context.BotCtx.PProfiler.Fmt("update")}");
-            await Context.SendMessage(Context.Channel, $"{Context.BotCtx.PProfiler.Fmt("command")}");
+            await Context.SendMessage(Context.Channel, Context.BotCtx.PProfiler.FmtAll());
         }
 
 
@@ -213,7 +210,7 @@ namespace fs24bot3.Commands
         [Checks.CheckAdmin]
         public async Task ReinitDb()
         {
-            Core.Database.InitDatabase(Context.BotCtx.Connection);
+            Database.InitDatabase(Context.BotCtx.Connection);
             await Context.SendMessage(Context.Channel, "База данных загружена!");
         }
 
@@ -360,7 +357,7 @@ namespace fs24bot3.Commands
             {
                 try
                 {
-                    Core.Lyrics lyrics = new Core.Lyrics(data[0], data[1], Context.BotCtx.Connection);
+                    Helpers.Lyrics lyrics = new Helpers.Lyrics(data[0], data[1], Context.BotCtx.Connection);
                     await lyrics.GetLyrics();
                     await Context.SendMessage(Context.Channel, "Готово!");
                 }
