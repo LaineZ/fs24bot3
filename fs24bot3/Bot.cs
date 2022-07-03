@@ -54,6 +54,7 @@ namespace fs24bot3
             PProfiler.AddMetric("update_stats");
             PProfiler.AddMetric("update_reminds");
             PProfiler.AddMetric("command");
+            PProfiler.AddMetric("msg");
 
             // check for custom commands used in a bot
             Log.Information("Checking for user commands with incorrect names");
@@ -144,11 +145,13 @@ namespace fs24bot3
                 {
                     if (target != BotClient.User.Nick)
                     {
+                        PProfiler.BeginMeasure("msg");
                         EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(this, nick, target, message.Trailing.Trim());
                         events.DestroyWallRandomly(Shop);
                         events.LevelInscrease(Shop);
                         events.PrintWarningInformation();
                         events.HandleYoutube();
+                        PProfiler.EndMeasure("msg");
                     }
                 }).Start();
             }
@@ -187,7 +190,7 @@ namespace fs24bot3
         {
             PProfiler.BeginMeasure("command");
             var prefixes = new string[] { prefix, Name + ":" };
-            if (!CommandUtilities.HasAnyPrefix(messageString.TrimStart('p'), prefixes, out string pfx, out string output))
+            if (!CommandUtilities.HasAnyPrefix(messageString.TrimStart('p'), prefixes, out string _, out string output))
                 return;
 
             var bridged = nick != message.Prefix.From.TrimEnd();
