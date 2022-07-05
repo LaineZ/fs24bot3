@@ -16,7 +16,7 @@
       text-decoration: none;
       color: #86796b;
     }
-    
+
     h1 {
       font-size: 70px;
     }
@@ -43,20 +43,25 @@
       font-family: Verdana, Geneva, Tahoma, sans-serif;
     }
 
-    .shopbox {
-      color: #fbf1c7;
-      background-color: #3c3836;
-      width: 384px;
-      height: 384px;
-      text-align: center;
-      padding: 5px;
-      overflow: hidden;
+    .feature-content {
+      display: flex;
+      flex-direction: row;
+      font-family: 'Alegreya Sans', 'sans-serif';
     }
 
-    .grid {
-      display: grid;
-      gap: 25px;
-      grid-template-columns: minmax(256px, max-content) repeat(auto-fill, 256px);
+    .feature-content p {
+      margin: 0;
+    }
+
+    .shopbox {
+      background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+      color: White;
+      width: 500px;
+      height: 20%;
+      padding: 25px;
+      margin: 5px;
+      border-radius: 5px;
+      font-family: Arial, Helvetica, sans-serif;
     }
   </style>
 </head>
@@ -69,9 +74,7 @@
   </div>
 
   <div class="content">
-    <div class="grid">
-        [SHOPITEMS]
-    </div>
+      [SHOPITEMS]
   </div>
 </body>
 

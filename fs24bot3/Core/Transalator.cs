@@ -40,17 +40,6 @@ namespace fs24bot3.Core
 
             if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-
-                var settings = new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    MissingMemberHandling = MissingMemberHandling.Ignore,
-                    Error = delegate (object sender, ErrorEventArgs args)
-                    {
-                        Log.Error("JSON ERROR: {0}", args.ErrorContext.Error.Message);
-                    },
-                };
-
                 return JsonConvert.DeserializeObject<BingTranlate.Root>(responseString[1..^1]);
             }
 
@@ -60,7 +49,9 @@ namespace fs24bot3.Core
         public async static Task<string> TranslatePpc(string text, string targetLang = "ru")
         {
             string[] translations = { "en", "pl", "pt", "ja", "de", "ru" };
+
             Random random = new Random();
+
             var translationsShuffled = translations.OrderBy(x => random.Next()).ToList();
             translationsShuffled.Add(targetLang);
             string translated = string.Join(" ", text.Split(" ").OrderBy(x => random.Next()).ToList());
@@ -72,10 +63,7 @@ namespace fs24bot3.Core
                     var translatorResponse = await TranslateBing(translated, "", tr);
                     translated = translatorResponse.translations.First().text;
                 }
-                catch (Exception)
-                {
-                    continue;
-                }
+                catch (Exception) { continue; }
             }
 
             return translated;

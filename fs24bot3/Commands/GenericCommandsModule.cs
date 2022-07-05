@@ -198,7 +198,7 @@ namespace fs24bot3.Commands
                 return;
             }
 
-            string rems = $"{IrcClrs.Bold}Напоминания {username}:\n";
+            StringBuilder rems = new StringBuilder($"{IrcClrs.Bold}Напоминания {username}:\n");
 
             foreach (var remind in reminds)
             {
@@ -209,15 +209,18 @@ namespace fs24bot3.Commands
 
                 if (usr.Username == Context.Sender)
                 {
-                    rems += $"id: {remind.RemindDate}: \"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n";
+                    rems.Append(
+                        $"id: {remind.RemindDate}: \"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)}" +
+                        $"{TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
                 }
                 else
                 {
-                    rems += $"\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} {TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n";
+                    rems.Append($"\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} " +
+                    $"{TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
                 }
             }
 
-            await Context.SendMessage(Context.Channel, rems);
+            await Context.SendMessage(Context.Channel, rems.ToString());
         }
 
 
@@ -225,7 +228,7 @@ namespace fs24bot3.Commands
         public async Task GetWarns()
         {
             var warns = Context.User.GetWarnings();
-            var warnsStr = string.Empty;
+            var warnsStr = new StringBuilder();;
 
             if (!warns.Any())
             {
@@ -233,12 +236,7 @@ namespace fs24bot3.Commands
                 return;
             }
 
-            foreach (var warn in warns)
-            {
-                warnsStr += $"{Context.Sender}: {warn.Message}\n";
-            }
-
-            await Context.SendMessage(Context.Channel, warnsStr);
+            await Context.SendMessage(Context.Channel, string.Join(" ", warns.Select(x => $"{x.Nick}: {x.Message}")));
 
             Context.User.DeleteWarnings();
         }
@@ -247,16 +245,14 @@ namespace fs24bot3.Commands
         [Description("Поиск кодпоинтов и симоволов юникода")]
         public async Task UnicodeFind([Remainder] string find)
         {
-
             find = find.ToLower();
-
             if (!File.Exists("chars.sqlite"))
             {
                 var http = new HttpTools();
-                await Context.SendMessage(Context.Channel, $"Загрузка юникода, пожалуйста подождите...");
                 await http.DownloadFile("chars.sqlite", "http://140.ted.ge/chars.sqlite");
                 await Context.SendMessage(Context.Channel, $"Таблица юникода, УСПЕШНО ЗАГРУЖЕНА!");
             }
+
             SQLiteConnection connect = new SQLiteConnection("chars.sqlite");
 
             var query = connect.Table<SQL.Chars>().Where(x => x.Symbol == find || x.Hexcode == find || x.Name.ToLower().Contains(find)).Take(10).ToList();

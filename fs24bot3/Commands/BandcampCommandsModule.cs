@@ -1,4 +1,5 @@
-﻿using fs24bot3.Models;
+﻿using fs24bot3.Helpers;
+using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Qmmands;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
@@ -51,16 +53,10 @@ namespace fs24bot3.Commands
         [Description("Поиск по сайту bandcamp.com")]
         public async Task BcSearch([Remainder] string query)
         {
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Ignore
-            };
-
             string response = await http.MakeRequestAsync("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
             try
             {
-                BandcampSearch.Root searchResult = JsonConvert.DeserializeObject<BandcampSearch.Root>(response, settings);
+                BandcampSearch.Root searchResult = JsonConvert.DeserializeObject<BandcampSearch.Root>(response, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
                 if (searchResult.auto.results.Any())
                 {
                     foreach (var rezik in searchResult.auto.results)
@@ -119,13 +115,6 @@ namespace fs24bot3.Commands
             }
 
             await ExecuteCommands(searchOptions, ctx);
-
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Ignore
-            };
-
             var query = new BandcampDiscoverQuery.Root()
             {
                 page = ctx.Page,
@@ -147,7 +136,7 @@ namespace fs24bot3.Commands
 
                 try
                 {
-                    BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, settings);
+                    BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
                     if (!discover.ok || !discover.more_available)
                     {

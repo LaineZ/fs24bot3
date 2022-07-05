@@ -3,7 +3,6 @@ using HtmlAgilityPack;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -113,18 +112,12 @@ namespace fs24bot3.Helpers
             string startString = "go.dataJson = {";
             string stopString = "};";
 
-            string searchDataTemp = code.Substring(code.IndexOf(startString) + startString.Length - 1);
-            string searchData = searchDataTemp.Substring(0, searchDataTemp.IndexOf(stopString) + 1);
-
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Ignore
-            };
+            string searchDataTemp = code[(code.IndexOf(startString) + startString.Length - 1)..];
+            string searchData = searchDataTemp[..(searchDataTemp.IndexOf(stopString) + 1)];
 
             try
             {
-                return JsonConvert.DeserializeObject<MailSearch.RootObject>(searchData, settings);
+                return JsonConvert.DeserializeObject<MailSearch.RootObject>(searchData, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
             }
             catch (Exception)
             {

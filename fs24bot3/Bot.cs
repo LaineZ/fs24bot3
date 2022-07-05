@@ -138,23 +138,23 @@ namespace fs24bot3
 
         public void MessageTrigger(string nick, string target, ParsedIRCMessage message)
         {
-            var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Count();
-            if (queryIfExt <= 0)
+            var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Any();
+            if (!queryIfExt) { return; }
+
+            new Thread(() =>
             {
-                new Thread(() =>
+                if (target != BotClient.User.Nick)
                 {
-                    if (target != BotClient.User.Nick)
-                    {
-                        PProfiler.BeginMeasure("msg");
-                        EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(this, nick, target, message.Trailing.Trim());
-                        events.DestroyWallRandomly(Shop);
-                        events.LevelInscrease(Shop);
-                        events.PrintWarningInformation();
-                        events.HandleYoutube();
-                        PProfiler.EndMeasure("msg");
-                    }
-                }).Start();
-            }
+                    PProfiler.BeginMeasure("msg");
+                    EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(this, nick, target, message.Trailing.Trim());
+                    events.DestroyWallRandomly(Shop);
+                    events.LevelInscrease(Shop);
+                    events.PrintWarningInformation();
+                    events.HandleYoutube();
+                    
+                    PProfiler.EndMeasure("msg");
+                }
+            }).Start();
         }
 
         public async Task SendMessage(string channel, string message)
