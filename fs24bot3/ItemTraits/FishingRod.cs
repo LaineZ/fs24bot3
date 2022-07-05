@@ -6,7 +6,7 @@ using fs24bot3.Models;
 
 namespace fs24bot3.ItemTraits
 {
-    public class FishingRod : ItemInventory.IItem
+    public class FishingRod : IItem
     {
         public string Name { get; }
         public int Price { get; set; }
@@ -46,7 +46,7 @@ namespace fs24bot3.ItemTraits
             if (rand.Next(1, fishMult) <= user.GetFishLevel())
             {
 
-                var report = new Dictionary<string, ItemInventory.IItem>();
+                var report = new Dictionary<string, IItem>();
 
                 if (nest.Level == 1)
                 {

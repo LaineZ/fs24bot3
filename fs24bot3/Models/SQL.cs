@@ -1,4 +1,5 @@
-﻿using SQLite;
+﻿using fs24bot3.ItemTraits;
+using SQLite;
 using System;
 
 namespace fs24bot3.Models
@@ -26,7 +27,7 @@ namespace fs24bot3.Models
 
             public string ShopID { get; set; }
 
-            public static explicit operator Item(ItemInventory.BasicItem v)
+            public static explicit operator Item(BasicItem v)
             {
                 return new Item() { Name = v.Name };
             }

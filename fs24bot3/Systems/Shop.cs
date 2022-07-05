@@ -11,7 +11,7 @@ namespace fs24bot3.Systems
 {
     public class Shop
     {
-        public Dictionary<string, ItemInventory.IItem> Items { get; private set; }
+        public Dictionary<string, IItem> Items { get; private set; }
         private readonly Random Rand = new Random();
 
         public int Sells { get; private set; }
@@ -24,10 +24,10 @@ namespace fs24bot3.Systems
 
         public Shop(Bot botCtx)
         {
-            Items = new Dictionary<string, ItemInventory.IItem>();
+            Items = new Dictionary<string, IItem>();
             ShopID = "shop";
 
-            Items.Add("money", new ItemInventory.BasicItem("💰 Деньги", 0, ItemInventory.ItemRarity.Common, false));
+            Items.Add("money", new BasicItem("💰 Деньги", 0, ItemInventory.ItemRarity.Common, false));
             Items.Add("beer", new Drink("🍺 Пиво", 1, 1000, ItemInventory.ItemRarity.Uncommon));
             Items.Add("wine", new Drink("🍷 Вино [МОЛДАВСКОЕ]", 3, 1500, ItemInventory.ItemRarity.Rare));
             Items.Add("winef", new Drink("🍷 Вино [ФРАНЦУЗСКОЕ]", 2, 1500, ItemInventory.ItemRarity.Rare));
@@ -35,21 +35,21 @@ namespace fs24bot3.Systems
             Items.Add("wrench", new Wrenchable("🔧 Гаечный ключ", 4, 30000, ItemInventory.ItemRarity.Rare));
             Items.Add("wrenchadv", new Wrenchable("🛠 Гаечный ключ и молоток", 8, 50000, ItemInventory.ItemRarity.Epic));
             Items.Add("hammer", new Wrenchable("🔨 Молоток", 5, 35000, ItemInventory.ItemRarity.Rare));
-            Items.Add("speaker", new ItemInventory.BasicItem("🔊 Мониторные колонки", 3200, ItemInventory.ItemRarity.Common));
-            Items.Add("dj", new ItemInventory.BasicItem("🎛 PIONEER DJ", 3200, ItemInventory.ItemRarity.Common));
-            Items.Add("midikey", new ItemInventory.BasicItem("🎹 Native Instruments Komplete Kontrol S88", 6000, ItemInventory.ItemRarity.Rare));
-            Items.Add("wall", new ItemInventory.BasicItem("🧱 Укрепление", 150000, ItemInventory.ItemRarity.Legendary));
+            Items.Add("speaker", new BasicItem("🔊 Мониторные колонки", 3200, ItemInventory.ItemRarity.Common));
+            Items.Add("dj", new BasicItem("🎛 PIONEER DJ", 3200, ItemInventory.ItemRarity.Common));
+            Items.Add("midikey", new BasicItem("🎹 Native Instruments Komplete Kontrol S88", 6000, ItemInventory.ItemRarity.Rare));
+            Items.Add("wall", new BasicItem("🧱 Укрепление", 150000, ItemInventory.ItemRarity.Legendary));
             Items.Add("pistol", new Bomb("🔫 Пистолет", 5500, 50000, ItemInventory.ItemRarity.Rare));
             Items.Add("bomb", new Bomb("💣 Бомба", 9500, 90000, ItemInventory.ItemRarity.Unbeliveable));
-            Items.Add("worm", new ItemInventory.BasicItem("🐍 Червь", 500, ItemInventory.ItemRarity.Common));
-            Items.Add("fish", new ItemInventory.BasicItem("🐟 Рыба", 1000, ItemInventory.ItemRarity.Uncommon));
-            Items.Add("tfish", new ItemInventory.BasicItem("🐠 Тропическая рыба", 15700, ItemInventory.ItemRarity.Rare));
-            Items.Add("weirdfishes", new ItemInventory.BasicItem("🍥 СТРАННАЯ РЫБА", 100000, ItemInventory.ItemRarity.Unbeliveable));
-            Items.Add("ffish", new ItemInventory.BasicItem("🐡 Рыба-фугу", 3700, ItemInventory.ItemRarity.Rare));
-            Items.Add("veriplace", new ItemInventory.BasicItem("🎏 Верхоплавки", 2700, ItemInventory.ItemRarity.Common));
-            Items.Add("pike", new ItemInventory.BasicItem("🦈 Щука", 10000, ItemInventory.ItemRarity.Uncommon));
-            Items.Add("som", new ItemInventory.BasicItem("🐬 Сом", 12000, ItemInventory.ItemRarity.Rare));
-            Items.Add("line", new ItemInventory.BasicItem("🪢 Леска", 1000, ItemInventory.ItemRarity.Common));
+            Items.Add("worm", new BasicItem("🐍 Червь", 500, ItemInventory.ItemRarity.Common));
+            Items.Add("fish", new BasicItem("🐟 Рыба", 1000, ItemInventory.ItemRarity.Uncommon));
+            Items.Add("tfish", new BasicItem("🐠 Тропическая рыба", 15700, ItemInventory.ItemRarity.Rare));
+            Items.Add("weirdfishes", new BasicItem("🍥 СТРАННАЯ РЫБА", 100000, ItemInventory.ItemRarity.Unbeliveable));
+            Items.Add("ffish", new BasicItem("🐡 Рыба-фугу", 3700, ItemInventory.ItemRarity.Rare));
+            Items.Add("veriplace", new BasicItem("🎏 Верхоплавки", 2700, ItemInventory.ItemRarity.Common));
+            Items.Add("pike", new BasicItem("🦈 Щука", 10000, ItemInventory.ItemRarity.Uncommon));
+            Items.Add("som", new BasicItem("🐬 Сом", 12000, ItemInventory.ItemRarity.Rare));
+            Items.Add("line", new BasicItem("🪢 Леска", 1000, ItemInventory.ItemRarity.Common));
             Items.Add("rod", new FishingRod("🎣 Удочка", 20000, ItemInventory.ItemRarity.Uncommon));
 
             BotCtx = botCtx;
@@ -75,8 +75,8 @@ namespace fs24bot3.Systems
                     int check = Rand.Next(0, 30);
                     if (check == 5)
                     {
-                            Log.Verbose("Decreasing price for {0}", shopItem.Value.Name);
-                            shopItem.Value.Price -= Rand.Next(1, 3);
+                        Log.Verbose("Decreasing price for {0}", shopItem.Value.Name);
+                        shopItem.Value.Price -= Rand.Next(1, 3);
                     }
                 }
             }

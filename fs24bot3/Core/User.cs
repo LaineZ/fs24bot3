@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using fs24bot3.ItemTraits;
 
 namespace fs24bot3.Core
 {
@@ -192,10 +193,10 @@ namespace fs24bot3.Core
             }
         }
 
-        public Dictionary<string, ItemInventory.IItem> AddRandomRarityItem(Shop shop, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Uncommon, int mincount = 1, int maxcount = 1, int iterations = 1)
+        public Dictionary<string, IItem> AddRandomRarityItem(Shop shop, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Uncommon, int mincount = 1, int maxcount = 1, int iterations = 1)
         {
             var rng = new Random();
-            var dict = new Dictionary<string, ItemInventory.IItem>();
+            var dict = new Dictionary<string, IItem>();
 
             for (int i = 0; i < iterations; i++)
             {

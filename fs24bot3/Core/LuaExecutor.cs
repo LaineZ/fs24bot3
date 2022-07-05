@@ -23,6 +23,8 @@ namespace fs24bot3.Core
             Command = command;
         }
 
+        
+
         public void Execute(string senderNick, string channel, string message, string args)
         {
             var arr = Context.Connection.Table<SQL.UserStats>().ToList();
@@ -81,6 +83,7 @@ namespace fs24bot3.Core
                     if (thread.IsAlive)
                     {
                         lua.State.Error("too long run time (10 seconds)");
+                        lua.State.Close();
                     }
                 }
                 catch (Exception)
@@ -88,6 +91,7 @@ namespace fs24bot3.Core
                     Log.Information("Lua thread watcher has stopped working...");
                 }
             });
+
             threadWatch.Start();
 
             new Thread(() =>
@@ -103,6 +107,7 @@ namespace fs24bot3.Core
                         if (memoryUsed > 150)
                         {
                             lua.State.Error("out of memory " + memoryUsed + " mb");
+                            lua.State.Close();
                             break;
                         }
                     }

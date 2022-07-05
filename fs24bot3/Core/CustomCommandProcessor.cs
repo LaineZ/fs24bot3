@@ -10,9 +10,7 @@ namespace fs24bot3.Core
     public class CustomCommandProcessor
     {
         private Bot Context;
-
         private CustomExecutor CustomExecutor { get; }
-
         public CustomCommandProcessor(Bot context)
         {
             Context = context;
