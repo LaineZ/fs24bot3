@@ -53,7 +53,7 @@ namespace fs24bot3
             }
         }
 
-        public async Task<String> PostJson(string url, object jsonObj)
+        public async Task<string> PostJson(string url, object jsonObj)
         {
             HttpContent c = new StringContent(JsonConvert.SerializeObject(jsonObj), Encoding.UTF8, "application/json");
 

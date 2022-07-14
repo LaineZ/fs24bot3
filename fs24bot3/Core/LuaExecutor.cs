@@ -1,11 +1,8 @@
 ﻿using fs24bot3.Helpers;
 using fs24bot3.Models;
-using NetIRC;
-using NetIRC.Messages;
 using NLua;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
@@ -22,8 +19,6 @@ namespace fs24bot3.Core
             Context = context;
             Command = command;
         }
-
-        
 
         public void Execute(string senderNick, string channel, string message, string args)
         {
