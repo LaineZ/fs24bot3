@@ -219,7 +219,6 @@ namespace fs24bot3.Helpers
         {
             var latlon = await GetCityLatLon(city);
 
-
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get,

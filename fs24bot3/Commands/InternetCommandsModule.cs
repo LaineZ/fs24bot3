@@ -395,16 +395,22 @@ namespace fs24bot3.Commands
         }
 
         [Command("oweather", "openweather", "openweathermap")]
-        public async Task OpenWeatherMap(string omskWhereYouLive)
+        public async Task OpenWeatherMap([Remainder] string omskWhereYouLive)
         {
-            var wr = await InternetServicesHelper.OpenWeatherMap(omskWhereYouLive);
-
-            await Context.SendMessage($"{IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
-            $"(ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+            try
+            {
+                var wr = await InternetServicesHelper.OpenWeatherMap(omskWhereYouLive);
+                await Context.SendMessage($"{IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
+                $"(ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+            }
+            catch (ArgumentNullException)
+            {
+                Context.SendSadMessage(Context.Channel);
+            }
         }
 
         [Command("weather", "yanderweather")]
-        public async Task YandexWeather(string omskWhereYouLive)
+        public async Task YandexWeather([Remainder] string omskWhereYouLive)
         {
             try
             {
@@ -412,6 +418,10 @@ namespace fs24bot3.Commands
 
                 await Context.SendMessage($"По данным Яндекс.Погоды в {IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
                 $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+            }
+            catch (ArgumentNullException)
+            {
+                Context.SendSadMessage(Context.Channel);
             }
             catch (Exception)
             {
