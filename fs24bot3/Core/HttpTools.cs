@@ -18,7 +18,7 @@ namespace fs24bot3
     class HttpTools
     {
         readonly CookieContainer cookies = new CookieContainer();
-        HttpClient Client = new HttpClient();
+        public HttpClient Client = new HttpClient();
 
         public HttpTools()
         {

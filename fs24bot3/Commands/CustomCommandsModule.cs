@@ -19,7 +19,7 @@ namespace fs24bot3.Commands
         /// <summary>
         /// Cost needed for creating command
         /// </summary>
-        const int COMMAND_COST = 10000;
+        const int COMMAND_COST = 50000;
 
         private async Task CustomCmdRegisterpublic(string command, bool isLua, [Remainder] string output)
         {

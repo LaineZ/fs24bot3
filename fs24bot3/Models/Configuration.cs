@@ -44,6 +44,11 @@ namespace fs24bot3.Models
         [DataMember(Name = "youtube_dl_path")]
         public string YoutubeDlPath { get; set; }
 
+        [DataMember(Name = "openweathermap_key")]
+        public string OpenWeatherMapKey { get; set; }
+        [DataMember(Name = "yandex_weather_key")]
+        public string YandexWeatherKey { get; set; }
+
         public Configuration()
         {
             Name = "fs24bot";
@@ -62,6 +67,8 @@ namespace fs24bot3.Models
             BridgeNickname = "cheburator";
             FinnhubKey = "0";
             YoutubeDlPath = "youtube-dl";
+            OpenWeatherMapKey = "0";
+            YandexWeatherKey = "0";
         }
     }
 }

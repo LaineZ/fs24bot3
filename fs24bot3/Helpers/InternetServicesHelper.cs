@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using fs24bot3.Core;
 using System.Globalization;
+using System.Linq;
+using System.IO;
 
 namespace fs24bot3.Helpers
 {
@@ -148,6 +150,152 @@ namespace fs24bot3.Helpers
             catch (Exception)
             {
                 return "Полный вывод недоступен: " + ConfigurationProvider.Config.TrashbinUrl;
+            }
+        }
+
+        public static async Task<OpenWeatherMapResponse.Coord> GetCityLatLon(string city)
+        {
+            var value = await http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
+                                        "&APPID=" + ConfigurationProvider.Config.OpenWeatherMapKey + "&units=metric");
+            var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+            return json.Coord;
+        }
+
+
+        public static async Task<WeatherGeneric> OpenWeatherMap(string city)
+        {
+            var value = await http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
+                                                    "&APPID=" + ConfigurationProvider.Config.OpenWeatherMapKey + "&units=metric");
+            var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+
+            var condition = json.Weather.First().Id switch
+            {
+                (>= 200) and (<= 202) => WeatherConditions.ThunderstormWithRain,
+                (>= 210) and (<= 221) => WeatherConditions.Thunderstorm,
+                (>= 230) and (<= 232) => WeatherConditions.ThunderstormWithRain,
+                (>= 300) and (<= 321) => WeatherConditions.Drizzle,
+                500 => WeatherConditions.LightRain,
+                501 => WeatherConditions.ModerateRain,
+                (>= 502) and (<= 504) => WeatherConditions.HeavyRain,
+                (>= 511) and (<= 531) => WeatherConditions.Showers,
+                (>= 600) and (<= 616) => WeatherConditions.Snow,
+                (>= 617) and (<= 622) => WeatherConditions.SnowShowers,
+                (>= 701) and (<= 781) => WeatherConditions.Overcast,
+                800 => WeatherConditions.Clear,
+                801 => WeatherConditions.PartlyCloudy,
+                802 => WeatherConditions.PartlyCloudy,
+                803 => WeatherConditions.Cloudy,
+                804 => WeatherConditions.Cloudy,
+                _ => WeatherConditions.Clear,
+            };
+
+            var dir = json.Wind.Deg switch
+            {
+                (>= 0) and (<= 11) => WindDirections.N,
+                (> 348) and (<= 360) => WindDirections.N,
+                (> 33) and (<= 56) => WindDirections.Ne,
+                (> 78) and (<= 101) => WindDirections.E,
+                (> 123) and (<= 146) => WindDirections.Se,
+                (> 168) and (<= 191) => WindDirections.S,
+                (> 213) and (<= 236) => WindDirections.Sw,
+                (> 258) and (<= 281) => WindDirections.W,
+                (> 303) and (<= 326) => WindDirections.Nw,
+                _ => WindDirections.N
+            };
+
+            return new WeatherGeneric()
+            {
+                CityName = $"{json.Name} ({json.Sys.Country})",
+                Condition = condition,
+                Temperature = json.Main.Temp,
+                FeelsLike = json.Main.FeelsLike,
+                Humidity = json.Main.Humidity,
+                WindDirection = dir,
+                WindSpeed = json.Wind.Speed
+            };
+        }
+
+        public static async Task<WeatherGeneric> YandexWeather(string city)
+        {
+            var latlon = await GetCityLatLon(city);
+
+
+            var request = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://api.weather.yandex.ru/v2/informers?lat=" + latlon.Lat + "&lon=" + latlon.Lon + "&lang=ru_RU"),
+                Headers = {
+                    { "X-Yandex-API-Key", ConfigurationProvider.Config.YandexWeatherKey },
+                    { "Accept", "application/json" }
+                },
+                Content = new StringContent("", Encoding.UTF8, "application/json")
+            };
+
+
+            var response = await http.Client.SendAsync(request);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+
+            File.WriteAllText("debug.txt", responseString);
+
+            if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var wr = JsonConvert.DeserializeObject<YandexWeather.Root>(responseString, 
+                         JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+                var cond = wr.FactObj;
+
+                var condition = cond.Condition switch
+                {
+                    "clear" => WeatherConditions.Clear,
+                    "partly-cloudy" => WeatherConditions.PartlyCloudy,
+                    "cloudy" => WeatherConditions.Cloudy,
+                    "overcast" => WeatherConditions.Overcast,
+                    "drizzle" => WeatherConditions.Drizzle,
+                    "light-rain" => WeatherConditions.LightRain,
+                    "rain" => WeatherConditions.Rain,
+                    "moderate-rain" => WeatherConditions.ModerateRain,
+                    "heavy-rain" => WeatherConditions.HeavyRain,
+                    "continuous-heavy-rain" => WeatherConditions.ContinuousHeavyRain,
+                    "showers" => WeatherConditions.Showers,
+                    "wet-snow" => WeatherConditions.WetSnow,
+                    "light-snow" => WeatherConditions.WightSnow,
+                    "snow" => WeatherConditions.Snow,
+                    "snow-showers" => WeatherConditions.SnowShowers,
+                    "hail" => WeatherConditions.Hail,
+                    "thunderstorm" => WeatherConditions.Thunderstorm,
+                    "thunderstorm-with-rain" => WeatherConditions.ThunderstormWithRain,
+                    "thunderstorm-with-hail" => WeatherConditions.ThunderstormWithHail,
+                    _ => WeatherConditions.Clear,
+                };
+
+                var dir = cond.WindDir switch
+                {
+                    "n" => WindDirections.N,
+                    "ne" => WindDirections.Ne,
+                    "e" => WindDirections.E,
+                    "se" => WindDirections.Se,
+                    "s" => WindDirections.S,
+                    "sw" => WindDirections.Sw,
+                    "w" => WindDirections.W,
+                    "nw" => WindDirections.Nw,
+                    _ => WindDirections.N
+                };
+
+
+                return new WeatherGeneric()
+                {
+                    CityName = city,
+                    Condition = condition,
+                    Temperature = cond.Temp,
+                    FeelsLike = cond.FeelsLike,
+                    Humidity = cond.Humidity,
+                    WindDirection = dir,
+                    WindSpeed = cond.WindSpeed
+                };
+            }
+            else
+            {
+                throw new Exception("Не удалось получить информацию о погоде!");
             }
         }
     }

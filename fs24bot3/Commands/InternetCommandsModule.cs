@@ -12,6 +12,7 @@ using SQLite;
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands
@@ -139,7 +140,6 @@ namespace fs24bot3.Commands
                 try
                 {
                     Helpers.Lyrics lyrics = new Helpers.Lyrics(data[0], data[1], Context.BotCtx.Connection);
-
                     await Context.SendMessage(Context.Channel, await lyrics.GetLyrics());
                 }
                 catch (Exception e)
@@ -273,7 +273,8 @@ namespace fs24bot3.Commands
                 Context.SendSadMessage(Context.Channel, "Не удалось найти акцию!");
             }
 
-            await Context.SendMessage($"({lookup.description}) {lookup.symbol} {IrcClrs.Bold}{stockObj.c} USD{IrcClrs.Reset} (низ: {IrcClrs.Red}{stockObj.l} {IrcClrs.Reset}/ выс: {IrcClrs.Green}{stockObj.h})");
+            await Context.SendMessage(
+                $"({lookup.description}) {lookup.symbol} {IrcClrs.Bold}{stockObj.c} USD{IrcClrs.Reset} (низ: {IrcClrs.Red}{stockObj.l} {IrcClrs.Reset}/ выс: {IrcClrs.Green}{stockObj.h})");
         }
 
         [Command("curcmp", "currencycomapre", "currencycomp", "curcompare", "ccmp")]
@@ -387,8 +388,36 @@ namespace fs24bot3.Commands
             MCServer server = new MCServer(hostname.Address.ToString(), hostname.Port);
             ServerStatus status = server.Status();
             double ping = server.Ping();
-            await Context.SendMessage(Context.Channel, 
-            $"{IrcClrs.Bold}{ipaddr}{IrcClrs.Reset}: ({status.Version.Name}): Игроки: {IrcClrs.Bold}{status.Players.Online}/{status.Players.Max}{IrcClrs.Reset} {IrcClrs.Green}Пинг: {ping} мс");
+
+            await Context.SendMessage(Context.Channel,
+            $"{IrcClrs.Bold}{ipaddr}{IrcClrs.Reset}: " +
+            $"({status.Version.Name}): Игроки: {IrcClrs.Bold}{status.Players.Online}/{status.Players.Max}{IrcClrs.Reset} {IrcClrs.Green}Пинг: {ping} мс");
+        }
+
+        [Command("oweather", "openweather", "openweathermap")]
+        public async Task OpenWeatherMap(string omskWhereYouLive)
+        {
+            var wr = await InternetServicesHelper.OpenWeatherMap(omskWhereYouLive);
+
+            await Context.SendMessage($"{IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
+            $"(ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+        }
+
+        [Command("weather", "yanderweather")]
+        public async Task YandexWeather(string omskWhereYouLive)
+        {
+            try
+            {
+                var wr = await InternetServicesHelper.YandexWeather(omskWhereYouLive);
+
+                await Context.SendMessage($"По данным Яндекс.Погоды в {IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
+                $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+            }
+            catch (Exception)
+            {
+                Context.SendSadMessage(Context.Channel, "Яндекс.Погода не работает, пробуем OpenWeatherMap...");
+                await OpenWeatherMap(omskWhereYouLive);
+            }
         }
     }
 }
