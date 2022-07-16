@@ -473,7 +473,7 @@ namespace fs24bot3.Commands
                 stopWatch.Stop();
                 current++;
 
-                if (Context.Random.Next(0, 10) == 1)
+                if (Context.Random.Next(0, 1000) == 25)
                 {
                     var left = stopWatch.ElapsedTicks * (totalDays - current);
                     await Context.SendMessage(Context.Channel, $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
