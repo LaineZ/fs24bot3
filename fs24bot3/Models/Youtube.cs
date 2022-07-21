@@ -34,7 +34,7 @@ public class Youtube
         public string acodec { get; set; }
         public double tbr { get; set; }
         public int? width { get; set; }
-        public int? fps { get; set; }
+        public double? fps { get; set; }
         public double vbr { get; set; }
         public string container { get; set; }
         public HttpHeaders http_headers { get; set; }
@@ -58,7 +58,7 @@ public class Youtube
         public string acodec { get; set; }
         public double tbr { get; set; }
         public int? width { get; set; }
-        public int? fps { get; set; }
+        public double? fps { get; set; }
         public string format { get; set; }
         public string vcodec { get; set; }
         public string container { get; set; }
@@ -94,7 +94,7 @@ public class Youtube
         public string format_id { get; set; }
         public double abr { get; set; }
         public int height { get; set; }
-        public int fps { get; set; }
+        public double fps { get; set; }
         public object playlist { get; set; }
         public List<Format> formats { get; set; }
         public string uploader_url { get; set; }

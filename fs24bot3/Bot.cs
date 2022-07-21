@@ -139,7 +139,7 @@ namespace fs24bot3
         public void MessageTrigger(string nick, string target, ParsedIRCMessage message)
         {
             var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(nick)).Any();
-            if (!queryIfExt) { return; }
+            if (queryIfExt) { return; }
 
             new Thread(() =>
             {
@@ -151,7 +151,6 @@ namespace fs24bot3
                     events.LevelInscrease(Shop);
                     events.PrintWarningInformation();
                     events.HandleYoutube();
-                    
                     PProfiler.EndMeasure("msg");
                 }
             }).Start();
