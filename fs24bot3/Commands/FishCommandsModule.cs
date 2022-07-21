@@ -6,46 +6,44 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace fs24bot3.Commands
+namespace fs24bot3.Commands;
+public sealed class FishCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
-    public sealed class FishCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
+
+    public CommandService Service { get; set; }
+
+    [Command("nest")]
+    [Description("Установить место рыбалки - если параметр nestname пуст, напишет список мест")]
+    [Remarks("RLF - требуемый размер лески F - количество рыбы")]
+    [Checks.FullAccount]
+    public async Task SetNest(string nestname = "")
     {
+        var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
 
-        public CommandService Service { get; set; }
-
-        [Command("nest")]
-        [Description("Установить место рыбалки - если параметр nestname пуст, напишет список мест")]
-        [Remarks("RLF - требуемый размер лески F - количество рыбы")]
-        [Checks.FullAccount]
-        public async Task SetNest(string nestname = "")
+        if (nestname.Any())
         {
-            var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+            var state = user.SetNest(nestname);
 
-            if (nestname.Any())
+            if (state == null)
             {
-                var state = user.SetNest(nestname);
-
-                if (state == null)
-                {
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Такого места для рыбалки не сущесвует");
-                    return;
-                }
-                if (state.FishingLineRequired <= user.CountItem("line"))
-                {
-                    await Context.SendMessage(Context.Channel, $"Установлено место рыбалки {nestname}");
-                }
-                else
-                {
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Слишком маленькая длинна лески! {state.FishingLineRequired} > {user.CountItem("line")}");
-                }
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Такого места для рыбалки не сущесвует");
+                return;
+            }
+            if (state.FishingLineRequired <= user.CountItem("line"))
+            {
+                await Context.SendMessage(Context.Channel, $"Установлено место рыбалки {nestname}");
             }
             else
             {
-                var queryFish = Context.BotCtx.Connection.Table<SQL.FishingNests>().ToList();
-
-                string link = await Helpers.InternetServicesHelper.UploadToTrashbin(string.Join("\n", queryFish.Select(x => $"{x.Name}\tТребуемая длинна лески:{x.FishingLineRequired}\tКоличество рыбы:{x.FishCount} ")), "addplain");
-                await Context.SendMessage(Context.Channel, "Все места для рыбалки: " + link);
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Слишком маленькая длинна лески! {state.FishingLineRequired} > {user.CountItem("line")}");
             }
+        }
+        else
+        {
+            var queryFish = Context.BotCtx.Connection.Table<SQL.FishingNests>().ToList();
+
+            string link = await Helpers.InternetServicesHelper.UploadToTrashbin(string.Join("\n", queryFish.Select(x => $"{x.Name}\tТребуемая длинна лески:{x.FishingLineRequired}\tКоличество рыбы:{x.FishCount} ")), "addplain");
+            await Context.SendMessage(Context.Channel, "Все места для рыбалки: " + link);
         }
     }
 }

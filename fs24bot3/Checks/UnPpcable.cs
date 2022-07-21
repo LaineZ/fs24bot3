@@ -3,25 +3,23 @@ using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System.Threading.Tasks;
 
-namespace fs24bot3.Checks
+namespace fs24bot3.Checks;
+public sealed class UnPpcable : CheckAttribute
 {
-    public sealed class UnPpcable : CheckAttribute
+    public UnPpcable()
+    { }
+
+    public override ValueTask<CheckResult> CheckAsync(CommandContext _)
     {
-        public UnPpcable()
-        { }
+        var context = _ as CommandProcessor.CustomCommandContext;
 
-        public override ValueTask<CheckResult> CheckAsync(CommandContext _)
-        {
-            var context = _ as CommandProcessor.CustomCommandContext;
+        return context.PerformPpc
+            ? CheckResult.Failed("Эта команда не может использовать быть ппцнута")
+            : CheckResult.Successful;
+    }
 
-            return context.PerformPpc
-                ? CheckResult.Failed("Эта команда не может использовать быть ппцнута")
-                : CheckResult.Successful;
-        }
-
-        public override string ToString()
-        {
-            return "Не использовать p";
-        }
+    public override string ToString()
+    {
+        return "Не использовать p";
     }
 }

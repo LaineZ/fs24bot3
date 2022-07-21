@@ -2,20 +2,18 @@
 using Qmmands;
 using System.Threading.Tasks;
 
-namespace fs24bot3.Checks
+namespace fs24bot3.Checks;
+public sealed class PreProcess : CheckAttribute
 {
-    public sealed class PreProcess : CheckAttribute
+    public PreProcess()
+    { }
+
+    public override ValueTask<CheckResult> CheckAsync(CommandContext _)
     {
-        public PreProcess()
-        { }
+        var context = _ as SearchCommandProcessor.CustomCommandContext;
 
-        public override ValueTask<CheckResult> CheckAsync(CommandContext _)
-        {
-            var context = _ as SearchCommandProcessor.CustomCommandContext;
-
-            return context.PreProcess
-                ? CheckResult.Successful
-                : CheckResult.Failed(string.Empty);
-        }
+        return context.PreProcess
+            ? CheckResult.Successful
+            : CheckResult.Failed(string.Empty);
     }
 }

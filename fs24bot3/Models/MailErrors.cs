@@ -1,13 +1,12 @@
-﻿namespace fs24bot3.Models
+﻿namespace fs24bot3.Models;
+
+public class MailErrors
 {
-    public class MailErrors
+    public enum SearchError
     {
-        public enum SearchError
-        {
-            Banned,
-            NotFound,
-            UnknownError,
-            None,
-        }
+        Banned,
+        NotFound,
+        UnknownError,
+        None,
     }
 }

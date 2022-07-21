@@ -2,25 +2,23 @@
 using Qmmands;
 using System.Threading.Tasks;
 
-namespace fs24bot3.Checks
+namespace fs24bot3.Checks;
+public sealed class FullAccount : CheckAttribute
 {
-    public sealed class FullAccount : CheckAttribute
+    public FullAccount()
+    { }
+
+    public override ValueTask<CheckResult> CheckAsync(CommandContext _)
     {
-        public FullAccount()
-        { }
+        var context = _ as CommandProcessor.CustomCommandContext;
 
-        public override ValueTask<CheckResult> CheckAsync(CommandContext _)
-        {
-            var context = _ as CommandProcessor.CustomCommandContext;
+        return !context.FromBridge && !context.User.UserIsIgnored() && context.User != null
+            ? CheckResult.Successful
+            : CheckResult.Failed("Эта команда требует аккаунт пользователя fs24_bot!");
+    }
 
-            return !context.FromBridge && !context.User.UserIsIgnored() && context.User != null
-                ? CheckResult.Successful
-                : CheckResult.Failed("Эта команда требует аккаунт пользователя fs24_bot!");
-        }
-
-        public override string ToString()
-        {
-            return "Аккаунт пользователя";
-        }
+    public override string ToString()
+    {
+        return "Аккаунт пользователя";
     }
 }

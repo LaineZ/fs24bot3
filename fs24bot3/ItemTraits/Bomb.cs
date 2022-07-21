@@ -2,54 +2,53 @@ using System;
 using System.Threading.Tasks;
 using fs24bot3.Models;
 
-namespace fs24bot3.ItemTraits
+namespace fs24bot3.ItemTraits;
+
+public class Bomb : IItem
 {
-    public class Bomb : IItem
+    public string Name { get; }
+    public int Price { get; set; }
+    public bool Sellable { get; set; }
+    private int Damage { get; }
+    public ItemInventory.ItemRarity Rarity { get; set; }
+
+    public Bomb(string name, int damage, int price, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Rare)
     {
-        public string Name { get; }
-        public int Price { get; set; }
-        public bool Sellable { get; set; }
-        private int Damage { get; }
-        public ItemInventory.ItemRarity Rarity { get; set; }
+        Name = name;
+        Price = price;
+        Rarity = rarity;
+        Sellable = true;
+        Damage = damage;
+    }
+    public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
+    {
+        var rand = new Random();
 
-        public Bomb(string name, int damage, int price, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Rare)
+        if (rand.Next(0, 10 * targetUser.CountItem("wall") - Damage) == 0)
         {
-            Name = name;
-            Price = price;
-            Rarity = rarity;
-            Sellable = true;
-            Damage = damage;
-        }
-        public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
-        {
-            var rand = new Random();
+            await targetUser.RemItemFromInv(botCtx.Shop, "wall", 1);
 
-            if (rand.Next(0, 10 * targetUser.CountItem("wall") - Damage) == 0)
+            int xp = rand.Next(100, 500 + user.GetUserInfo().Level);
+            user.IncreaseXp(xp);
+
+            await botCtx.SendMessage(channel, $"Вы использовали {Name} с уроном {Damage} на пользователе {targetUser.Username} при этом вы сломали укрепление! и за это вам +{xp} XP");
+            if (rand.Next(0, 7) == 2)
             {
-                await targetUser.RemItemFromInv(botCtx.Shop, "wall", 1);
-
-                int xp = rand.Next(100, 500 + user.GetUserInfo().Level);
-                user.IncreaseXp(xp);
-
-                await botCtx.SendMessage(channel, $"Вы использовали {Name} с уроном {Damage} на пользователе {targetUser.Username} при этом вы сломали укрепление! и за это вам +{xp} XP");
-                if (rand.Next(0, 7) == 2)
-                {
-                    await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}!");
-                }
-                else
-                {
-                    if (rand.Next(0, 1) == 1 || await targetUser.RemItemFromInv(botCtx.Shop, "speaker", 1))
-                    {
-                        await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
-                    }
-                }
+                await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}!");
             }
             else
             {
-                await botCtx.SendMessage(channel, RandomMsgs.MissMessages.Random());
+                if (rand.Next(0, 1) == 1 || await targetUser.RemItemFromInv(botCtx.Shop, "speaker", 1))
+                {
+                    await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
+                }
             }
-
-            return true;
         }
+        else
+        {
+            await botCtx.SendMessage(channel, RandomMsgs.MissMessages.Random());
+        }
+
+        return true;
     }
 }

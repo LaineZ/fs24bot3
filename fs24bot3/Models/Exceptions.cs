@@ -1,74 +1,73 @@
 ﻿using System;
 using System.Collections;
 
-namespace fs24bot3.Models
+namespace fs24bot3.Models;
+
+public class Exceptions
 {
-    public class Exceptions
+    public class UserNotFoundException : Exception
     {
-        public class UserNotFoundException : Exception
+        public override string Message
         {
-            public override string Message
+            get
             {
-                get
-                {
-                    return "Пользователь не найден!";
-                }
+                return "Пользователь не найден!";
             }
         }
+    }
 
 
-        public class ItemNotFoundException : Exception
+    public class ItemNotFoundException : Exception
+    {
+        public override string Message
         {
-            public override string Message
+            get
             {
-                get
-                {
-                    return "Такого предмета не существует в базе данных!";
-                }
+                return "Такого предмета не существует в базе данных!";
             }
         }
+    }
 
-        public class WrongTypeException : Exception
+    public class WrongTypeException : Exception
+    {
+        public override string Message
         {
-            public override string Message
+            get
             {
-                get
-                {
-                    return "Неверный тип!";
-                }
+                return "Неверный тип!";
             }
         }
+    }
 
-        public class LyricsNotFoundException : Exception
+    public class LyricsNotFoundException : Exception
+    {
+        public override string Message
         {
-            public override string Message
+            get
             {
-                get
-                {
-                    return "Слова не найдены";
-                }
+                return "Слова не найдены";
             }
         }
+    }
 
-        public class SearchError : Exception
+    public class SearchError : Exception
+    {
+        public override string Message
         {
-            public override string Message
+            get
             {
-                get
-                {
-                    return "Произошла ошибка поиска!";
-                }
+                return "Произошла ошибка поиска!";
             }
         }
+    }
 
-        public class RodError : Exception
+    public class RodError : Exception
+    {
+        public override string Message
         {
-            public override string Message
+            get
             {
-                get
-                {
-                    return "У вас нет такой удочки!";
-                }
+                return "У вас нет такой удочки!";
             }
         }
     }

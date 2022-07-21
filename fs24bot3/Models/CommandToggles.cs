@@ -1,18 +1,17 @@
-﻿namespace fs24bot3.Models
+﻿namespace fs24bot3.Models;
+
+public class CommandToggles
 {
-    public class CommandToggles
+    public enum CommandEdit
     {
-        public enum CommandEdit
-        {
-            Add,
-            Delete,
-        }
+        Add,
+        Delete,
+    }
 
 
-        public enum Switch
-        {            
-            Enable,
-            Disable
-        }
+    public enum Switch
+    {            
+        Enable,
+        Disable
     }
 }

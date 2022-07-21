@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace fs24bot3.Core
+namespace fs24bot3.Core;
+class OneLinerOptionParser
 {
-    class OneLinerOptionParser
-    {
-        public List<(string, string)> Options { get; }
-        public string RetainedInput { get; }
+    public List<(string, string)> Options { get; }
+    public string RetainedInput { get; }
 
-        private readonly Regex SearchTermRegex = new Regex(
-        @"^(
+    private readonly Regex SearchTermRegex = new Regex(
+    @"^(
             \s*
             (?<term>
                 ((?<prefix>[a-zA-Z][a-zA-Z0-9-_]*):)?
@@ -26,46 +25,45 @@ namespace fs24bot3.Core
             )
             \s*
         )*$",
-        RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.ExplicitCapture
-        );
+    RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.ExplicitCapture
+    );
 
 
-        public OneLinerOptionParser(string input)
+    public OneLinerOptionParser(string input)
+    {
+        RetainedInput = input;
+        Options = new List<(string, string)>();
+
+        Match match = SearchTermRegex.Match(input);
+        foreach (Capture term in match.Groups["term"].Captures.Cast<Capture>())
         {
-            RetainedInput = input;
-            Options = new List<(string, string)>();
-
-            Match match = SearchTermRegex.Match(input);
-            foreach (Capture term in match.Groups["term"].Captures.Cast<Capture>())
-            {
-                Capture prefix = null;
-                foreach (Capture prefixMatch in match.Groups["prefix"].Captures.Cast<Capture>())
-                    if (prefixMatch.Index >= term.Index && prefixMatch.Index <= term.Index + term.Length)
-                    {
-                        prefix = prefixMatch;
-                        break;
-                    }
-
-                Capture termString = null;
-                foreach (Capture termStringMatch in match.Groups["termString"].Captures.Cast<Capture>())
-                    if (termStringMatch.Index >= term.Index && termStringMatch.Index <= term.Index + term.Length)
-                    {
-                        termString = termStringMatch;
-                        break;
-                    }
-
-                if (prefix != null)
+            Capture prefix = null;
+            foreach (Capture prefixMatch in match.Groups["prefix"].Captures.Cast<Capture>())
+                if (prefixMatch.Index >= term.Index && prefixMatch.Index <= term.Index + term.Length)
                 {
-                    RetainedInput = RetainedInput.Replace($"{prefix.Value}:{termString.Value}", "");
-                    Log.Verbose("option: {0} value: {1}", prefix.Value, termString.Value);
-                    Options.Add((prefix.Value, termString.Value));
+                    prefix = prefixMatch;
+                    break;
                 }
 
-                RetainedInput = RetainedInput.TrimStart();
+            Capture termString = null;
+            foreach (Capture termStringMatch in match.Groups["termString"].Captures.Cast<Capture>())
+                if (termStringMatch.Index >= term.Index && termStringMatch.Index <= term.Index + term.Length)
+                {
+                    termString = termStringMatch;
+                    break;
+                }
+
+            if (prefix != null)
+            {
+                RetainedInput = RetainedInput.Replace($"{prefix.Value}:{termString.Value}", "");
+                Log.Verbose("option: {0} value: {1}", prefix.Value, termString.Value);
+                Options.Add((prefix.Value, termString.Value));
             }
 
-
-            Log.Verbose("Retained: {0}", RetainedInput);
+            RetainedInput = RetainedInput.TrimStart();
         }
+
+
+        Log.Verbose("Retained: {0}", RetainedInput);
     }
 }

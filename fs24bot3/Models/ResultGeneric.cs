@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace fs24bot3.Models;
 
-namespace fs24bot3.Models
+public class ResultGeneric
 {
-    public class ResultGeneric
-    {
-        public string Title { get; }
-        public string Url { get; }
-        public string Description { get; }
+    public string Title { get; }
+    public string Url { get; }
+    public string Description { get; }
 
-        public ResultGeneric(string title, string url, string description) 
-        {
-            Title = title;
-            Url = url;
-            Description = description;
-        }
+    public ResultGeneric(string title, string url, string description) 
+    {
+        Title = title;
+        Url = url;
+        Description = description;
     }
 }
