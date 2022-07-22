@@ -21,7 +21,7 @@ public class User
 
     const int XP_MULTIPLER = 150;
 
-    public User(string username, SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
+    public User(string username, in SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
     {
         Username = username;
         Connect = connection;
@@ -35,6 +35,11 @@ public class User
     public void EnableSilentMode()
     {
         Ctx = null;
+    }
+
+    public void SetContext(CommandProcessor.CustomCommandContext ctx)
+    {
+        Ctx = ctx;
     }
 
     public TimeZoneInfo GetTimeZone()

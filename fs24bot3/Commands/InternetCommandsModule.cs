@@ -106,17 +106,17 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         var response = await http.GetTextPlainResponse(rawurl);
         var lyric = new SQL.LyricsCache()
         {
-            AddedBy = Context.Sender,
+            AddedBy = Context.User.Username,
             Lyrics = response,
             Artist = artist,
             Track = track
         };
 
-        var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+        Context.User.SetContext(Context);
 
         try
         {
-            if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 2000))
+            if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 2000))
             {
                 Context.BotCtx.Connection.Insert(lyric);
                 Context.SendErrorMessage(Context.Channel, "Добавлено!");
@@ -125,7 +125,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         catch (SQLiteException)
         {
             Context.SendErrorMessage(Context.Channel, "[ДЕНЬГИ ВОЗВРАЩЕНЫ] Такая песня уже существует в базе!");
-            user.AddItemToInv(Context.BotCtx.Shop, "money", 2000);
+            Context.User.AddItemToInv(Context.BotCtx.Shop, "money", 2000);
         }
     }
 

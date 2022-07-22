@@ -73,8 +73,8 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     [Description("Статы пользователя или себя")]
     public async Task Userstat(string nick = null)
     {
-        string userNick = nick ?? Context.Sender;
-        User usr = new User(userNick, Context.BotCtx.Connection);
+        string userNick = nick ?? Context.User.Username;
+        User usr = new User(userNick, in Context.BotCtx.Connection);
 
         var data = usr.GetUserInfo();
         if (data != null)

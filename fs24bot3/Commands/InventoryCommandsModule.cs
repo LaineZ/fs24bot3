@@ -78,12 +78,12 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
             if (!useSlugs)
             {
                 await Context.SendMessage(Context.Channel,
-                Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
+                Context.User.Username + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
             }
             else
             {
                 await Context.SendMessage(Context.Channel,
-                Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
+                Context.User.Username + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
             }
         }
         else
@@ -140,7 +140,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         Context.User.EnableSilentMode();
         int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
         string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
-        User destanation = new User(destanationNick, Context.BotCtx.Connection);
+        User destanation = new User(destanationNick, in Context.BotCtx.Connection);
 
         if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, count))
         {
@@ -163,7 +163,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
 
         foreach (var users in query)
         {
-            var user = new User(users.Nick, Context.BotCtx.Connection);
+            var user = new User(users.Nick, in Context.BotCtx.Connection);
             top.Add((users.Nick, user.CountItem(itemname)));
         }
 
@@ -217,9 +217,9 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         bool delete = false;
         if (Context.User.CountItem(itemname) > 0)
         {
-            if (nick != null && nick != Context.Sender)
+            if (nick != null && nick != Context.User.Username)
             {
-                User targetUser = new User(nick, Context.BotCtx.Connection);
+                User targetUser = new User(nick, in Context.BotCtx.Connection);
                 delete = await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, Context.User, targetUser);
             }
             else

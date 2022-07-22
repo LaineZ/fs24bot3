@@ -7,7 +7,7 @@ using System;
 namespace fs24bot3.Core;
 public class Database
 {
-    public static void InitDatabase(SQLiteConnection connection)
+    public static void InitDatabase(in SQLiteConnection connection)
     {
         Log.Information("Initializing databases");
         connection.CreateTable<SQL.UserStats>();

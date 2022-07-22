@@ -22,7 +22,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
 
     private async Task CustomCmdRegisterpublic(string command, bool isLua, [Remainder] string output)
     {
-        User usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
+        Context.User.SetContext(Context);
         bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a.Equals(command)));
 
         if (!commandIntenral)
@@ -32,12 +32,12 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
             {
                 Command = command,
                 Output = output,
-                Nick = Context.Sender,
+                Nick = Context.User.Username,
                 IsLua = isLuaInt
             };
             try
             {
-                if (await usr.RemItemFromInv(Context.BotCtx.Shop, "money", COMMAND_COST))
+                if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", COMMAND_COST))
                 {
                     Context.BotCtx.Connection.Insert(commandInsert);
                     await Context.SendMessage(Context.Channel, "Команда успешно создана");
@@ -45,7 +45,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
             }
             catch (SQLiteException)
             {
-                usr.AddItemToInv(Context.BotCtx.Shop, "money", COMMAND_COST);
+                Context.User.AddItemToInv(Context.BotCtx.Shop, "money", COMMAND_COST);
                 await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}[ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте {Context.User.GetUserPrefix()}cmdout");
             }
         }
@@ -87,20 +87,20 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     [Checks.FullAccount]
     public async Task CustomCmdEdit(string command, CommandToggles.CommandEdit action, [Remainder] string value)
     {
-        var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
-        User usr = new User(Context.Sender, Context.BotCtx.Connection);
-        if (query.Any() && query[0].Command == command && query[0].IsLua == 0)
+        var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
+        
+        if (query != null && query.Command == command && query.IsLua == 0)
         {
-            if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
+            if (query.Nick == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
             {
                 switch (action)
                 {
                     case CommandToggles.CommandEdit.Add:
-                        Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output + "||" + value, command);
+                        Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query.Output + "||" + value, command);
                         await Context.SendMessage(Context.Channel, IrcClrs.Blue + "Команда успешно обновлена!");
                         break;
                     case CommandToggles.CommandEdit.Delete:
-                        var outputlist = query[0].Output.Split("||").ToList();
+                        var outputlist = query.Output.Split("||").ToList();
                         try
                         {
                             int val = int.Parse(value);
@@ -132,7 +132,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
             }
             else
             {
-                await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query.Nick} а не {Context.User.Username}");
             }
         }
         else
@@ -193,18 +193,17 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     [Checks.FullAccount]
     public async Task CustomCmdRepl(string command, string oldstr, string newstr = "")
     {
-        var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
-        User usr = new User(Context.Sender, Context.BotCtx.Connection);
-        if (query.Any() && query[0].Command == command || usr.GetUserInfo().Admin == 2)
+        var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
+        if (query != null && query.Command == command || Context.User.GetUserInfo().Admin == 2)
         {
-            if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
+            if (query.Nick == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
             {
-                Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query[0].Output.Replace(oldstr, newstr), command);
+                Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query.Output.Replace(oldstr, newstr), command);
                 await Context.SendMessage(Context.Channel, IrcClrs.Blue + "Команда успешно обновлена!");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query.Nick} а не {Context.User.Username}");
             }
         }
         else
@@ -218,18 +217,17 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     [Checks.FullAccount]
     public async Task LuaUpdCoommand(string command, [Remainder] string newstr)
     {
-        var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).ToList();
-        User usr = new User(Context.Sender, Context.BotCtx.Connection);
-        if (query.Any() && query[0].IsLua == 1 && query[0].Command == command || usr.GetUserInfo().Admin == 2)
+        var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
+        if (query != null && query.IsLua == 1 && query.Command == command || Context.User.GetUserInfo().Admin == 2)
         {
-            if (query[0].Nick == Context.Sender || usr.GetUserInfo().Admin == 2)
+            if (query.Nick == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
             {
                 Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", newstr, command);
                 await Context.SendMessage(Context.Channel, IrcClrs.Blue + "Команда успешно обновлена!");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query[0].Nick} а не {Context.Sender}");
+                await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Команду создал {query.Nick} а не {Context.User.Username}");
             }
         }
         else
@@ -243,8 +241,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     [Checks.FullAccount]
     public async Task CustomCmdRem(string command)
     {
-        User usr = new User(Context.Sender, Context.BotCtx.Connection);
-        if (usr.GetUserInfo().Admin == 2)
+        if (Context.User.GetUserInfo().Admin == 2)
         {
             var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).Delete();
             if (query > 0)
@@ -255,12 +252,12 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
         }
         else
         {
-            var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command) && v.Nick.Equals(Context.Sender)).Delete();
+            var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command) && v.Nick.Equals(Context.User.Username)).Delete();
             if (query > 0)
             {
                 Context.BotCtx.Connection.Table<SQL.ScriptStorage>().Where(v => v.Command.Equals(command)).Delete();
                 await Context.SendMessage(Context.Channel, "Команда удалена!");
-                usr.AddItemToInv(Context.BotCtx.Shop, "money", COMMAND_COST);
+                Context.User.AddItemToInv(Context.BotCtx.Shop, "money", COMMAND_COST);
             }
             else
             {
@@ -289,8 +286,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
             track = data[1];
         }
 
-        User usr = new User(Context.Sender, Context.BotCtx.Connection);
-        if (usr.GetUserInfo().Admin == 2)
+        if (Context.User.GetUserInfo().Admin == 2)
         {
             var query = Context.BotCtx.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track)).Delete();
             if (query > 0)
@@ -304,7 +300,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
         }
         else
         {
-            var query = Context.BotCtx.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track) && v.AddedBy.Equals(Context.Sender)).Delete();
+            var query = Context.BotCtx.Connection.Table<SQL.LyricsCache>().Where(v => v.Artist.Equals(artist) && v.Track.Equals(track) && v.AddedBy.Equals(Context.User.Username)).Delete();
             if (query > 0)
             {
                 await Context.SendMessage(Context.Channel, "Песня удалена!");

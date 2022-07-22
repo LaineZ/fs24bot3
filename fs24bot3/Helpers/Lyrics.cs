@@ -17,7 +17,7 @@ public class Lyrics
     public string Artist;
     public string Track;
     private SQLiteConnection Connection;
-    public Lyrics(string artist, string track, SQLiteConnection connect)
+    public Lyrics(string artist, string track, in SQLiteConnection connect)
     {
         Artist = artist;
         Track = track;

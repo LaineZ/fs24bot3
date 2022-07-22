@@ -14,11 +14,11 @@ public class CustomCommandProcessor
         Log.Information("Custom command processor enabled!");
     }
 
-    public bool ProcessCmd(string prefix, string senderNick, string channel, string message)
+    public bool ProcessCmd(string prefix, in MessageGeneric message)
     {
-        if (message.StartsWith(prefix))
+        if (message.Body.StartsWith(prefix))
         {
-            var argsArray = message.Split(" ").ToList();
+            var argsArray = message.Body.Split(" ").ToList();
             // remove command prefix
             string cmdname = argsArray[0][1..];
             //Log.Verbose("Issused command: {0}", cmdname);
@@ -30,11 +30,11 @@ public class CustomCommandProcessor
 
                 if (cmd.IsLua == 0)
                 {
-                    CustomExecutor.Execute(cmd, senderNick, channel, string.Join(" ", argsArray));
+                    CustomExecutor.Execute(cmd, message.Sender.Username, message.Target, string.Join(" ", argsArray));
                 }
                 else
                 {
-                    new LuaExecutor(Context, cmd).Execute(senderNick, channel, message, string.Join(" ", argsArray));
+                    new LuaExecutor(Context, cmd).Execute(message.Sender.Username, message.Target, message.Body, string.Join(" ", argsArray));
                 }
                 return true;
             }

@@ -15,7 +15,6 @@ public class CommandProcessor
     public sealed class CustomCommandContext : CommandContext
     {
         public string Channel { get; }
-        public string Sender { get; }
         public Random Random { get; }
         public Bot BotCtx { get; }
         public bool PerformPpc { get; }
@@ -23,14 +22,13 @@ public class CommandProcessor
         public Core.User User { get; set; }
 
         // Pass your service provider to the base command context.
-        public CustomCommandContext(string target, string sender, Bot bot, bool perfppc = false, bool fromBridge = false, IServiceProvider provider = null) : base(provider)
+        public CustomCommandContext(Bot bot, in MessageGeneric message, bool perfppc = false, IServiceProvider provider = null) : base(provider)
         {
             BotCtx = bot;
-            Channel = target;
-            Sender = sender;
+            Channel = message.Target;
             Random = new Random();
-            FromBridge = fromBridge;
-            User = new Core.User(Sender, bot.Connection, this);
+            FromBridge = message.Kind == MessageKind.MessageFromBridge;
+            User = message.Sender;
             if (perfppc)
             {
                 PerformPpc = User.RemItemFromInv(BotCtx.Shop, "beer", 1).Result;

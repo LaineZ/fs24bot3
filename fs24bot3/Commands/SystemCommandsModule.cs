@@ -35,7 +35,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Command("whoami")]
     public async Task Whoami()
     {
-        await Context.SendMessage(Context.Channel, $"{Context.Sender} Дискорднутый: {Context.FromBridge}");
+        await Context.SendMessage(Context.Channel, $"{Context.User.Username} Дискорднутый: {Context.FromBridge}");
     }
 
     [Command("mem")]
@@ -134,7 +134,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task Giveall(string username)
     {
-        var user = new User(username, Context.BotCtx.Connection);
+        var user = new User(username, in Context.BotCtx.Connection);
         foreach (var item in Context.BotCtx.Shop.Items)
         {
             user.AddItemToInv(Context.BotCtx.Shop, item.Key, 1);
@@ -146,7 +146,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task Giveall(string username, [Remainder] string message)
     {
-        var user = new User(username, Context.BotCtx.Connection);
+        var user = new User(username, in Context.BotCtx.Connection);
         user.AddWarning(message, Context.BotCtx);
         await Context.SendMessage(Context.Channel, $"Вы отправили предупреждение {username}!");
     }
@@ -179,7 +179,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task Give(string username, string item, int count)
     {
-        User sql = new User(username, Context.BotCtx.Connection);
+        User sql = new User(username, in Context.BotCtx.Connection);
 
         sql.AddItemToInv(Context.BotCtx.Shop, item, count);
         await Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Context.BotCtx.Shop.Items[item].Name + " пользователю " + username);
@@ -208,7 +208,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task GiveXp(string username, int count)
     {
-        User sql = new User(username, Context.BotCtx.Connection);
+        User sql = new User(username, in Context.BotCtx.Connection);
 
         sql.IncreaseXp(count);
         await Context.SendMessage(Context.Channel, "Вы установили " + count + " xp пользователю " + username);
@@ -219,7 +219,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task ReinitDb()
     {
-        Database.InitDatabase(Context.BotCtx.Connection);
+        Database.InitDatabase(in Context.BotCtx.Connection);
         await Context.SendMessage(Context.Channel, "База данных загружена!");
     }
 
@@ -227,7 +227,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task GiveLevel(string username, int count)
     {
-        User sql = new User(username, Context.BotCtx.Connection);
+        User sql = new User(username, in Context.BotCtx.Connection);
 
         sql.SetLevel(count);
         await Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
@@ -302,7 +302,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     public async Task Prefix(string prefix = "#")
     {
         Context.User.SetUserPrefix(prefix);
-        await Context.SendMessage(Context.Channel, $"{Context.Sender}: Вы установили себе префикс {prefix}! Теперь бот для вас будет отвечать на него!");
+        await Context.SendMessage(Context.Channel, $"{Context.User.Username}: Вы установили себе префикс {prefix}! Теперь бот для вас будет отвечать на него!");
     }
 
     [Command("setcap")]

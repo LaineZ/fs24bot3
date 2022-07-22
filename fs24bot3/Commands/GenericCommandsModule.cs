@@ -149,10 +149,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     {
         if (string.IsNullOrEmpty(username))
         {
-            username = Context.Sender;
+            username = Context.User.Username;
         }
 
-        var usr = new User(username, Context.BotCtx.Connection);
+        var usr = new User(username, in Context.BotCtx.Connection);
         var timezone = usr.GetTimeZone();
         var time = DateTime.Now.ToUniversalTime();
         CultureInfo rus = new CultureInfo("ru-RU", false);
@@ -183,10 +183,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     {
         if (string.IsNullOrEmpty(username))
         {
-            username = Context.Sender;
+            username = Context.User.Username;
         }
 
-        var usr = new User(username, Context.BotCtx.Connection);
+        var usr = new User(username, in Context.BotCtx.Connection);
 
         var reminds = usr.GetReminds();
         var timezone = usr.GetTimeZone();
@@ -206,7 +206,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             dt = dt.AddSeconds(remind.RemindDate).ToUniversalTime();
             var dtDateTime = TimeZoneInfo.ConvertTimeFromUtc(dt, timezone);
 
-            if (usr.Username == Context.Sender)
+            if (usr.Username == Context.User.Username)
             {
                 rems.Append(
                     $"id: {remind.RemindDate}: \"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)}" +
@@ -270,7 +270,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
     public async Task Songame([Remainder] string translated = "")
     {
-        var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+        Context.User.SetContext(Context);
 
         if (Context.BotCtx.SongGame.SongameString.Length <= 0)
         {
@@ -281,7 +281,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (Context.BotCtx.SongGame.Tries <= 0)
         {
             await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
-            await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000);
+            await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 1000);
             Context.BotCtx.SongGame = new Songame(Context.BotCtx.Connection);
             return;
         }
@@ -302,7 +302,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                     if (trOutFixed == Context.BotCtx.SongGame.SongameString)
                     {
                         int reward = 450 * Context.BotCtx.SongGame.Tries;
-                        user.AddItemToInv(Context.BotCtx.Shop, "money", reward);
+                        Context.User.AddItemToInv(Context.BotCtx.Shop, "money", reward);
                         await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
                     }
                     else
@@ -366,66 +366,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                     break;
                 }
             }
-        }
-    }
-
-    [Command("tag")]
-    [Description("Управление тегами: параметр action: add/del")]
-    [Remarks("Параметр action отвечает за действие команды:\nadd - добавить тег\ndelete - удалить тег. Параметр ircolor представляет собой код IRC цвета.")]
-    public async Task AddTag(CommandToggles.CommandEdit action, string tagname, int ircolor = 1)
-    {
-        var user = new User(Context.Sender, Context.BotCtx.Connection);
-
-        switch (action)
-        {
-            case CommandToggles.CommandEdit.Add:
-                if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000))
-                {
-                    var tag = new SQL.Tag()
-                    {
-                        TagName = tagname,
-                        Color = ircolor.ToString(),
-                        TagCount = 0,
-                        Username = Context.Sender
-                    };
-
-                    Context.BotCtx.Connection.Insert(tag);
-
-                    await Context.SendMessage(Context.Channel, $"Тег 00,{ircolor}⚫{tagname}{IrcClrs.Reset} успешно добавлен!");
-                }
-                else
-                {
-                    Log.Information("Error occurred while adding!");
-                }
-                break;
-            case CommandToggles.CommandEdit.Delete:
-                var tagDel = new TagsUtils(tagname, Context.BotCtx.Connection);
-                if (tagDel.GetTagByName().Username == Context.Sender)
-                {
-                    Context.BotCtx.Connection.Execute("DELETE FROM Tag WHERE TagName = ?", tagname);
-                    await Context.SendMessage(Context.Channel, "Тег " + tagname + " успешно удален!");
-                }
-                else
-                {
-                    await Context.SendMessage(Context.Channel, IrcClrs.Gray + $"Тег создал {tagDel.GetTagByName().Username} а не {Context.Sender}");
-                }
-                break;
-        }
-    }
-
-    [Command("addtag")]
-    [Description("Добавить тег пользователю")]
-    public async Task InsertTag(string tagname, string destination)
-    {
-        var user = new User(destination, Context.BotCtx.Connection);
-
-        if (user.AddTag(tagname, 1))
-        {
-            await Context.SendMessage(Context.Channel, $"Тег {tagname} добавлен пользователю {destination}");
-        }
-        else
-        {
-            await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}НЕ ПОЛУЧИЛОСЬ :(");
         }
     }
 
@@ -493,7 +433,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             return;
         }
 
-        var user = new User(destination, Context.BotCtx.Connection);
+        var user = new User(destination, in Context.BotCtx.Connection);
         TimeSpan date = DateTime.Now.Subtract(user.GetLastMessage());
 
         if (date.Days < 1000)
@@ -506,15 +446,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         {
             await Context.SendMessage(Context.Channel, $"Я никогда не видел {destination}...");
         }
-
-    }
-
-    [Command("tags")]
-    [Description("Список всех тегов")]
-    public async Task AllTags()
-    {
-        var query = Context.BotCtx.Connection.Table<SQL.Tag>().ToList();
-        await Context.SendMessage(Context.Channel, string.Join(' ', query.Select(x => $"00,{x.Color}⚫{x.TagName}{IrcClrs.Reset}")));
     }
 
     [Command("rndl", "randomlyrics")]

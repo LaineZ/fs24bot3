@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using fs24bot3.Helpers;
+using fs24bot3.Models;
 
 namespace fs24bot3;
 class Program
@@ -51,36 +52,15 @@ class Program
     {
         if (message.IRCCommand == IRCCommand.PRIVMSG)
         {
-            string nick = message.Prefix.From;
-            string target = message.Parameters[0];
+            var msg = new MessageGeneric(in message, in Botara.Connection, Botara.Name);
+            var prefix = msg.Sender.GetUserPrefix();
 
-            var user = new Core.User(nick, Botara.Connection, null);
-            var prefix = user.GetUserPrefix();
-            var messageString = message.Trailing.TrimEnd();
+            if (!msg.Sender.UserIsIgnored())
+            {
+                if (msg.Kind == MessageKind.Message) { Botara.MessageTrigger(msg); }
 
-            if (nick == ConfigurationProvider.Config.BridgeNickname)
-            {
-                // trim bridged user nickname like
-                // <cheburator> //bpm140//: @ms привет
-                var msg = messageString.Split(":").ToList();
-                messageString = msg.Last().TrimStart(' ');
-                nick = "@[" + MessageHelper.StripIRC(msg.First()) + "]";
-                Log.Verbose("Message from the bridge: {0} from {1}", messageString, nick);
-            }
-            else
-            {
-                if (!user.UserIsIgnored()) { Botara.MessageTrigger(nick, target, message); }
-            }
-
-            if (message.Parameters[0] == client.User.Nick)
-            {
-                target = message.Prefix.From;
-            }
-
-            if (!user.UserIsIgnored())
-            {
-                bool ppc = messageString.StartsWith("p") && Transalator.AlloPpc;
-                await Botara.ExecuteCommand(nick, target, messageString, message, prefix, ppc);
+                bool ppc = msg.Body.StartsWith("p") && Transalator.AlloPpc;
+                await Botara.ExecuteCommand(msg, prefix, ppc);
             }
         }
 

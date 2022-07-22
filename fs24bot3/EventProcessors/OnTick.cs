@@ -10,10 +10,10 @@ public class OnTick
     private User User;
     private Random Rand = new Random();
 
-    public OnTick(string username, SQLite.SQLiteConnection connection)
+    public OnTick(string username, in SQLite.SQLiteConnection connection)
     {
-        MultiUser = new MultiUser(connection);
-        User = new User(username, connection);
+        MultiUser = new MultiUser(in connection);
+        User = new User(username, in connection);
     }
 
     public async void UpdateUserPaydays(Shop shop)
