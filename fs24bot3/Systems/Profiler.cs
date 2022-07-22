@@ -37,9 +37,9 @@ namespace fs24bot3.Systems
             return (float)Metrics[metric].Item1.Last();
         }
 
-        public float GetMeasureAvg(string metric)
+        public int GetMeasureAvg(string metric)
         {
-            return (float)Metrics[metric].Item1.Average();
+            return (int)Metrics[metric].Item1.Average();
         }
 
         public float GetMeasureMin(string metric)
@@ -52,9 +52,30 @@ namespace fs24bot3.Systems
             return Metrics[metric].Item1.Max();
         }
 
+        public string FmtMetric(float metric)
+        {
+            if (metric > 1000)
+            {
+                return $"{metric / 1000} s";
+            }
+            else if (metric > 60000)
+            {
+                return $"{metric / 60000} m";
+            }
+            else
+            {
+                return $"{metric} ms";
+            }
+        }
+
         public string Fmt(string metric)
         {
-            return $"{metric}:	last:	{GetMeasureLast(metric)} ms |	avg: {GetMeasureAvg(metric)} ms	|	min: {GetMeasureMin(metric)}	|	max: {GetMeasureMax(metric)}";
+
+            return string.Format("|{0,15}|last {1,8}|avg {2,8}|min {3,8}|max {4,8}", metric, 
+            FmtMetric(GetMeasureLast(metric)),
+            FmtMetric(GetMeasureAvg(metric)), 
+            FmtMetric(GetMeasureMin(metric)), 
+            FmtMetric(GetMeasureMax(metric)));
         }
 
         public string FmtAll()

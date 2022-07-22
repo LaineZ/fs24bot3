@@ -52,7 +52,6 @@ namespace fs24bot3
 
             PProfiler.AddMetric("update");
             PProfiler.AddMetric("update_stats");
-            PProfiler.AddMetric("update_reminds");
             PProfiler.AddMetric("command");
             PProfiler.AddMetric("msg");
 
@@ -117,8 +116,6 @@ namespace fs24bot3
                 }
                 Shop.UpdateShop();
                 PProfiler.EndMeasure("update_stats");
-                PProfiler.BeginMeasure("update_reminds");
-
                 var reminds = Connection.Table<SQL.Reminds>();
                 foreach (var item in reminds)
                 {
@@ -131,7 +128,6 @@ namespace fs24bot3
                         Connection.Delete(item);
                     }
                 }
-                PProfiler.EndMeasure("update_reminds");
                 PProfiler.EndMeasure("update");
             }
         }
@@ -187,11 +183,11 @@ namespace fs24bot3
 
         public async Task ExecuteCommand(string nick, string target, string messageString, ParsedIRCMessage message, string prefix, bool ppc = false)
         {
-            PProfiler.BeginMeasure("command");
             var prefixes = new string[] { prefix, Name + ":" };
             if (!CommandUtilities.HasAnyPrefix(messageString.TrimStart('p'), prefixes, out string _, out string output))
                 return;
 
+            PProfiler.BeginMeasure("command");
             var bridged = nick != message.Prefix.From.TrimEnd();
 
             var result = await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(target, nick, this, ppc, bridged));
