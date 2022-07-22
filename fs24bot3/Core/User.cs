@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using fs24bot3.ItemTraits;
+using static fs24bot3.Models.Exceptions;
 
 namespace fs24bot3.Core;
 public class User
@@ -320,6 +321,31 @@ public class User
     {
         var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemname));
         return item == null ? 0 : item.ItemCount;
+    }
+
+    public void SetCity(string city)
+    {
+        Connect.Execute("UPDATE UserStats SET City = ? WHERE Nick = ?", city, Username);
+    }
+
+    public string GetCity(string def)
+    {
+        try
+        {
+            var city = GetUserInfo().City;
+
+            if (def != "" && city != def) 
+            { 
+                SetCity(def);
+                return def;
+            }
+
+            return city ?? def;
+        }
+        catch (UserNotFoundException)
+        {
+            return def;
+        }
     }
 
     public List<SQL.Inventory> GetInventory()

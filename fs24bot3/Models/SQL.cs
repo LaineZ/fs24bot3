@@ -18,6 +18,7 @@ public class SQL
         public int LastMsg { get; set; }
         public string Prefix { get; set; }
         public string Timezone { get; set; }
+        public string City { get; set; }
     }
 
     public class Item

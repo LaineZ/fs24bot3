@@ -394,13 +394,20 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
 
     [Command("oweather", "openweather", "openweathermap")]
-    public async Task OpenWeatherMap([Remainder] string omskWhereYouLive)
+    public async Task OpenWeatherMap([Remainder] string omskWhereYouLive = "")
     {
+        string city = Context.User.GetCity(omskWhereYouLive);
+        if (city == "" && omskWhereYouLive == "")
+        {
+            Context.SendSadMessage(Context.Channel, "Пожалуйста, установите город!");
+            return;
+        }
+
         try
         {
-            var wr = await InternetServicesHelper.OpenWeatherMap(omskWhereYouLive);
+            var wr = await InternetServicesHelper.OpenWeatherMap(city);
             await Context.SendMessage($"{IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
-            $"(ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+            $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
         }
         catch (ArgumentNullException)
         {
@@ -409,12 +416,18 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
 
     [Command("weather", "yanderweather")]
-    public async Task YandexWeather([Remainder] string omskWhereYouLive)
+    public async Task YandexWeather([Remainder] string omskWhereYouLive = "")
     {
+        string city = Context.User.GetCity(omskWhereYouLive);
+        if (city == "" && omskWhereYouLive == "")
+        {
+            Context.SendSadMessage(Context.Channel, "Пожалуйста, установите город!");
+            return;
+        }
+
         try
         {
-            var wr = await InternetServicesHelper.YandexWeather(omskWhereYouLive);
-
+            var wr = await InternetServicesHelper.YandexWeather(city);
             await Context.SendMessage($"По данным Яндекс.Погоды в {IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
             $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
         }
