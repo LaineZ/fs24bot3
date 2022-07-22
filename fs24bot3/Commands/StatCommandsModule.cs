@@ -69,14 +69,6 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
         await Context.SendMessage(Context.Channel, $"Число зарплат: {Context.BotCtx.Shop.PaydaysCount} Денежная масса: {new MultiUser(Context.BotCtx.Connection).GetItemAvg("money")} Покупок/Продаж {Context.BotCtx.Shop.Buys}/{Context.BotCtx.Shop.Sells}");
     }
 
-    [Command("mem")]
-    [Description("Использование памяти")]
-    public async Task MemoryUsage()
-    {
-        var proc = System.Diagnostics.Process.GetCurrentProcess();
-        await Context.SendMessage(Context.Channel, string.Join(" | ", proc.GetType().GetProperties().Where(x => x.Name.EndsWith("64")).Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
-    }
-
     [Command("stat", "stats")]
     [Description("Статы пользователя или себя")]
     public async Task Userstat(string nick = null)

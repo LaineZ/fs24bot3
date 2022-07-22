@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using fs24bot3.Models;
 
 namespace fs24bot3.Systems
 {
@@ -10,6 +11,7 @@ namespace fs24bot3.Systems
     {
         public int WindowSize = 50;
         private Dictionary<string, (List<long>, Stopwatch)> Metrics = new Dictionary<string, (List<long>, Stopwatch)>();
+        private List<int> MemoryUsage = new List<int>();
 
         public void AddMetric(string metric)
         {
@@ -56,11 +58,11 @@ namespace fs24bot3.Systems
         {
             if (metric > 1000)
             {
-                return $"{metric / 1000} s";
+                return $"{IrcClrs.Red}{metric / 1000} s{IrcClrs.Reset}";
             }
             else if (metric > 60000)
             {
-                return $"{metric / 60000} m";
+                return $"{IrcClrs.Red}{metric / 60000} m{IrcClrs.Reset}";
             }
             else
             {
@@ -71,10 +73,10 @@ namespace fs24bot3.Systems
         public string Fmt(string metric)
         {
 
-            return string.Format("|{0,15}|last {1,8}|avg {2,8}|min {3,8}|max {4,8}", metric, 
+            return string.Format("{0,15} │ last {1,8} │ avg {2,8} │ min {3,8} │ max {4,8}", metric,
             FmtMetric(GetMeasureLast(metric)),
-            FmtMetric(GetMeasureAvg(metric)), 
-            FmtMetric(GetMeasureMin(metric)), 
+            FmtMetric(GetMeasureAvg(metric)),
+            FmtMetric(GetMeasureMin(metric)),
             FmtMetric(GetMeasureMax(metric)));
         }
 

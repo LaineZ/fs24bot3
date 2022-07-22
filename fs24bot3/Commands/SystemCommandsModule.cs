@@ -38,6 +38,16 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         await Context.SendMessage(Context.Channel, $"{Context.Sender} Дискорднутый: {Context.FromBridge}");
     }
 
+    [Command("mem")]
+    [Description("Использование памяти")]
+    public async Task MemoryUsage()
+    {
+        var proc = System.Diagnostics.Process.GetCurrentProcess();
+        await Context.SendMessage(Context.Channel, string.Join(" | ", proc.GetType().GetProperties()
+        .Where(x => !x.Name.ToLower().Contains("paged") && x.Name.EndsWith("64"))
+        .Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
+    }
+
     [Command("profiler", "prof")]
     public async Task Profiler()
     {
