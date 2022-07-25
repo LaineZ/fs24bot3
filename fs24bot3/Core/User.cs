@@ -273,7 +273,7 @@ public class User
     {
         if (!shop.Items.ContainsKey(name))
         {
-            throw new Exceptions.ItemNotFoundException();
+            throw new ItemNotFoundException();
         }
         count = (int)Math.Floor((decimal)count);
         try
@@ -286,6 +286,15 @@ public class User
         }
     }
 
+    public void AddTag(in SQL.Tag tag)
+    {
+        Connect.Execute("INSERT INTO Tags VALUES(?, ?)", Username, tag.Name);
+    }
+
+    public void RemoveTag(in SQL.Tag tag)
+    {
+        Connect.Execute("DELETE FROM Tags WHERE TagName = ? AND Nick = ?", tag.Name, Username);
+    }
     /// <summary>
     /// Removes item from inventory
     /// </summary>
@@ -339,8 +348,8 @@ public class User
         {
             var city = GetUserInfo().City;
 
-            if (def != "" && city != def) 
-            { 
+            if (def != "" && city != def)
+            {
                 SetCity(def);
                 return def;
             }
@@ -356,15 +365,15 @@ public class User
     public List<SQL.Inventory> GetInventory()
     {
         var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username)).ToList();
-        if (query.Any())
-        {
-            return query;
-        }
-        else
-        {
-            //Log.Warning(Username + ": Cannot query inventory!");
-            return new List<SQL.Inventory>();
-        }
+        if (query.Any()) { return query; }
+        else { return new List<SQL.Inventory>(); }
+    }
+
+    public List<SQL.Tags> GetTags()
+    {
+        var query = Connect.Table<SQL.Tags>().Where(v => v.Nick.Equals(Username)).ToList();
+        if (query.Any()) { return query; }
+        else { return new List<SQL.Tags>(); }
     }
 
     public SQL.UserStats GetUserInfo()
@@ -377,97 +386,6 @@ public class User
         else
         {
             throw new Exceptions.UserNotFoundException();
-        }
-    }
-
-    public List<SQL.Tag> GetUserTags()
-    {
-        List<SQL.Tag> tags = new List<SQL.Tag>();
-        var query = Connect.Table<SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
-        if (query.Any())
-        {
-            var userNick = JsonConvert.DeserializeObject<List<SQL.Tag>>(query[0].JsonTag);
-
-            if (userNick == null)
-            {
-                throw new Exceptions.UserNotFoundException();
-            }
-
-            foreach (var nick in userNick)
-            {
-                tags.Add(nick);
-            }
-            return tags;
-        }
-        else
-        {
-            throw new Exceptions.UserNotFoundException();
-        }
-    }
-
-    public bool AddTag(string name, int count)
-    {
-        var userinfo = GetUserInfo();
-
-        if (userinfo == null)
-        {
-            Log.Error("User {0} not found!", Username);
-            return false;
-        }
-
-        var query = Connect.Table<SQL.Tags>().Where(v => v.Username.Equals(Username)).ToList();
-
-        if (query.Any())
-        {
-            var userTags = JsonConvert.DeserializeObject<List<SQL.Tag>>(query[0].JsonTag);
-
-            bool append = false;
-
-            foreach (var items in userTags)
-            {
-                if (items.TagName == name)
-                {
-                    items.TagCount += count;
-                    //Log.Verbose("Appending {0} count: {1}", items.TagName, count);
-                    append = true;
-                    break;
-                }
-            }
-            if (!append)
-            {
-                //Log.Verbose("creaing {0} count: {1}", name, count);
-                userTags.Add(new SQL.Tag() { TagName = name, TagCount = count });
-            }
-
-            Connect.Execute("UPDATE Tags SET JsonTag = ? WHERE Username = ?", JsonConvert.SerializeObject(userTags).ToString(), Username);
-            return true;
-        }
-        else
-        {
-
-            Log.Verbose("Trying to find tag with name: {0}", name);
-            var tagInfo = new TagsUtils(name, Connect);
-
-            if (tagInfo.GetTagByName() == null)
-            {
-                return false;
-            }
-
-            Log.Verbose("creaing {0} count: {1}", name, count);
-
-            var tagList = new List<SQL.Tag>
-                {
-                    tagInfo.GetTagByName()
-                };
-
-            var user = new SQL.Tags()
-            {
-                Username = Username,
-                JsonTag = JsonConvert.SerializeObject(tagList).ToString()
-            };
-
-            Connect.Insert(user);
-            return true;
         }
     }
 }

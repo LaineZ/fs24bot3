@@ -81,7 +81,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
     public async Task MailSearch([Remainder] string query)
     {
         List<(Command, string)> searchOptions = new List<(Command, string)>();
-        var paser = new Core.OneLinerOptionParser(query);
+        var paser = new OneLinerOptionParser(query);
 
         SearchCommandService.AddModule<SearchQueryCommands>();
         var ctx = new SearchCommandProcessor.CustomCommandContext
@@ -161,7 +161,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
         SearchCommandService.AddModule<SearchQueryCommands>();
         var ctx = new SearchCommandProcessor.CustomCommandContext();
-        var paser = new Core.OneLinerOptionParser(query);
+        var paser = new OneLinerOptionParser(query);
         ctx.PreProcess = true;
 
         foreach ((string opt, string value) in paser.Options)

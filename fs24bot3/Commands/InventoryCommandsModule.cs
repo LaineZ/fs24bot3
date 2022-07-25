@@ -3,6 +3,7 @@ using fs24bot3.Models;
 using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -206,6 +207,86 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         {
             await Context.SendMessage(Context.Channel, IrcClrs.Bold + Name + ": " + Count);
         }
+    }
+
+    [Command("tags")]
+    [Description("Список всех тегов")]
+    public async Task Tags()
+    {
+        var tags = Context.BotCtx.Connection.Table<SQL.Tag>().
+                   ToList().Select(x => $"00,{x.Color}⚫{x.Name}{IrcClrs.Reset}");
+        await Context.SendMessage(Context.Channel, string.Join(" ", tags));
+    }
+
+    [Command("tag")]
+    [Checks.FullAccount]
+    [Description("Управление тегами")]
+    public async Task TagManager(CommandToggles.CommandEdit action, string tagname, ushort irccolor = 4)
+    {
+        Context.User.SetContext(Context);
+
+        switch (action)
+        {
+            case CommandToggles.CommandEdit.Add:
+                if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 30000))
+                {
+                    try
+                    {
+                        Context.BotCtx.Connection.Insert(new SQL.Tag
+                        {
+                            Color = (uint)irccolor,
+                            CreatedBy = Context.User.Username,
+                            Name = tagname
+                        });
+                        await Context.SendMessage(Context.Channel, 
+                        $"Тег успешно добавлен чтобы кого-то наградить им напишите {Context.User.GetUserPrefix()}addtag пользователь {tagname}!");
+                    }
+                    catch (SQLiteException)
+                    {
+                        Context.User.AddItemToInv(Context.BotCtx.Shop, "money", 3000);
+                        Context.SendSadMessage(Context.Channel, "Тег уже существует!");
+                    }
+                }
+                break;
+            case CommandToggles.CommandEdit.Delete:
+                var query = Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).FirstOrDefault();
+
+                if (query != null && query.Name == tagname)
+                {
+                    if (query.CreatedBy == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
+                    {
+                        Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).Delete();
+                        await Context.SendMessage(Context.Channel, "Тег успешно удален, также этот тег будет удален с пользователей!");
+                    }
+                    else
+                    {
+                        Context.SendSadMessage(Context.Channel, "Вы не создатель тега!");
+                    }
+                }
+                else
+                {
+                    Context.SendSadMessage(Context.Channel);
+                }
+                break;
+        }
+    }
+
+    [Command("addtag")]
+    [Checks.FullAccount]
+    [Description("Добавить тег пользователю")]
+    public async Task AddTag(string tagname, string destanation)
+    {
+        var query = Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).FirstOrDefault();
+
+        if (query == null)
+        {
+            Context.SendSadMessage(Context.Channel, "Тег не найден");
+        }
+
+        var destuser = new User(destanation, Context.BotCtx.Connection, Context);
+        destuser.AddTag(query);
+
+        await Context.SendMessage(Context.Channel, "Тег успешно добавлен пользователю");
     }
 
     [Command("use")]

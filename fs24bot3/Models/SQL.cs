@@ -76,6 +76,7 @@ public class SQL
         [Column("Count")]
         public int ItemCount { get; set; }
     }
+
     public class CustomUserCommands
     {
         [PrimaryKey]
@@ -89,19 +90,16 @@ public class SQL
     public class Tag
     {
         [PrimaryKey]
-        public string TagName { get; set; }
-
-        public string Color { get; set; }
-        public string Username { get; set; }
-        [Column("Count")]
-        public int TagCount { get; set; }
+        public string Name { get; set; }
+        public uint Color { get; set; }
+        public string CreatedBy { get; set; }
     }
 
     public class Tags
     {
         [PrimaryKey]
-        public string Username { get; set; }
-        public string JsonTag { get; set; }
+        public string Nick { get; set; }
+        public string Tag { get; set; }
     }
 
     // ultimate table99999
