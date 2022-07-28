@@ -31,13 +31,13 @@ public class FishingRod : IItem
 
         if (nest == null)
         {
-            await botCtx.SendMessage(channel, $"{IrcClrs.Gray}Место рыбалки не установлено, используйте @nest");
+            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Gray}Место рыбалки не установлено, используйте @nest");
             return false;
         }
 
         if (!user.RemItemFromInv(botCtx.Shop, "worm", 1).Result)
         {
-            await botCtx.SendMessage(channel, $"{IrcClrs.Gray}У вас нет наживки, @buy worm");
+            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Gray}У вас нет наживки, @buy worm");
             return false;
         }
 
@@ -61,23 +61,23 @@ public class FishingRod : IItem
                 report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Rare, 1, 1, 1);
             }
 
-            await botCtx.SendMessage(channel, $"Вы поймали {report.First().Value.Name}");
+            await botCtx.Client.SendMessage(channel, $"Вы поймали {report.First().Value.Name}");
         }
         else
         {
-            await botCtx.SendMessage(channel, $"{IrcClrs.Gray}Рыба сорвалась!");
+            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Gray}Рыба сорвалась!");
         }
 
 
         if (rand.Next(0, 3) == 1) 
         {
             user.IncreaseFishLevel();
-            await botCtx.SendMessage(channel, $"{IrcClrs.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
+            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
         }
 
         bool broken = rand.Next(0, 5) == 1;
 
-        if (broken) { await botCtx.SendMessage(channel, "Ваша удочка сломалась!"); }
+        if (broken) { await botCtx.Client.SendMessage(channel, "Ваша удочка сломалась!"); }
 
         return broken;
     }

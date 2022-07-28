@@ -190,8 +190,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     public async Task JoinChannel(string channel)
     {
         await Context.SendMessage(Context.Channel, $"Зашел на: {channel}");
-        await Context.BotCtx.BotClient.SendRaw("JOIN " + channel);
-        await Context.SendMessage(channel, $"Всем перепривет с вами {Context.BotCtx.Name}");
+        Context.BotCtx.Client.JoinChannel(channel);
+        await Context.SendMessage(channel, $"Всем перепривет с вами {Context.BotCtx.Client.Name}");
     }
 
 
@@ -200,8 +200,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     public async Task PartChannel(string channel)
     {
         await Context.SendMessage(channel, "Простите я ухожу, всем пока...");
-        await Context.BotCtx.BotClient.SendRaw("PART " + channel);
-        await Context.SendMessage(Context.Channel, $"Вышел из: {channel}");
+        Context.BotCtx.Client.PartChannel(channel);
     }
 
     [Command("xp")]

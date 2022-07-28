@@ -427,7 +427,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     [Description("Когда последний раз пользователь писал сообщения")]
     public async Task LastSeen(string destination)
     {
-        if (destination == Context.BotCtx.Name)
+        if (destination == Context.BotCtx.Client.Name)
         {
             await Context.SendMessage(Context.Channel, "Я ЗДЕСЬ!");
             return;

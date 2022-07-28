@@ -1,8 +1,6 @@
 using fs24bot3.Systems;
 using fs24bot3.Core;
 using fs24bot3.Models;
-using NetIRC;
-using NetIRC.Messages;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -32,7 +30,7 @@ public class OnMsgEvent
         if (newLevel)
         {
             var report = Message.Sender.AddRandomRarityItem(shop, ItemInventory.ItemRarity.Rare);
-            await BotContext.SendMessage(Message.Target, $"{Message.Sender.Username}: У вас теперь {Message.Sender.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!");
+            await BotContext.Client.SendMessage(Message.Target, $"{Message.Sender.Username}: У вас теперь {Message.Sender.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!");
         }
     }
 
@@ -64,7 +62,7 @@ public class OnMsgEvent
                 if (jsonOutput != null)
                 {
                     var ts = TimeSpan.FromSeconds(jsonOutput.duration);
-                    await BotContext.SendMessage(Message.Target, $"{IrcClrs.Bold}{jsonOutput.title}{IrcClrs.Reset} от {IrcClrs.Bold}{jsonOutput.channel}{IrcClrs.Reset}. Длительность: {IrcClrs.Bold}{ts:hh\\:mm\\:ss}{IrcClrs.Reset} {IrcClrs.Green}👍{jsonOutput.like_count} {IrcClrs.Reset}Просмотров: {jsonOutput.view_count}");
+                    await BotContext.Client.SendMessage(Message.Target, $"{IrcClrs.Bold}{jsonOutput.title}{IrcClrs.Reset} от {IrcClrs.Bold}{jsonOutput.channel}{IrcClrs.Reset}. Длительность: {IrcClrs.Bold}{ts:hh\\:mm\\:ss}{IrcClrs.Reset} {IrcClrs.Green}👍{jsonOutput.like_count} {IrcClrs.Reset}Просмотров: {jsonOutput.view_count}");
                 }
             }
             catch (Exception e)
@@ -78,7 +76,7 @@ public class OnMsgEvent
     {
         if (!BotContext.AcknownUsers.Any(x => x == Message.Sender.Username) && Message.Sender.GetWarnings().Any())
         {
-            await BotContext.SendMessage(Message.Target, 
+            await BotContext.Client.SendMessage(Message.Target, 
             $"{IrcClrs.Gray}{Message.Sender.Username}: У вас есть предупреждения используйте {Message.Sender.GetUserPrefix()}warnings чтобы их прочесть!");
             BotContext.AcknownUsers.Add(Message.Sender.Username);
         }

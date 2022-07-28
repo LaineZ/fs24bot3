@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using fs24bot3.Backend;
 
 namespace fs24bot3;
 public class Bot
@@ -22,15 +23,14 @@ public class Bot
     public SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
     public CustomCommandProcessor CustomCommandProcessor;
     public readonly CommandService Service = new CommandService();
-    public Client BotClient { get; private set; }
+    public IMessagingClient Client { get; private set; }
     public Shop Shop { get; set; }
     public Songame SongGame { get; set; }
     public List<string> AcknownUsers = new List<string>();
-    public string Name { get; private set; }
-
     public Profiler PProfiler { get; private set; }
-    public Bot()
+    public Bot(IMessagingClient messagingClient)
     {
+        Client = messagingClient;
         Service.AddModule<GenericCommandsModule>();
         Service.AddModule<SystemCommandModule>();
         Service.AddModule<InventoryCommandsModule>();
@@ -43,9 +43,7 @@ public class Bot
         Service.AddModule<FishCommandsModule>();
 
         Database.InitDatabase(Connection);
-        BotClient = new Client(new NetIRC.User(ConfigurationProvider.Config.Name, "Sopli IRC 3.0"), new TcpClientConnection(ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port));
         CustomCommandProcessor = new CustomCommandProcessor(this);
-        Name = ConfigurationProvider.Config.Name;
         PProfiler = new Profiler();
 
         PProfiler.AddMetric("update");
@@ -67,12 +65,6 @@ public class Bot
             }
         }
         Log.Information("Bot: Construction complete!");
-    }
-
-    public async void SetupNick(string nickname)
-    {
-        await BotClient.SendRaw("NICK " + nickname);
-        Name = nickname;
     }
 
     public string CommandSuggestion(string prefix, string command)
@@ -122,7 +114,7 @@ public class Bot
                 if (dtDateTime <= DateTime.Now)
                 {
                     string ch = item.Channel ?? ConfigurationProvider.Config.Channel;
-                    await SendMessage(ch, $"{item.Nick}: {item.Message}!");
+                    await Client.SendMessage(ch, $"{item.Nick}: {item.Message}!");
                     Connection.Delete(item);
                 }
             }
@@ -147,38 +139,9 @@ public class Bot
         }).Start();
     }
 
-    public async Task SendMessage(string channel, string message)
-    {
-        List<string> msgLines = message.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
-        int count = 0;
-
-        foreach (string outputstr in msgLines)
-        {
-            if (outputstr.Length < 1000)
-            {
-                await BotClient.SendAsync(new PrivMsgMessage(channel, outputstr));
-                count++;
-            }
-            else
-            {
-                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
-                await BotClient.SendAsync(new PrivMsgMessage(channel, $"Слишком жесткое сообщение с длинной {outputstr.Length} символов! Психанул?!?!?!"));
-                await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
-                return;
-            }
-
-            if (count > 4)
-            {
-                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
-                await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
-                return;
-            }
-        }
-    }
-
     public async Task ExecuteCommand(MessageGeneric message, string prefix, bool ppc = false)
     {
-        var prefixes = new string[] { prefix, Name + ":" };
+        var prefixes = new string[] { prefix, Client.Name + ":" };
         if (!CommandUtilities.HasAnyPrefix(message.Body.TrimStart('p'), prefixes, out string _, out string output))
             return;
 
@@ -187,17 +150,17 @@ public class Bot
 
         if (!result.IsSuccessful && ppc)
         {
-            await SendMessage(message.Target, $"{message.Sender.Username}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ");
+            await Client.SendMessage(message.Target, $"{message.Sender.Username}: НЕДОПУСТИМАЯ ОПЕРАЦИЯ");
             message.Sender.AddItemToInv(Shop, "beer", 1);
         }
 
         switch (result)
         {
             case ChecksFailedResult err:
-                await SendMessage(message.Target, $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
+                await Client.SendMessage(message.Target, $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
                 break;
             case TypeParseFailedResult err:
-                await SendMessage(message.Target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите #helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
+                await Client.SendMessage(message.Target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите #helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
                 break;
             case ArgumentParseFailedResult err:
                 var parserResult = err.ParserResult as DefaultArgumentParserResult;
@@ -205,19 +168,19 @@ public class Bot
                 switch (parserResult.Failure)
                 {
                     case DefaultArgumentParserFailure.NoWhitespaceBetweenArguments:
-                        await SendMessage(message.Target, $"Нет пробелов между аргументами!");
+                        await Client.SendMessage(message.Target, $"Нет пробелов между аргументами!");
                         break;
                     case DefaultArgumentParserFailure.TooManyArguments:
-                        await SendMessage(message.Target, $"Слишком много аргрументов!!!");
+                        await Client.SendMessage(message.Target, $"Слишком много аргрументов!!!");
                         break;
                     default:
-                        await SendMessage(message.Target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
+                        await Client.SendMessage(message.Target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
                         break;
                 }
 
                 break;
             case OverloadsFailedResult:
-                await SendMessage(message.Target, "Команда выключена...");
+                await Client.SendMessage(message.Target, "Команда выключена...");
                 break;
             case CommandNotFoundResult _:
                 if (!CustomCommandProcessor.ProcessCmd(prefix, in message))
@@ -226,12 +189,12 @@ public class Bot
                     var cmds = CommandSuggestion(prefix, cmdName);
                     if (!string.IsNullOrWhiteSpace(cmds))
                     {
-                        await SendMessage(message.Target, $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
+                        await Client.SendMessage(message.Target, $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
                     }
                 }
                 break;
             case CommandExecutionFailedResult err:
-                await SendMessage(message.Target, $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
+                await Client.SendMessage(message.Target, $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
                 Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, message.Sender.Username, message.Body));
                 break;
         }

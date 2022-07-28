@@ -31,22 +31,22 @@ public class Bomb : IItem
             int xp = rand.Next(100, 500 + user.GetUserInfo().Level);
             user.IncreaseXp(xp);
 
-            await botCtx.SendMessage(channel, $"Вы использовали {Name} с уроном {Damage} на пользователе {targetUser.Username} при этом вы сломали укрепление! и за это вам +{xp} XP");
+            await botCtx.Client.SendMessage(channel, $"Вы использовали {Name} с уроном {Damage} на пользователе {targetUser.Username} при этом вы сломали укрепление! и за это вам +{xp} XP");
             if (rand.Next(0, 7) == 2)
             {
-                await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}!");
+                await botCtx.Client.SendMessage(targetUser.Username, $"Вас атакует {user.Username}!");
             }
             else
             {
                 if (rand.Next(0, 1) == 1 || await targetUser.RemItemFromInv(botCtx.Shop, "speaker", 1))
                 {
-                    await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
+                    await botCtx.Client.SendMessage(targetUser.Username, $"Вас атакует {user.Username}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
                 }
             }
         }
         else
         {
-            await botCtx.SendMessage(channel, RandomMsgs.MissMessages.Random());
+            await botCtx.Client.SendMessage(channel, RandomMsgs.MissMessages.Random());
         }
 
         return true;
