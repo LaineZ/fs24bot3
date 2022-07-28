@@ -45,11 +45,11 @@ jobs:
       run: mkdir artifacts
 
     - name: Create archive for Linux
-      run:  7z a -ttar -so -an ./${{ env.RELEASE_BIN }}/${{ env.RELEASE_BIN }}/bin/Release/net5.0/linux-x64/publish/ ${{ env.RELEASE_ADDS }} | 7z a -si ./artifacts/${{ env.RELEASE_BIN }}-linux-x86_64.tar.gz
+      run:  7z a -ttar -so -an ./${{ env.RELEASE_BIN }}/${{ env.RELEASE_BIN }}/bin/Release/net6.0/linux-x64/publish/ ${{ env.RELEASE_ADDS }} | 7z a -si ./artifacts/${{ env.RELEASE_BIN }}-linux-x86_64.tar.gz
       if: matrix.os == 'ubuntu-latest'
 
     - name: Create archive for Windows
-      run: 7z a -tzip ./${{ env.RELEASE_BIN }}/${{ env.RELEASE_BIN }}/bin/Release/net5.0/win-x64/publish/ ${{ env.RELEASE_ADDS }}
+      run: 7z a -tzip ./${{ env.RELEASE_BIN }}/${{ env.RELEASE_BIN }}/bin/Release/net6.0/win-x64/publish/ ${{ env.RELEASE_ADDS }}
       if: matrix.os == 'windows-latest'
 
     - uses: actions/upload-artifact@v2
