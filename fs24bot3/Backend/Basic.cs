@@ -42,7 +42,8 @@ public class Basic : IMessagingClient
 
         while (true)
         {
-            string value = Console.ReadLine();
+            Console.Write("fs24bot3: ");
+            string value = Console.ReadLine().TrimEnd();
             if (!string.IsNullOrWhiteSpace(value))
             {
                 var msg = new MessageGeneric(value, "testchannel", 

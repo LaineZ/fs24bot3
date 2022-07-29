@@ -75,7 +75,6 @@ namespace fs24bot3.Systems
                     int check = Rand.Next(0, 30);
                     if (check == 5)
                     {
-                        Log.Verbose("Decreasing price for {0}", shopItem.Value.Name);
                         shopItem.Value.Price -= Rand.Next(1, 3);
                     }
                 }
