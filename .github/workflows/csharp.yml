@@ -50,7 +50,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
 
     - name: Move build files into ARTIFACTS (linux)
-      run: cp -r ./${{ RELEASE_BIN }}/bin/Release/net6.0/linux-x64/publish artifacts/
+      run: cp -r ./fs24bot3/bin/Release/net6.0/linux-x64/publish artifacts/
       if: matrix.os == 'ubuntu-latest'
 
     - uses: actions/upload-artifact@v2
