@@ -9,10 +9,7 @@ public interface IMessagingClient
     /// The client name e.g nickname in IRC
     /// </summary>
     public string Name { get; }
-    /// <summary>
-    /// The connected channels rooms
-    /// </summanry>
-    public List<string> Channels { get; }
+    public Bot BotContext { get; }
 
     public async void SetupNick(string nickname) { }
     public async void JoinChannel(string name)

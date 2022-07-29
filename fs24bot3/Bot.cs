@@ -64,6 +64,10 @@ public class Bot
                 user.AddWarning($"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot добавилась команда с таким же именем, ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте {user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем", this);
             }
         }
+        
+        Shop = new Shop(this);
+        SongGame = new Songame(Connection);
+        
         Log.Information("Bot: Construction complete!");
     }
 
@@ -88,10 +92,6 @@ public class Bot
 
     public async void ProccessInfinite()
     {
-        // start shop
-        Shop = new Shop(this);
-        SongGame = new Songame(Connection);
-
         while (true)
         {
             Thread.Sleep(1000);

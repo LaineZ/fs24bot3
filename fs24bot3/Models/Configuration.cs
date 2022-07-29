@@ -8,6 +8,13 @@ using Tomlyn;
 
 namespace fs24bot3.Models;
 
+
+public enum Backend
+{
+    Basic,
+    IRC,
+}
+
 public class Configuration
 {
     [DataMember(Name = "name")]
@@ -48,6 +55,8 @@ public class Configuration
     public string OpenWeatherMapKey { get; set; }
     [DataMember(Name = "yandex_weather_key")]
     public string YandexWeatherKey { get; set; }
+    [DataMember(Name = "backend")]
+    public Backend Backend { get; set; }
 
     public Configuration()
     {
@@ -69,5 +78,6 @@ public class Configuration
         YoutubeDlPath = "youtube-dl";
         OpenWeatherMapKey = "0";
         YandexWeatherKey = "0";
+        Backend = Backend.IRC;
     }
 }

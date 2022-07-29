@@ -17,10 +17,6 @@ namespace fs24bot3.Backend;
 public class IRC : IMessagingClient
 {
     public string Name { get; private set; }
-    /// <summary>
-    /// The connected channels rooms
-    /// </summanry>
-    public List<string> Channels { get; private set; }
 
     public Bot BotContext { get; }
 
@@ -113,8 +109,6 @@ public class IRC : IMessagingClient
     {   
         Log.Information("Connecting to: {0}:{1}", ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port);
         Task.Run(() => BotClient.ConnectAsync());
-        Log.Information("First initialization is okay!");
-        
         BotContext.ProccessInfinite();
     }
 
@@ -132,8 +126,10 @@ public class IRC : IMessagingClient
             }
             else
             {
-                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
-                await BotClient.SendAsync(new PrivMsgMessage(channel, $"Слишком жесткое сообщение с длинной {outputstr.Length} символов! Психанул?!?!?!"));
+                string link = await InternetServicesHelper.UploadToTrashbin(
+                    MessageHelper.StripIRC(message), "addplain");
+                await BotClient.SendAsync(new PrivMsgMessage(channel, $"Слишком жесткое сообщение с длинной " +
+                                                                      $"{outputstr.Length} символов! Психанул?!?!?!"));
                 await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
                 return;
             }
