@@ -96,7 +96,6 @@ public class Bot
         {
             Thread.Sleep(1000);
             PProfiler.BeginMeasure("update");
-            PProfiler.BeginMeasure("update_stats");
             var users = Connection.Table<SQL.UserStats>();
             foreach (var user in users)
             {
@@ -104,8 +103,6 @@ public class Bot
                 onTick.UpdateUserPaydays(Shop);
                 onTick.RemoveLevelOneAccs();
             }
-            Shop.UpdateShop();
-            PProfiler.EndMeasure("update_stats");
             var reminds = Connection.Table<SQL.Reminds>();
             foreach (var item in reminds)
             {

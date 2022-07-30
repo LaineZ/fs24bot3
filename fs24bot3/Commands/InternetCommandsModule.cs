@@ -28,8 +28,8 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     {
         APIExec.Input codeData = new APIExec.Input
         {
-            clientId = ConfigurationProvider.Config.JdoodleClientID,
-            clientSecret = ConfigurationProvider.Config.JdoodleClientSecret,
+            clientId = ConfigurationProvider.Config.Services.JdoodleClientID,
+            clientSecret = ConfigurationProvider.Config.Services.JdoodleClientSecret,
             language = lang,
             script = code
         };
@@ -235,7 +235,9 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Акции. параметр lookUpOnlySymbol позволяет сразу искать акцию по символу, а не названию компании")]
     public async Task Stocks(string stock = "AAPL", bool lookUpOnlySymbol = false)
     {
-        var resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/search?q=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+        var resp = await http.MakeRequestAsync(
+            "https://finnhub.io/api/v1/search?q=" + stock + "&token=" + 
+            ConfigurationProvider.Config.Services.FinnhubKey);
 
         if (resp == null)
         {
@@ -252,12 +254,14 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             return;
         }
 
-        resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+        resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + 
+                                           "&token=" + ConfigurationProvider.Config.Services.FinnhubKey);
 
         if (resp == null || lookUpOnlySymbol)
         {
             // trying just find stock by symbol
-            resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+            resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + 
+                                               "&token=" + ConfigurationProvider.Config.Services.FinnhubKey);
             if (resp == null)
             {
                 // give up
@@ -311,7 +315,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Не является поисковой системой.")]
     public async Task Wolfram([Remainder] string query)
     {
-        WolframAlphaClient client = new WolframAlphaClient(ConfigurationProvider.Config.WolframID);
+        WolframAlphaClient client = new WolframAlphaClient(ConfigurationProvider.Config.Services.WolframID);
         var results = await client.QueryAsync(query);
 
         if (results.IsError)

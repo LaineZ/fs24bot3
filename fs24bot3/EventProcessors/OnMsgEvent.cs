@@ -51,7 +51,7 @@ public class OnMsgEvent
                 Process p = new Process();
                 p.StartInfo.UseShellExecute = false;
                 p.StartInfo.RedirectStandardOutput = true;
-                p.StartInfo.FileName = ConfigurationProvider.Config.YoutubeDlPath;
+                p.StartInfo.FileName = ConfigurationProvider.Config.Services.YoutubeDlPath;
                 p.StartInfo.Arguments = "--simulate --print-json \"" + match + "\"";
                 p.Start();
                 string output = p.StandardOutput.ReadToEnd();

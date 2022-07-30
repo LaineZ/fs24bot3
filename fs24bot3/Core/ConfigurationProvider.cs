@@ -15,15 +15,8 @@ public static class ConfigurationProvider
         if (File.Exists("settings.toml"))
         {
             var loadedconfig = Toml.ToModel<Configuration>(File.ReadAllText("settings.toml"));
-            if (loadedconfig != null)
-            {
-                Config = loadedconfig;
-                Log.Information("Configuration loaded!");
-            }
-            else
-            {
-                Log.Error("Configuration loading error!");
-            }
+            Config = loadedconfig;
+            Log.Information("Configuration loaded!");
         }
         else
         {

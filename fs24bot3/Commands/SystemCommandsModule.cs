@@ -48,7 +48,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         .Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
     }
 
-    [Command("profiler", "prof")]
+    [Command("profiler", "prof", "performance", "perf")]
     public async Task Profiler()
     {
         await Context.SendMessage(Context.Channel, Context.BotCtx.PProfiler.FmtAll());

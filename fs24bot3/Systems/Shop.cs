@@ -22,7 +22,7 @@ namespace fs24bot3.Systems
 
         public string ShopID { get; }
 
-        public Shop(Bot botCtx)
+        public Shop(in Bot botCtx)
         {
             Items = new Dictionary<string, IItem>();
             ShopID = "shop";
@@ -35,28 +35,28 @@ namespace fs24bot3.Systems
             Items.Add("wrench", new Wrenchable("🔧 Гаечный ключ", 4, 30000, ItemInventory.ItemRarity.Rare));
             Items.Add("wrenchadv", new Wrenchable("🛠 Гаечный ключ и молоток", 8, 50000, ItemInventory.ItemRarity.Epic));
             Items.Add("hammer", new Wrenchable("🔨 Молоток", 5, 35000, ItemInventory.ItemRarity.Rare));
-            Items.Add("speaker", new BasicItem("🔊 Мониторные колонки", 3200, ItemInventory.ItemRarity.Common));
-            Items.Add("dj", new BasicItem("🎛 PIONEER DJ", 3200, ItemInventory.ItemRarity.Common));
+            Items.Add("speaker", new BasicItem("🔊 Мониторные колонки", 3200));
+            Items.Add("dj", new BasicItem("🎛 PIONEER DJ", 3200));
             Items.Add("midikey", new BasicItem("🎹 Native Instruments Komplete Kontrol S88", 6000, ItemInventory.ItemRarity.Rare));
             Items.Add("wall", new BasicItem("🧱 Укрепление", 150000, ItemInventory.ItemRarity.Legendary));
-            Items.Add("pistol", new Bomb("🔫 Пистолет", 5500, 50000, ItemInventory.ItemRarity.Rare));
+            Items.Add("pistol", new Bomb("🔫 Пистолет", 5500, 50000));
             Items.Add("bomb", new Bomb("💣 Бомба", 9500, 90000, ItemInventory.ItemRarity.Unbeliveable));
-            Items.Add("worm", new BasicItem("🐍 Червь", 500, ItemInventory.ItemRarity.Common));
+            Items.Add("worm", new BasicItem("🐍 Червь", 500));
             Items.Add("fish", new BasicItem("🐟 Рыба", 1000, ItemInventory.ItemRarity.Uncommon));
             Items.Add("tfish", new BasicItem("🐠 Тропическая рыба", 15700, ItemInventory.ItemRarity.Rare));
             Items.Add("weirdfishes", new BasicItem("🍥 СТРАННАЯ РЫБА", 100000, ItemInventory.ItemRarity.Unbeliveable));
             Items.Add("ffish", new BasicItem("🐡 Рыба-фугу", 3700, ItemInventory.ItemRarity.Rare));
-            Items.Add("veriplace", new BasicItem("🎏 Верхоплавки", 2700, ItemInventory.ItemRarity.Common));
+            Items.Add("veriplace", new BasicItem("🎏 Верхоплавки", 2700));
             Items.Add("pike", new BasicItem("🦈 Щука", 10000, ItemInventory.ItemRarity.Uncommon));
             Items.Add("som", new BasicItem("🐬 Сом", 12000, ItemInventory.ItemRarity.Rare));
-            Items.Add("line", new BasicItem("🪢 Леска", 1000, ItemInventory.ItemRarity.Common));
+            Items.Add("line", new BasicItem("🪢 Леска", 1000));
             Items.Add("rod", new FishingRod("🎣 Удочка", 20000, ItemInventory.ItemRarity.Uncommon));
 
             BotCtx = botCtx;
 
             foreach (var item in Items)
             {
-                if (!BotCtx.Connection.Table<SQL.Item>().Where(x => x.Name == item.Key).Any())
+                if (BotCtx.Connection.Table<SQL.Item>().All(x => x.Name != item.Key))
                 {
                     BotCtx.Connection.Insert(new SQL.Item { ShopID = ShopID, Name = item.Key });
                     Log.Verbose("Inserted: {0}", item.Value.Name);
@@ -66,21 +66,6 @@ namespace fs24bot3.Systems
             Log.Information("Shop loading is done!");
         }
 
-        public void UpdateShop()
-        {
-            if (Rand.Next(0, 5) == 1)
-            {
-                foreach (var shopItem in Items)
-                {
-                    int check = Rand.Next(0, 30);
-                    if (check == 5)
-                    {
-                        shopItem.Value.Price -= Rand.Next(1, 3);
-                    }
-                }
-            }
-        }
-                
         public async Task<(bool, int)> Sell(User user, string itemname, int count = 1)
         {
             if (!Items.ContainsKey(itemname))
