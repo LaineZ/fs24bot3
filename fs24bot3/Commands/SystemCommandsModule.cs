@@ -6,13 +6,47 @@ using Qmmands;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace fs24bot3.Commands;
 public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
+    
+    
+    private void ExtractZipFileToDirectory(string sourceZipFilePath, string destinationDirectoryName, bool overwrite)
+    {
+        using var archive = ZipFile.Open(sourceZipFilePath, ZipArchiveMode.Read);
+        if (!overwrite)
+        {
+            archive.ExtractToDirectory(destinationDirectoryName);
+            return;
+        }
+
+        DirectoryInfo di = Directory.CreateDirectory(destinationDirectoryName);
+        string destinationDirectoryFullPath = di.FullName;
+
+        foreach (ZipArchiveEntry file in archive.Entries)
+        {
+            string completeFileName = Path.GetFullPath(Path.Combine(destinationDirectoryFullPath, file.FullName));
+
+            if (!completeFileName.StartsWith(destinationDirectoryFullPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new IOException("Trying to extract file outside of destination directory.");
+            }
+
+            if (file.Name == "")
+            {// Assuming Empty for Directory
+                Directory.CreateDirectory(Path.GetDirectoryName(completeFileName));
+                continue;
+            }
+            file.ExtractToFile(completeFileName, true);
+        }
+    }
 
     [Command("info", "about", "credits")]
     [Description("Информация о боте")]
@@ -67,15 +101,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
             return;
         }
 
-        if (TimeZoneInfo.FindSystemTimeZoneById(timeZone) != null)
-        {
-            Context.User.SetTimeZone(timeZone);
-            await Context.SendMessage(Context.Channel, "Часовой пояс установлен!");
-        }
-        else
-        {
-            Context.SendSadMessage(Context.Channel, "Такого часового пояса не существует");
-        }
+        Context.User.SetTimeZone(timeZone);
+        await Context.SendMessage(Context.Channel, "Часовой пояс установлен!");
 
     }
 
@@ -92,6 +119,38 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     {
         Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Command = REPLACE(Command, '@', '')");
         await Context.SendMessage(Context.Channel, "Команды починены");
+    }
+    public async Task _UpdateBot()
+    {
+        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+        {
+            Context.SendErrorMessage(Context.Channel, "Обновление на винде НЕВОЗМОЖНО!");
+            return;
+        }
+        var http = new HttpTools();
+        
+        await Context.SendMessage(Context.Channel, "Запуск обновления...");
+
+        string json = await http.MakeRequestAsync("https://api.github.com/repos/LaineZ/fs24bot3/actions/artifacts");
+        var artifacts = JsonConvert.DeserializeObject<GitHubJobsArtifacts.Root>(json);
+
+        if (artifacts == null || !artifacts.Artifacts.Any())
+        {   
+            Context.SendErrorMessage(Context.Channel, "Артифакты НЕ НАЙДЕНЫ! ОБНОВЛЕНИЕ НЕВОЗМОЖНО!!!");
+            return;
+        }
+
+        var build = artifacts.Artifacts.Last();
+
+        if (File.Exists("Linux.zip"))
+        {
+            File.Delete("Linux.zip");
+        }
+
+        await http.DownloadFile("Linux.zip", build.ArchiveDownloadUrl);
+        ExtractZipFileToDirectory("Linux.zip", ".", true);
+        await Context.SendMessage(Context.Channel, "Обновление заверешно, ДО СВИДАНИЯ!");
+        Exit();
     }
 
     [Command("toggleppc")]
