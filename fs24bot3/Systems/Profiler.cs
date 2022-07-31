@@ -85,8 +85,11 @@ namespace fs24bot3.Systems
             var sb = new StringBuilder();
             foreach (var metric in Metrics)
             {
-                sb.Append(Fmt(metric.Key));
-                sb.Append('\n');
+                if (metric.Value.Item1.Any())
+                {
+                    sb.Append(Fmt(metric.Key));
+                    sb.Append('\n');
+                }
             }
 
             return sb.ToString();

@@ -9,6 +9,9 @@ public interface IMessagingClient
     /// The client name e.g nickname in IRC
     /// </summary>
     public string Name { get; }
+    /// <summary>
+    /// The main bot context, must be instance of Bot class
+    /// </summary>
     public Bot BotContext { get; }
 
     public async void SetupNick(string nickname) { }

@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using fs24bot3.Backend;
 
 namespace fs24bot3;
+
 public class Bot
 {
     public SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
@@ -27,7 +28,8 @@ public class Bot
     public Shop Shop { get; set; }
     public Songame SongGame { get; set; }
     public List<string> AcknownUsers = new List<string>();
-    public Profiler PProfiler { get; private set; }
+    public Profiler PProfiler { get; }
+
     public Bot(IMessagingClient messagingClient)
     {
         Client = messagingClient;
@@ -47,7 +49,6 @@ public class Bot
         PProfiler = new Profiler();
 
         PProfiler.AddMetric("update");
-        PProfiler.AddMetric("update_stats");
         PProfiler.AddMetric("command");
         PProfiler.AddMetric("msg");
 
@@ -55,19 +56,27 @@ public class Bot
         Log.Information("Checking for user commands with incorrect names");
         foreach (var command in Connection.Table<SQL.CustomUserCommands>())
         {
-            bool commandIntenral = Service.GetAllCommands().Any(x => x.Aliases.Any(a => a == command.Command));
+            bool commandIntenral = Service.GetAllCommands()
+                .Any(x => x.Aliases.Any(a => a == command.Command));
 
             if (commandIntenral)
             {
                 var user = new Core.User(command.Nick, Connection);
-                Log.Warning("User {0} have a command with internal name {1}!", user.Username, command.Command);
-                user.AddWarning($"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot добавилась команда с таким же именем, ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте {user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем", this);
+                Log.Warning("User {0} have a command with internal name {1}!",
+                    user.Username,
+                    command.Command);
+                user.AddWarning(
+                    $"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot " +
+                    $"добавилась команда с таким же именем, " +
+                    $"ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте " +
+                    $"{user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем",
+                    this);
             }
         }
-        
+
         Shop = new Shop(this);
         SongGame = new Songame(Connection);
-        
+
         Log.Information("Bot: Construction complete!");
     }
 
@@ -103,6 +112,7 @@ public class Bot
                 onTick.UpdateUserPaydays(Shop);
                 onTick.RemoveLevelOneAccs();
             }
+
             var reminds = Connection.Table<SQL.Reminds>();
             foreach (var item in reminds)
             {
@@ -115,6 +125,7 @@ public class Bot
                     Connection.Delete(item);
                 }
             }
+
             PProfiler.EndMeasure("update");
         }
     }
@@ -143,7 +154,8 @@ public class Bot
             return;
 
         PProfiler.BeginMeasure("command");
-        var result = await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(this, in message, ppc));
+        var result =
+            await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(this, in message, ppc));
 
         if (!result.IsSuccessful && ppc)
         {
@@ -154,10 +166,12 @@ public class Bot
         switch (result)
         {
             case ChecksFailedResult err:
-                await Client.SendMessage(message.Target, $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
+                await Client.SendMessage(message.Target,
+                    $"Требования не выполнены: {string.Join(" ", err.FailedChecks)}");
                 break;
             case TypeParseFailedResult err:
-                await Client.SendMessage(message.Target, $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите #helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
+                await Client.SendMessage(message.Target,
+                    $"Ошибка в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}` введите #helpcmd {err.Parameter.Command} чтобы узнать как правильно пользоватся этой командой");
                 break;
             case ArgumentParseFailedResult err:
                 var parserResult = err.ParserResult as DefaultArgumentParserResult;
@@ -186,15 +200,20 @@ public class Bot
                     var cmds = CommandSuggestion(prefix, cmdName);
                     if (!string.IsNullOrWhiteSpace(cmds))
                     {
-                        await Client.SendMessage(message.Target, $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
+                        await Client.SendMessage(message.Target,
+                            $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
                     }
                 }
+
                 break;
             case CommandExecutionFailedResult err:
-                await Client.SendMessage(message.Target, $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
-                Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace, message.Sender.Username, message.Body));
+                await Client.SendMessage(message.Target,
+                    $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
+                Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace,
+                    message.Sender.Username, message.Body));
                 break;
         }
+
         PProfiler.EndMeasure("command");
     }
 }

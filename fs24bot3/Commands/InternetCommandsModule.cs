@@ -152,7 +152,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
-    [Command("isblocked", "blocked", "block", "blk")]
+    [Command("isblocked", "blocked", "block", "blk", "isup", "isdown", "ping")]
     [Description("Заблокирован ли сайт в России?")]
     public async Task IsBlocked([Remainder] string url)
     {

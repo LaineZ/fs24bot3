@@ -49,6 +49,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     }
 
     [Command("profiler", "prof", "performance", "perf")]
+    [Description("Профилятор системы")]
     public async Task Profiler()
     {
         await Context.SendMessage(Context.Channel, Context.BotCtx.PProfiler.FmtAll());
