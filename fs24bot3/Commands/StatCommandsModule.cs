@@ -17,6 +17,13 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     public CommandService Service { get; set; }
     private readonly Regex WordRegex = new Regex(@"\S*");
 
+    private string FmtTag(SQL.Tags tag)
+    {
+        var t = Context.BotCtx.Connection.Table<SQL.Tag>()
+                .FirstOrDefault(x => x.Name == tag.Tag);
+        return $"00,{t.Color}⚫{t.Name}{IrcClrs.Reset}";
+    }
+
     [Command("daystat")]
     [Description("Статистика за день")]
     public async Task Daystat(string dateString = "")
@@ -73,29 +80,20 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     [Description("Статы пользователя или себя")]
     public async Task Userstat(string nick = null)
     {
-        string userNick = nick ?? Context.Sender;
-        User usr = new User(userNick, Context.BotCtx.Connection);
-
+        string userNick = nick ?? Context.User.Username;
+        User usr = new User(userNick, in Context.BotCtx.Connection);
         var data = usr.GetUserInfo();
-        if (data != null)
+        var tags = usr.GetTags();
+
+        await Context.SendMessage(Context.Channel, $"Статистика: {data.Nick} Уровень: {data.Level} XP: {data.Xp} / {data.Need}");
+
+        if (tags.Any())
         {
-            await Context.SendMessage(Context.Channel, $"Статистика: {data.Nick} Уровень: {data.Level} XP: {data.Xp} / {data.Need}");
-            try
-            {
-                var userTags = usr.GetUserTags();
-                if (userTags.Count > 0)
-                {
-                    await Context.SendMessage(Context.Channel, "Теги: " + string.Join(' ', userTags.Select(x => $"00,{x.Color}⚫{x.TagName}{IrcClrs.Reset}")));
-                }
-            }
-            catch (Exceptions.UserNotFoundException)
-            {
-                await Context.SendMessage(Context.Channel, "Теги: Нет");
-            }
+            await Context.SendMessage(Context.Channel, $"Теги: {string.Join(' ', tags.Select(x => FmtTag(x)))}");
         }
         else
         {
-            await Context.SendMessage(Context.Channel, "Пользователя не существует (это как вообще? даже тебя что ли не существует?)");
+            await Context.SendMessage(Context.Channel, "Теги: нет");
         }
     }
 }

@@ -18,24 +18,24 @@ public sealed class FishCommandsModule : ModuleBase<CommandProcessor.CustomComma
     [Checks.FullAccount]
     public async Task SetNest(string nestname = "")
     {
-        var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+        Context.User.SetContext(Context);
 
         if (nestname.Any())
         {
-            var state = user.SetNest(nestname);
+            var state = Context.User.SetNest(nestname);
 
             if (state == null)
             {
                 await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Такого места для рыбалки не сущесвует");
                 return;
             }
-            if (state.FishingLineRequired <= user.CountItem("line"))
+            if (state.FishingLineRequired <= Context.User.CountItem("line"))
             {
                 await Context.SendMessage(Context.Channel, $"Установлено место рыбалки {nestname}");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Слишком маленькая длинна лески! {state.FishingLineRequired} > {user.CountItem("line")}");
+                await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Слишком маленькая длинна лески! {state.FishingLineRequired} > {Context.User.CountItem("line")}");
             }
         }
         else

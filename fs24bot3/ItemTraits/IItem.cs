@@ -11,12 +11,12 @@ public interface IItem
 
     public async Task<bool> OnUseMyself(Bot botCtx, string channel, Core.User user)
     {
-        await botCtx.SendMessage(channel, "Этот предмет невозможно использовать на себе!");
+        await botCtx.Client.SendMessage(channel, "Этот предмет невозможно использовать на себе!");
         return false;
     }
     public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
     {
-        await botCtx.SendMessage(channel, "Этот предмет невозможно применить на другом пользователе!");
+        await botCtx.Client.SendMessage(channel, "Этот предмет невозможно применить на другом пользователе!");
         return false;
     }
 

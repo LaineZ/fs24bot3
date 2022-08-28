@@ -3,6 +3,7 @@ using fs24bot3.Models;
 using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,12 +79,12 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
             if (!useSlugs)
             {
                 await Context.SendMessage(Context.Channel,
-                Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
+                Context.User.Username + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
             }
             else
             {
                 await Context.SendMessage(Context.Channel,
-                Context.Sender + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
+                Context.User.Username + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
             }
         }
         else
@@ -140,7 +141,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         Context.User.EnableSilentMode();
         int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
         string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
-        User destanation = new User(destanationNick, Context.BotCtx.Connection);
+        User destanation = new User(destanationNick, in Context.BotCtx.Connection);
 
         if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, count))
         {
@@ -163,7 +164,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
 
         foreach (var users in query)
         {
-            var user = new User(users.Nick, Context.BotCtx.Connection);
+            var user = new User(users.Nick, in Context.BotCtx.Connection);
             top.Add((users.Nick, user.CountItem(itemname)));
         }
 
@@ -208,6 +209,86 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         }
     }
 
+    [Command("tags")]
+    [Description("Список всех тегов")]
+    public async Task Tags()
+    {
+        var tags = Context.BotCtx.Connection.Table<SQL.Tag>().
+                   ToList().Select(x => $"00,{x.Color}⚫{x.Name}{IrcClrs.Reset}");
+        await Context.SendMessage(Context.Channel, string.Join(" ", tags));
+    }
+
+    [Command("tag")]
+    [Checks.FullAccount]
+    [Description("Управление тегами")]
+    public async Task TagManager(CommandToggles.CommandEdit action, string tagname, ushort irccolor = 4)
+    {
+        Context.User.SetContext(Context);
+
+        switch (action)
+        {
+            case CommandToggles.CommandEdit.Add:
+                if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 30000))
+                {
+                    try
+                    {
+                        Context.BotCtx.Connection.Insert(new SQL.Tag
+                        {
+                            Color = (uint)irccolor,
+                            CreatedBy = Context.User.Username,
+                            Name = tagname
+                        });
+                        await Context.SendMessage(Context.Channel, 
+                        $"Тег успешно добавлен чтобы кого-то наградить им напишите {Context.User.GetUserPrefix()}addtag пользователь {tagname}!");
+                    }
+                    catch (SQLiteException)
+                    {
+                        Context.User.AddItemToInv(Context.BotCtx.Shop, "money", 3000);
+                        Context.SendSadMessage(Context.Channel, "Тег уже существует!");
+                    }
+                }
+                break;
+            case CommandToggles.CommandEdit.Delete:
+                var query = Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).FirstOrDefault();
+
+                if (query != null && query.Name == tagname)
+                {
+                    if (query.CreatedBy == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
+                    {
+                        Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).Delete();
+                        await Context.SendMessage(Context.Channel, "Тег успешно удален, также этот тег будет удален с пользователей!");
+                    }
+                    else
+                    {
+                        Context.SendSadMessage(Context.Channel, "Вы не создатель тега!");
+                    }
+                }
+                else
+                {
+                    Context.SendSadMessage(Context.Channel);
+                }
+                break;
+        }
+    }
+
+    [Command("addtag")]
+    [Checks.FullAccount]
+    [Description("Добавить тег пользователю")]
+    public async Task AddTag(string tagname, string destanation)
+    {
+        var query = Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).FirstOrDefault();
+
+        if (query == null)
+        {
+            Context.SendSadMessage(Context.Channel, "Тег не найден");
+        }
+
+        var destuser = new User(destanation, Context.BotCtx.Connection, Context);
+        destuser.AddTag(query);
+
+        await Context.SendMessage(Context.Channel, "Тег успешно добавлен пользователю");
+    }
+
     [Command("use")]
     [Checks.FullAccount]
     [Description("Использовать предмет")]
@@ -217,9 +298,9 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         bool delete = false;
         if (Context.User.CountItem(itemname) > 0)
         {
-            if (nick != null && nick != Context.Sender)
+            if (nick != null && nick != Context.User.Username)
             {
-                User targetUser = new User(nick, Context.BotCtx.Connection);
+                User targetUser = new User(nick, in Context.BotCtx.Connection);
                 delete = await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, Context.User, targetUser);
             }
             else

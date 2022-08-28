@@ -23,7 +23,7 @@ public static class Transalator
             Method = HttpMethod.Post,
             RequestUri = new Uri("https://microsoft-translator-text.p.rapidapi.com/translate?api-version=3.0&to=" + to + "&textType=plain&profanityAction=NoAction&from=" + from),
             Headers = {
-                    { "x-rapidapi-key", ConfigurationProvider.Config.TranslateKey },
+                    { "x-rapidapi-key", ConfigurationProvider.Config.Services.TranslateKey },
                     { "x-rapidapi-host", "microsoft-translator-text.p.rapidapi.com" },
                 },
             Content = new StringContent(content, Encoding.UTF8, "application/json"),

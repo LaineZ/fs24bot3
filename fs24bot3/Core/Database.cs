@@ -7,13 +7,12 @@ using System;
 namespace fs24bot3.Core;
 public class Database
 {
-    public static void InitDatabase(SQLiteConnection connection)
+    public static void InitDatabase(in SQLiteConnection connection)
     {
         Log.Information("Initializing databases");
         connection.CreateTable<SQL.UserStats>();
         connection.CreateTable<SQL.CustomUserCommands>();
         connection.CreateTable<SQL.Tag>();
-        connection.CreateTable<SQL.Tags>();
         connection.CreateTable<SQL.Item>();
         connection.CreateTable<SQL.Ignore>();
         connection.CreateTable<SQL.ScriptStorage>();
@@ -26,6 +25,7 @@ public class Database
 
         // creating ultimate inventory by @Fingercomp
         connection.Execute("CREATE TABLE IF NOT EXISTS Inventory (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Item NOT NULL REFERENCES Item (Name) ON DELETE CASCADE ON UPDATE CASCADE, Count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (Nick, Item))");
+        connection.Execute("CREATE TABLE IF NOT EXISTS Tags (Nick NOT NULL REFERENCES UserStats (Nick) ON DELETE CASCADE ON UPDATE CASCADE, Tag NOT NULL REFERENCES Tag (Name) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (Nick, Tag))");
 
         connection.Execute("CREATE TABLE IF NOT EXISTS LyricsCache (track TEXT, artist TEXT, lyrics TEXT, addedby TEXT, PRIMARY KEY (track, artist))");
 

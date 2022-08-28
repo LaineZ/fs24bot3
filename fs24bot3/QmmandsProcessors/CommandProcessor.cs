@@ -15,22 +15,20 @@ public class CommandProcessor
     public sealed class CustomCommandContext : CommandContext
     {
         public string Channel { get; }
-        public string Sender { get; }
         public Random Random { get; }
         public Bot BotCtx { get; }
         public bool PerformPpc { get; }
         public bool FromBridge { get; }
-        public Core.User User { get; set; }
+        public Core.User User { get; }
 
         // Pass your service provider to the base command context.
-        public CustomCommandContext(string target, string sender, Bot bot, bool perfppc = false, bool fromBridge = false, IServiceProvider provider = null) : base(provider)
+        public CustomCommandContext(Bot bot, in MessageGeneric message, bool perfppc = false, IServiceProvider provider = null) : base(provider)
         {
             BotCtx = bot;
-            Channel = target;
-            Sender = sender;
+            Channel = message.Target;
             Random = new Random();
-            FromBridge = fromBridge;
-            User = new Core.User(Sender, bot.Connection, this);
+            FromBridge = message.Kind == MessageKind.MessageFromBridge;
+            User = message.Sender;
             if (perfppc)
             {
                 PerformPpc = User.RemItemFromInv(BotCtx.Shop, "beer", 1).Result;
@@ -41,12 +39,12 @@ public class CommandProcessor
         {
             if (!PerformPpc)
             {
-                await BotCtx.SendMessage(channel, message);
+                await BotCtx.Client.SendMessage(channel, message);
             }
             else
             {
                 var txt = await Core.Transalator.TranslatePpc(MessageHelper.StripIRC(message));
-                await BotCtx.SendMessage(channel, txt);
+                await BotCtx.Client.SendMessage(channel, txt);
             }
         }
 
@@ -54,12 +52,12 @@ public class CommandProcessor
         {
             if (!PerformPpc)
             {
-                await BotCtx.SendMessage(Channel, message);
+                await BotCtx.Client.SendMessage(Channel, message);
             }
             else
             {
                 var txt = await Core.Transalator.TranslatePpc(MessageHelper.StripIRC(message));
-                await BotCtx.SendMessage(Channel, txt);
+                await BotCtx.Client.SendMessage(Channel, txt);
             }
         }
 
@@ -67,17 +65,17 @@ public class CommandProcessor
         {
             if (!message.Any())
             {
-                await BotCtx.SendMessage(channel, IrcClrs.Gray + RandomMsgs.NotFoundMessages.Random());
+                await BotCtx.Client.SendMessage(channel, IrcClrs.Gray + RandomMsgs.NotFoundMessages.Random());
             }
             else
             {
-                await BotCtx.SendMessage(channel, IrcClrs.Gray + message);
+                await BotCtx.Client.SendMessage(channel, IrcClrs.Gray + message);
             }
         }
 
         public async void SendErrorMessage(string channel, string message)
         {
-            await BotCtx.SendMessage(channel, IrcClrs.Red + message);
+            await BotCtx.Client.SendMessage(channel, IrcClrs.Red + message);
         }
     }
 }

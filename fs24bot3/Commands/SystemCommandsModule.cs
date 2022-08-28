@@ -6,13 +6,47 @@ using Qmmands;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace fs24bot3.Commands;
 public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
+    
+    
+    private void ExtractZipFileToDirectory(string sourceZipFilePath, string destinationDirectoryName, bool overwrite)
+    {
+        using var archive = ZipFile.Open(sourceZipFilePath, ZipArchiveMode.Read);
+        if (!overwrite)
+        {
+            archive.ExtractToDirectory(destinationDirectoryName);
+            return;
+        }
+
+        DirectoryInfo di = Directory.CreateDirectory(destinationDirectoryName);
+        string destinationDirectoryFullPath = di.FullName;
+
+        foreach (ZipArchiveEntry file in archive.Entries)
+        {
+            string completeFileName = Path.GetFullPath(Path.Combine(destinationDirectoryFullPath, file.FullName));
+
+            if (!completeFileName.StartsWith(destinationDirectoryFullPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new IOException("Trying to extract file outside of destination directory.");
+            }
+
+            if (file.Name == "")
+            {// Assuming Empty for Directory
+                Directory.CreateDirectory(Path.GetDirectoryName(completeFileName));
+                continue;
+            }
+            file.ExtractToFile(completeFileName, true);
+        }
+    }
 
     [Command("info", "about", "credits")]
     [Description("Информация о боте")]
@@ -35,7 +69,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Command("whoami")]
     public async Task Whoami()
     {
-        await Context.SendMessage(Context.Channel, $"{Context.Sender} Дискорднутый: {Context.FromBridge}");
+        await Context.SendMessage(Context.Channel, $"{Context.User.Username} Дискорднутый: {Context.FromBridge}");
     }
 
     [Command("mem")]
@@ -48,7 +82,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         .Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
     }
 
-    [Command("profiler", "prof")]
+    [Command("profiler", "prof", "performance", "perf")]
+    [Description("Профилятор системы")]
     public async Task Profiler()
     {
         await Context.SendMessage(Context.Channel, Context.BotCtx.PProfiler.FmtAll());
@@ -66,15 +101,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
             return;
         }
 
-        if (TimeZoneInfo.FindSystemTimeZoneById(timeZone) != null)
-        {
-            Context.User.SetTimeZone(timeZone);
-            await Context.SendMessage(Context.Channel, "Часовой пояс установлен!");
-        }
-        else
-        {
-            Context.SendSadMessage(Context.Channel, "Такого часового пояса не существует");
-        }
+        Context.User.SetTimeZone(timeZone);
+        await Context.SendMessage(Context.Channel, "Часовой пояс установлен!");
 
     }
 
@@ -91,6 +119,38 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     {
         Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Command = REPLACE(Command, '@', '')");
         await Context.SendMessage(Context.Channel, "Команды починены");
+    }
+    public async Task _UpdateBot()
+    {
+        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+        {
+            Context.SendErrorMessage(Context.Channel, "Обновление на винде НЕВОЗМОЖНО!");
+            return;
+        }
+        var http = new HttpTools();
+        
+        await Context.SendMessage(Context.Channel, "Запуск обновления...");
+
+        string json = await http.MakeRequestAsync("https://api.github.com/repos/LaineZ/fs24bot3/actions/artifacts");
+        var artifacts = JsonConvert.DeserializeObject<GitHubJobsArtifacts.Root>(json);
+
+        if (artifacts == null || !artifacts.Artifacts.Any())
+        {   
+            Context.SendErrorMessage(Context.Channel, "Артифакты НЕ НАЙДЕНЫ! ОБНОВЛЕНИЕ НЕВОЗМОЖНО!!!");
+            return;
+        }
+
+        var build = artifacts.Artifacts.Last();
+
+        if (File.Exists("Linux.zip"))
+        {
+            File.Delete("Linux.zip");
+        }
+
+        await http.DownloadFile("Linux.zip", build.ArchiveDownloadUrl);
+        ExtractZipFileToDirectory("Linux.zip", ".", true);
+        await Context.SendMessage(Context.Channel, "Обновление заверешно, ДО СВИДАНИЯ!");
+        Exit();
     }
 
     [Command("toggleppc")]
@@ -134,7 +194,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task Giveall(string username)
     {
-        var user = new User(username, Context.BotCtx.Connection);
+        var user = new User(username, in Context.BotCtx.Connection);
         foreach (var item in Context.BotCtx.Shop.Items)
         {
             user.AddItemToInv(Context.BotCtx.Shop, item.Key, 1);
@@ -146,7 +206,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task Giveall(string username, [Remainder] string message)
     {
-        var user = new User(username, Context.BotCtx.Connection);
+        var user = new User(username, in Context.BotCtx.Connection);
         user.AddWarning(message, Context.BotCtx);
         await Context.SendMessage(Context.Channel, $"Вы отправили предупреждение {username}!");
     }
@@ -179,7 +239,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task Give(string username, string item, int count)
     {
-        User sql = new User(username, Context.BotCtx.Connection);
+        User sql = new User(username, in Context.BotCtx.Connection);
 
         sql.AddItemToInv(Context.BotCtx.Shop, item, count);
         await Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Context.BotCtx.Shop.Items[item].Name + " пользователю " + username);
@@ -190,8 +250,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     public async Task JoinChannel(string channel)
     {
         await Context.SendMessage(Context.Channel, $"Зашел на: {channel}");
-        await Context.BotCtx.BotClient.SendRaw("JOIN " + channel);
-        await Context.SendMessage(channel, $"Всем перепривет с вами {Context.BotCtx.Name}");
+        Context.BotCtx.Client.JoinChannel(channel);
+        await Context.SendMessage(channel, $"Всем перепривет с вами {Context.BotCtx.Client.Name}");
     }
 
 
@@ -200,15 +260,14 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     public async Task PartChannel(string channel)
     {
         await Context.SendMessage(channel, "Простите я ухожу, всем пока...");
-        await Context.BotCtx.BotClient.SendRaw("PART " + channel);
-        await Context.SendMessage(Context.Channel, $"Вышел из: {channel}");
+        Context.BotCtx.Client.PartChannel(channel);
     }
 
     [Command("xp")]
     [Checks.CheckAdmin]
     public async Task GiveXp(string username, int count)
     {
-        User sql = new User(username, Context.BotCtx.Connection);
+        User sql = new User(username, in Context.BotCtx.Connection);
 
         sql.IncreaseXp(count);
         await Context.SendMessage(Context.Channel, "Вы установили " + count + " xp пользователю " + username);
@@ -219,7 +278,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task ReinitDb()
     {
-        Database.InitDatabase(Context.BotCtx.Connection);
+        Database.InitDatabase(in Context.BotCtx.Connection);
         await Context.SendMessage(Context.Channel, "База данных загружена!");
     }
 
@@ -227,7 +286,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task GiveLevel(string username, int count)
     {
-        User sql = new User(username, Context.BotCtx.Connection);
+        User sql = new User(username, in Context.BotCtx.Connection);
 
         sql.SetLevel(count);
         await Context.SendMessage(Context.Channel, "Вы установили уровень: " + count + " пользователю " + username);
@@ -302,7 +361,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     public async Task Prefix(string prefix = "#")
     {
         Context.User.SetUserPrefix(prefix);
-        await Context.SendMessage(Context.Channel, $"{Context.Sender}: Вы установили себе префикс {prefix}! Теперь бот для вас будет отвечать на него!");
+        await Context.SendMessage(Context.Channel, $"{Context.User.Username}: Вы установили себе префикс {prefix}! Теперь бот для вас будет отвечать на него!");
     }
 
     [Command("setcap")]

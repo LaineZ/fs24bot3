@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 
 namespace fs24bot3.Core;
+
 public class LuaFunctions
 {
     private readonly SQLiteConnection Connection;
@@ -21,7 +22,8 @@ public class LuaFunctions
 
     public string[] GetCommandOutput(string input, string command)
     {
-        StringBuilder argsFinal = new StringBuilder(Connection.Table<SQL.CustomUserCommands>().SingleOrDefault(x => x.Command == command && x.IsLua == 0).Output);
+        StringBuilder argsFinal = new StringBuilder(Connection.Table<SQL.CustomUserCommands>()
+            .SingleOrDefault(x => x.Command == command && x.IsLua == 0).Output);
 
         Random random = new Random();
         var arr = Connection.Table<SQL.UserStats>().ToList();

@@ -36,22 +36,23 @@ namespace fs24bot3.Systems
 
         public float GetMeasureLast(string metric)
         {
-            return (float)Metrics[metric].Item1.Last();
+            return !Metrics[metric].Item1.Any() ? 0 : Metrics[metric].Item1.Last();
         }
 
         public int GetMeasureAvg(string metric)
         {
+            if (!Metrics[metric].Item1.Any()) { return 0; }
             return (int)Metrics[metric].Item1.Average();
         }
 
         public float GetMeasureMin(string metric)
         {
-            return Metrics[metric].Item1.Min();
+            return !Metrics[metric].Item1.Any() ? 0 : Metrics[metric].Item1.Min();
         }
 
         public float GetMeasureMax(string metric)
         {
-            return Metrics[metric].Item1.Max();
+            return !Metrics[metric].Item1.Any() ? 0 : Metrics[metric].Item1.Max();
         }
 
         public string FmtMetric(float metric)
@@ -72,12 +73,16 @@ namespace fs24bot3.Systems
 
         public string Fmt(string metric)
         {
+            if (Metrics[metric].Item1.Any())
+            {
+                return string.Format("{0,15} │ last {1,8} │ avg {2,8} │ min {3,8} │ max {4,8}", metric,
+                    FmtMetric(GetMeasureLast(metric)),
+                    FmtMetric(GetMeasureAvg(metric)),
+                    FmtMetric(GetMeasureMin(metric)),
+                    FmtMetric(GetMeasureMax(metric)));
+            }
 
-            return string.Format("{0,15} │ last {1,8} │ avg {2,8} │ min {3,8} │ max {4,8}", metric,
-            FmtMetric(GetMeasureLast(metric)),
-            FmtMetric(GetMeasureAvg(metric)),
-            FmtMetric(GetMeasureMin(metric)),
-            FmtMetric(GetMeasureMax(metric)));
+            return $"{0,15} │ last {0,8} │ avg {0,8} │ min {0,8} │ max {0,8}";
         }
 
         public string FmtAll()
@@ -85,8 +90,11 @@ namespace fs24bot3.Systems
             var sb = new StringBuilder();
             foreach (var metric in Metrics)
             {
-                sb.Append(Fmt(metric.Key));
-                sb.Append('\n');
+                if (metric.Value.Item1.Any())
+                {
+                    sb.Append(Fmt(metric.Key));
+                    sb.Append('\n');
+                }
             }
 
             return sb.ToString();

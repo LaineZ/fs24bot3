@@ -8,24 +8,15 @@ using Tomlyn;
 
 namespace fs24bot3.Models;
 
-public class Configuration
+
+public enum Backend
 {
-    [DataMember(Name = "name")]
-    public string Name { get; set; }
-    [DataMember(Name = "network")]
-    public string Network { get; set; }
-    [DataMember(Name = "channel")]
-    public string Channel { get; set; }
-    [DataMember(Name = "port")]
-    public int Port { get; set; }
-    [DataMember(Name = "nickserv_pass")]
-    public string NickservPass { get; set; }
-    [DataMember(Name = "server_pass")]
-    public string ServerPassword { get; set; }
-    [DataMember(Name = "prefix")]
-    public string Prefix { get; set; }
-    [DataMember(Name = "loglevel")]
-    public string LogLevel { get; set; }
+    Basic,
+    IRC,
+}
+
+public class Services
+{
     [DataMember(Name = "jdoodle_client_id")]
     public string JdoodleClientID { get; set; }
     [DataMember(Name = "jdoodle_client_secret")]
@@ -48,6 +39,29 @@ public class Configuration
     public string OpenWeatherMapKey { get; set; }
     [DataMember(Name = "yandex_weather_key")]
     public string YandexWeatherKey { get; set; }
+}
+
+public class Configuration
+{
+    [DataMember(Name = "name")]
+    public string Name { get; set; }
+    [DataMember(Name = "network")]
+    public string Network { get; set; }
+    [DataMember(Name = "channel")]
+    public string Channel { get; set; }
+    [DataMember(Name = "port")]
+    public int Port { get; set; }
+    [DataMember(Name = "nickserv_pass")]
+    public string NickservPass { get; set; }
+    [DataMember(Name = "server_pass")]
+    public string ServerPassword { get; set; }
+    [DataMember(Name = "prefix")]
+    public string Prefix { get; set; }
+    [DataMember(Name = "loglevel")]
+    public string LogLevel { get; set; }
+    [DataMember(Name = "backend")]
+    public Backend Backend { get; set; }
+    public Services Services { get; set; }
 
     public Configuration()
     {
@@ -59,15 +73,19 @@ public class Configuration
         ServerPassword = "zxcvbm1";
         Prefix = "#";
         LogLevel = "Verbose";
-        JdoodleClientID = "0";
-        JdoodleClientSecret = "0";
-        TrashbinUrl = "http://trashbin.140.ted.ge";
-        WolframID = "0";
-        TranslateKey = "0";
-        BridgeNickname = "cheburator";
-        FinnhubKey = "0";
-        YoutubeDlPath = "youtube-dl";
-        OpenWeatherMapKey = "0";
-        YandexWeatherKey = "0";
+        Backend = Backend.IRC;
+        Services = new Services()
+        {
+            JdoodleClientID = "0",
+            JdoodleClientSecret = "0",
+            TrashbinUrl = "http://trashbin.140.ted.ge",
+            WolframID = "0",
+            TranslateKey = "0",
+            BridgeNickname = "cheburator",
+            FinnhubKey = "0",
+            YoutubeDlPath = "youtube-dl",
+            OpenWeatherMapKey = "0",
+            YandexWeatherKey = "0",
+        };
     }
 }

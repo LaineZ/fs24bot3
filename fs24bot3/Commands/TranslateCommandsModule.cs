@@ -50,8 +50,8 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
     [Checks.UnPpcable]
     public async Task GenAI(uint max = 200)
     {
-        var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
-        if (await user.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
+        Context.User.SetContext(Context);
+        if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
         {
             AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
         }
@@ -109,9 +109,9 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         int gens = Math.Clamp(gensArg, 2, 8);
         string lastText = text;
         List<string> translationsChain = new List<string>();
-        var usr = new User(Context.Sender, Context.BotCtx.Connection, Context);
+        Context.User.SetContext(Context);
 
-        if (await usr.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
+        if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "beer", 2))
         {
             for (int i = 0; i < gens; i++)
             {
@@ -179,9 +179,9 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
     [Description("Текст песни (Перевод)")]
     public async Task LyricsTr(string lang, [Remainder] string song)
     {
-        var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
-
+        Context.User.SetContext(Context);
         var data = song.Split(" - ");
+        
         if (data.Length > 0)
         {
             try
@@ -190,7 +190,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
 
                 string lyricsOut = await lyrics.GetLyrics();
 
-                if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 1000 + lyricsOut.Length))
+                if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 1000 + lyricsOut.Length))
                 {
                     var (from, to) = ParseLang(lang);
                     var resultTranslated = await Transalator.TranslateBing(lyricsOut, from, to);

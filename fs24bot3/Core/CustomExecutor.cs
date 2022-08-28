@@ -36,7 +36,7 @@ class CustomExecutor
                 // if args contains output number
                 if (result > outputs.Length - 1 || result < 0)
                 {
-                    await Bot.SendMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение");
+                    await Bot.Client.SendMessage(channel, $"Учтите в следующий раз, здесь максимум: {outputs.Length - 1}, поэтому показано рандомное сообщение");
                 }
                 else
                 {
@@ -76,6 +76,6 @@ class CustomExecutor
         argsFinal.Replace("#RNDNICK", nick);
         argsFinal.Replace("#RNG", Random.Next(int.MinValue, int.MaxValue).ToString());
 
-        await Bot.SendMessage(channel, argsFinal.ToString());
+        await Bot.Client.SendMessage(channel, argsFinal.ToString());
     }
 }

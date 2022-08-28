@@ -23,7 +23,7 @@ public class Drink : IItem
     public async Task<bool> OnUseMyself(Bot botCtx, string channel, User user)
     {
         string randStr = string.Join(" ", RandomMsgs.DrunkMessages.Random());
-        await botCtx.SendMessage(channel, $"{user.Username} выпил {Name} ({DrunkLevel}) и сказал: {randStr}");
+        await botCtx.Client.SendMessage(channel, $"{user.Username} выпил {Name} ({DrunkLevel}) и сказал: {randStr}");
         return true;
     }
 }

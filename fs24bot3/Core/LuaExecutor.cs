@@ -57,11 +57,11 @@ class LuaExecutor
             try
             {
                 var res = (string)lua.DoString(Command.Output)[0];
-                await Context.SendMessage(channel, res);
+                await Context.Client.SendMessage(channel, res);
             }
             catch (Exception e)
             {
-                await Context.SendMessage(channel, $"Ошибка Lua скрипта: {e.Message}");
+                await Context.Client.SendMessage(channel, $"Ошибка Lua скрипта: {e.Message}");
                 lua.Close();
                 lua.Dispose();
             }

@@ -13,7 +13,7 @@ public sealed class CheckAdmin : CheckAttribute
     {
         var context = _ as CommandProcessor.CustomCommandContext;
 
-        return context.User.GetUserInfo().Admin == 2
+        return context.User.GetUserInfo().Admin == 2 || ConfigurationProvider.Config.Backend == Models.Backend.Basic
             ? CheckResult.Successful
             : CheckResult.Failed("Это команда только для админов!");
     }

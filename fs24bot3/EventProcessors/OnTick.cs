@@ -10,34 +10,30 @@ public class OnTick
     private User User;
     private Random Rand = new Random();
 
-    public OnTick(string username, SQLite.SQLiteConnection connection)
+    public OnTick(string username, in SQLite.SQLiteConnection connection)
     {
-        MultiUser = new MultiUser(connection);
-        User = new User(username, connection);
+        MultiUser = new MultiUser(in connection);
+        User = new User(username, in connection);
     }
 
     public async void UpdateUserPaydays(Shop shop)
     {
         int checkPayday = Rand.Next(0, 20);
-
-        if (checkPayday == 8)
+        if (checkPayday == 8 && MultiUser.GetItemAvg() < shop.MaxCap)
         {
-            if (MultiUser.GetItemAvg() < shop.MaxCap)
+            var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalHours;
+
+            if (subst > 10)
             {
-                var subst = DateTime.Now.Subtract(User.GetLastMessage()).TotalHours;
-
-                if (subst > 10)
-                {
-                    Log.Information("Tax fine for user: {0}", User.Username);
-                    await User.RemItemFromInv(shop, "money", User.GetUserInfo().Level * Rand.Next(1, 2));
-                }
-                else
-                {
-                    User.AddItemToInv(shop, "money", User.GetUserInfo().Level / Rand.Next(1, 4));
-                }
-
-                shop.PaydaysCount++;
+                Log.Information("Tax fine for user: {0}", User.Username);
+                await User.RemItemFromInv(shop, "money", User.GetUserInfo().Level * Rand.Next(1, 2));
             }
+            else
+            {
+                User.AddItemToInv(shop, "money", User.GetUserInfo().Level / Rand.Next(1, 4));
+            }
+
+            shop.PaydaysCount++;
         }
     }
 

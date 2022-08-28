@@ -28,8 +28,8 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     {
         APIExec.Input codeData = new APIExec.Input
         {
-            clientId = ConfigurationProvider.Config.JdoodleClientID,
-            clientSecret = ConfigurationProvider.Config.JdoodleClientSecret,
+            clientId = ConfigurationProvider.Config.Services.JdoodleClientID,
+            clientSecret = ConfigurationProvider.Config.Services.JdoodleClientSecret,
             language = lang,
             script = code
         };
@@ -106,17 +106,17 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         var response = await http.GetTextPlainResponse(rawurl);
         var lyric = new SQL.LyricsCache()
         {
-            AddedBy = Context.Sender,
+            AddedBy = Context.User.Username,
             Lyrics = response,
             Artist = artist,
             Track = track
         };
 
-        var user = new User(Context.Sender, Context.BotCtx.Connection, Context);
+        Context.User.SetContext(Context);
 
         try
         {
-            if (await user.RemItemFromInv(Context.BotCtx.Shop, "money", 2000))
+            if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 2000))
             {
                 Context.BotCtx.Connection.Insert(lyric);
                 Context.SendErrorMessage(Context.Channel, "Добавлено!");
@@ -125,7 +125,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         catch (SQLiteException)
         {
             Context.SendErrorMessage(Context.Channel, "[ДЕНЬГИ ВОЗВРАЩЕНЫ] Такая песня уже существует в базе!");
-            user.AddItemToInv(Context.BotCtx.Shop, "money", 2000);
+            Context.User.AddItemToInv(Context.BotCtx.Shop, "money", 2000);
         }
     }
 
@@ -152,7 +152,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
-    [Command("isblocked", "blocked", "block", "blk")]
+    [Command("isblocked", "blocked", "block", "blk", "isup", "isdown", "ping")]
     [Description("Заблокирован ли сайт в России?")]
     public async Task IsBlocked([Remainder] string url)
     {
@@ -235,7 +235,9 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Акции. параметр lookUpOnlySymbol позволяет сразу искать акцию по символу, а не названию компании")]
     public async Task Stocks(string stock = "AAPL", bool lookUpOnlySymbol = false)
     {
-        var resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/search?q=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+        var resp = await http.MakeRequestAsync(
+            "https://finnhub.io/api/v1/search?q=" + stock + "&token=" + 
+            ConfigurationProvider.Config.Services.FinnhubKey);
 
         if (resp == null)
         {
@@ -252,12 +254,14 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             return;
         }
 
-        resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+        resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + 
+                                           "&token=" + ConfigurationProvider.Config.Services.FinnhubKey);
 
         if (resp == null || lookUpOnlySymbol)
         {
             // trying just find stock by symbol
-            resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + "&token=" + ConfigurationProvider.Config.FinnhubKey);
+            resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + 
+                                               "&token=" + ConfigurationProvider.Config.Services.FinnhubKey);
             if (resp == null)
             {
                 // give up
@@ -311,7 +315,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Не является поисковой системой.")]
     public async Task Wolfram([Remainder] string query)
     {
-        WolframAlphaClient client = new WolframAlphaClient(ConfigurationProvider.Config.WolframID);
+        WolframAlphaClient client = new WolframAlphaClient(ConfigurationProvider.Config.Services.WolframID);
         var results = await client.QueryAsync(query);
 
         if (results.IsError)

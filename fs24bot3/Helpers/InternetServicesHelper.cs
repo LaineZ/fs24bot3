@@ -133,13 +133,13 @@ class InternetServicesHelper
             HttpClient client = new HttpClient();
             HttpContent c = new StringContent(data, Encoding.UTF8);
 
-            var response = await client.PostAsync(ConfigurationProvider.Config.TrashbinUrl + "/" + route, c);
+            var response = await client.PostAsync(ConfigurationProvider.Config.Services.TrashbinUrl + "/" + route, c);
 
             var responseString = await response.Content.ReadAsStringAsync();
 
             if (int.TryParse(responseString, out _))
             {
-                return ConfigurationProvider.Config.TrashbinUrl + "/" + responseString;
+                return ConfigurationProvider.Config.Services.TrashbinUrl + "/" + responseString;
             }
             else
             {
@@ -148,14 +148,14 @@ class InternetServicesHelper
         }
         catch (Exception)
         {
-            return "Полный вывод недоступен: " + ConfigurationProvider.Config.TrashbinUrl;
+            return "Полный вывод недоступен: " + ConfigurationProvider.Config.Services.TrashbinUrl;
         }
     }
 
     public static async Task<OpenWeatherMapResponse.Coord> GetCityLatLon(string city)
     {
         var value = await http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
-                                    "&APPID=" + ConfigurationProvider.Config.OpenWeatherMapKey + "&units=metric");
+                                    "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
         var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
         return json.Coord;
     }
@@ -164,7 +164,7 @@ class InternetServicesHelper
     public static async Task<WeatherGeneric> OpenWeatherMap(string city)
     {
         var value = await http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
-                                                "&APPID=" + ConfigurationProvider.Config.OpenWeatherMapKey + "&units=metric");
+                                                "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
         var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
         var condition = json.Weather.First().Id switch
@@ -223,7 +223,7 @@ class InternetServicesHelper
             Method = HttpMethod.Get,
             RequestUri = new Uri("https://api.weather.yandex.ru/v2/informers?lat=" + latlon.Lat + "&lon=" + latlon.Lon + "&lang=ru_RU"),
             Headers = {
-                    { "X-Yandex-API-Key", ConfigurationProvider.Config.YandexWeatherKey },
+                    { "X-Yandex-API-Key", ConfigurationProvider.Config.Services.YandexWeatherKey },
                     { "Accept", "application/json" }
                 },
             Content = new StringContent("", Encoding.UTF8, "application/json")

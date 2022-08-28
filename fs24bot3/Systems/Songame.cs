@@ -10,7 +10,6 @@ namespace fs24bot3.Systems
     public class Songame
     {
         public int Tries { get; set; }
-        [PrimaryKey]
         public string SongameString { get; set; }
 
 
@@ -28,7 +27,7 @@ namespace fs24bot3.Systems
             return new string(regex.Replace(line.Trim(), " ").ToCharArray().Where(c => !char.IsPunctuation(c)).ToArray());
         }
 
-        public Songame(SQLiteConnection connect)
+        public Songame(in SQLiteConnection connect)
         {
             Tries = 5;
             SongameString = string.Empty;

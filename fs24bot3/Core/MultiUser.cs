@@ -7,7 +7,7 @@ class MultiUser
 {
     public SQLiteConnection Connect;
 
-    public MultiUser(SQLiteConnection connection)
+    public MultiUser(in SQLiteConnection connection)
     {
         Connect = connection;
     }

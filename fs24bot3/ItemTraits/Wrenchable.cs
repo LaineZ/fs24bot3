@@ -44,22 +44,22 @@ namespace fs24bot3.ItemTraits;
 
                 user.IncreaseXp(xp);
 
-                await botCtx.SendMessage(channel, $"Вы кинули {Name} с уроном {Damage} в пользователя {targetUser.Username} при этом он потерял {itemnameLocaled} x{itemCount} и за это вам +{xp} XP");
+                await botCtx.Client.SendMessage(channel, $"Вы кинули {Name} с уроном {Damage} в пользователя {targetUser.Username} при этом он потерял {itemnameLocaled} x{itemCount} и за это вам +{xp} XP");
                 if (rand.Next(0, 7) == 2)
                 {
-                    await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username}! Вы уже потеряли {itemnameLocaled} x{itemCount} возможно он вас продолжает атаковать!");
+                    await botCtx.Client.SendMessage(targetUser.Username, $"Вас атакует {user.Username}! Вы уже потеряли {itemnameLocaled} x{itemCount} возможно он вас продолжает атаковать!");
                 }
                 else
                 {
                     if (rand.Next(0, 1) == 1 || await targetUser.RemItemFromInv(botCtx.Shop, "speaker", 1))
                     {
-                        await botCtx.SendMessage(targetUser.Username, $"Вас атакует {user.Username} гаечными ключами! Вы потеряли {itemnameLocaled} x{itemCount}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
+                        await botCtx.Client.SendMessage(targetUser.Username, $"Вас атакует {user.Username} гаечными ключами! Вы потеряли {itemnameLocaled} x{itemCount}! Так как у вас мониторные колонки - вы получили это сообщение немедленно, но берегитесь: колонки не бесконечные!");
                     }
                 }
             }
             else
             {
-                await botCtx.SendMessage(channel, RandomMsgs.MissMessages.Random());
+                await botCtx.Client.SendMessage(channel, RandomMsgs.MissMessages.Random());
             }
 
             return true;
