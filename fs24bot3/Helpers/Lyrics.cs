@@ -26,9 +26,10 @@ public class Lyrics
 
     public async Task<string> GetLyrics()
     {
-        var query = Connection.Table<SQL.LyricsCache>()
-                    .Where(v => v.Artist.ToLower().Equals(Artist.ToLower()) && v.Track.ToLower().Equals(Track.ToLower()))
-                    .FirstOrDefault();
+        var query = Connection
+            .Table<SQL.LyricsCache>()
+            .FirstOrDefault(v => v.Artist.ToLower() == Artist.ToLower() && 
+                                 v.Track.ToLower() == Track.ToLower());
 
         if (query != null)
         {
@@ -63,13 +64,19 @@ public class Lyrics
         var doc = await web.LoadFromWebAsync("https://genius.com" + url);
         File.WriteAllText("debug.txt", doc.Text);
 
-        HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]");
+        // workaround because genius.com have 3 formats? with lyrics class and Lyrics__Container class
+        // and with
+        // property="og:description"
 
-        // workaround because genius.com have 2 formats? with lyrics class and Lyrics__Container class
+        HtmlNodeCollection divContainer =
+            doc.DocumentNode.SelectNodes("//div[contains(@class, \"Lyrics__Container\")]") ??
+            doc.DocumentNode.SelectNodes("//div[@class=\"lyrics\"]");
+
         if (divContainer == null)
         {
-            divContainer = doc.DocumentNode.SelectNodes("//div[@class=\"lyrics\"]");
+            return "[Instrumental]";
         }
+
 
         foreach (var node in divContainer)
         {

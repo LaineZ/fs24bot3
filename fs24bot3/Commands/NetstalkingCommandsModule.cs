@@ -91,7 +91,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
         foreach ((string opt, string value) in paser.Options)
         {
-            var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == opt).FirstOrDefault();
+            var cmd = SearchCommandService.GetAllCommands().FirstOrDefault(x => x.Name == opt);
 
             if (cmd == null)
             {
@@ -125,20 +125,16 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
             if (items.antirobot.blocked)
             {
                 Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
-                await Context.SendMessage(Context.Channel, $"Вы были забанены reason: {RandomMsgs.BanMessages.Random()} Пожалуйста, используйте команду {IrcClrs.Bold}{Context.User.GetUserPrefix()}sx {query}");
+                await SearxSearch(query);
                 return;
             }
-            else
+
+            if (!items.serp.results.Any()) continue;
+            foreach (var item in items.serp.results)
             {
-                if (items.serp.results.Any())
+                if (!item.is_porno && item.title != null && item.title.Length > 0)
                 {
-                    foreach (var item in items.serp.results)
-                    {
-                        if (!item.is_porno && item.title != null && item.title.Length > 0)
-                        {
-                            ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.passage));
-                        }
-                    }
+                    ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.passage));
                 }
             }
         }
@@ -195,7 +191,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
                     { new StringContent("json"), "format" }
                 };
 
-            HttpResponseMessage response = await client.PostAsync("https://anon.sx/search", form);
+            HttpResponseMessage response = await client.PostAsync("https://searx.org/search", form);
             var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
 
             if (search.results != null)

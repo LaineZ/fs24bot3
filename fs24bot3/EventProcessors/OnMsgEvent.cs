@@ -74,10 +74,11 @@ public class OnMsgEvent
 
     public async void PrintWarningInformation()
     {
-        if (!BotContext.AcknownUsers.Any(x => x == Message.Sender.Username) && Message.Sender.GetWarnings().Any())
+        if (BotContext.AcknownUsers.All(x => x != Message.Sender.Username) && Message.Sender.GetWarnings().Any())
         {
             await BotContext.Client.SendMessage(Message.Target, 
-            $"{IrcClrs.Gray}{Message.Sender.Username}: У вас есть предупреждения используйте {Message.Sender.GetUserPrefix()}warnings чтобы их прочесть!");
+            $"{IrcClrs.Gray}{Message.Sender.Username}: " +
+            $"У вас есть предупреждения используйте {Message.Sender.GetUserPrefix()}warnings чтобы их прочесть!");
             BotContext.AcknownUsers.Add(Message.Sender.Username);
         }
     }

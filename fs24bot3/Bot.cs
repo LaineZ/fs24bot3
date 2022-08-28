@@ -132,8 +132,7 @@ public class Bot
 
     public void MessageTrigger(MessageGeneric message)
     {
-        var queryIfExt = Connection.Table<SQL.Ignore>().Where(v => v.Username.Equals(message.Sender.Username)).Any();
-        if (queryIfExt) { return; }
+        if (message.Sender.UserIsIgnored()) { return; }
 
         new Thread(() =>
         {
@@ -154,6 +153,12 @@ public class Bot
             return;
 
         PProfiler.BeginMeasure("command");
+
+        if (PProfiler.GetMeasureAvg("command") > 2000)
+        {
+            await Client.SendMessage(message.Target, "Пожалуйста подождите...");
+        }
+
         var result =
             await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(this, in message, ppc));
 
