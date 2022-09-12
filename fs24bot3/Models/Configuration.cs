@@ -25,8 +25,8 @@ public class Services
     public string TrashbinUrl { get; set; }
     [DataMember(Name = "wolfram_id")]
     public string WolframID { get; set; }
-    [DataMember(Name = "translate_key")]
-    public string TranslateKey { get; set; }
+    [DataMember(Name = "rapidapi_key")]
+    public string RapidApiKey { get; set; }
 
     [DataMember(Name = "finnhub_key")]
     public string FinnhubKey { get; set; }
@@ -80,7 +80,7 @@ public class Configuration
             JdoodleClientSecret = "0",
             TrashbinUrl = "http://trashbin.140.ted.ge",
             WolframID = "0",
-            TranslateKey = "0",
+            RapidApiKey = "0",
             BridgeNickname = "cheburator",
             FinnhubKey = "0",
             YoutubeDlPath = "youtube-dl",
