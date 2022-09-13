@@ -80,10 +80,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                 await Context.SendMessage(Context.Channel, Context.User.GetUserPrefix() + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                 if (cmd.Remarks != null)
                 {
-                    await Context.SendMessage(Context.Channel, IrcClrs.Bold + cmd.Remarks);
+                    await Context.SendMessage(Context.Channel, cmd.Remarks);
                 }
 
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}Алиасы: {IrcClrs.Reset}{string.Join(", ", cmd.Aliases)}");
+                await Context.SendMessage(Context.Channel, $"[b]Алиасы: [r]{string.Join(", ", cmd.Aliases)}");
                 return;
             }
         }
@@ -197,7 +197,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             return;
         }
 
-        StringBuilder rems = new StringBuilder($"{IrcClrs.Bold}Напоминания {username}:\n");
+        StringBuilder rems = new StringBuilder($"[b]Напоминания {username}:\n");
 
         foreach (var remind in reminds)
         {
@@ -209,13 +209,13 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             if (usr.Username == Context.User.Username)
             {
                 rems.Append(
-                    $"id: {remind.RemindDate}: \"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)}" +
-                    $"{TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
+                    $"id: {remind.RemindDate}: \"{remind.Message}\" в [b]{dtDateTime.ToString(rus)}" +
+                    $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
             }
             else
             {
-                rems.Append($"\"{remind.Message}\" в {IrcClrs.Bold}{dtDateTime.ToString(rus)} " +
-                $"{TrimTimezoneName(timezone.DisplayName)} {IrcClrs.Reset}или через {IrcClrs.Blue}{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
+                rems.Append($"\"{remind.Message}\" в [b]{dtDateTime.ToString(rus)} " +
+                $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
             }
         }
 
@@ -258,7 +258,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (query.Any())
         {
-            await Context.SendMessage(string.Join(", ", query.Select(x => $"{IrcClrs.Reset}{IrcClrs.Bold}{x.Name}{IrcClrs.Reset} {x.Hexcode} {IrcClrs.Green}({x.Symbol})")));
+            await Context.SendMessage(string.Join(", ", query.Select(x => $"[r][b]{x.Name}[r] {x.Hexcode} [green]({x.Symbol})")));
         }
         else
         {
@@ -353,7 +353,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             int octave = (int)(initialNote / 12) - 1;
             uint noteIndex = initialNote % 12;
             string noteName = noteString[noteIndex];
-            await Context.SendMessage(Context.Channel, $"MIDI: {note} = {IrcClrs.Reset}{noteName}{octave}");
+            await Context.SendMessage(Context.Channel, $"MIDI: {note} = [r]{noteName}{octave}");
         }
         else
         {
@@ -362,7 +362,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                 if (noteString[i].ToLower() == note.ToLower())
                 {
                     int noteIndex = (12 * (oct + 1)) + i;
-                    await Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: {IrcClrs.Reset}{noteIndex}");
+                    await Context.SendMessage(Context.Channel, $"{note}{oct} = MIDI: [r]{noteIndex}");
                     break;
                 }
             }
@@ -438,7 +438,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (date.Days < 1000)
         {
-            await Context.SendMessage(Context.Channel, $"Последний раз я видел {IrcClrs.Bold}{destination}{IrcClrs.Reset} {ToReadableString(date)} назад");
+            await Context.SendMessage(Context.Channel, $"Последний раз я видел [b]{destination}[r] {ToReadableString(date)} назад");
             var messages = await InternetServicesHelper.GetMessages(user.GetLastMessage());
             await Context.SendMessage(Context.Channel, $"Последнее сообщение от пользователя: {messages.Where(x => x.Nick == destination).LastOrDefault().Message}");
         }

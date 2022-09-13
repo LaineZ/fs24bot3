@@ -34,14 +34,14 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
         {
             foreach (var item in ctx.SearchResults.Take(ctx.Limit))
             {
-                await Context.SendMessage(Context.Channel, $"{MessageHelper.BoldToIrc(item.Title)} // {IrcClrs.Blue}{item.Url}");
+                await Context.SendMessage(Context.Channel, $"{MessageHelper.BoldToIrc(item.Title)} // [blue]{item.Url}");
                 if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, MessageHelper.BoldToIrc(item.Description)); }
             }
         }
         else
         {
             var rand = ctx.SearchResults.Random();
-            await Context.SendMessage(Context.Channel, $"{MessageHelper.BoldToIrc(rand.Title)} // {IrcClrs.Blue}{rand.Url}");
+            await Context.SendMessage(Context.Channel, $"{MessageHelper.BoldToIrc(rand.Title)} // [blue]{rand.Url}");
             if (ctx.Limit <= 1) { await Context.SendMessage(Context.Channel, MessageHelper.BoldToIrc(rand.Description)); }
         }
     }

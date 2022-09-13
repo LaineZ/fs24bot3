@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using fs24bot3.Core;
@@ -12,9 +13,12 @@ public class Basic : IMessagingClient
     public string Name { get; }
     public Bot BotContext { get; }
 
+    public Dictionary<string, string> Fmt { get; }
+
     public Basic()
     {
         BotContext = new Bot(this);
+        Fmt = new Dictionary<string, string>();
     }
 
     public async void SetupNick(string nickname) { }

@@ -65,17 +65,17 @@ public class CommandProcessor
         {
             if (!message.Any())
             {
-                await BotCtx.Client.SendMessage(channel, IrcClrs.Gray + RandomMsgs.NotFoundMessages.Random());
+                await BotCtx.Client.SendMessage(channel,"[gray]" + RandomMsgs.NotFoundMessages.Random());
             }
             else
             {
-                await BotCtx.Client.SendMessage(channel, IrcClrs.Gray + message);
+                await BotCtx.Client.SendMessage(channel, "[gray]" + message);
             }
         }
 
         public async void SendErrorMessage(string channel, string message)
         {
-            await BotCtx.Client.SendMessage(channel, IrcClrs.Red + message);
+            await BotCtx.Client.SendMessage(channel, "[red]" + message);
         }
     }
 }

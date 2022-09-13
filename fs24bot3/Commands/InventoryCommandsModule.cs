@@ -36,7 +36,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         if (success)
         {
             await Context.SendMessage(Context.Channel,
-            $"{IrcClrs.Green}Вы успешно {(sell ? "продали" : "купили")} {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
+            $"[green]Вы успешно {(sell ? "продали" : "купили")} {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
         }
         else
         {
@@ -90,7 +90,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         else
         {
             await Context.SendMessage(Context.Channel,
-            $"{IrcClrs.Gray}У вас ничего нет в инвентаре... Хотите сходить в магазин? {Context.User.GetUserPrefix()}shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
+            $"[gray]У вас ничего нет в инвентаре... Хотите сходить в магазин? {Context.User.GetUserPrefix()}shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
         }
     }
 
@@ -174,7 +174,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
 
         foreach (var (Name, Count) in result.Take(5))
         {
-            await Context.SendMessage(Context.Channel, IrcClrs.Bold + Name + ": " + Count);
+            await Context.SendMessage(Context.Channel, "[b]" + Name + ": " + Count);
         }
     }
 
@@ -205,7 +205,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
 
         foreach (var (Name, Count) in result.Take(5))
         {
-            await Context.SendMessage(Context.Channel, IrcClrs.Bold + Name + ": " + Count);
+            await Context.SendMessage(Context.Channel, "[b]" + Name + ": " + Count);
         }
     }
 
@@ -214,7 +214,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
     public async Task Tags()
     {
         var tags = Context.BotCtx.Connection.Table<SQL.Tag>().
-                   ToList().Select(x => $"00,{x.Color}⚫{x.Name}{IrcClrs.Reset}");
+                   ToList().Select(x => $"00,{x.Color}⚫{x.Name}[r]");
         await Context.SendMessage(Context.Channel, string.Join(" ", tags));
     }
 
@@ -316,7 +316,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         if (delete)
         {
             await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
-            await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
+            await Context.SendMessage(Context.Channel, $"[red]Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
         }
     }
 }

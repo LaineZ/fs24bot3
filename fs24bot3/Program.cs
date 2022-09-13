@@ -42,7 +42,7 @@ internal static class Program
                 Client = new Basic();
                 break;
             case Models.Backend.IRC:
-                Client = new IRC();
+                Client = new Irc();
                 break;
         }
         Client.Process();

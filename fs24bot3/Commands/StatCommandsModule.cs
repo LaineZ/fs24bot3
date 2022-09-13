@@ -21,7 +21,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     {
         var t = Context.BotCtx.Connection.Table<SQL.Tag>()
                 .FirstOrDefault(x => x.Name == tag.Tag);
-        return $"00,{t.Color}⚫{t.Name}{IrcClrs.Reset}";
+        return $"00,{t.Color}⚫{t.Name}[r]";
     }
 
     [Command("daystat")]

@@ -66,13 +66,13 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
                     switch (rezik.type)
                     {
                         case "a":
-                            await Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // {IrcClrs.Blue}{rezik.url}");
+                            await Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // [blue]{rezik.url}");
                             return;
                         case "b":
-                            await Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // {IrcClrs.Blue}{rezik.url}");
+                            await Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // [blue]{rezik.url}");
                             return;
                         case "t":
-                            await Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // {IrcClrs.Blue}{rezik.url}");
+                            await Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // [blue]{rezik.url}");
                             return;
                         default:
                             continue;
@@ -147,7 +147,7 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
                 {
                     foreach (var rezik in discover.items.Take(ctx.Limit))
                     {
-                        await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // {IrcClrs.Blue}{rezik.tralbum_url}");
+                        await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // [blue]{rezik.tralbum_url}");
                     }
                     return;
                 }

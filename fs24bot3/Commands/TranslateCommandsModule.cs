@@ -42,7 +42,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         }
         catch (Exception e)
         {
-            await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не удалось перевести текст..... =( {e.Message}");
+            await Context.SendMessage(Context.Channel, $"[gray]Не удалось перевести текст..... =( {e.Message}");
         }
     }
 
@@ -155,7 +155,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
 
             if (splitted.Length > 35)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Royal}У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
+                await Context.SendMessage(Context.Channel, $"[royal]У вас слишком жесткий текст ({splitted.Length} слов) его обработка может занять некоторое время...");
             }
 
             // Forech statement cannot be modified WHY???????

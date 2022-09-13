@@ -59,11 +59,11 @@ namespace fs24bot3.Systems
         {
             if (metric > 1000)
             {
-                return $"{IrcClrs.Red}{metric / 1000} s{IrcClrs.Reset}";
+                return $"[red]{metric / 1000} s[r]";
             }
             else if (metric > 60000)
             {
-                return $"{IrcClrs.Red}{metric / 60000} m{IrcClrs.Reset}";
+                return $"[red]{metric / 60000} m[r]";
             }
             else
             {

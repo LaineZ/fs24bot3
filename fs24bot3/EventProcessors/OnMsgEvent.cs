@@ -62,7 +62,12 @@ public class OnMsgEvent
                 if (jsonOutput != null)
                 {
                     var ts = TimeSpan.FromSeconds(jsonOutput.duration);
-                    await BotContext.Client.SendMessage(Message.Target, $"{IrcClrs.Bold}{jsonOutput.title}{IrcClrs.Reset} от {IrcClrs.Bold}{jsonOutput.channel}{IrcClrs.Reset}. Длительность: {IrcClrs.Bold}{ts:hh\\:mm\\:ss}{IrcClrs.Reset} {IrcClrs.Green}👍{jsonOutput.like_count} {IrcClrs.Reset}Просмотров: {jsonOutput.view_count}");
+                    await BotContext.Client.SendMessage(Message.Target, 
+                        $"[b]{jsonOutput.title}[r] от [b]{jsonOutput.channel}[r]. " +
+                        $"[green]Длительность: [r][b]{ts:hh\\:mm\\:ss}[r] " +
+                        $"[green]👍[r][b] {jsonOutput.like_count}[r] " +
+                        $"[green]Просмотров: [r][b]{jsonOutput.view_count}[r] " +
+                        $"[green]Дата загрузки: [r][b]{jsonOutput.upload_date}[r]");
                 }
             }
             catch (Exception e)
@@ -77,7 +82,7 @@ public class OnMsgEvent
         if (BotContext.AcknownUsers.All(x => x != Message.Sender.Username) && Message.Sender.GetWarnings().Any())
         {
             await BotContext.Client.SendMessage(Message.Target, 
-            $"{IrcClrs.Gray}{Message.Sender.Username}: " +
+            $"[gray]{Message.Sender.Username}: " +
             $"У вас есть предупреждения используйте {Message.Sender.GetUserPrefix()}warnings чтобы их прочесть!");
             BotContext.AcknownUsers.Add(Message.Sender.Username);
         }

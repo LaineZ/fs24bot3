@@ -112,13 +112,11 @@ class MessageHelper
         // very sketchy html-like irc message formatter =)
         StringBuilder textResult = new StringBuilder(input);
 
-        textResult.Replace("<b>", IrcClrs.Bold);
-        textResult.Replace("</b>", IrcClrs.Reset);
+        textResult.Replace("<b>", "[b]");
+        textResult.Replace("</b>", "[r]");
 
         HtmlDocument doc = new HtmlDocument();
-
         doc.LoadHtml(textResult.ToString());
-
         return doc.DocumentNode.InnerText;
     }
 }

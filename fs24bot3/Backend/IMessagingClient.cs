@@ -14,6 +14,8 @@ public interface IMessagingClient
     /// </summary>
     public Bot BotContext { get; }
 
+    public Dictionary<string, string> Fmt { get; }
+
     public async void SetupNick(string nickname) { }
     public async void JoinChannel(string name)
     {

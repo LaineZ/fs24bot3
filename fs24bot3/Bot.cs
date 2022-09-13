@@ -206,14 +206,14 @@ public class Bot
                     if (!string.IsNullOrWhiteSpace(cmds))
                     {
                         await Client.SendMessage(message.Target,
-                            $"Команда {IrcClrs.Bold}{cmdName}{IrcClrs.Reset} не найдена, возможно вы хотели написать: {IrcClrs.Bold}{cmds}");
+                            $"Команда [b]{cmdName}[r] не найдена, возможно вы хотели написать: [b]{cmds}");
                     }
                 }
 
                 break;
             case CommandExecutionFailedResult err:
                 await Client.SendMessage(message.Target,
-                    $"{IrcClrs.Red}Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
+                    $"[red]Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
                 Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace,
                     message.Sender.Username, message.Body));
                 break;

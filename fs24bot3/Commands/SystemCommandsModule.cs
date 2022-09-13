@@ -231,7 +231,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         }
         catch (Exception e)
         {
-            await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Конфигурацию не удалось загрузить {e.Message}");
+            await Context.SendMessage(Context.Channel, $"[gray]Конфигурацию не удалось загрузить {e.Message}");
         }
     }
 
@@ -310,11 +310,11 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         {
             case CommandToggles.Switch.Enable:
                 cmdHandle.Enable();
-                await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcClrs.Green}ВКЛЮЧЕНА!");
+                await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} [green]ВКЛЮЧЕНА!");
                 break;
             case CommandToggles.Switch.Disable:
                 cmdHandle.Disable();
-                await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} {IrcClrs.Red}ВЫКЛЮЧЕНА!");
+                await Context.SendMessage(Context.Channel, $"Команда {cmdHandle.Name} [red]ВЫКЛЮЧЕНА!");
                 break;
         }
     }
@@ -337,11 +337,11 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         {
             case CommandToggles.Switch.Enable:
                 modHandle.Enable();
-                await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcClrs.Green}ВКЛЮЧЕН!");
+                await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} [green]ВКЛЮЧЕН!");
                 break;
             case CommandToggles.Switch.Disable:
                 modHandle.Disable();
-                await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} {IrcClrs.Red}ВЫКЛЮЧЕН!");
+                await Context.SendMessage(Context.Channel, $"Модуль {modHandle.Name} [red]ВЫКЛЮЧЕН!");
                 break;
         }
     }
@@ -349,10 +349,10 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Command("mods", "modules")]
     public async Task Mods()
     {
-        await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}█{IrcClrs.Reset} Выключен {IrcClrs.Green}█{IrcClrs.Reset} Включен. Число в скобках: количество команд в модуле");
+        await Context.SendMessage(Context.Channel, $"[red]█[r] Выключен [green]█[r] Включен. Число в скобках: количество команд в модуле");
         await Context.SendMessage(Context.Channel, $"В данный момент загружено: {Service.GetAllModules().Count} модулей");
         string modi = string.Join(" ", Service.GetAllModules()
-            .Select(x => $"{(x.IsEnabled ? IrcClrs.Green : IrcClrs.Red)}{x.Name}{IrcClrs.Reset}({x.Commands.Count()})"));
+            .Select(x => $"{(x.IsEnabled ? "[green]" : "[red]")}{x.Name}[r]({x.Commands.Count()})"));
         await Context.SendMessage(Context.Channel, modi);
     }
 

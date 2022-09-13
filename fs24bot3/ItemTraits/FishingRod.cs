@@ -31,13 +31,13 @@ public class FishingRod : IItem
 
         if (nest == null)
         {
-            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Gray}Место рыбалки не установлено, используйте @nest");
+            await botCtx.Client.SendMessage(channel, $"[gray]Место рыбалки не установлено, используйте @nest");
             return false;
         }
 
         if (!user.RemItemFromInv(botCtx.Shop, "worm", 1).Result)
         {
-            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Gray}У вас нет наживки, @buy worm");
+            await botCtx.Client.SendMessage(channel, $"[gray]У вас нет наживки, @buy worm");
             return false;
         }
 
@@ -65,14 +65,14 @@ public class FishingRod : IItem
         }
         else
         {
-            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Gray}Рыба сорвалась!");
+            await botCtx.Client.SendMessage(channel, $"[gray]Рыба сорвалась!");
         }
 
 
         if (rand.Next(0, 3) == 1) 
         {
             user.IncreaseFishLevel();
-            await botCtx.Client.SendMessage(channel, $"{IrcClrs.Blue}Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
+            await botCtx.Client.SendMessage(channel, $"[blue]Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
         }
 
         bool broken = rand.Next(0, 5) == 1;

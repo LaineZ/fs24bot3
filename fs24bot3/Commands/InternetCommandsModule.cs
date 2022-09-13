@@ -56,7 +56,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
         catch (HttpRequestException)
         {
-            await Context.SendMessage(Context.Channel, $"{IrcClrs.Gray}Не работает короче, блин........");
+            await Context.SendMessage(Context.Channel, $"[gray]Не работает короче, блин........");
         }
     }
 
@@ -172,8 +172,8 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         if (totalblocks > 0 || jsonOutput.domain.blocked.Any())
         {
-            await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{url}{IrcClrs.Reset}: заблокировано {IrcClrs.Red}{totalblocks}{IrcClrs.Reset} айпишников из {IrcClrs.Green}{totalips}{IrcClrs.Reset}!!!" +
-                $" Также заблочено доменов: {IrcClrs.Bold}{IrcClrs.Red}{jsonOutput.domain.blocked.Count}{IrcClrs.Reset} Подробнее: https://isitblockedinrussia.com/?host={url}");
+            await Context.SendMessage(Context.Channel, $"[b]{url}[r]: заблокировано [red]{totalblocks}[r] айпишников из [green]{totalips}[r]!!!" +
+                $" Также заблочено доменов: [b][red]{jsonOutput.domain.blocked.Count}[r] Подробнее: https://isitblockedinrussia.com/?host={url}");
         }
         else
         {
@@ -181,11 +181,11 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             bool response = await http.PingHost(urik.Host);
             if (response)
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Green}{urik.Host}: Не заблокирован!");
+                await Context.SendMessage(Context.Channel, $"[green]{urik.Host}: Не заблокирован!");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{IrcClrs.Red}{urik.Host}: Не смог установить соединение с сайтом, возможно сайт заблокирован.");
+                await Context.SendMessage(Context.Channel, $"[red]{urik.Host}: Не смог установить соединение с сайтом, возможно сайт заблокирован.");
             }
         }
     }
@@ -277,7 +277,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
 
         await Context.SendMessage(
-            $"({lookup.description}) {lookup.symbol} {IrcClrs.Bold}{stockObj.c} USD{IrcClrs.Reset} (низ: {IrcClrs.Red}{stockObj.l} {IrcClrs.Reset}/ выс: {IrcClrs.Green}{stockObj.h})");
+            $"({lookup.description}) {lookup.symbol} [b]{stockObj.c} USD[r] (низ: [red]{stockObj.l} [r]/ выс: [green]{stockObj.h})");
     }
 
     [Command("curcmp", "currencycomapre", "currencycomp", "curcompare", "ccmp")]
@@ -341,7 +341,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
                     if (!string.IsNullOrEmpty(subPod.Plaintext))
                     {
                         var output = subPod.Plaintext.Split("\n");
-                        await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{result}{IrcClrs.Reset} = {string.Join(" ", output)}");
+                        await Context.SendMessage(Context.Channel, $"[b]{result}[r] = {string.Join(" ", output)}");
                         return;
                     }
                 }
@@ -354,7 +354,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             foreach (var subPod in pod.SubPods.Take(2))
             {
                 if (!string.IsNullOrEmpty(subPod.Plaintext))
-                    await Context.SendMessage(Context.Channel, $"{IrcClrs.Bold}{pod.Title}: {IrcClrs.Reset}{subPod.Plaintext}");
+                    await Context.SendMessage(Context.Channel, $"[b]{pod.Title}: [r]{subPod.Plaintext}");
             }
         }
     }
@@ -393,8 +393,8 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         double ping = server.Ping();
 
         await Context.SendMessage(Context.Channel,
-        $"{IrcClrs.Bold}{ipaddr}{IrcClrs.Reset}: " +
-        $"({status.Version.Name}): Игроки: {IrcClrs.Bold}{status.Players.Online}/{status.Players.Max}{IrcClrs.Reset} {IrcClrs.Green}Пинг: {ping} мс");
+        $"[b]{ipaddr}[r]: " +
+        $"({status.Version.Name}): Игроки: [b]{status.Players.Online}/{status.Players.Max}[r] [green]Пинг: {ping} мс");
     }
 
     [Command("oweather", "openweather", "openweathermap")]
@@ -410,7 +410,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         try
         {
             var wr = await InternetServicesHelper.OpenWeatherMap(city);
-            await Context.SendMessage($"{IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
+            await Context.SendMessage($"[b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
             $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
         }
         catch (ArgumentNullException)
@@ -432,7 +432,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         try
         {
             var wr = await InternetServicesHelper.YandexWeather(city);
-            await Context.SendMessage($"По данным Яндекс.Погоды в {IrcClrs.Bold}{wr.CityName}{IrcClrs.Reset}: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
+            await Context.SendMessage($"По данным Яндекс.Погоды в [b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
             $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
         }
         catch (ArgumentNullException)

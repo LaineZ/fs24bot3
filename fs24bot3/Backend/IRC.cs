@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using fs24bot3.Core;
 using fs24bot3.Helpers;
@@ -14,18 +15,42 @@ namespace fs24bot3.Backend;
 /// <summary>
 /// IRC backend
 /// </summary>
-public class IRC : IMessagingClient
+public class Irc : IMessagingClient
 {
     public string Name { get; private set; }
 
     public Bot BotContext { get; }
+    public Dictionary<string, string> Fmt { get; }
 
     private Client BotClient;
 
-    public IRC()
+    public Irc()
     {
         BotContext = new Bot(this);
         Name = ConfigurationProvider.Config.Name;
+        Fmt = new Dictionary<string, string>();
+        // add irc colors
+        
+        Fmt.Add("b","");
+        Fmt.Add("r","");
+        Fmt.Add("white","00");
+        Fmt.Add("black","01");
+        Fmt.Add("blue","02");
+        Fmt.Add("green","03");
+        Fmt.Add("red", "04");
+        Fmt.Add("brown","05");
+        Fmt.Add("purple","06");
+        Fmt.Add("orange","07");
+        Fmt.Add("yellow","08");
+        Fmt.Add("lime","09");
+        Fmt.Add("teal","10");
+        Fmt.Add("cyan","11");
+        Fmt.Add("royal","12");
+        Fmt.Add("pink","13");
+        Fmt.Add("gray","14");
+        Fmt.Add("silver","15");
+
+
         BotClient = new Client(new NetIRC.User(ConfigurationProvider.Config.Name, "Sopli IRC 3.0"), new TcpClientConnection(ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port));
         
         BotClient.RawDataReceived += Client_OnRawDataReceived;
@@ -119,9 +144,15 @@ public class IRC : IMessagingClient
 
         foreach (string outputstr in msgLines)
         {
-            if (outputstr.Length < 1000)
+            var sb = new StringBuilder(outputstr);
+            foreach (var (tag, value) in Fmt)
             {
-                await BotClient.SendAsync(new PrivMsgMessage(channel, outputstr));
+                sb.Replace($"[{tag}]", value);
+            }
+
+            if (sb.Length < 1000)
+            {
+                await BotClient.SendAsync(new PrivMsgMessage(channel, sb.ToString()));
                 count++;
             }
             else
@@ -129,14 +160,15 @@ public class IRC : IMessagingClient
                 string link = await InternetServicesHelper.UploadToTrashbin(
                     MessageHelper.StripIRC(message), "addplain");
                 await BotClient.SendAsync(new PrivMsgMessage(channel, $"Слишком жесткое сообщение с длинной " +
-                                                                      $"{outputstr.Length} символов! Психанул?!?!?!"));
+                                                                      $"{sb.Length} символов! Психанул?!?!?!"));
                 await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
                 return;
             }
 
             if (count > 4)
             {
-                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), "addplain");
+                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), 
+                    "addplain");
                 await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
                 return;
             }
