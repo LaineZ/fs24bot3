@@ -325,7 +325,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task ModMgmt(CommandToggles.Switch action, string module)
     {
-        var modHandle = Service.GetAllModules().Where(x => x.Name.ToLower() == module.ToLower()).FirstOrDefault();
+        var modHandle = Service.GetAllModules().FirstOrDefault(x => x.Name.ToLower() == module.ToLower());
 
         if (modHandle == null)
         {

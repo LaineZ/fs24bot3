@@ -32,7 +32,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
         if (!res) { date = DateTime.Now; }
 
-        var sms = await InternetServicesHelper.GetMessages(date);
+        var sms = await Context.ServicesHelper.GetMessages(date);
 
         if (!sms.Any())
         {

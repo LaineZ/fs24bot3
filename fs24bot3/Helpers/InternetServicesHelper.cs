@@ -14,12 +14,17 @@ using System.Linq;
 using System.IO;
 
 namespace fs24bot3.Helpers;
-class InternetServicesHelper
+public class InternetServicesHelper
 {
-    private static HttpTools http = new HttpTools();
-    private static Regex LogsRegex = new Regex(@"^\[(\d{2}:\d{2}:\d{2})\] <([^>]+)> (.+)", RegexOptions.Compiled);
+    private static readonly Regex LogsRegex = new Regex(@"^\[(\d{2}:\d{2}:\d{2})\] <([^>]+)> (.+)", RegexOptions.Compiled);
+    private HttpTools Http { get; }
 
-    public static async Task<List<string>> InPearls(string category = "", int page = 0)
+    public InternetServicesHelper(in HttpTools http)
+    {
+        Http = http;
+    }
+
+    public async Task<List<string>> InPearls(string category = "", int page = 0)
     {
         var web = new HtmlWeb();
         var doc = await web.LoadFromWebAsync("https://www.inpearls.ru/" + category + "?page=" + page);
@@ -38,7 +43,7 @@ class InternetServicesHelper
             {
                 if (node.InnerText.Split("\n").Length <= 2)
                 {
-                    pearls.Add(http.RecursiveHtmlDecode(node.InnerText));
+                    pearls.Add(Http.RecursiveHtmlDecode(node.InnerText));
                 }
             }
         }
@@ -77,9 +82,9 @@ class InternetServicesHelper
         return currencies;
     }
 
-    public static async Task<List<FomalhautMessage>> GetMessages(DateTime dateTime)
+    public async Task<List<FomalhautMessage>> GetMessages(DateTime dateTime)
     {
-        var output = await http.MakeRequestAsyncNoCookie("https://logs.fomalhaut.me/download/" + dateTime.ToString("yyyy-MM-dd") + ".log");
+        var output = await Http.MakeRequestAsyncNoCookie("https://logs.fomalhaut.me/download/" + dateTime.ToString("yyyy-MM-dd") + ".log");
 
         var list = new List<FomalhautMessage>();
 
@@ -110,20 +115,13 @@ class InternetServicesHelper
 
     public static MailSearch.RootObject PerformDecode(string code)
     {
-        string startString = "go.dataJson = {";
-        string stopString = "};";
+        const string startString = "go.dataJson = {";
+        const string stopString = "};";
 
         string searchDataTemp = code[(code.IndexOf(startString) + startString.Length - 1)..];
         string searchData = searchDataTemp[..(searchDataTemp.IndexOf(stopString) + 1)];
-
-        try
-        {
-            return JsonConvert.DeserializeObject<MailSearch.RootObject>(searchData, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
-        }
-        catch (Exception)
-        {
-            return null;
-        }
+        
+        return JsonConvert.DeserializeObject<MailSearch.RootObject>(searchData, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
     }
 
     public static async Task<string> UploadToTrashbin(string data, string route = "add")
@@ -152,18 +150,18 @@ class InternetServicesHelper
         }
     }
 
-    public static async Task<OpenWeatherMapResponse.Coord> GetCityLatLon(string city)
+    public async Task<OpenWeatherMapResponse.Coord> GetCityLatLon(string city)
     {
-        var value = await http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
+        var value = await Http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
                                     "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
         var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
         return json.Coord;
     }
 
 
-    public static async Task<WeatherGeneric> OpenWeatherMap(string city)
+    public async Task<WeatherGeneric> OpenWeatherMap(string city)
     {
-        var value = await http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
+        var value = await Http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
                                                 "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
         var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
@@ -214,7 +212,7 @@ class InternetServicesHelper
         };
     }
 
-    public static async Task<WeatherGeneric> YandexWeather(string city)
+    public async Task<WeatherGeneric> YandexWeather(string city)
     {
         var latlon = await GetCityLatLon(city);
 
@@ -230,11 +228,8 @@ class InternetServicesHelper
         };
 
 
-        var response = await http.Client.SendAsync(request);
+        var response = await Http.Client.SendAsync(request);
         var responseString = await response.Content.ReadAsStringAsync();
-
-
-        File.WriteAllText("debug.txt", responseString);
 
         if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
         {

@@ -160,23 +160,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         await Context.SendMessage($"Сейчас у {username} {TimeZoneInfo.ConvertTimeFromUtc(time, timezone).ToString(rus)} {TrimTimezoneName(timezone.DisplayName)}");
     }
 
-    [Command("at")]
-    [Description("Создать напоминание в опредленную дату")]
-    public async Task RemindAt(string time, [Remainder] string message = "Remind")
-    {
-        bool parsed = DateTime.TryParse(time, out DateTime timeparsed);
-        if (!parsed)
-        {
-            Context.SendSadMessage(Context.Channel, "Невозможно пропарсить ту жесть которую ты написал...");
-            return;
-        }
-        var timezone = Context.User.GetTimeZone();
-        Context.User.AddRemindAbs(timeparsed, message);
-
-        await Context.SendMessage(Context.Channel, $"{message} в {timeparsed}");
-    }
-
-
     [Command("reminds", "rems")]
     [Description("Список напоминаний")]
     public async Task Reminds(string username = "", string locale = "ru-RU")
@@ -393,7 +376,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         foreach (var date in EachDay(dateStart, dateEnd))
         {
             stopWatch.Start();
-            var messages = await InternetServicesHelper.GetMessages(date);
+            var messages = await Context.ServicesHelper.GetMessages(date);
             foreach (var message in messages)
             {
                 var captures = regex.Match(message.Message);
@@ -439,8 +422,14 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (date.Days < 1000)
         {
             await Context.SendMessage(Context.Channel, $"Последний раз я видел [b]{destination}[r] {ToReadableString(date)} назад");
-            var messages = await InternetServicesHelper.GetMessages(user.GetLastMessage());
-            await Context.SendMessage(Context.Channel, $"Последнее сообщение от пользователя: {messages.Where(x => x.Nick == destination).LastOrDefault().Message}");
+            var messages = await Context.ServicesHelper.GetMessages(user.GetLastMessage());
+            var lastmsg = messages.LastOrDefault(x => x.Nick == destination);
+            if (lastmsg == null)
+            {
+                await Context.SendMessage(Context.Channel, 
+                    $"Последнее сообщение от пользователя: " +
+                    $"{messages.LastOrDefault(x => x.Nick == destination)?.Message}");
+            }
         }
         else
         {

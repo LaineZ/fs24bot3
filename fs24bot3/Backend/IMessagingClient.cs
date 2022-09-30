@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using fs24bot3.Models;
 
 namespace fs24bot3.Backend;
 public interface IMessagingClient
@@ -16,16 +17,27 @@ public interface IMessagingClient
 
     public Dictionary<string, string> Fmt { get; }
 
-    public async void SetupNick(string nickname) { }
-    public async void JoinChannel(string name)
+    public void SetupNick(string nickname) { }
+    public void JoinChannel(string name)
     {
         throw new NotImplementedException();
     }
-    public async void PartChannel(string name)
+    public void PartChannel(string name)
     {
         throw new NotImplementedException();
     }
-    public async Task SendMessage(string channel, string message) { }
+
+    public Task SendMessage(string channel, string message)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool DeterminePmMessage(in MessageGeneric message)
+    {
+        return message.Sender.Username == Name;
+    }
 
     public void Process() { }
+    
+    
 }

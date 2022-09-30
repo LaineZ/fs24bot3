@@ -4,9 +4,6 @@ using fs24bot3.Core;
 using fs24bot3.Helpers;
 using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
-using NetIRC;
-using NetIRC.Connection;
-using NetIRC.Messages;
 using Qmmands;
 using Serilog;
 using SQLite;
@@ -16,19 +13,22 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using fs24bot3.Backend;
+using fs24bot3.EventProcessors;
 
 namespace fs24bot3;
 
 public class Bot
 {
     public SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
-    public CustomCommandProcessor CustomCommandProcessor;
-    public readonly CommandService Service = new CommandService();
-    public IMessagingClient Client { get; private set; }
-    public Shop Shop { get; set; }
+    private CustomCommandProcessor CustomCommandProcessor;
+    private readonly CommandService Service = new CommandService();
+    public IMessagingClient Client { get; }
+    public Shop Shop { get; }
     public Songame SongGame { get; set; }
     public List<string> AcknownUsers = new List<string>();
     public Profiler PProfiler { get; }
+    
+    private EventProcessors.OnMsgEvent OnMsgEvent { get; }
 
     public Bot(IMessagingClient messagingClient)
     {
@@ -46,6 +46,7 @@ public class Bot
 
         Database.InitDatabase(Connection);
         CustomCommandProcessor = new CustomCommandProcessor(this);
+        OnMsgEvent = new OnMsgEvent(this);
         PProfiler = new Profiler();
 
         PProfiler.AddMetric("update");
@@ -80,7 +81,7 @@ public class Bot
         Log.Information("Bot: Construction complete!");
     }
 
-    public string CommandSuggestion(string prefix, string command)
+    private string CommandSuggestion(string prefix, string command)
     {
         var totalCommands = new List<string>();
 
@@ -132,24 +133,23 @@ public class Bot
 
     public void MessageTrigger(MessageGeneric message)
     {
-        if (message.Sender.UserIsIgnored()) { return; }
+        if (message.Sender.UserIsIgnored() || Client.DeterminePmMessage(message)) { return; }
 
         new Thread(() =>
         {
             PProfiler.BeginMeasure("msg");
-            EventProcessors.OnMsgEvent events = new EventProcessors.OnMsgEvent(this, in message);
-            events.DestroyWallRandomly(Shop);
-            events.LevelInscrease(Shop);
-            events.PrintWarningInformation();
-            events.HandleYoutube();
+            OnMsgEvent.DestroyWallRandomly(Shop, message);
+            OnMsgEvent.LevelInscrease(Shop, message);
+            OnMsgEvent.PrintWarningInformation(message);
+            OnMsgEvent.HandleYoutube(message);
             PProfiler.EndMeasure("msg");
         }).Start();
     }
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix, bool ppc = false)
     {
-        var prefixes = new string[] { prefix, Client.Name + ":" };
-        if (!CommandUtilities.HasAnyPrefix(message.Body.TrimStart('p'), prefixes, out string _, out string output))
+        var prefixes = new[] { prefix, Client.Name + ":" };
+        if (!CommandUtilities.HasAnyPrefix(message.Body.TrimStart('p'), prefixes, out _, out var output))
             return;
 
         PProfiler.BeginMeasure("command");

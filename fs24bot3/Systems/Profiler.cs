@@ -9,9 +9,8 @@ namespace fs24bot3.Systems
 {
     public class Profiler
     {
-        public int WindowSize = 50;
+        private const int WindowSize = 50;
         private Dictionary<string, (List<long>, Stopwatch)> Metrics = new Dictionary<string, (List<long>, Stopwatch)>();
-        private List<int> MemoryUsage = new List<int>();
 
         public void AddMetric(string metric)
         {
@@ -59,16 +58,15 @@ namespace fs24bot3.Systems
         {
             if (metric > 1000)
             {
-                return $"[red]{metric / 1000} s[r]";
+                return $"[yellow]{metric / 1000} s[r]";
             }
-            else if (metric > 60000)
+
+            if (metric > 5000)
             {
                 return $"[red]{metric / 60000} m[r]";
             }
-            else
-            {
-                return $"{metric} ms";
-            }
+
+            return $"{metric} ms";
         }
 
         public string Fmt(string metric)

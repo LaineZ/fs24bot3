@@ -19,26 +19,30 @@ public class Basic : IMessagingClient
     {
         BotContext = new Bot(this);
         Fmt = new Dictionary<string, string>();
+        Name = ConfigurationProvider.Config.Name;
     }
 
-    public async void SetupNick(string nickname) { }
-    public async void JoinChannel(string name)
+    public void SetupNick(string nickname) { }
+    public void JoinChannel(string name)
     {
         Log.Information("Joining channel: {0}", name);
     }
-    public async void PartChannel(string name)
+    public void PartChannel(string name)
     {
         Log.Information("Parting channel: {0}", name);
     }
 
     public async Task SendMessage(string channel, string message)
     {
-        Log.Information(message);
+        await Task.Run(() =>
+        {
+            Log.Information(message);
+        });
     }
 
     public async void Process()
     {
-        Thread thread = new Thread(async () =>
+        var thread = new Thread(() =>
         {
             BotContext.ProccessInfinite();
         });
@@ -47,7 +51,7 @@ public class Basic : IMessagingClient
         while (true)
         {
             Console.Write("fs24bot3: ");
-            string value = Console.ReadLine().TrimEnd();
+            string value = Console.ReadLine()?.TrimEnd();
             if (!string.IsNullOrWhiteSpace(value))
             {
                 var msg = new MessageGeneric(value, "testchannel", 

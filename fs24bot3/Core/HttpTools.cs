@@ -14,14 +14,15 @@ using System.Threading.Tasks;
 using System.Web;
 
 namespace fs24bot3.Core;
-class HttpTools
+public class HttpTools
 {
     readonly CookieContainer cookies = new CookieContainer();
     public HttpClient Client = new HttpClient();
 
     public HttpTools()
     {
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
+        Client.DefaultRequestHeaders.UserAgent.ParseAdd(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0");
     }
 
     public string RecursiveHtmlDecode(string str)

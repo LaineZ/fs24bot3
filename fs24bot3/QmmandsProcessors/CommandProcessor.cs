@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using fs24bot3.Helpers;
 using System.Collections.Generic;
+using fs24bot3.Core;
 
 namespace fs24bot3.QmmandsProcessors;
 
@@ -20,6 +21,9 @@ public class CommandProcessor
         public bool PerformPpc { get; }
         public bool FromBridge { get; }
         public Core.User User { get; }
+        
+        public HttpTools HttpTools { get; }
+        public InternetServicesHelper ServicesHelper { get; }
 
         // Pass your service provider to the base command context.
         public CustomCommandContext(Bot bot, in MessageGeneric message, bool perfppc = false, IServiceProvider provider = null) : base(provider)
@@ -28,6 +32,8 @@ public class CommandProcessor
             Channel = message.Target;
             Random = new Random();
             FromBridge = message.Kind == MessageKind.MessageFromBridge;
+            HttpTools = new HttpTools();
+            ServicesHelper = new InternetServicesHelper(HttpTools);
             User = message.Sender;
             if (perfppc)
             {
@@ -50,15 +56,7 @@ public class CommandProcessor
 
         public async Task SendMessage(string message)
         {
-            if (!PerformPpc)
-            {
-                await BotCtx.Client.SendMessage(Channel, message);
-            }
-            else
-            {
-                var txt = await Core.Transalator.TranslatePpc(MessageHelper.StripIRC(message));
-                await BotCtx.Client.SendMessage(Channel, txt);
-            }
+            await SendMessage(Channel, message);
         }
 
         public async void SendSadMessage(string channel, string message = "")

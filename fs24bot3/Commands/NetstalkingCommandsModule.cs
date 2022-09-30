@@ -16,9 +16,6 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 {
 
     public CommandService Service { get; set; }
-
-    private readonly HttpTools http = new HttpTools();
-    private readonly HttpClient client = new HttpClient();
     private readonly CommandService SearchCommandService = new CommandService();
 
 
@@ -110,7 +107,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
             Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
 
             if (ctx.SearchResults.Count >= ctx.Limit) { break; }
-            string response = await http.MakeRequestAsync("https://go.mail.ru/search?q=" + inp + "&sf=" + (i * 10));
+            string response = await Context.HttpTools.MakeRequestAsync("https://go.mail.ru/search?q=" + inp + "&sf=" + (i * 10));
 
             if (response == null)
             {
@@ -125,7 +122,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
             if (items.antirobot.blocked)
             {
                 Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
-                await SearxSearch(query);
+                await Context.SendMessage(Context.Channel, $"Вы были забанены reason: {RandomMsgs.BanMessages.Random()} Пожалуйста, используйте команду [b]{Context.User.GetUserPrefix()}sx {query}");
                 return;
             }
 
@@ -191,17 +188,15 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
                     { new StringContent("json"), "format" }
                 };
 
-            HttpResponseMessage response = await client.PostAsync("https://searx.org/search", form);
+            HttpResponseMessage response = await Context.HttpTools.Client.PostAsync("https://searx.org/search", form);
             var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
 
-            if (search.results != null)
+            if (search?.results == null) continue;
+            foreach (var item in search.results)
             {
-                foreach (var item in search.results)
+                if (item.url.Contains(ctx.Site))
                 {
-                    if (item.url.Contains(ctx.Site))
-                    {
-                        ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.content ?? "Нет описания"));
-                    }
+                    ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.content ?? "Нет описания"));
                 }
             }
         }

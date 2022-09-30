@@ -366,7 +366,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         var pagenum = Context.Random.Next(page, 36);
         try
         {
-            var output = await InternetServicesHelper.InPearls(category, pagenum);
+            var output = await Context.ServicesHelper.InPearls(category, pagenum);
 
             if (output.Any())
             {
@@ -409,7 +409,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         try
         {
-            var wr = await InternetServicesHelper.OpenWeatherMap(city);
+            var wr = await Context.ServicesHelper.OpenWeatherMap(city);
             await Context.SendMessage($"[b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
             $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
         }
@@ -431,7 +431,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         try
         {
-            var wr = await InternetServicesHelper.YandexWeather(city);
+            var wr = await Context.ServicesHelper.YandexWeather(city);
             await Context.SendMessage($"По данным Яндекс.Погоды в [b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
             $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
         }
