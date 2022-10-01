@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 namespace fs24bot3.Checks;
 public sealed class UnPpcable : CheckAttribute
 {
-    public UnPpcable()
-    { }
-
     public override ValueTask<CheckResult> CheckAsync(CommandContext _)
     {
         var context = _ as CommandProcessor.CustomCommandContext;

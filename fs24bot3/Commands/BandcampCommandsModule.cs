@@ -18,9 +18,6 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
 {
 
     public CommandService Service { get; set; }
-
-    private readonly HttpTools http = new HttpTools();
-    private readonly HttpClient client = new HttpClient();
     private readonly CommandService SearchCommandService = new CommandService();
 
     private async Task ExecuteCommands(List<(Command, string)> searchOptions, CommandContext ctx)
@@ -53,7 +50,7 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Поиск по сайту bandcamp.com")]
     public async Task BcSearch([Remainder] string query)
     {
-        string response = await http.MakeRequestAsync("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
+        string response = await Context.HttpTools.MakeRequestAsync("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
         try
         {
             BandcampSearch.Root searchResult = JsonConvert.DeserializeObject<BandcampSearch.Root>(response, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
@@ -104,7 +101,7 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         foreach ((string opt, string value) in parser.Options)
         {
-            var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == opt).FirstOrDefault();
+            var cmd = SearchCommandService.GetAllCommands().FirstOrDefault(x => x.Name == opt);
 
             if (cmd == null)
             {
@@ -130,7 +127,7 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
         for (int i = ctx.Page; i < ctx.Page + ctx.Max; i++)
         {
             HttpContent c = new StringContent(JsonConvert.SerializeObject(query), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync("https://bandcamp.com/api/hub/2/dig_deeper", c);
+            var response = await Context.HttpTools.Client.PostAsync("https://bandcamp.com/api/hub/2/dig_deeper", c);
             string responseString = await response.Content.ReadAsStringAsync();
             query.page = i;
 
@@ -138,19 +135,17 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
             {
                 BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
-                if (!discover.ok || !discover.more_available)
+                if (discover is { ok: false, more_available: false })
                 {
                     Log.Warning("cannot find tracks for request {0}, retrying", tagsStr);
                 }
 
-                if (discover.items.Any())
+                if (discover == null || !discover.items.Any()) continue;
+                foreach (var rezik in discover.items.Take(ctx.Limit))
                 {
-                    foreach (var rezik in discover.items.Take(ctx.Limit))
-                    {
-                        await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // [blue]{rezik.tralbum_url}");
-                    }
-                    return;
+                    await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // [blue]{rezik.tralbum_url}");
                 }
+                return;
             }
             catch (JsonSerializationException)
             {

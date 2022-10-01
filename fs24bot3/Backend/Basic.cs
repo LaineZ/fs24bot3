@@ -19,7 +19,7 @@ public class Basic : IMessagingClient
     {
         BotContext = new Bot(this);
         Fmt = new Dictionary<string, string>();
-        Name = ConfigurationProvider.Config.Name;
+        Name = "fs24bot3";
     }
 
     public void SetupNick(string nickname) { }

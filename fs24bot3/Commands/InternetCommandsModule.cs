@@ -12,7 +12,6 @@ using SQLite;
 using System;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
@@ -51,7 +50,9 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             }
             else
             {
-                await Context.SendMessage(Context.Channel, "Сервер вернул: " + output);
+                var jsonErr = JsonConvert.DeserializeObject<APIExec.JsonError>(output);
+                await Context.SendMessage(Context.Channel, 
+                    $"Ошибка работы API сервиса: {jsonErr.error} ({jsonErr.statusCode})");
             }
         }
         catch (HttpRequestException)

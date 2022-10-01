@@ -3,6 +3,7 @@ using fs24bot3.Models;
 using Serilog;
 using SQLite;
 using System;
+using System.Linq;
 
 namespace fs24bot3.Core;
 public class Database
@@ -31,13 +32,20 @@ public class Database
 
         // generate fishing nests
         var rand = new Random();
-        if (connection.Table<SQL.FishingNests>().Count() == 0)
+        if (!connection.Table<SQL.FishingNests>().Any())
         {
             Log.Information("Generating fishing nests...");
             connection.BeginTransaction();
             for (int i = 0; i < 100; i++)
             {
-                connection.InsertOrReplace(new SQL.FishingNests() { Level = rand.Next(1, 3), FishCount = rand.Next(1, 20), FishingLineRequired = rand.Next(1, 10), Name = MessageHelper.GenerateName(rand.Next(2, 5)) });
+                connection.InsertOrReplace(
+                    new SQL.FishingNests()
+                    {
+                        Level = rand.Next(1, 3), 
+                        FishCount = rand.Next(1, 20), 
+                        FishingLineRequired = rand.Next(1, 10), 
+                        Name = MessageHelper.GenerateName(rand.Next(2, 5))
+                    });
             }
             connection.Commit();
         }

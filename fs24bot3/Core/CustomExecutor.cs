@@ -4,6 +4,7 @@ using Qommon.Collections;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
@@ -11,9 +12,9 @@ namespace fs24bot3.Core;
 class CustomExecutor
 {
     private Random Random;
-    private List<int> Indices = new List<int>();
+    private readonly List<int> Indices = new List<int>();
     private SQL.CustomUserCommands LastCommand;
-    private Bot Bot;
+    private readonly Bot Bot;
 
     public CustomExecutor(Bot botCtx)
     {
@@ -24,7 +25,7 @@ class CustomExecutor
     public async void Execute(SQL.CustomUserCommands command, string senderNick, string channel, string args)
     {
         string[] outputs = command.Output.Split("||");
-        var arr = Bot.Connection.Table<SQL.UserStats>().Select(x => x.Nick).ToList();
+        var arr = Bot.Connection.Table<SQL.UserStats>().Select(x => x.Nick).ToArray();
         var nick = MessageHelper.AntiHightlight(arr.Random());
 
         int index = 0;
@@ -46,7 +47,7 @@ class CustomExecutor
             else
             {
                 // if args contains a string
-                if (args.Any())
+                if (args != null && args.Any())
                 {
                     Log.Verbose("Args string is not empty!");
                     Random = new Random(args.GetHashCode() + senderNick.GetHashCode());

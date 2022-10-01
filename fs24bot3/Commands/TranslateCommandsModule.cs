@@ -37,7 +37,8 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
                 rndWord += chars[Context.Random.Next(0, chars.Length - 1)];
             }
 
-            var translatedOutput = Transalator.TranslateBing(rndWord, lang, "ru").Result.translations.First().text;
+            var translatedOutput = Context.ServicesHelper.TranslateBing(rndWord, lang, "ru").Result.
+                translations.First().text;
             await Context.SendMessage(Context.Channel, translatedOutput);
         }
         catch (Exception e)
@@ -66,7 +67,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         try
         {
             var (from, to) = ParseLang(lang);
-            var translatedOutput = await Transalator.TranslateBing(text, from, to);
+            var translatedOutput = await Context.ServicesHelper.TranslateBing(text, from, to);
             if (translatedOutput.detectedLanguage != null)
             {
                 await Context.SendMessage(Context.Channel, $"{translatedOutput.translations[0].text} ({translatedOutput.detectedLanguage.language}-{translatedOutput.translations[0].to})");
@@ -92,7 +93,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         {
             try
             {
-                await Context.SendMessage(Context.Channel, Transalator.TranslatePpc(text).Result);
+                await Context.SendMessage(Context.Channel, Context.ServicesHelper.TranslatePpc(text).Result);
             }
             catch (FormatException)
             {
@@ -117,7 +118,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
             {
                 try
                 {
-                    lastText = await Transalator.TranslatePpc(lastText);
+                    lastText = await Context.ServicesHelper.TranslatePpc(lastText);
                     if (translationsChain.Any() && lastText == translationsChain.Last()) { break; }
                     translationsChain.Add(lastText);
                 }
@@ -161,7 +162,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
             // Forech statement cannot be modified WHY???????
             for (int i = 0; i < splitted.Length; i++)
             {
-                var tr = await Transalator.TranslateBing(splitted[i], from, to);
+                var tr = await Context.ServicesHelper.TranslateBing(splitted[i], from, to);
                 splitted[i] = tr.translations[0].text;
             }
 
@@ -193,7 +194,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
                 if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 1000 + lyricsOut.Length))
                 {
                     var (from, to) = ParseLang(lang);
-                    var resultTranslated = await Transalator.TranslateBing(lyricsOut, from, to);
+                    var resultTranslated = await Context.ServicesHelper.TranslateBing(lyricsOut, from, to);
 
                     await Context.SendMessage(Context.Channel, resultTranslated.translations[0].text);
                 }

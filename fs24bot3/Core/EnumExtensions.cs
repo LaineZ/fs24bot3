@@ -5,8 +5,7 @@ using System.Reflection;
 namespace fs24bot3.Core;
 public static class EnumExtensions
 {
-    public static string GetDescription<T>(this T enumerationValue)
-where T : struct
+    public static string GetDescription<T>(this T enumerationValue) where T : struct
     {
         Type type = enumerationValue.GetType();
         if (!type.IsEnum)

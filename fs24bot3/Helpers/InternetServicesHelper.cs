@@ -150,7 +150,7 @@ public class InternetServicesHelper
         }
     }
 
-    public async Task<OpenWeatherMapResponse.Coord> GetCityLatLon(string city)
+    private async Task<OpenWeatherMapResponse.Coord> GetCityLatLon(string city)
     {
         var value = await Http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
                                     "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
@@ -290,5 +290,57 @@ public class InternetServicesHelper
         {
             throw new Exception("Не удалось получить информацию о погоде!");
         }
+    }
+    
+    public async Task<BingTranlate.Root> TranslateBing(string text, string from = "", string to = "")
+    {
+
+        string content = "[" + JsonConvert.SerializeObject(new BingTranlate.Request() { Text = text }) + "]";
+
+        var request = new HttpRequestMessage()
+        {
+            Method = HttpMethod.Post,
+            RequestUri = new Uri("https://microsoft-translator-text.p.rapidapi.com/translate?api-version=3.0&to=" + to + "&textType=plain&profanityAction=NoAction&from=" + from),
+            Headers = {
+                    { "x-rapidapi-key", ConfigurationProvider.Config.Services.RapidApiKey },
+                    { "x-rapidapi-host", "microsoft-translator-text.p.rapidapi.com" },
+                },
+            Content = new StringContent(content, Encoding.UTF8, "application/json"),
+        };
+
+        var response = await Http.Client.SendAsync(request);
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        Log.Verbose(responseString);
+
+        if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            return JsonConvert.DeserializeObject<BingTranlate.Root>(responseString[1..^1]);
+        }
+
+        throw new Exception(responseString);
+    }
+
+    public async Task<string> TranslatePpc(string text, string targetLang = "ru")
+    {
+        string[] translations = { "en", "pl", "pt", "ja", "de", "ru" };
+
+        Random random = new Random();
+
+        var translationsShuffled = translations.OrderBy(x => random.Next()).ToList();
+        translationsShuffled.Add(targetLang);
+        string translated = string.Join(" ", text.Split(" ").OrderBy(x => random.Next()).ToList());
+
+        foreach (var tr in translationsShuffled)
+        {
+            try
+            {
+                var translatorResponse = await TranslateBing(translated, "", tr);
+                translated = translatorResponse.translations.First().text;
+            }
+            catch (Exception) { continue; }
+        }
+
+        return translated;
     }
 }

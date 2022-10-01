@@ -49,7 +49,7 @@ public class CommandProcessor
             }
             else
             {
-                var txt = await Core.Transalator.TranslatePpc(MessageHelper.StripIRC(message));
+                var txt = await ServicesHelper.TranslatePpc(MessageHelper.StripIRC(message));
                 await BotCtx.Client.SendMessage(channel, txt);
             }
         }

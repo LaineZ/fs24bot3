@@ -121,8 +121,7 @@ public class Bot
                 dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
                 if (dtDateTime <= DateTime.Now)
                 {
-                    string ch = item.Channel ?? ConfigurationProvider.Config.Channel;
-                    await Client.SendMessage(ch, $"{item.Nick}: {item.Message}!");
+                    await Client.SendMessage(item.Channel, $"{item.Nick}: {item.Message}!");
                     Connection.Delete(item);
                 }
             }

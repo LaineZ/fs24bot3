@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 namespace fs24bot3.Checks;
 public sealed class FullAccount : CheckAttribute
 {
-    public FullAccount()
-    { }
-
     public override ValueTask<CheckResult> CheckAsync(CommandContext _)
     {
         var context = _ as CommandProcessor.CustomCommandContext;

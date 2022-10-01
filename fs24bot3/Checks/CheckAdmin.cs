@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 namespace fs24bot3.Checks;
 public sealed class CheckAdmin : CheckAttribute
 {
-    public CheckAdmin()
-    { }
-
     public override ValueTask<CheckResult> CheckAsync(CommandContext _)
     {
         var context = _ as CommandProcessor.CustomCommandContext;

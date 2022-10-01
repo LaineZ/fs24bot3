@@ -17,4 +17,10 @@ public class APIExec
         public string language { get; set; }
         public string versionIndex { get; set; }
     }
+
+    public class JsonError
+    {   
+        public string error { get; set; }
+        public uint statusCode { get; set; }
+    }
 }

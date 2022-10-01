@@ -66,7 +66,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
 
         string link = await InternetServicesHelper.UploadToTrashbin(commandsOutput);
-        await Context.SendMessage(Context.Channel, $"Выложены команды по этой ссылке: {link} также вы можете написать {prefix}helpcmd имякоманды для получение дополнительной помощи");
+        await Context.SendMessage(Context.Channel, 
+            $"Выложены команды по этой ссылке: {link} также вы можете написать {prefix}helpcmd имякоманды для получения дополнительной помощи");
     }
 
     [Command("helpcmd")]
@@ -88,7 +89,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             }
         }
 
-        Context.SendSadMessage(Context.Channel, $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {Context.User.GetUserPrefix()}cmdinfo");
+        Context.SendSadMessage(Context.Channel, 
+            $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {Context.User.GetUserPrefix()}cmdinfo");
     }
 
     [Command("remind", "in")]
@@ -279,7 +281,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             {
                 try
                 {
-                    var translatedOutput = Transalator.TranslateBing(translated, "ru", "en").Result.translations.First().text;
+                    var translatedOutput = Context.ServicesHelper.TranslateBing(translated, "ru", "en").
+                        Result.translations.First().text;
                     string trOutFixed = Context.BotCtx.SongGame.RemoveArticles(translatedOutput);
 
                     if (trOutFixed == Context.BotCtx.SongGame.SongameString)

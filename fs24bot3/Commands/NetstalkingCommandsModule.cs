@@ -159,7 +159,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
         foreach ((string opt, string value) in paser.Options)
         {
-            var cmd = SearchCommandService.GetAllCommands().Where(x => x.Name == opt).FirstOrDefault();
+            var cmd = SearchCommandService.GetAllCommands().FirstOrDefault(x => x.Name == opt);
 
             if (cmd == null)
             {

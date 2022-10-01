@@ -43,37 +43,19 @@ public class Services
 
 public class Configuration
 {
-    [DataMember(Name = "name")]
-    public string Name { get; set; }
-    [DataMember(Name = "network")]
-    public string Network { get; set; }
-    [DataMember(Name = "channel")]
-    public string Channel { get; set; }
-    [DataMember(Name = "port")]
-    public int Port { get; set; }
-    [DataMember(Name = "nickserv_pass")]
-    public string NickservPass { get; set; }
-    [DataMember(Name = "server_pass")]
-    public string ServerPassword { get; set; }
     [DataMember(Name = "prefix")]
     public string Prefix { get; set; }
     [DataMember(Name = "loglevel")]
     public string LogLevel { get; set; }
     [DataMember(Name = "backend")]
     public Backend Backend { get; set; }
-    public Services Services { get; set; }
+    public Services Services { get; }
 
     public Configuration()
     {
-        Name = "fs24bot";
-        Network = "irc.esper.net";
-        Channel = "#fl-studio";
-        Port = 6667;
-        NickservPass = "zxcvbm1";
-        ServerPassword = "zxcvbm1";
         Prefix = "#";
         LogLevel = "Verbose";
-        Backend = Backend.IRC;
+        Backend = Backend.Basic;
         Services = new Services()
         {
             JdoodleClientID = "0",

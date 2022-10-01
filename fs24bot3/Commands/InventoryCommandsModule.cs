@@ -249,7 +249,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                 }
                 break;
             case CommandToggles.CommandEdit.Delete:
-                var query = Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).FirstOrDefault();
+                var query = Context.BotCtx.Connection.Table<SQL.Tag>().FirstOrDefault(v => v.Name.Equals(tagname));
 
                 if (query != null && query.Name == tagname)
                 {

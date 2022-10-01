@@ -153,14 +153,6 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         Exit();
     }
 
-    [Command("toggleppc")]
-    [Checks.CheckAdmin]
-    public async Task TooglePpc()
-    {
-        Transalator.AlloPpc = !Transalator.AlloPpc;
-        await Context.SendMessage(Context.Channel, "Включить ппц всех команд: " + Transalator.AlloPpc);
-    }
-
     [Command("quit", "exit")]
     [Checks.CheckAdmin]
     [Description("Выход")]

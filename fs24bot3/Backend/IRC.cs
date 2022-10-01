@@ -1,57 +1,103 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using fs24bot3.Core;
 using fs24bot3.Helpers;
 using fs24bot3.Models;
 using NetIRC;
 using NetIRC.Connection;
 using NetIRC.Messages;
 using Serilog;
+using Tomlyn;
 
 namespace fs24bot3.Backend;
+
+
+public class IrcConfiguration
+{
+    [DataMember(Name = "name")]
+    public string Name { get; set; }
+    [DataMember(Name = "network")]
+    public string Network { get; set; }
+    [DataMember(Name = "channel")]
+    public string Channel { get; set; }
+    [DataMember(Name = "port")]
+    public int Port { get; set; }
+    [DataMember(Name = "nickserv_pass")]
+    public string NickservPass { get; set; }
+    [DataMember(Name = "server_pass")]
+    public string ServerPassword { get; set; }
+
+    public IrcConfiguration()
+    {
+        Name = "fs24bot";
+        Network = "irc.esper.net";
+        Channel = "#fl-studio";
+        Port = 6667;
+        NickservPass = "zxcvbm1";
+        ServerPassword = "zxcvbm1";
+    }
+}
+
 /// <summary>
 /// IRC backend
 /// </summary>
 public class Irc : IMessagingClient
 {
+    private const string CONFIG_PATH = "irc.toml";
     public string Name { get; private set; }
 
     public Bot BotContext { get; }
     public Dictionary<string, string> Fmt { get; }
 
-    private Client BotClient;
+    private Client BotClient { get; }
+    private IrcConfiguration Config { get; }
 
     public Irc()
     {
         BotContext = new Bot(this);
-        Name = ConfigurationProvider.Config.Name;
-        Fmt = new Dictionary<string, string>();
-        // add irc colors
+        if (File.Exists(CONFIG_PATH))
+        {
+            var loadedconfig = Toml.ToModel<IrcConfiguration>(File.ReadAllText(CONFIG_PATH));
+            Config = loadedconfig;
+            Log.Information("Configuration loaded!");
+        }
+        else
+        {
+            Config = new IrcConfiguration();
+            Log.Warning("IRC backend was unable to find configuration file, I will create it for you");
+            File.WriteAllText(CONFIG_PATH, Toml.FromModel(Config));
+        }
         
-        Fmt.Add("b","");
-        Fmt.Add("r","");
-        Fmt.Add("white","00");
-        Fmt.Add("black","01");
-        Fmt.Add("blue","02");
-        Fmt.Add("green","03");
-        Fmt.Add("red", "04");
-        Fmt.Add("brown","05");
-        Fmt.Add("purple","06");
-        Fmt.Add("orange","07");
-        Fmt.Add("yellow","08");
-        Fmt.Add("lime","09");
-        Fmt.Add("teal","10");
-        Fmt.Add("cyan","11");
-        Fmt.Add("royal","12");
-        Fmt.Add("pink","13");
-        Fmt.Add("gray","14");
-        Fmt.Add("silver","15");
+        Fmt = new Dictionary<string, string>
+        {
+            // add irc colors
+            { "b", "" },
+            { "r", "" },
+            { "white", "00" },
+            { "black", "01" },
+            { "blue", "02" },
+            { "green", "03" },
+            { "red", "04" },
+            { "brown", "05" },
+            { "purple", "06" },
+            { "orange", "07" },
+            { "yellow", "08" },
+            { "lime", "09" },
+            { "teal", "10" },
+            { "cyan", "11" },
+            { "royal", "12" },
+            { "pink", "13" },
+            { "gray", "14" },
+            { "silver", "15" }
+        };
 
 
-        BotClient = new Client(new NetIRC.User(ConfigurationProvider.Config.Name, "Sopli IRC 3.0"), new TcpClientConnection(ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port));
+        BotClient = new Client(new NetIRC.User(Config.Name, "Sopli IRC 3.0"), 
+            new TcpClientConnection(Config.Network, Config.Port));
         
         BotClient.RawDataReceived += Client_OnRawDataReceived;
         BotClient.IRCMessageParsed += Client_OnIRCMessageParsed;
@@ -70,7 +116,7 @@ public class Irc : IMessagingClient
             {
                 if (msg.Kind == MessageKind.Message) { BotContext.MessageTrigger(msg); }
 
-                bool ppc = msg.Body.StartsWith("p") && Transalator.AlloPpc;
+                bool ppc = msg.Body.StartsWith("p");
                 await BotContext.ExecuteCommand(msg, prefix, ppc);
             }
         }
@@ -88,7 +134,7 @@ public class Irc : IMessagingClient
 
         if (message.NumericReply == IRCNumericReply.ERR_PASSWDMISMATCH)
         {
-            await client.SendRaw("PASS " + ConfigurationProvider.Config.ServerPassword);
+            await client.SendRaw("PASS " + Config.ServerPassword);
         }
 
         if (message.IRCCommand == IRCCommand.KICK)
@@ -97,15 +143,15 @@ public class Irc : IMessagingClient
             {
                 Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
                 await client.SendRaw("JOIN " + message.Parameters[0]);
-                await SendMessage(ConfigurationProvider.Config.Channel, "За что?");
+                await SendMessage(Config.Channel, "За что?");
             }
         }
     }
 
     private async void Client_OnRegister(object sender, EventArgs _)
     {
-        JoinChannel(ConfigurationProvider.Config.Channel);
-        await SendMessage("Nickserv", "IDENTIFY " + ConfigurationProvider.Config.NickservPass);
+        JoinChannel(Config.Channel);
+        await SendMessage("Nickserv", "IDENTIFY " + Config.NickservPass);
 
         //var res = Helpers.InternetServicesHelper.InPearls("алкоголь").Result.Random();
         //await Botara.SendMessage(ConfigurationProvider.Config.Channel, res);
@@ -132,7 +178,7 @@ public class Irc : IMessagingClient
 
     public void Process()
     {   
-        Log.Information("Connecting to: {0}:{1}", ConfigurationProvider.Config.Network, ConfigurationProvider.Config.Port);
+        Log.Information("Connecting to: {0}:{1}", Config.Network, Config.Port);
         Task.Run(() => BotClient.ConnectAsync());
         BotContext.ProccessInfinite();
     }
