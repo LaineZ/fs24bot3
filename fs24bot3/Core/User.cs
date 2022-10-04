@@ -158,7 +158,7 @@ public class User
 
     public DateTime GetLastMessage()
     {
-        var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).FirstOrDefault();
+        var nick = GetUserInfo();
         DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         dtDateTime = dtDateTime.AddSeconds(nick == null ? 0 : nick.LastMsg).ToLocalTime();
         return dtDateTime;
@@ -166,8 +166,8 @@ public class User
 
     public bool UserIsIgnored()
     {
-        Log.Verbose("Ignored: {0}", Connect.Table<SQL.Ignore>().Where(v => v.Username.Equals(Username)).Any());
-        return Connect.Table<SQL.Ignore>().Where(v => v.Username.Equals(Username)).Any();
+        Log.Verbose("Ignored: {0}", Connect.Table<SQL.Ignore>().Any(v => v.Username == Username));
+        return Connect.Table<SQL.Ignore>().Any(v => v.Username.Equals(Username));
     }
 
     public void SetLevel(int level)
@@ -178,7 +178,7 @@ public class User
 
     public int GetFishLevel()
     {
-        var q = Connect.Table<SQL.Fishing>().Where(v => v.Nick == Username).FirstOrDefault();
+        var q = Connect.Table<SQL.Fishing>().FirstOrDefault(v => v.Nick == Username);
         if (q != null) { return q.Level; }
         return 1;
     }
@@ -186,7 +186,7 @@ public class User
 
     public string GetFishNest()
     {
-        var q = Connect.Table<SQL.Fishing>().Where(v => v.Nick == Username).FirstOrDefault();
+        var q = Connect.Table<SQL.Fishing>().FirstOrDefault(v => v.Nick == Username);
         if (q != null)
         {
             return q.NestName;
@@ -219,7 +219,7 @@ public class User
 
     public SQL.FishingNests SetNest(string nest)
     {
-        var query = Connect.Table<SQL.FishingNests>().Where(v => v.Name.Equals(nest)).FirstOrDefault();
+        var query = Connect.Table<SQL.FishingNests>().FirstOrDefault(v => v.Name.Equals(nest));
         if (query != null)
         {
             Connect.InsertOrReplace(new SQL.Fishing
@@ -333,8 +333,9 @@ public class User
 
     public int CountItem(string itemname)
     {
-        var item = Connect.Table<SQL.Inventory>().SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemname));
-        return item == null ? 0 : item.ItemCount;
+        var item = Connect.Table<SQL.Inventory>()
+            .SingleOrDefault(v => v.Nick.Equals(Username) && v.Item.Equals(itemname));
+        return item?.ItemCount ?? 0;
     }
 
     public void SetCity(string city)
@@ -378,14 +379,15 @@ public class User
 
     public SQL.UserStats GetUserInfo()
     {
-        var query = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).FirstOrDefault();
+        var query = Connect.Query<SQL.UserStats>("SELECT * FROM UserStats WHERE Nick = ? LIMIT 1", Username)
+            .FirstOrDefault();
         if (query != null)
         {
             return query;
         }
         else
         {
-            throw new Exceptions.UserNotFoundException();
+            throw new UserNotFoundException();
         }
     }
 }

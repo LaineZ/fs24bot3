@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace fs24bot3.EventProcessors;
 public class OnMsgEvent
@@ -46,31 +47,34 @@ public class OnMsgEvent
         {
             try
             {
-                Process p = new Process();
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.RedirectStandardOutput = true;
-                p.StartInfo.FileName = ConfigurationProvider.Config.Services.YoutubeDlPath;
-                p.StartInfo.Arguments = "--simulate --print-json \"" + match + "\"";
-                p.Start();
-                string output = p.StandardOutput.ReadToEnd();
-                p.WaitForExit();
-
-                var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, MissingMemberHandling = MissingMemberHandling.Ignore });
-
-                if (jsonOutput != null)
+                new Thread( async () =>
                 {
-                    var ts = TimeSpan.FromSeconds(jsonOutput.duration);
-                    await BotContext.Client.SendMessage(message.Target, 
-                        $"[b]{jsonOutput.title}[r] от [b]{jsonOutput.channel}[r]. " +
-                        $"[green]Длительность: [r][b]{ts:hh\\:mm\\:ss}[r] " +
-                        $"[green]👍[r][b] {jsonOutput.like_count}[r] " +
-                        $"[green]Просмотров: [r][b]{jsonOutput.view_count}[r] " +
-                        $"[green]Дата загрузки: [r][b]{jsonOutput.upload_date}[r]");
-                }
+                    Process p = new Process();
+                    p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.RedirectStandardOutput = true;
+                    p.StartInfo.FileName = ConfigurationProvider.Config.Services.YoutubeDlPath;
+                    p.StartInfo.Arguments = "--simulate --print-json \"" + match + "\"";
+                    p.Start();
+                    string output = p.StandardOutput.ReadToEnd();
+                    p.WaitForExit();
+
+                    var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, MissingMemberHandling = MissingMemberHandling.Ignore });
+
+                    if (jsonOutput != null)
+                    {
+                        var ts = TimeSpan.FromSeconds(jsonOutput.duration);
+                        await BotContext.Client.SendMessage(message.Target, 
+                            $"[b]{jsonOutput.title}[r] от [b]{jsonOutput.channel}[r]. " +
+                            $"[green]Длительность: [r][b]{ts:hh\\:mm\\:ss}[r] " +
+                            $"[green]👍[r][b] {jsonOutput.like_count}[r] " +
+                            $"[green]Просмотров: [r][b]{jsonOutput.view_count}[r] " +
+                            $"[green]Дата загрузки: [r][b]{jsonOutput.upload_date}[r]");
+                    }
+                }).Start();
             }
             catch (Exception e)
             {
-                Log.Error("Cannot handle youtube: {0}:{1}", e.GetType().Name, e.Message);
+                Log.Error("Cannot handle youtube: {0}", e);
             }
         }
     }

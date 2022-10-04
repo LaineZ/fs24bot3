@@ -427,10 +427,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             await Context.SendMessage(Context.Channel, $"Последний раз я видел [b]{destination}[r] {ToReadableString(date)} назад");
             var messages = await Context.ServicesHelper.GetMessages(user.GetLastMessage());
             var lastmsg = messages.LastOrDefault(x => x.Nick == destination);
-            if (lastmsg == null)
+            if (lastmsg != null)
             {
                 await Context.SendMessage(Context.Channel, 
-                    $"Последнее сообщение от пользователя: " +
+                    $"Последнее сообщение от пользователя: [b]" +
                     $"{messages.LastOrDefault(x => x.Nick == destination)?.Message}");
             }
         }

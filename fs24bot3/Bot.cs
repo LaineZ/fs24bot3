@@ -60,19 +60,18 @@ public class Bot
             bool commandIntenral = Service.GetAllCommands()
                 .Any(x => x.Aliases.Any(a => a == command.Command));
 
-            if (commandIntenral)
-            {
-                var user = new Core.User(command.Nick, Connection);
-                Log.Warning("User {0} have a command with internal name {1}!",
-                    user.Username,
-                    command.Command);
-                user.AddWarning(
-                    $"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot " +
-                    $"добавилась команда с таким же именем, " +
-                    $"ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте " +
-                    $"{user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем",
-                    this);
-            }
+            if (!commandIntenral) continue;
+            
+            var user = new Core.User(command.Nick, Connection);
+            Log.Warning("User {0} have a command with internal name {1}!",
+                user.Username,
+                command.Command);
+            user.AddWarning(
+                $"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot " +
+                $"добавилась команда с таким же именем, " +
+                $"ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте " +
+                $"{user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем",
+                this);
         }
 
         Shop = new Shop(this);
@@ -111,7 +110,7 @@ public class Bot
             {
                 var onTick = new EventProcessors.OnTick(user.Nick, Connection);
                 onTick.UpdateUserPaydays(Shop);
-                onTick.RemoveLevelOneAccs();
+                //onTick.RemoveLevelOneAccs();
             }
 
             var reminds = Connection.Table<SQL.Reminds>();
@@ -121,7 +120,8 @@ public class Bot
                 dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
                 if (dtDateTime <= DateTime.Now)
                 {
-                    await Client.SendMessage(item.Channel, $"{item.Nick}: {item.Message}!");
+                    var channel = item.Channel ?? item.Nick;
+                    await Client.SendMessage(channel, $"{item.Nick}: {item.Message}!");
                     Connection.Delete(item);
                 }
             }
@@ -133,16 +133,13 @@ public class Bot
     public void MessageTrigger(MessageGeneric message)
     {
         if (message.Sender.UserIsIgnored() || Client.DeterminePmMessage(message)) { return; }
-
-        new Thread(() =>
-        {
-            PProfiler.BeginMeasure("msg");
-            OnMsgEvent.DestroyWallRandomly(Shop, message);
-            OnMsgEvent.LevelInscrease(Shop, message);
-            OnMsgEvent.PrintWarningInformation(message);
-            OnMsgEvent.HandleYoutube(message);
-            PProfiler.EndMeasure("msg");
-        }).Start();
+        
+        PProfiler.BeginMeasure("msg");
+        OnMsgEvent.DestroyWallRandomly(Shop, message);
+        OnMsgEvent.LevelInscrease(Shop, message);
+        OnMsgEvent.PrintWarningInformation(message);
+        OnMsgEvent.HandleYoutube(message);
+        PProfiler.EndMeasure("msg");
     }
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix, bool ppc = false)
