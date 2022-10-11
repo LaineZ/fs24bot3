@@ -127,7 +127,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
 
         TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
-        Context.User.AddRemind(ts, message);
+        Context.User.AddRemind(ts, message, Context.Channel);
         await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
     }
 

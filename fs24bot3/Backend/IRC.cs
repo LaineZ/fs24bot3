@@ -95,8 +95,9 @@ public class Irc : IMessagingClient
             { "silver", "15" }
         };
 
+        SetupNick(Config.Name);
 
-        BotClient = new Client(new NetIRC.User(Config.Name, "Sopli IRC 3.0"), 
+        BotClient = new Client(new NetIRC.User(Name, "Sopli IRC 3.0"), 
             new TcpClientConnection(Config.Network, Config.Port));
         
         BotClient.RawDataReceived += Client_OnRawDataReceived;
@@ -164,8 +165,11 @@ public class Irc : IMessagingClient
 
     public async void SetupNick(string nickname)
     {
-        await BotClient.SendRaw("NICK " + nickname);
         Name = nickname;
+        if (BotClient != null)
+        {
+            await BotClient.SendRaw("NICK " + nickname);
+        }
     }
     public async void JoinChannel(string name)
     {

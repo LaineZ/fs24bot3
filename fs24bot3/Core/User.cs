@@ -233,13 +233,14 @@ public class User
         return query;
     }
 
-    public void AddRemind(TimeSpan time, string title)
+    public void AddRemind(TimeSpan time, string title, string channel)
     {
         var remind = new SQL.Reminds()
         {
             Nick = Username,
             Message = title,
             RemindDate = (uint)((DateTimeOffset)DateTime.Now.Add(time)).ToUnixTimeSeconds(),
+            Channel = channel,
         };
 
         Connect.Insert(remind);

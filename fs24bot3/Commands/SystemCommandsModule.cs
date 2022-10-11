@@ -237,6 +237,14 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         await Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Context.BotCtx.Shop.Items[item].Name + " пользователю " + username);
     }
 
+
+    [Command("adjustreminds")]
+    [Checks.CheckAdmin]
+    public async Task AdjustReminds(string channel = "#cc.ru")
+    {
+        Context.BotCtx.Connection.Execute("UPDATE Reminds SET Channel = ? WHERE Channel IS NULL", channel);
+    }
+
     [Command("joinch")]
     [Checks.CheckAdmin]
     public async Task JoinChannel(string channel)
