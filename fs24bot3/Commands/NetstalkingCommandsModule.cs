@@ -121,8 +121,10 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
             if (items.antirobot.blocked)
             {
-                Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, items.antirobot.message);
-                await Context.SendMessage(Context.Channel, $"Вы были забанены reason: {RandomMsgs.BanMessages.Random()} Пожалуйста, используйте команду [b]{Context.User.GetUserPrefix()}sx {query}");
+                Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, 
+                    items.antirobot.message);
+                await Context.SendMessage(Context.Channel, $"Вы были забанены reason: " +
+                                                           $"{RandomMsgs.BanMessages.Random()}");
                 return;
             }
 
@@ -137,70 +139,6 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
         }
 
         // execute post process commands
-        ctx.PreProcess = false;
-        await ExecuteCommands(searchOptions, ctx);
-        await PrintResults(ctx);
-    }
-
-    [Command("sx", "searx")]
-    [Description("SearX - Еще один инструмент нетсталкинга")]
-    [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`. Все параметры с типом String, кроме `regex` - регистронезависимы\n" +
-        "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; site:String - Поиск по адресу сайта; multi:Boolean - Мульти вывод (сразу 5 результатов);\n" +
-        "random:Boolean - Рандомная выдача (не работает с multi); include:String - Включить результаты с данной подстрокой; exclude:String - Исключить результаты с данной подстрокой;\n" +
-        "regex:String - Регулярное выражение в формате PCRE")]
-    public async Task SearxSearch([Remainder] string query)
-    {
-        List<(Command, string)> searchOptions = new List<(Command, string)>();
-
-        SearchCommandService.AddModule<SearchQueryCommands>();
-        var ctx = new SearchCommandProcessor.CustomCommandContext();
-        var paser = new OneLinerOptionParser(query);
-        ctx.PreProcess = true;
-
-        foreach ((string opt, string value) in paser.Options)
-        {
-            var cmd = SearchCommandService.GetAllCommands().FirstOrDefault(x => x.Name == opt);
-
-            if (cmd == null)
-            {
-                await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{opt}`");
-                return;
-            }
-
-            searchOptions.Add((cmd, value));
-        }
-
-        // execute pre process commands
-        await ExecuteCommands(searchOptions, ctx);
-
-        // weird visibility bug
-        string inp = paser.RetainedInput;
-
-        for (int i = ctx.Page + 1; i < ctx.Page + ctx.Max; i++)
-        {
-            Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
-            if (ctx.SearchResults.Count >= ctx.Limit) { break; }
-
-            MultipartFormDataContent form = new MultipartFormDataContent
-                {
-                    { new StringContent(inp), "q" },
-                    { new StringContent(i.ToString()), "pageno" },
-                    { new StringContent("json"), "format" }
-                };
-
-            HttpResponseMessage response = await Context.HttpTools.Client.PostAsync("https://searx.org/search", form);
-            var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
-
-            if (search?.results == null) continue;
-            foreach (var item in search.results)
-            {
-                if (item.url.Contains(ctx.Site))
-                {
-                    ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.content ?? "Нет описания"));
-                }
-            }
-        }
-
         ctx.PreProcess = false;
         await ExecuteCommands(searchOptions, ctx);
         await PrintResults(ctx);

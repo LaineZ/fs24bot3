@@ -384,6 +384,23 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
+    [Command("talk", "chatbow")]
+    [Description("Чатбот")]
+    public async Task Chatbot([Remainder] string message)
+    {
+        var msg = new ChatBotRequest(message);
+        var output = await Context.HttpTools.PostJson("https://xu.su/api/send", msg);
+        var jsonOutput = JsonConvert.DeserializeObject<ChatBotResponse>(output);
+        if (jsonOutput != null && jsonOutput.Ok)
+        {
+           await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {jsonOutput.Text}");
+        }
+        else
+        {
+            await Context.SendMessage(Context.Channel, $"{Context.User.Username}: я не понимаю о чем ты");
+        }
+    }
+
     [Command("mc", "minecraft", "mineserver", "mineserv")]
     [Description("Информация о сервере Minecraft")]
     public async Task MinecraftQuery(string ipaddr)
