@@ -120,38 +120,6 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Command = REPLACE(Command, '@', '')");
         await Context.SendMessage(Context.Channel, "Команды починены");
     }
-    public async Task _UpdateBot()
-    {
-        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-        {
-            Context.SendErrorMessage(Context.Channel, "Обновление на винде НЕВОЗМОЖНО!");
-            return;
-        }
-        var http = new HttpTools();
-        
-        await Context.SendMessage(Context.Channel, "Запуск обновления...");
-
-        string json = await http.MakeRequestAsync("https://api.github.com/repos/LaineZ/fs24bot3/actions/artifacts");
-        var artifacts = JsonConvert.DeserializeObject<GitHubJobsArtifacts.Root>(json);
-
-        if (artifacts == null || !artifacts.Artifacts.Any())
-        {   
-            Context.SendErrorMessage(Context.Channel, "Артифакты НЕ НАЙДЕНЫ! ОБНОВЛЕНИЕ НЕВОЗМОЖНО!!!");
-            return;
-        }
-
-        var build = artifacts.Artifacts.Last();
-
-        if (File.Exists("Linux.zip"))
-        {
-            File.Delete("Linux.zip");
-        }
-
-        await http.DownloadFile("Linux.zip", build.ArchiveDownloadUrl);
-        ExtractZipFileToDirectory("Linux.zip", ".", true);
-        await Context.SendMessage(Context.Channel, "Обновление заверешно, ДО СВИДАНИЯ!");
-        Exit();
-    }
 
     [Command("quit", "exit")]
     [Checks.CheckAdmin]
