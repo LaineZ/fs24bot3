@@ -116,7 +116,8 @@ public class Bot
             var reminds = Connection.Table<SQL.Reminds>();
             foreach (var item in reminds)
             {
-                DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, 
+                    DateTimeKind.Utc);
                 dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
                 if (dtDateTime <= DateTime.Now)
                 {
@@ -194,7 +195,7 @@ public class Bot
             case OverloadsFailedResult:
                 await Client.SendMessage(message.Target, "Команда выключена...");
                 break;
-            case CommandNotFoundResult _:
+            case CommandNotFoundResult err:
                 if (!CustomCommandProcessor.ProcessCmd(prefix, in message))
                 {
                     string cmdName = message.Body.Split(" ")[0];

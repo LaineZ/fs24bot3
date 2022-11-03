@@ -138,14 +138,11 @@ public class Irc : IMessagingClient
             await client.SendRaw("PASS " + Config.ServerPassword);
         }
 
-        if (message.IRCCommand == IRCCommand.KICK)
+        if (message.IRCCommand == IRCCommand.KICK && message.Parameters[1] == Name)
         {
-            if (message.Parameters[1] == Name)
-            {
-                Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
+            Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
                 await client.SendRaw("JOIN " + message.Parameters[0]);
-                await SendMessage(Config.Channel, "За что?");
-            }
+                await SendMessage(message.Parameters[0], "За что?");
         }
     }
 
@@ -153,7 +150,6 @@ public class Irc : IMessagingClient
     {
         JoinChannel(Config.Channel);
         await SendMessage("Nickserv", "IDENTIFY " + Config.NickservPass);
-
         //var res = Helpers.InternetServicesHelper.InPearls("алкоголь").Result.Random();
         //await Botara.SendMessage(ConfigurationProvider.Config.Channel, res);
     }
@@ -175,6 +171,7 @@ public class Irc : IMessagingClient
     {
         await BotClient.SendRaw("JOIN " + name);
     }
+    
     public async void PartChannel(string name)
     {
         await BotClient.SendRaw("PART " + name);

@@ -66,7 +66,6 @@ public class User
             {
                 Nick = Username,
                 Admin = 0,
-                AdminPassword = "changeme",
                 Level = 1,
                 Xp = 0,
                 Need = 1000,

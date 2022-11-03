@@ -69,78 +69,54 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
         }
     }
 
-    [Command("ms", "mailsearch")]
-    [Description("Поиск@Mail.ru - Мощный инстурмент нетсталкинга")]
+    [Command("ms", "search", "sx")]
+    [Description("Поиск Bing - мощный инструмент нетсталкинга")]
     [Remarks("Запрос разбивается на сам запрос и параметры которые выглядят как `PARAMETR:VALUE`. Все параметры с типом String, кроме `regex` - регистронезависимы\n" +
         "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; site:String - Поиск по адресу сайта; multi:Boolean - Мульти вывод (сразу 5 результатов);\n" +
         "random:Boolean - Рандомная выдача (не работает с multi); include:String - Включить результаты с данной подстрокой; exclude:String - Исключить результаты с данной подстрокой;\n" +
         "regex:String - Регулярное выражение в формате PCRE")]
     public async Task MailSearch([Remainder] string query)
     {
-        List<(Command, string)> searchOptions = new List<(Command, string)>();
-        var paser = new OneLinerOptionParser(query);
-
-        SearchCommandService.AddModule<SearchQueryCommands>();
-        var ctx = new SearchCommandProcessor.CustomCommandContext
+        var client = new HttpClient();
+        var request = new HttpRequestMessage
         {
-            PreProcess = true
+            Method = HttpMethod.Get,
+            RequestUri = new Uri("https://bing-web-search1.p.rapidapi.com/search?q=" + query + 
+                                 "&textFormat=Raw&safeSearch=Moderate"),
+            Headers =
+            {
+                { "X-BingApis-SDK", "true" },
+                { "X-RapidAPI-Key", ConfigurationProvider.Config.Services.RapidApiKey },
+                { "X-RapidAPI-Host", "bing-web-search1.p.rapidapi.com" },
+            },
         };
-
-        foreach ((string opt, string value) in paser.Options)
+        using var response = await client.SendAsync(request);
+        var body = await response.Content.ReadAsStringAsync();
+        
+        if (!response.IsSuccessStatusCode || string.IsNullOrWhiteSpace(body))
         {
-            var cmd = SearchCommandService.GetAllCommands().FirstOrDefault(x => x.Name == opt);
-
-            if (cmd == null)
-            {
-                await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{opt}`");
-                return;
-            }
-            searchOptions.Add((cmd, value));
+            Context.SendSadMessage(Context.Channel);
+            return;
         }
 
-        // execute pre process commands
-        await ExecuteCommands(searchOptions, ctx);
-        // weird visibility bug
-        string inp = paser.RetainedInput;
-        for (int i = ctx.Page; i < ctx.Page + ctx.Max; i++)
-        {
-            Log.Verbose("Foring {0}/{1}/{2} Query string: {3}", i, ctx.Page, ctx.Max, query);
+        var searchResults = JsonConvert.DeserializeObject<BingSearchResults.Root>(body);
 
-            if (ctx.SearchResults.Count >= ctx.Limit) { break; }
-            string response = await Context.HttpTools.MakeRequestAsync("https://go.mail.ru/search?q=" + inp + "&sf=" + (i * 10));
-
-            if (response == null)
-            {
-                Context.SendSadMessage(Context.Channel, "Не удается установить соединение с сервером. Возможно...");
-                return;
-            }
-
-            var items = InternetServicesHelper.PerformDecode(response);
-
-            if (items == null) { continue; }
-
-            if (items.antirobot.blocked)
-            {
-                Log.Warning("Antirobot-blocked: {0} reason {1}", items.antirobot.blocked, 
-                    items.antirobot.message);
-                await Context.SendMessage(Context.Channel, $"Вы были забанены reason: " +
-                                                           $"{RandomMsgs.BanMessages.Random()}");
-                return;
-            }
-
-            if (!items.serp.results.Any()) continue;
-            foreach (var item in items.serp.results)
-            {
-                if (!item.is_porno && item.title != null && item.title.Length > 0)
-                {
-                    ctx.SearchResults.Add(new ResultGeneric(item.title, item.url, item.passage));
-                }
-            }
+        if (searchResults == null)
+        {   
+            Context.SendSadMessage(Context.Channel);
+            return;
         }
 
-        // execute post process commands
-        ctx.PreProcess = false;
-        await ExecuteCommands(searchOptions, ctx);
-        await PrintResults(ctx);
+        var res = searchResults.WebPages.Value.FirstOrDefault();
+
+        if (res == null)
+        {
+            Context.SendSadMessage(Context.Channel);
+            return;
+        }
+
+        await Context.SendMessage(Context.Channel, $"{res.Name} // [blue]{res.Url}");
+        await Context.SendMessage(Context.Channel, res.Snippet);
+
     }
 }

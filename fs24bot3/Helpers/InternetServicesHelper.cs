@@ -84,7 +84,9 @@ public class InternetServicesHelper
 
     public async Task<List<FomalhautMessage>> GetMessages(DateTime dateTime)
     {
-        var output = await Http.MakeRequestAsyncNoCookie("https://logs.fomalhaut.me/download/" + dateTime.ToString("yyyy-MM-dd") + ".log");
+        var output =
+            await Http.MakeRequestAsyncNoCookie("https://logs.fomalhaut.me/download/" +
+                                                dateTime.ToString("yyyy-MM-dd") + ".log");
 
         var list = new List<FomalhautMessage>();
 
@@ -101,7 +103,8 @@ public class InternetServicesHelper
             var message = captures.Groups[3].Value;
             if (!string.IsNullOrWhiteSpace(nick) && !string.IsNullOrWhiteSpace(message))
             {
-                list.Add(new FomalhautMessage { Date = dateTime.Add(TimeSpan.Parse(time)), Message = message, Nick = nick, Kind = Kind.Message });
+                list.Add(new FomalhautMessage
+                    { Date = dateTime.Add(TimeSpan.Parse(time)), Message = message, Nick = nick, Kind = Kind.Message });
             }
             else
             {
@@ -111,17 +114,6 @@ public class InternetServicesHelper
         }
 
         return list;
-    }
-
-    public static MailSearch.RootObject PerformDecode(string code)
-    {
-        const string startString = "go.dataJson = {";
-        const string stopString = "};";
-
-        string searchDataTemp = code[(code.IndexOf(startString) + startString.Length - 1)..];
-        string searchData = searchDataTemp[..(searchDataTemp.IndexOf(stopString) + 1)];
-        
-        return JsonConvert.DeserializeObject<MailSearch.RootObject>(searchData, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
     }
 
     public static async Task<string> UploadToTrashbin(string data, string route = "add")

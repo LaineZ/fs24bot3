@@ -99,8 +99,7 @@ public class HttpTools
             return null;
         }
     }
-
-
+    
     public async Task<HttpResponseMessage> GetResponseAsync(string url)
     {
         using (var handler = new HttpClientHandler() { CookieContainer = cookies })

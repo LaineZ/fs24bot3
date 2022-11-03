@@ -14,7 +14,6 @@ public class SQL
         public int Xp { get; set; }
         public int Need { get; set; }
         public int Admin { get; set; }
-        public string AdminPassword { get; set; }
         public int LastMsg { get; set; }
         public string Prefix { get; set; }
         public string Timezone { get; set; }

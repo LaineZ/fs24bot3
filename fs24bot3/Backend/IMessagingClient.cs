@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using fs24bot3.Core;
 using fs24bot3.Models;
 
 namespace fs24bot3.Backend;
