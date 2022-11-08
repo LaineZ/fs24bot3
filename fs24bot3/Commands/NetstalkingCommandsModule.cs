@@ -21,7 +21,6 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
     [Description("Поиск Bing - мощный инструмент нетсталкинга")]
     public async Task BingSearch([Remainder] string query)
     {
-        var client = new HttpClient();
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
@@ -34,7 +33,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
                 { "X-RapidAPI-Host", "bing-web-search1.p.rapidapi.com" },
             },
         };
-        using var response = await client.SendAsync(request);
+        using var response = await Context.HttpTools.Client.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
         
         if (!response.IsSuccessStatusCode || string.IsNullOrWhiteSpace(body))

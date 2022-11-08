@@ -21,6 +21,15 @@ public class OnMsgEvent
         BotContext = botCtx;
     }
 
+    private static string FmtUploadDate(string date)
+    {
+        string year = date.Substring(0, 4);
+        string month = date.Substring(4, 2);
+        string day = date.Substring(6, 2);;
+
+        return year + "-" + month + "-" + day;
+    }
+
     public async void LevelInscrease(Shop shop, MessageGeneric message)
     {
         message.Sender.CreateAccountIfNotExist();
@@ -55,8 +64,8 @@ public class OnMsgEvent
                     p.StartInfo.FileName = ConfigurationProvider.Config.Services.YoutubeDlPath;
                     p.StartInfo.Arguments = "--simulate --print-json \"" + match + "\"";
                     p.Start();
-                    string output = p.StandardOutput.ReadToEnd();
-                    p.WaitForExit();
+                    string output = await p.StandardOutput.ReadToEndAsync();
+                    await p.WaitForExitAsync();
 
                     var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, MissingMemberHandling = MissingMemberHandling.Ignore });
 
@@ -68,7 +77,7 @@ public class OnMsgEvent
                             $"[green]Длительность: [r][b]{ts:hh\\:mm\\:ss}[r] " +
                             $"[green]👍[r][b] {jsonOutput.like_count}[r] " +
                             $"[green]Просмотров: [r][b]{jsonOutput.view_count}[r] " +
-                            $"[green]Дата загрузки: [r][b]{jsonOutput.upload_date}[r]");
+                            $"[green]Дата загрузки: [r][b]{FmtUploadDate(jsonOutput.upload_date)}[r]");
                     }
                 }).Start();
             }

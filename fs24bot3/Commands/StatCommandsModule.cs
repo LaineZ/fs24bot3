@@ -42,8 +42,9 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
         List<string> stopwords = Resources.stopwords.Split("\n").ToList();
         int messageCount = sms.Count;
-        string mostActives = string.Join(" ", sms.GroupBy(msg => msg.Nick).OrderByDescending(grp => grp.Count())
-                    .Select(grp => grp.Key).Take(3));
+        string mostActives = string.Join(" ", sms.GroupBy(msg => msg.Nick)
+            .OrderByDescending(grp => grp.Count())
+            .Select(grp => grp.Key).Take(3));
         string concatedMessage = string.Join("\n", sms.Select(x => x.Message.TrimEnd())).ToLower();
         List<(string, string)> words = new();
 
@@ -64,16 +65,24 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
         float avgWords = caputures.Count / messageCount;
 
 
-        string mostUsedwords = string.Join(", ", words.GroupBy(word => word.Item2).OrderByDescending(grp => grp.Count()).Take(4).Select(value => value.Select(x => x.Item1).First()));
+        string mostUsedwords = string.Join(", ", words
+            .GroupBy(word => word.Item2)
+            .OrderByDescending(grp => grp.Count())
+            .Take(4)
+            .Select(value => value.Select(x => x.Item1).First()));
         await Context.SendMessage(Context.Channel,
-            $"{str}: {messageCount} строк, {caputures.Count} слов, {concatedMessage.Length} символов, {avgWords} слов в строке. Самые активные: {mostActives}. Возможные темы: {mostUsedwords}");
+            $"{str}: {messageCount} строк, {caputures.Count} слов, {concatedMessage.Length} символов, " +
+            $"{avgWords} слов в строке. Самые активные: {mostActives}. Возможные темы: {mostUsedwords}");
     }
 
     [Command("me")]
     [Description("Макроэкономические показатели")]
     public async Task Economy()
     {
-        await Context.SendMessage(Context.Channel, $"Число зарплат: {Context.BotCtx.Shop.PaydaysCount} Денежная масса: {new MultiUser(Context.BotCtx.Connection).GetItemAvg("money")} Покупок/Продаж {Context.BotCtx.Shop.Buys}/{Context.BotCtx.Shop.Sells}");
+        await Context.SendMessage(Context.Channel, 
+            $"Число зарплат: {Context.BotCtx.Shop.PaydaysCount} " +
+            $"Денежная масса: {new MultiUser(Context.BotCtx.Connection).GetItemAvg("money")} " +
+            $"Покупок/Продаж {Context.BotCtx.Shop.Buys}/{Context.BotCtx.Shop.Sells}");
     }
 
     [Command("stat", "stats")]
@@ -85,11 +94,13 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
         var data = usr.GetUserInfo();
         var tags = usr.GetTags();
 
-        await Context.SendMessage(Context.Channel, $"Статистика: {data.Nick} Уровень: {data.Level} XP: {data.Xp} / {data.Need}");
+        await Context.SendMessage(Context.Channel, 
+            $"Статистика: {data.Nick} Уровень: {data.Level} XP: {data.Xp} / {data.Need}");
 
         if (tags.Any())
         {
-            await Context.SendMessage(Context.Channel, $"Теги: {string.Join(' ', tags.Select(x => FmtTag(x)))}");
+            await Context.SendMessage(Context.Channel, 
+                $"Теги: {string.Join(' ', tags.Select(x => FmtTag(x)))}");
         }
         else
         {
