@@ -1,16 +1,13 @@
-﻿using fs24bot3.Core;
-using fs24bot3.Helpers;
+﻿using fs24bot3.Helpers;
 using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;

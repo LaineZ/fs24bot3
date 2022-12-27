@@ -97,7 +97,7 @@ public class Irc : IMessagingClient
 
         SetupNick(Config.Name);
 
-        BotClient = new Client(new NetIRC.User(Name, "Sopli IRC 3.0"), 
+        BotClient = new Client(new User(Name, "Sopli IRC 3.0"), 
             new TcpClientConnection(Config.Network, Config.Port));
         
         BotClient.RawDataReceived += Client_OnRawDataReceived;

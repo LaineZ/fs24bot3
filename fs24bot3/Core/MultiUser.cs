@@ -14,7 +14,13 @@ class MultiUser
 
     public double GetItemAvg(string itemname = "money")
     {
-        var query = Connect.Table<SQL.Inventory>().Where(x => x.Item == itemname).Average(x => x.ItemCount);
-        return query;
+        var query = Connect.Table<SQL.Inventory>();
+        if (query.Count() == 0)
+        {
+            return 0;
+        } else {
+            var avg = query.Where(x => x.Item == itemname).Average(x => x.ItemCount);
+            return avg;
+        }
     }
 }

@@ -44,6 +44,9 @@ internal static class Program
             case Models.Backend.IRC:
                 Client = new Irc();
                 break;
+            case Models.Backend.Discord:
+                Client = new Discord();
+                break;
         }
         Client.Process();
     }

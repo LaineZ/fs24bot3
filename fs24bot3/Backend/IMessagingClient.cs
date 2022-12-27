@@ -38,7 +38,8 @@ public interface IMessagingClient
         return message.Sender.Username == Name;
     }
 
-    public void Process() { }
-    
-    
+    public void Process() 
+    { 
+        BotContext.ProccessInfinite();
+    }
 }

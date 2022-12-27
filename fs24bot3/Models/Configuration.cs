@@ -13,6 +13,7 @@ public enum Backend
 {
     Basic,
     IRC,
+    Discord
 }
 
 public class Services

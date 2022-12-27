@@ -28,7 +28,7 @@ public class Bot
     public List<string> AcknownUsers = new List<string>();
     public Profiler PProfiler { get; }
     
-    private EventProcessors.OnMsgEvent OnMsgEvent { get; }
+    private OnMsgEvent OnMsgEvent { get; }
 
     public Bot(IMessagingClient messagingClient)
     {
@@ -62,7 +62,7 @@ public class Bot
 
             if (!commandIntenral) continue;
             
-            var user = new Core.User(command.Nick, Connection);
+            var user = new User(command.Nick, Connection);
             Log.Warning("User {0} have a command with internal name {1}!",
                 user.Username,
                 command.Command);
@@ -101,6 +101,7 @@ public class Bot
 
     public async void ProccessInfinite()
     {
+        Log.Verbose("Processing started...");
         while (true)
         {
             Thread.Sleep(1000);
@@ -108,7 +109,7 @@ public class Bot
             var users = Connection.Table<SQL.UserStats>();
             foreach (var user in users)
             {
-                var onTick = new EventProcessors.OnTick(user.Nick, Connection);
+                var onTick = new OnTick(user.Nick, Connection);
                 onTick.UpdateUserPaydays(Shop);
                 //onTick.RemoveLevelOneAccs();
             }
