@@ -8,6 +8,7 @@ using DSharpPlus.EventArgs;
 using fs24bot3.Models;
 using Serilog;
 using Tomlyn;
+using System.Text;
 
 namespace fs24bot3.Backend;
 
@@ -56,6 +57,30 @@ public class Discord : IMessagingClient
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.All
         };
+        
+        
+        Fmt = new Dictionary<string, string>
+        {
+            // add irc colors
+            { "b", "" },
+            { "r", "" },
+            { "white", "" },
+            { "black", "" },
+            { "blue", "" },
+            { "green", "" },
+            { "red", "" },
+            { "brown", "" },
+            { "purple", "" },
+            { "orange", "" },
+            { "yellow", "" },
+            { "lime", "" },
+            { "teal", "" },
+            { "cyan", "" },
+            { "royal", "" },
+            { "pink", "" },
+            { "gray", "" },
+            { "silver", "" }
+        };
 
         BotClient = new DiscordClient(config);
         BotContext = new Bot(this);
@@ -73,7 +98,9 @@ public class Discord : IMessagingClient
 
     private async Task MessageCreated(DiscordClient client, MessageCreateEventArgs args)
     {
-        var user = new Core.User(args.Author.Mention, in BotContext.Connection);
+        Log.Information("{0}", args.Message.Content);
+        var user = new Core.User(args.Author.Mention.Replace("!", ""), 
+            in BotContext.Connection);
         var prefix = user.GetUserPrefix();
         var messageKind = MessageKind.Message;
 
@@ -84,7 +111,7 @@ public class Discord : IMessagingClient
         
         var msg = new MessageGeneric(args.Message.Content, args.Channel.Id.ToString(), user, messageKind);
 
-        if (!msg.Sender.UserIsIgnored())
+        if (!msg.Sender.UserIsIgnored() && !args.Message.Author.IsBot)
         {
             if (msg.Kind == MessageKind.Message) { BotContext.MessageTrigger(msg); }
 
@@ -96,6 +123,13 @@ public class Discord : IMessagingClient
 
     public async Task SendMessage(string channel, string message)
     {
+        
+        var sb = new StringBuilder(message);
+        foreach (var (tag, value) in Fmt)
+        {
+            sb.Replace($"[{tag}]", value);
+        }
+        
         var res = ulong.TryParse(channel, out var id);
         if (!res)
         {
@@ -103,7 +137,7 @@ public class Discord : IMessagingClient
             return;
         }
         var ch = await BotClient.GetChannelAsync(id);
-        await BotClient.SendMessageAsync(ch, message);
+        await BotClient.SendMessageAsync(ch, sb.ToString());
     }
 
     public void Process()

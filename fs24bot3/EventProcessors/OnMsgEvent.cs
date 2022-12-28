@@ -25,7 +25,7 @@ public class OnMsgEvent
     {
         string year = date.Substring(0, 4);
         string month = date.Substring(4, 2);
-        string day = date.Substring(6, 2);;
+        string day = date.Substring(6, 2); ;
 
         return year + "-" + month + "-" + day;
     }
@@ -56,7 +56,7 @@ public class OnMsgEvent
         {
             try
             {
-                new Thread( async () =>
+                new Thread(async () =>
                 {
                     Process p = new Process();
                     p.StartInfo.UseShellExecute = false;
@@ -67,13 +67,13 @@ public class OnMsgEvent
                     string output = await p.StandardOutput.ReadToEndAsync();
                     await p.WaitForExitAsync();
 
-                    var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output, 
+                    var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output,
                         Helpers.JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
                     if (jsonOutput != null)
                     {
                         var ts = TimeSpan.FromSeconds(jsonOutput.duration);
-                        await BotContext.Client.SendMessage(message.Target, 
+                        await BotContext.Client.SendMessage(message.Target,
                             $"[b]{jsonOutput.title}[r] от [b]{jsonOutput.channel}[r]. " +
                             $"[green]Длительность: [r][b]{ts:hh\\:mm\\:ss}[r] " +
                             $"[green]👍[r][b] {jsonOutput.like_count}[r] " +
@@ -93,7 +93,7 @@ public class OnMsgEvent
     {
         if (BotContext.AcknownUsers.All(x => x != message.Sender.Username) && message.Sender.GetWarnings().Any())
         {
-            await BotContext.Client.SendMessage(message.Target, 
+            await BotContext.Client.SendMessage(message.Target,
             $"[gray]{message.Sender.Username}: " +
             $"У вас есть предупреждения используйте {message.Sender.GetUserPrefix()}warnings чтобы их прочесть!");
             BotContext.AcknownUsers.Add(message.Sender.Username);

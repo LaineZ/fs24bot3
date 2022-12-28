@@ -393,7 +393,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         var jsonOutput = JsonConvert.DeserializeObject<ChatBotResponse>(output);
         if (jsonOutput != null && jsonOutput.Ok)
         {
-           await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {jsonOutput.Text}");
+            await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {jsonOutput.Text}");
         }
         else
         {
