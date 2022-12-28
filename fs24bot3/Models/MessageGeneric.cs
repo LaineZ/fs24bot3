@@ -48,7 +48,7 @@ public class MessageGeneric
         }
     }
 
-    public MessageGeneric(string body, string target, Core.User sender, MessageKind messageKind = MessageKind.Message, bool fromIgnored = false)
+    public MessageGeneric(string body, string target, Core.User sender, MessageKind messageKind = MessageKind.Message)
     {
         Body = body;
         Target = target;

@@ -67,7 +67,8 @@ public class OnMsgEvent
                     string output = await p.StandardOutput.ReadToEndAsync();
                     await p.WaitForExitAsync();
 
-                    var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, MissingMemberHandling = MissingMemberHandling.Ignore });
+                    var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output, 
+                        Helpers.JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
                     if (jsonOutput != null)
                     {

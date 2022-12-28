@@ -2,14 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
-using fs24bot3.Core;
 using fs24bot3.Models;
-using NetIRC;
 using Serilog;
 using Tomlyn;
 
@@ -29,7 +25,7 @@ public class DiscordConfiguration
 
 public class Discord : IMessagingClient
 {
-    private const string CONFIG_PATH = "discord.toml";
+    private const string ConfigPath = "discord.toml";
     public string Name { get; private set; }
     public Bot BotContext { get; }
 
@@ -41,9 +37,9 @@ public class Discord : IMessagingClient
 
     public Discord()
     {
-        if (File.Exists(CONFIG_PATH))
+        if (File.Exists(ConfigPath))
         {
-            var loadedconfig = Toml.ToModel<DiscordConfiguration>(File.ReadAllText(CONFIG_PATH));
+            var loadedconfig = Toml.ToModel<DiscordConfiguration>(File.ReadAllText(ConfigPath));
             Config = loadedconfig;
             Log.Information("Configuration loaded!");
         }
@@ -51,7 +47,7 @@ public class Discord : IMessagingClient
         {
             Config = new DiscordConfiguration();
             Log.Warning("Discord backend was unable to find configuration file, I will create it for you");
-            File.WriteAllText(CONFIG_PATH, Toml.FromModel(Config));
+            File.WriteAllText(ConfigPath, Toml.FromModel(Config));
         }
 
         var config = new DSharpPlus.DiscordConfiguration()
@@ -79,7 +75,14 @@ public class Discord : IMessagingClient
     {
         var user = new Core.User(args.Author.Mention, in BotContext.Connection);
         var prefix = user.GetUserPrefix();
-        var msg = new MessageGeneric(args.Message.Content, args.Channel.Id.ToString(), user, MessageKind.Message, user.UserIsIgnored());
+        var messageKind = MessageKind.Message;
+
+        if (args.Message.Channel.IsPrivate)
+        {
+            messageKind = MessageKind.MessagePersonal; 
+        }
+        
+        var msg = new MessageGeneric(args.Message.Content, args.Channel.Id.ToString(), user, messageKind);
 
         if (!msg.Sender.UserIsIgnored())
         {
@@ -93,14 +96,14 @@ public class Discord : IMessagingClient
 
     public async Task SendMessage(string channel, string message)
     {
-        var sb = new StringBuilder(message);
-        foreach (var (tag, value) in Fmt)
+        var res = ulong.TryParse(channel, out var id);
+        if (!res)
         {
-            sb.Replace($"[{tag}]", value);
+            Log.Warning("Unable to parse channel id: {0}", channel);
+            return;
         }
-
-        var ch = await BotClient.GetChannelAsync(ulong.Parse(channel));
-        await BotClient.SendMessageAsync(ch, sb.ToString());
+        var ch = await BotClient.GetChannelAsync(id);
+        await BotClient.SendMessageAsync(ch, message);
     }
 
     public void Process()

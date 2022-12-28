@@ -6,6 +6,8 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <SignAssembly>false</SignAssembly>
     <Nullable>disable</Nullable>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
