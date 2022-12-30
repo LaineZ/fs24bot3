@@ -47,7 +47,7 @@ public class IrcConfiguration
 /// </summary>
 public class Irc : IMessagingClient
 {
-    private const string CONFIG_PATH = "irc.toml";
+    private const string ConfigPath = "irc.toml";
     public string Name { get; private set; }
 
     public Bot BotContext { get; }
@@ -59,9 +59,9 @@ public class Irc : IMessagingClient
     public Irc()
     {
         BotContext = new Bot(this);
-        if (File.Exists(CONFIG_PATH))
+        if (File.Exists(ConfigPath))
         {
-            var loadedconfig = Toml.ToModel<IrcConfiguration>(File.ReadAllText(CONFIG_PATH));
+            var loadedconfig = Toml.ToModel<IrcConfiguration>(File.ReadAllText(ConfigPath));
             Config = loadedconfig;
             Log.Information("Configuration loaded!");
         }
@@ -69,7 +69,7 @@ public class Irc : IMessagingClient
         {
             Config = new IrcConfiguration();
             Log.Warning("IRC backend was unable to find configuration file, I will create it for you");
-            File.WriteAllText(CONFIG_PATH, Toml.FromModel(Config));
+            File.WriteAllText(ConfigPath, Toml.FromModel(Config));
         }
         
         Fmt = new Dictionary<string, string>
@@ -150,8 +150,6 @@ public class Irc : IMessagingClient
     {
         JoinChannel(Config.Channel);
         await SendMessage("Nickserv", "IDENTIFY " + Config.NickservPass);
-        //var res = Helpers.InternetServicesHelper.InPearls("алкоголь").Result.Random();
-        //await Botara.SendMessage(ConfigurationProvider.Config.Channel, res);
     }
 
     private static void Client_OnRawDataReceived(Client client, string rawData)

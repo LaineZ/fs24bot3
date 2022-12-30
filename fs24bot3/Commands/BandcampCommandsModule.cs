@@ -11,9 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
+
 public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
-
     public CommandService Service { get; set; }
     private readonly CommandService SearchCommandService = new CommandService();
 
@@ -23,7 +23,10 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
         {
             var result = await SearchCommandService.ExecuteAsync(cmd, args, ctx);
             FormatError(result);
-            if (!result.IsSuccessful) { return; }
+            if (!result.IsSuccessful)
+            {
+                return;
+            }
         }
     }
 
@@ -32,7 +35,8 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
         switch (result)
         {
             case TypeParseFailedResult err:
-                await Context.SendMessage(Context.Channel, $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}`");
+                await Context.SendMessage(Context.Channel,
+                    $"Ошибка типа в `{err.Parameter}` необходимый тип `{err.Parameter.Type.Name}` вы же ввели `{err.Value.GetType().Name}`");
                 break;
             case ArgumentParseFailedResult err:
                 await Context.SendMessage(Context.Channel, $"Ошибка парсера: `{err.FailureReason}`");
@@ -47,26 +51,27 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Поиск по сайту bandcamp.com")]
     public async Task BcSearch([Remainder] string query)
     {
-        string response = await Context.HttpTools.MakeRequestAsync("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
         try
         {
-            BandcampSearch.Root searchResult = JsonConvert.DeserializeObject<BandcampSearch.Root>(response, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+            var searchResult = await Context.HttpTools.GetJson<BandcampSearch.Root>
+                ("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
             if (searchResult.auto.results.Any())
             {
-                foreach (var rezik in searchResult.auto.results)
+                foreach (var rezik in searchResult.auto.results.Where(rezik => !rezik.is_label))
                 {
-                    if (rezik.is_label) { continue; }
-
                     switch (rezik.type)
                     {
                         case "a":
-                            await Context.SendMessage(Context.Channel, $"Альбом: {rezik.name} от {rezik.band_name} // [blue]{rezik.url}");
+                            await Context.SendMessage(Context.Channel,
+                                $"Альбом: {rezik.name} от {rezik.band_name} // [blue]{rezik.url}");
                             return;
                         case "b":
-                            await Context.SendMessage(Context.Channel, $"Артист/группа: {rezik.name} // [blue]{rezik.url}");
+                            await Context.SendMessage(Context.Channel,
+                                $"Артист/группа: {rezik.name} // [blue]{rezik.url}");
                             return;
                         case "t":
-                            await Context.SendMessage(Context.Channel, $"{rezik.band_name} - {rezik.name} // [blue]{rezik.url}");
+                            await Context.SendMessage(Context.Channel,
+                                $"{rezik.band_name} - {rezik.name} // [blue]{rezik.url}");
                             return;
                         default:
                             continue;
@@ -85,7 +90,7 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Command("bcr", "bcd", "bcdisc", "bandcampdiscover", "bcdiscover")]
     [Description("Поиск по тегам на сайте bandcamp.com")]
     [Remarks("Через пробел вводятся теги поиска, также доступны функции:\n" +
-        "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; format:string - Формат носителя: cd, cassete, vinyl, all; sort:string - Сортировка: pop, date; location:Number - ID локации")]
+             "page:Number - Страница поиска; max:Number - Максимальная глубина поиска; format:string - Формат носителя: cd, cassete, vinyl, all; sort:string - Сортировка: pop, date; location:Number - ID локации")]
     public async Task BcDiscover([Remainder] string tagsStr = "metal limit:5")
     {
         List<(Command, string)> searchOptions = new List<(Command, string)>();
@@ -105,6 +110,7 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
                 await Context.SendMessage(Context.Channel, $"Неизвестная опция: `{opt}`");
                 return;
             }
+
             searchOptions.Add((cmd, value));
         }
 
@@ -130,7 +136,9 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
 
             try
             {
-                BandcampDiscover.RootObject discover = JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+                BandcampDiscover.RootObject discover =
+                    JsonConvert.DeserializeObject<BandcampDiscover.RootObject>(responseString,
+                        JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
                 if (discover is { ok: false, more_available: false })
                 {
@@ -140,8 +148,10 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
                 if (discover == null || !discover.items.Any()) continue;
                 foreach (var rezik in discover.items.Take(ctx.Limit))
                 {
-                    await Context.SendMessage(Context.Channel, $"{rezik.artist} - {rezik.title} // [blue]{rezik.tralbum_url}");
+                    await Context.SendMessage(Context.Channel,
+                        $"{rezik.artist} - {rezik.title} // [blue]{rezik.tralbum_url}");
                 }
+
                 return;
             }
             catch (JsonSerializationException)

@@ -11,19 +11,16 @@ using Serilog;
 using SQLite;
 using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
 public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
-    private readonly HttpTools http = new HttpTools();
-
 
     [Command("execute", "exec")]
     [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
-    public async Task ExecuteAPI(string lang, [Remainder] string code)
+    public async Task ExecuteApi(string lang, [Remainder] string code)
     {
         APIExec.Input codeData = new APIExec.Input
         {
@@ -35,9 +32,14 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         try
         {
-            var output = await http.PostJson("https://api.jdoodle.com/v1/execute", codeData);
+            var output = await Context.HttpTools.PostJson("https://api.jdoodle.com/v1/execute", codeData);
             var jsonOutput = JsonConvert.DeserializeObject<APIExec.Output>(output);
 
+            if (jsonOutput == null)
+            {
+                Context.SendSadMessage(Context.Channel);
+                return;
+            }
 
             if (jsonOutput.cpuTime != null && jsonOutput.memory != null)
             {
@@ -55,7 +57,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
                     $"Ошибка работы API сервиса: {jsonErr.error} ({jsonErr.statusCode})");
             }
         }
-        catch (HttpRequestException)
+        catch (Exception)
         {
             await Context.SendMessage(Context.Channel, $"[gray]Не работает короче, блин........");
         }
@@ -63,10 +65,10 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("executeurl", "execurl")]
     [Description("Тоже самое что и exec только работает через URL")]
-    public async Task ExecuteAPIUrl(string code, string rawurl)
+    public async Task ExecuteApiUrl(string code, string rawurl)
     {
-        var response = await http.GetTextPlainResponse(rawurl);
-        await ExecuteAPI(code, response);
+        var response = await Context.HttpTools.GetTextPlainResponse(rawurl);
+        await ExecuteApi(code, response);
     }
 
 
@@ -104,7 +106,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             track = data[1];
         }
 
-        var response = await http.GetTextPlainResponse(rawurl);
+        var response = await Context.HttpTools.GetTextPlainResponse(rawurl);
         var lyric = new SQL.LyricsCache()
         {
             AddedBy = Context.User.Username,
@@ -139,7 +141,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         {
             try
             {
-                Helpers.Lyrics lyrics = new Helpers.Lyrics(data[0], data[1], Context.BotCtx.Connection);
+                var lyrics = new Lyrics(data[0], data[1], Context.BotCtx.Connection);
                 await Context.SendMessage(Context.Channel, await lyrics.GetLyrics());
             }
             catch (Exception e)
@@ -157,7 +159,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Заблокирован ли сайт в России?")]
     public async Task IsBlocked([Remainder] string url)
     {
-        var output = await http.PostJson("https://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
+        var output = await Context.HttpTools.PostJson("https://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
         var jsonOutput = JsonConvert.DeserializeObject<IsBlockedInRussia.Root>(output);
 
         int totalblocks = 0;
@@ -179,7 +181,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         else
         {
             var urik = new UriBuilder(url);
-            bool response = await http.PingHost(urik.Host);
+            bool response = await Context.HttpTools.PingHost(urik.Host);
             if (response)
             {
                 await Context.SendMessage(Context.Channel, $"[green]{urik.Host}: Не заблокирован!");
@@ -194,8 +196,17 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Command("whrand", "whowrand", "howrand")]
     public async Task WikiHowRand()
     {
-        var resp = await new HttpTools().GetResponseAsync("https://ru.wikihow.com/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:Randomizer");
-        await Context.SendMessage(Context.Channel, resp.RequestMessage.RequestUri.ToString());
+        var resp = await Context.HttpTools.GetResponseAsync("https://ru.wikihow.com/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:Randomizer");
+        resp.EnsureSuccessStatusCode();
+
+        if (resp.RequestMessage != null && resp.RequestMessage.RequestUri != null)
+        {
+            await Context.SendMessage(Context.Channel, resp.RequestMessage.RequestUri.ToString());
+        }
+        else
+        {
+            Context.SendSadMessage(Context.Channel);
+        }
     }
 
 
@@ -203,20 +214,17 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Конвертер валют")]
     public async Task Currency(float amount = 1, string codeFirst = "USD", string codeSecond = "RUB", string bankProvider = "")
     {
-        var resp = await http.MakeRequestAsync("https://api.exchangerate.host/latest?base=" + codeFirst + "&amount=" + amount + "&symbols=" + codeSecond + "&format=csv&source=" + bankProvider);
+        var resp = await Context.HttpTools.GetResponseAsync
+            ("https://api.exchangerate.host/latest?base=" + codeFirst + "&amount=" + amount + "&symbols=" + codeSecond + "&format=csv&source=" + bankProvider);
+
+
+        resp.EnsureSuccessStatusCode();
 
         // "code","rate","base","date"
         // "RUB","82,486331","USD","2022-04-07" -- this
-
-        if (resp == null)
-        {
-            Context.SendSadMessage(Context.Channel, "Сервак не пашет");
-            return;
-        }
-
         try
         {
-            string currency = resp.Split("\n")[1];
+            string currency = resp.Content.ReadAsStringAsync().Result.Split("\n")[1];
             var info = currency.Split("\",\"");
             string gotConvCode = info[0].Replace("\"", "");
             string valueString = info[1].Replace("\"", "");
@@ -234,20 +242,13 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("stocks", "stock")]
     [Description("Акции. параметр lookUpOnlySymbol позволяет сразу искать акцию по символу, а не названию компании")]
-    public async Task Stocks(string stock = "AAPL", bool lookUpOnlySymbol = false)
+    public async Task Stocks(string stock = "AAPL", bool lookUpOnlySymbol = true)
     {
-        var resp = await http.MakeRequestAsync(
+        var symbolLockup = await Context.HttpTools.GetJson<SymbolLookup.Root>(
             "https://finnhub.io/api/v1/search?q=" + stock + "&token=" + 
             ConfigurationProvider.Config.Services.FinnhubKey);
-
-        if (resp == null)
-        {
-            Context.SendSadMessage(Context.Channel, "Сервак не пашет");
-            return;
-        }
-
-        SymbolLookup.Root symbolLookup = JsonConvert.DeserializeObject<SymbolLookup.Root>(resp);
-        var lookup = symbolLookup.result.FirstOrDefault();
+        
+        var lookup = symbolLockup.result.FirstOrDefault();
 
         if (lookup == null)
         {
@@ -255,13 +256,13 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             return;
         }
 
-        resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + 
+        var resp = await Context.HttpTools.GetResponseAsync("https://finnhub.io/api/v1/quote?symbol=" + lookup.symbol + 
                                            "&token=" + ConfigurationProvider.Config.Services.FinnhubKey);
 
         if (resp == null || lookUpOnlySymbol)
         {
             // trying just find stock by symbol
-            resp = await http.MakeRequestAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + 
+            resp = await Context.HttpTools.GetResponseAsync("https://finnhub.io/api/v1/quote?symbol=" + stock + 
                                                "&token=" + ConfigurationProvider.Config.Services.FinnhubKey);
             if (resp == null)
             {
@@ -270,11 +271,12 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             }
         }
 
-        Stock.Root stockObj = JsonConvert.DeserializeObject<Stock.Root>(resp);
+        var stockObj = JsonConvert.DeserializeObject<Stock.Root>(await resp.Content.ReadAsStringAsync());
 
         if (stockObj == null)
         {
             Context.SendSadMessage(Context.Channel, "Не удалось найти акцию!");
+            return;
         }
 
         await Context.SendMessage(
@@ -405,7 +407,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Информация о сервере Minecraft")]
     public async Task MinecraftQuery(string ipaddr)
     {
-        var hostname = http.ParseHostname(ipaddr);
+        var hostname = Context.HttpTools.ParseHostname(ipaddr);
         MCServer server = new MCServer(hostname.Address.ToString(), hostname.Port);
         ServerStatus status = server.Status();
         double ping = server.Ping();

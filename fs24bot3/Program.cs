@@ -36,18 +36,12 @@ internal static class Program
         Log.Information("fs24_bot 3 by 140bpmdubstep");
         ConfigurationProvider.LoadConfiguration();
         Log.Information("Running with: {0} backend", ConfigurationProvider.Config.Backend);
-        switch (ConfigurationProvider.Config.Backend)
+        Client = ConfigurationProvider.Config.Backend switch
         {
-            case Models.Backend.Basic:
-                Client = new Basic();
-                break;
-            case Models.Backend.IRC:
-                Client = new Irc();
-                break;
-            case Models.Backend.Discord:
-                Client = new Discord();
-                break;
-        }
+            Models.Backend.Basic => new Basic(),
+            Models.Backend.IRC => new Irc(),
+            Models.Backend.Discord => new Discord(),
+        };
         Client.Process();
     }
 }

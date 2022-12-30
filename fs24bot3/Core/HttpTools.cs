@@ -9,15 +9,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using fs24bot3.Helpers;
 
 namespace fs24bot3.Core;
+
 public class HttpTools
 {
-    readonly CookieContainer cookies = new CookieContainer();
-    public HttpClient Client = new HttpClient();
+    readonly CookieContainer Cookies = new CookieContainer();
+    public readonly HttpClient Client = new HttpClient();
 
     public HttpTools()
     {
@@ -61,6 +64,15 @@ public class HttpTools
         var responseString = await response.Content.ReadAsStringAsync();
         return responseString;
     }
+    
+    public async Task<T> GetJson<T>(string url)
+    {
+        var response = await GetResponseAsync(url);
+        response.EnsureSuccessStatusCode();
+        
+        return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(), 
+            JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+    }
 
     public async Task<string> MakeRequestAsyncNoCookie(string url)
     {
@@ -81,17 +93,14 @@ public class HttpTools
         }
     }
 
-    public async Task<string> MakeRequestAsync(string url)
+    public async Task<HttpResponseMessage> GetResponseAsync(string url)
     {
-        using var handler = new HttpClientHandler() { CookieContainer = cookies };
+        using var handler = new HttpClientHandler { CookieContainer = Cookies };
         try
         {
             var result = await Client.GetAsync(url);
-            if (result.IsSuccessStatusCode)
-            {
-                return await result.Content.ReadAsStringAsync();
-            }
-            throw new InvalidDataException($"{result.StatusCode}: {result.Content}");
+            result.EnsureSuccessStatusCode();
+            return result;
         }
         catch (Exception e)
         {
@@ -99,25 +108,6 @@ public class HttpTools
             return null;
         }
     }
-    
-    public async Task<HttpResponseMessage> GetResponseAsync(string url)
-    {
-        using (var handler = new HttpClientHandler() { CookieContainer = cookies })
-        {
-            try
-            {
-                var result = await Client.GetAsync(url);
-                result.EnsureSuccessStatusCode();
-                return result;
-            }
-            catch (Exception e)
-            {
-                Log.Warning("Request to address {0} failed: {1}", url, e.Message);
-                return null;
-            }
-        }
-    }
-
     public async Task<bool> PingHost(string nameOrAddress)
     {
         bool pingable = false;

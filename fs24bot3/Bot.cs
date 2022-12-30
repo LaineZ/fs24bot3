@@ -134,7 +134,7 @@ public class Bot
 
     public void MessageTrigger(MessageGeneric message)
     {
-        if (message.Sender.UserIsIgnored() || Client.DeterminePmMessage(message)) { return; }
+        if (message.Sender.UserIsIgnored() || message.Kind == MessageKind.MessagePersonal) { return; }
         
         PProfiler.BeginMeasure("msg");
         OnMsgEvent.DestroyWallRandomly(Shop, message);

@@ -33,11 +33,6 @@ public interface IMessagingClient
         throw new NotImplementedException();
     }
 
-    public bool DeterminePmMessage(in MessageGeneric message)
-    {
-        return message.Sender.Username == Name;
-    }
-
     public void Process() 
     { 
         BotContext.ProccessInfinite();

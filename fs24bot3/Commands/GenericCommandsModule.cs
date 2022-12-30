@@ -239,7 +239,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         SQLiteConnection connect = new SQLiteConnection("chars.sqlite");
 
-        var query = connect.Table<SQL.Chars>().Where(x => x.Symbol == find || x.Hexcode == find || x.Name.ToLower().Contains(find)).Take(10).ToList();
+        var query = connect.Table<SQL.Chars>()
+                    .Where(x => x.Symbol == find || x.Hexcode == find || x.Name.ToLower()
+                    .Contains(find))
+                    .Take(10);
 
         if (query.Any())
         {

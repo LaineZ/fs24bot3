@@ -11,7 +11,6 @@ using System.Net.Http;
 using fs24bot3.Core;
 using System.Globalization;
 using System.Linq;
-using System.IO;
 
 namespace fs24bot3.Helpers;
 public class InternetServicesHelper
@@ -66,7 +65,7 @@ public class InternetServicesHelper
 
         int idx = 1;
 
-        foreach (var item in new string[] { "цб-рф", "aliexpress", "gearbest", "geekbuying", "banggood" })
+        foreach (var item in new[] { "цб-рф", "aliexpress", "gearbest", "geekbuying", "banggood" })
         {
             try
             {
@@ -144,18 +143,18 @@ public class InternetServicesHelper
 
     private async Task<OpenWeatherMapResponse.Coord> GetCityLatLon(string city)
     {
-        var value = await Http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
-                                    "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
-        var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
-        return json.Coord;
+        var json = await Http.GetJson<OpenWeatherMapResponse.Root>(
+            "https://api.openweathermap.org/data/2.5/weather?q=" + city + 
+               "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
+        return json?.Coord;
     }
 
 
     public async Task<WeatherGeneric> OpenWeatherMap(string city)
     {
-        var value = await Http.MakeRequestAsync("http://api.openweathermap.org/data/2.5/weather?q=" + city +
-                                                "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
-        var json = JsonConvert.DeserializeObject<OpenWeatherMapResponse.Root>(value, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+        var json = await Http.GetJson<OpenWeatherMapResponse.Root>(
+            "https://api.openweathermap.org/data/2.5/weather?q=" + city +
+                "&APPID=" + ConfigurationProvider.Config.Services.OpenWeatherMapKey + "&units=metric");
 
         var condition = json.Weather.First().Id switch
         {
@@ -227,9 +226,9 @@ public class InternetServicesHelper
         {
             var wr = JsonConvert.DeserializeObject<YandexWeather.Root>(responseString,
                      JsonSerializerHelper.OPTIMIMAL_SETTINGS);
-            var cond = wr.FactObj;
+            var cond = wr?.FactObj;
 
-            var condition = cond.Condition switch
+            var condition = cond?.Condition switch
             {
                 "clear" => WeatherConditions.Clear,
                 "partly-cloudy" => WeatherConditions.PartlyCloudy,
@@ -253,7 +252,7 @@ public class InternetServicesHelper
                 _ => WeatherConditions.Clear,
             };
 
-            var dir = cond.WindDir switch
+            var dir = cond?.WindDir switch
             {
                 "n" => WindDirections.N,
                 "ne" => WindDirections.Ne,
