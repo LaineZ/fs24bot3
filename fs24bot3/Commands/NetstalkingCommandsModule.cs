@@ -15,51 +15,56 @@ namespace fs24bot3.Commands;
 public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
 
+    private static readonly string[] SearxUrls =
+    {
+        "https://etsi.me/",
+        "https://search.mdosch.de/",
+        "https://search.neet.works/",
+        "https://search.sapti.me/",
+        "https://search.trom.tf/",
+        "https://search.unlocked.link/",
+        "https://searx.dresden.network/",
+        "https://searx.mastodontech.de/",
+        "https://searx.mxchange.org/",
+        "https://searx.namejeff.xyz/",
+        "https://searx.nixnet.services/",
+        "https://searx.roflcopter.fr/",
+        "https://searx.ru/",
+        "https://searx.tuxcloud.net/",
+        "https://searx.tyil.nl/",
+        "https://searx.win/",
+        "https://searx.xyz/",
+        "https://searx.zapashcanon.fr/",
+        "https://searxng.nicfab.eu/",
+        "https://suche.tromdienste.de/",
+    };
+    
     public CommandService Service { get; set; }
     
-    [Command("ms", "search", "sx")]
-    [Description("Поиск Bing - мощный инструмент нетсталкинга")]
-    public async Task BingSearch([Remainder] string query)
+    [Command("sx", "searx", "ms")]
+    [Description("SearX - Еще один инструмент нетсталкинга")]
+    public async Task SearxSearch([Remainder] string query)
     {
-        var request = new HttpRequestMessage
+        for (var i = 0; i < SearxUrls.Length; i++)
         {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("https://bing-web-search1.p.rapidapi.com/search?q=" + query + 
-                                 "&textFormat=Raw&safeSearch=Moderate&mkt=ru-RU"),
-            Headers =
-            {
-                { "X-BingApis-SDK", "true" },
-                { "X-RapidAPI-Key", ConfigurationProvider.Config.Services.RapidApiKey },
-                { "X-RapidAPI-Host", "bing-web-search1.p.rapidapi.com" },
-            },
-        };
-        using var response = await Context.HttpTools.Client.SendAsync(request);
-        var body = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await Context.HttpTools.GetResponseAsync(
+                SearxUrls[i] + "search?q=" + 
+                query
+                + "&category_general=1&pageno=1&language=all&time_range=None&safesearch=2&format=json");
+
+
+            if (response == null) { continue; }
+            
+            var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
+            var result = search?.Results.Random();
+
+            if (result == null) { continue; }
         
-        if (!response.IsSuccessStatusCode || string.IsNullOrWhiteSpace(body))
-        {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendMessage(Context.Channel, $"{result.Title} [blue]// {result.Url}\n" +
+                                                       $"{result.Content ?? "Нет описания"}");
             return;
         }
-
-        var searchResults = JsonConvert.DeserializeObject<BingSearchResults.Root>(body);
-
-        if (searchResults == null)
-        {   
-            Context.SendSadMessage(Context.Channel);
-            return;
-        }
-
-        var res = searchResults.WebPages.Value.Random();
-
-        if (res == null)
-        {
-            Context.SendSadMessage(Context.Channel);
-            return;
-        }
-
-        await Context.SendMessage(Context.Channel, $"{res.Name} // [blue]{res.Url}");
-        await Context.SendMessage(Context.Channel, res.Snippet ?? "Нет описания");
-
+        
+        Context.SendSadMessage(Context.Channel);
     }
 }

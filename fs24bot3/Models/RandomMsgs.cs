@@ -5,7 +5,7 @@ namespace fs24bot3.Models;
 
 public class RandomMsgs
 {
-    public static readonly List<string> BanMessages = new List<string>
+    public static readonly string[] BanMessages =
     {
         "Слишком жесткие дивизии",
         "Укрепления выше 5 лвл",
@@ -26,7 +26,7 @@ public class RandomMsgs
         "Доступ заблокирован. Вам здесь больше не рады."
     };
 
-    public static readonly List<string> DrunkMessages = new List<string>
+    public static readonly string[] DrunkMessages = 
     {
         "Прошлое хранит печали, позволяет им забродить, настояться.",
         "Даже в самой прозрачной воде можно утонуть, если она глубока.",
@@ -50,7 +50,7 @@ public class RandomMsgs
     };
 
 
-    public static readonly List<string> MissMessages = new List<string>
+    public static readonly string[] MissMessages =
     {
         "Вы не попали",
         "Вы не удержались в руках...",
@@ -62,7 +62,7 @@ public class RandomMsgs
     };
 
 
-    public static readonly List<string> NotFoundMessages = new List<string>
+    public static readonly string[] NotFoundMessages =
     {
         "NOT FOUND",
         "Не существует",

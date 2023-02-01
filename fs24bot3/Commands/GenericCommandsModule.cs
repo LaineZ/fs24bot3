@@ -233,7 +233,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (!File.Exists("chars.sqlite"))
         {
             var http = new HttpTools();
-            await http.DownloadFile("chars.sqlite", "http://140.ted.ge/chars.sqlite");
+            await http.DownloadFile("chars.sqlite", "https://bpm140.xyz/chars.sqlite");
             await Context.SendMessage(Context.Channel, $"Таблица юникода, УСПЕШНО ЗАГРУЖЕНА!");
         }
 
