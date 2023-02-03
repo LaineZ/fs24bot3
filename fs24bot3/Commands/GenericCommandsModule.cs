@@ -1,6 +1,5 @@
 ﻿using fs24bot3.Models;
 using Qmmands;
-using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +56,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         var cmds = Service.GetAllCommands();
         string commandsOutput = Resources.help;
         var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
-        string commandList = string.Join('\n', Service.GetAllCommands().Where(x => !x.Checks.Any(x => x is Checks.CheckAdmin)).
+        string commandList = string.Join('\n', cmds.Where(x => !x.Checks.Any(x => x is Checks.CheckAdmin)).
             Select(x => $"<strong>{prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
         string customList = string.Join('\n', string.Join("\n", customCommands.
             Select(x => $"<p>{prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {x.IsLua == 1} </p>")));
@@ -212,7 +211,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     public async Task GetWarns()
     {
         var warns = Context.User.GetWarnings();
-        var warnsStr = new StringBuilder(); ;
+        var warnsStr = new StringBuilder();
 
         if (!warns.Any())
         {
@@ -284,9 +283,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             {
                 try
                 {
-                    var translatedOutput = Context.ServicesHelper.TranslateBing(translated, "ru", "en").
-                        Result.translations.First().text;
-                    string trOutFixed = Context.BotCtx.SongGame.RemoveArticles(translatedOutput);
+                    var translatedOutput = await Context.ServicesHelper.Translate(translated, "ru", "en");
+                    string trOutFixed = Context.BotCtx.SongGame.RemoveArticles(translatedOutput.Text);
 
                     if (trOutFixed == Context.BotCtx.SongGame.SongameString)
                     {

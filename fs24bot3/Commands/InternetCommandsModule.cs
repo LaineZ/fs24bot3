@@ -386,7 +386,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
-    [Command("talk", "chatbow")]
+    [Command("talk", "chatbot")]
     [Description("Чатбот")]
     public async Task Chatbot([Remainder] string message)
     {

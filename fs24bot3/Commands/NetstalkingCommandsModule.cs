@@ -55,10 +55,11 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
             if (response == null) { continue; }
             
-            var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync());
-            var result = search?.Results.Random();
+            var search = JsonConvert.DeserializeObject<Searx.Root>(await response.Content.ReadAsStringAsync(), 
+                JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
-            if (result == null) { continue; }
+            if (search == null || !search.Results.Any()) { continue; }
+            var result = search?.Results.Random();
         
             await Context.SendMessage(Context.Channel, $"{result.Title} [blue]// {result.Url}\n" +
                                                        $"{result.Content ?? "Нет описания"}");

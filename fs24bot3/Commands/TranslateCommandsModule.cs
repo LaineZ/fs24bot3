@@ -1,5 +1,4 @@
-﻿using fs24bot3.Core;
-using fs24bot3.Models;
+﻿using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using System;
@@ -27,7 +26,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
-    private async void AITranslate(string lang, string chars, uint max)
+    private async void AiTranslate(string lang, string chars, uint max)
     {
         try
         {
@@ -37,9 +36,8 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
                 rndWord += chars[Context.Random.Next(0, chars.Length - 1)];
             }
 
-            var translatedOutput = Context.ServicesHelper.TranslateBing(rndWord, lang, "ru").Result.
-                translations.First().text;
-            await Context.SendMessage(Context.Channel, translatedOutput);
+            var translatedOutput = await Context.ServicesHelper.Translate(rndWord, lang, "ru");
+            await Context.SendMessage(Context.Channel, translatedOutput.Text);
         }
         catch (Exception e)
         {
@@ -49,12 +47,12 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("aigen", "gensent")]
     [Checks.UnPpcable]
-    public async Task GenAI(uint max = 200)
+    public async Task GenAi(uint max = 200)
     {
         Context.User.SetContext(Context);
         if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "beer", 1))
         {
-            AITranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
+            AiTranslate("ar", " ذضصثقفغعهخجدشسيبلاتنمكطئءؤرلاىةوزظ", max);
         }
     }
 
@@ -62,19 +60,19 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
     [Checks.UnPpcable]
     [Description("Переводчик")]
     [Remarks("Параметр lang нужно вводить в формате 'sourcelang-translatelang' или 'traslatelang' в данном случае переводчик попытается догадаться с какого языка пытаются перевести (работает криво, претензии не к разработчику бота)\nВсе языки вводятся по стандарту ISO-639-1 посмотреть можно здесь: https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")]
-    public async Task Translate(string lang, [Remainder] string text)
+    public async Task Translate(string lang, [Remainder] string text) 
     {
         try
         {
             var (from, to) = ParseLang(lang);
-            var translatedOutput = await Context.ServicesHelper.TranslateBing(text, from, to);
-            if (translatedOutput.detectedLanguage != null)
+            var translatedOutput = await Context.ServicesHelper.Translate(text, from, to);
+            if (translatedOutput.Tl != null)
             {
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.translations[0].text} ({translatedOutput.detectedLanguage.language}-{translatedOutput.translations[0].to})");
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.Text} ({from}-{translatedOutput.Tl})");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.translations[0].text} ({lang})");
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.Text} ({lang})");
             }
         }
         catch (ArgumentException)
@@ -162,8 +160,8 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
             // Forech statement cannot be modified WHY???????
             for (int i = 0; i < splitted.Length; i++)
             {
-                var tr = await Context.ServicesHelper.TranslateBing(splitted[i], from, to);
-                splitted[i] = tr.translations[0].text;
+                var tr = await Context.ServicesHelper.Translate(splitted[i], from, to);
+                splitted[i] = tr.Text;
             }
 
             await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower());
@@ -194,9 +192,9 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
                 if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 1000 + lyricsOut.Length))
                 {
                     var (from, to) = ParseLang(lang);
-                    var resultTranslated = await Context.ServicesHelper.TranslateBing(lyricsOut, from, to);
+                    var resultTranslated = await Context.ServicesHelper.Translate(lyricsOut, from, to);
 
-                    await Context.SendMessage(Context.Channel, resultTranslated.translations[0].text);
+                    await Context.SendMessage(Context.Channel, resultTranslated.Text);
                 }
             }
             catch (Exception e)

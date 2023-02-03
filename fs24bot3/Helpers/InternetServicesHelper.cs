@@ -282,19 +282,19 @@ public class InternetServicesHelper
             throw new Exception("Не удалось получить информацию о погоде!");
         }
     }
-    
-    public async Task<BingTranlate.Root> TranslateBing(string text, string from = "", string to = "")
+
+    public async Task<Translate.Response> Translate(string text, string from = "", string to = "")
     {
 
-        string content = "[" + JsonConvert.SerializeObject(new BingTranlate.Request() { Text = text }) + "]";
+        string content = JsonConvert.SerializeObject(new Translate.Request(from, to, text));
 
-        var request = new HttpRequestMessage()
+        var request = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("https://microsoft-translator-text.p.rapidapi.com/translate?api-version=3.0&to=" + to + "&textType=plain&profanityAction=NoAction&from=" + from),
+            RequestUri = new Uri("https://ai-translate.p.rapidapi.com/translate"),
             Headers = {
                     { "x-rapidapi-key", ConfigurationProvider.Config.Services.RapidApiKey },
-                    { "x-rapidapi-host", "microsoft-translator-text.p.rapidapi.com" },
+                    { "x-rapidapi-host", "ai-translate.p.rapidapi.com" },
                 },
             Content = new StringContent(content, Encoding.UTF8, "application/json"),
         };
@@ -306,7 +306,7 @@ public class InternetServicesHelper
 
         if (responseString.Any() && response.StatusCode == System.Net.HttpStatusCode.OK)
         {
-            return JsonConvert.DeserializeObject<BingTranlate.Root>(responseString[1..^1]);
+            return JsonConvert.DeserializeObject<Translate.Response>(responseString);
         }
 
         throw new Exception(responseString);
@@ -318,18 +318,21 @@ public class InternetServicesHelper
 
         Random random = new Random();
 
-        var translationsShuffled = translations.OrderBy(x => random.Next()).ToList();
+        var translationsShuffled = translations.OrderBy(_ => random.Next()).ToList();
         translationsShuffled.Add(targetLang);
-        string translated = string.Join(" ", text.Split(" ").OrderBy(x => random.Next()).ToList());
+        string translated = string.Join(" ", text.Split(" ").OrderBy(_ => random.Next()).ToList());
 
         foreach (var tr in translationsShuffled)
         {
             try
             {
-                var translatorResponse = await TranslateBing(translated, "", tr);
-                translated = translatorResponse.translations.First().text;
+                var translatorResponse = await Translate(translated, "", tr);
+                translated = translatorResponse.Text;
             }
-            catch (Exception) { continue; }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         return translated;
