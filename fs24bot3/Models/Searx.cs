@@ -54,7 +54,7 @@ public class Searx
         public string Query { get; set; }
 
         [JsonProperty("number_of_results")]
-        public int NumberOfResults { get; set; }
+        public ulong NumberOfResults { get; set; }
 
         [JsonProperty("results")]
         public List<Result> Results { get; set; }

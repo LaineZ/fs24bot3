@@ -50,7 +50,7 @@ public class OnMsgEvent
         }
     }
 
-    public async void HandleYoutube(MessageGeneric message)
+    public void HandleYoutube(MessageGeneric message)
     {
         foreach (var match in YoutubeRegex.Matches(message.Body))
         {

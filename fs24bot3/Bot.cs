@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using fs24bot3.Backend;
 using fs24bot3.EventProcessors;
+using Newtonsoft.Json;
 
 namespace fs24bot3;
 
@@ -96,7 +97,7 @@ public class Bot
 
         return string.Join(" ", totalCommands.SkipWhile(x => MessageHelper.LevenshteinDistance(command, x) >= 10)
             .OrderBy(i => MessageHelper.LevenshteinDistance(command, i))
-            .Take(5));
+            .Take(3));
     }
 
     public async void ProccessInfinite()
@@ -210,8 +211,16 @@ public class Bot
 
                 break;
             case CommandExecutionFailedResult err:
-                await Client.SendMessage(message.Target,
-                    $"[red]Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
+                if (err.Exception.GetType() == typeof(JsonReaderException) || err.Exception.GetType() == typeof(JsonException))
+                {
+                    await Client.SendMessage(message.Target, RandomMsgs.NetworkMessages.Random());
+                }
+                else
+                {
+                    await Client.SendMessage(message.Target, 
+                        $"[red]Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
+                }
+                Log.Error(err.Exception.Message + ": " + err.Exception.StackTrace);
                 Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace,
                     message.Sender.Username, message.Body));
                 break;
