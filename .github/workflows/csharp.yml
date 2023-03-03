@@ -14,5 +14,5 @@ jobs:
       - run: bash ./fs24bot3/build-linux.bash
       - uses: actions/upload-artifact@v3
         with:
-          name: bc_rs-linux
+          name: f24bot3-linux
           path: ./releases
