@@ -4,14 +4,19 @@ using NLua;
 using Serilog;
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
 namespace fs24bot3.Core;
 class LuaExecutor
 {
+
+    const long MEMORY_LIMIT = 10_000_000; // 10 MB Memory limit (roughly)
     private Bot Context;
     private SQL.CustomUserCommands Command { get; }
+    private IntPtr Pointer = IntPtr.Zero;
+    private long CurrentMemoryUsage = 0;
 
     public LuaExecutor(Bot context, SQL.CustomUserCommands command)
     {
@@ -25,6 +30,22 @@ class LuaExecutor
         var nick = MessageHelper.AntiHightlight(arr[new Random().Next(0, arr.Count - 1)].Nick);
 
         Lua lua = new Lua();
+        lua.State.SetAllocFunction(((ud, ptr, osize, nsize) =>
+        {
+            CurrentMemoryUsage += (long)nsize;
+
+            Log.Verbose("[LUA] MEMORY ALLOCATION: {0} bytes width: {1}", 
+                CurrentMemoryUsage, (int)nsize.ToUInt32());
+
+            if (CurrentMemoryUsage > MEMORY_LIMIT)
+            {
+                return IntPtr.Zero;
+            }
+
+            return ptr != IntPtr.Zero && nsize.ToUInt32() > 0 ? 
+            Marshal.ReAllocHGlobal(ptr, unchecked((IntPtr)(long)(ulong)nsize)) : 
+            Marshal.AllocHGlobal((int)nsize.ToUInt32());
+        }), ref Pointer);
         lua.State.Encoding = Encoding.UTF8;
 
         // block danger functions
@@ -49,7 +70,8 @@ class LuaExecutor
         lua["CMD_NAME"] = Command.Command;
         lua["CMD_OWNER"] = Command.Nick;
         lua["CMD_ARGS"] = args;
-        LuaFunctions luaFunctions = new LuaFunctions(Context.Connection, senderNick, Command.Command);
+        LuaFunctions luaFunctions = new LuaFunctions(Context.Connection, 
+                                        senderNick, Command.Command);
         lua["Cmd"] = luaFunctions;
 
         Thread thread = new Thread(async () =>
@@ -87,29 +109,5 @@ class LuaExecutor
         });
 
         threadWatch.Start();
-
-        new Thread(() =>
-        {
-            while (thread.IsAlive)
-            {
-                try
-                {
-                    Thread.Sleep(10);
-                    Process currentProc = Process.GetCurrentProcess();
-                    long memoryUsed = currentProc.WorkingSet64 / 1024 / 1024;
-
-                    if (memoryUsed > 150)
-                    {
-                        lua.State.Error("out of memory " + memoryUsed + " mb");
-                        lua.State.Close();
-                        break;
-                    }
-                }
-                catch (Exception)
-                {
-                    Log.Warning("Lua command has ended with out of memory!");
-                }
-            }
-        }).Start();
     }
 }
