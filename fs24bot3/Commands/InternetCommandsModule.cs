@@ -11,6 +11,7 @@ using Serilog;
 using SQLite;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
@@ -390,17 +391,47 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Чатбот")]
     public async Task Chatbot([Remainder] string message)
     {
-        var msg = new ChatBotRequest(message);
-        var output = await Context.HttpTools.PostJson("https://xu.su/api/send", msg);
-        var jsonOutput = JsonConvert.DeserializeObject<ChatBotResponse>(output);
-        if (jsonOutput != null && jsonOutput.Ok)
+        ChatBotResponse jsonOutput;
+        for (int i = 0; i < 5; i++)
         {
-            await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {jsonOutput.Text}");
+            var fmt = $"{Context.User.Username}: {message}\nuser2: ";
+            var msg = new ChatBotRequest(fmt);
+            try
+            {
+                var output = await Context.HttpTools.PostJson("https://pelevin.gpt.dobro.ai/generate/", msg);
+                jsonOutput = JsonConvert.DeserializeObject<ChatBotResponse>(output);
+                if (jsonOutput != null)
+                {
+                    var reply = jsonOutput.Replies.FirstOrDefault();
+                    if (reply != null)
+                    {
+
+                        var badword = false;
+                        for (int j = 0; j < RandomMsgs.BadWordsSubstrings.Length; j++)
+                        {
+                            badword = reply.ToLower().Contains(RandomMsgs.BadWordsSubstrings[i]);
+                        }
+
+                        if (!badword)
+                        {
+                            await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {jsonOutput.Replies.FirstOrDefault()}");
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    await Context.SendMessage(Context.Channel, $"{Context.User.Username}: я не понимаю о чем ты");
+                    return;
+                }
+            }
+            catch (HttpRequestException)
+            {
+                break;
+            }
         }
-        else
-        {
-            await Context.SendMessage(Context.Channel, $"{Context.User.Username}: я не понимаю о чем ты");
-        }
+
+        await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {RandomMsgs.NotFoundMessages.Random()}");
     }
 
     [Command("mc", "minecraft", "mineserver", "mineserv")]

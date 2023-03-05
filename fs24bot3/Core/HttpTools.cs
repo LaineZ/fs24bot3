@@ -61,6 +61,8 @@ public class HttpTools
         HttpContent c = new StringContent(JsonConvert.SerializeObject(jsonObj), Encoding.UTF8, "application/json");
 
         var response = await Client.PostAsync(url, c);
+        response.EnsureSuccessStatusCode();
+
         var responseString = await response.Content.ReadAsStringAsync();
         return responseString;
     }

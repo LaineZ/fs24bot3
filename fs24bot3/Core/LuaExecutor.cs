@@ -83,7 +83,8 @@ class LuaExecutor
             }
             catch (Exception e)
             {
-                await Context.Client.SendMessage(channel, $"Ошибка Lua скрипта: {e.Message}");
+                await Context.Client.SendMessage(channel, 
+                    $"Ошибка Lua скрипта: {e.Message}");
                 lua.Close();
                 lua.Dispose();
             }

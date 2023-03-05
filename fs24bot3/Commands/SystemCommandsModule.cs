@@ -164,7 +164,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
 
     [Command("warn", "warning")]
     [Checks.CheckAdmin]
-    public async Task Giveall(string username, [Remainder] string message)
+    public async Task Warning(string username, [Remainder] string message)
     {
         var user = new User(username, in Context.BotCtx.Connection);
         user.AddWarning(message, Context.BotCtx);
@@ -320,7 +320,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         await Context.SendMessage(Context.Channel, $"[red]█[r] Выключен [green]█[r] Включен. Число в скобках: количество команд в модуле");
         await Context.SendMessage(Context.Channel, $"В данный момент загружено: {Service.GetAllModules().Count} модулей");
         string modi = string.Join(" ", Service.GetAllModules()
-            .Select(x => $"{(x.IsEnabled ? "[green]" : "[red]")}{x.Name}[r]({x.Commands.Count()})"));
+            .Select(x => $"{(x.IsEnabled ? "[green]" : "[red]")}{x.Name}[r]({x.Commands.Count})"));
         await Context.SendMessage(Context.Channel, modi);
     }
 

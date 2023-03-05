@@ -1,31 +1,24 @@
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace fs24bot3.Models;
 
 public class ChatBotResponse
 {
-    [JsonProperty("ok")] public bool Ok { get; set; }
-
-    [JsonProperty("text")] public string Text { get; set; }
-
-    [JsonProperty("uid")] public string Uid { get; set; }
+    [JsonProperty("replies")] public List<string> Replies { get; set; }
 }
 
 public class ChatBotRequest
 {
-    [JsonProperty("bot")]
-    public string Bot { get; set; }
+    [JsonProperty("prompt")]
+    public string Prompt { get; set; }
 
-    [JsonProperty("text")]
-    public string Text { get; set; }
-
-    [JsonProperty("uid")]
-    public string Uid { get; set; }
+    [JsonProperty("length")]
+    public int Length { get; set; }
 
     public ChatBotRequest(string message)
     {
-        Bot = "main";
-        Text = message;
-        Uid = null;
+        Prompt = message;
+        Length = message.Length;
     }
 }
