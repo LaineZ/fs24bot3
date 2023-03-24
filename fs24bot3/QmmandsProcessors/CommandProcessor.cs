@@ -18,7 +18,6 @@ public class CommandProcessor
         public string Channel { get; }
         public Random Random { get; }
         public Bot BotCtx { get; }
-        public bool PerformPpc { get; }
         public bool FromBridge { get; }
         public Core.User User { get; }
         
@@ -35,23 +34,11 @@ public class CommandProcessor
             HttpTools = new HttpTools();
             ServicesHelper = new InternetServicesHelper(HttpTools);
             User = message.Sender;
-            if (perfppc)
-            {
-                PerformPpc = User.RemItemFromInv(BotCtx.Shop, "beer", 1).Result;
-            }
         }
 
         public async Task SendMessage(string channel, string message)
         {
-            if (!PerformPpc)
-            {
-                await BotCtx.Client.SendMessage(channel, message);
-            }
-            else
-            {
-                var txt = await ServicesHelper.TranslatePpc(MessageHelper.StripIRC(message));
-                await BotCtx.Client.SendMessage(channel, txt);
-            }
+            await BotCtx.Client.SendMessage(channel, message);
         }
 
         public async Task SendMessage(string message)

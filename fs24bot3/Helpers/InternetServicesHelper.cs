@@ -311,30 +311,4 @@ public class InternetServicesHelper
 
         throw new Exception(responseString);
     }
-
-    public async Task<string> TranslatePpc(string text, string targetLang = "ru")
-    {
-        string[] translations = { "en", "pl", "pt", "ja", "de", "ru" };
-
-        Random random = new Random();
-
-        var translationsShuffled = translations.OrderBy(_ => random.Next()).ToList();
-        translationsShuffled.Add(targetLang);
-        string translated = string.Join(" ", text.Split(" ").OrderBy(_ => random.Next()).ToList());
-
-        foreach (var tr in translationsShuffled)
-        {
-            try
-            {
-                var translatorResponse = await Translate(translated, "", tr);
-                translated = translatorResponse.Text;
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-
-        return translated;
-    }
 }

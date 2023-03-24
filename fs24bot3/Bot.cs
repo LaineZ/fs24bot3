@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using fs24bot3.Backend;
 using fs24bot3.EventProcessors;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace fs24bot3;
 
@@ -44,6 +45,7 @@ public class Bot
         Service.AddModule<BandcampCommandsModule>();
         Service.AddModule<TranslateCommandModule>();
         Service.AddModule<FishCommandsModule>();
+        Service.AddTypeParser(new Parsers.LanugageParser());
 
         Database.InitDatabase(Connection);
         CustomCommandProcessor = new CustomCommandProcessor(this);
@@ -145,6 +147,29 @@ public class Bot
         PProfiler.EndMeasure("msg");
     }
 
+    public string HeuristicPrintErrorMessage(string message)
+    {
+        dynamic obj = JObject.Parse(message);
+
+        if (obj.message != null)
+        {
+            return obj.message;
+        }
+        else if (obj.error != null)
+        {
+            return obj.error;
+        }
+        else if (obj.detail != null)
+        {
+            return obj.detail;
+        }
+        else
+        {
+            return message;
+        }
+
+    }
+
     public async Task ExecuteCommand(MessageGeneric message, string prefix, bool ppc = false)
     {
         var prefixes = new[] { prefix, Client.Name + ":" };
@@ -217,9 +242,10 @@ public class Bot
                 }
                 else
                 {
-                    await Client.SendMessage(message.Target, 
-                        $"[red]Ошибка: {err.Exception.GetType().Name}: {err.Exception.Message}");
+                    var msg = HeuristicPrintErrorMessage(err.Exception.Message);
+                    await Client.SendMessage(message.Target, $"[red]Ошибка: {msg}");
                 }
+
                 Log.Error(err.Exception.Message + ": " + err.Exception.StackTrace);
                 Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace,
                     message.Sender.Username, message.Body));

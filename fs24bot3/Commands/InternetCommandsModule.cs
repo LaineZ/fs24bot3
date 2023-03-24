@@ -108,6 +108,13 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
 
         var response = await Context.HttpTools.GetTextPlainResponse(rawurl);
+
+        if (response == null)
+        {
+            Context.SendErrorMessage(Context.Channel, $"Неудачный запрос к серверу: {rawurl}");
+            return;
+        }
+
         var lyric = new SQL.LyricsCache()
         {
             AddedBy = Context.User.Username,
@@ -406,13 +413,9 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
                     if (reply != null)
                     {
 
-                        var badword = false;
-                        for (int j = 0; j < RandomMsgs.BadWordsSubstrings.Length; j++)
-                        {
-                            badword = reply.ToLower().Contains(RandomMsgs.BadWordsSubstrings[i]);
-                        }
+                        var containsBadword = RandomMsgs.BadWordsSubstrings.Any(x => reply.ToLower().Contains(x)); ;
 
-                        if (!badword)
+                        if (!containsBadword)
                         {
                             await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {jsonOutput.Replies.FirstOrDefault()}");
                             return;
