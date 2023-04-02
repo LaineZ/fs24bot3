@@ -58,14 +58,8 @@ namespace fs24bot3.Systems
         {
             if (metric > 1000)
             {
-                return $"[yellow]{metric / 1000} s[r]";
+                return $"[yellow]{(metric / 1000):0.0000} s[r]";
             }
-
-            if (metric > 5000)
-            {
-                return $"[red]{metric / 60000} m[r]";
-            }
-
             return $"{metric} ms";
         }
 
