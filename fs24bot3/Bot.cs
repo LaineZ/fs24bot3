@@ -149,21 +149,28 @@ public class Bot
 
     public string HeuristicPrintErrorMessage(string message)
     {
-        dynamic obj = JObject.Parse(message);
+        try
+        {
+            dynamic obj = JObject.Parse(message);
 
-        if (obj.message != null)
-        {
-            return obj.message;
+            if (obj.message != null)
+            {
+                return obj.message;
+            }
+            else if (obj.error != null)
+            {
+                return obj.error;
+            }
+            else if (obj.detail != null)
+            {
+                return obj.detail;
+            }
+            else
+            {
+                return message;
+            }
         }
-        else if (obj.error != null)
-        {
-            return obj.error;
-        }
-        else if (obj.detail != null)
-        {
-            return obj.detail;
-        }
-        else
+        catch (JsonReaderException)
         {
             return message;
         }
