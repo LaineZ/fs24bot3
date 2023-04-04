@@ -45,7 +45,7 @@ public class Youtube
         public int? height { get; set; }
         public string url { get; set; }
         public string ext { get; set; }
-        public int quality { get; set; }
+        public double quality { get; set; }
         public long filesize { get; set; }
         public string protocol { get; set; }
         public DownloaderOptions downloader_options { get; set; }
@@ -70,7 +70,7 @@ public class Youtube
         public int? height { get; set; }
         public string url { get; set; }
         public long filesize { get; set; }
-        public int quality { get; set; }
+        public double quality { get; set; }
         public string protocol { get; set; }
         public DownloaderOptions downloader_options { get; set; }
         public double? vbr { get; set; }
