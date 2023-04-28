@@ -16,17 +16,14 @@ internal static class Program
     private static IMessagingClient Client;
     private static void Main()
     {
-#if DEBUG
         Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()
+#if DEBUG
         .MinimumLevel.Verbose()
-        .CreateLogger();
 #else
-             Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .MinimumLevel.Information()
-            .CreateLogger();
+        .MinimumLevel.Information()
 #endif
+        .CreateLogger();
 
         if (Environment.OSVersion.Platform == PlatformID.Win32NT)
         {
@@ -41,6 +38,7 @@ internal static class Program
             Models.Backend.Basic => new Basic(),
             Models.Backend.IRC => new Irc(),
             Models.Backend.Discord => new Discord(),
+            _ => throw new UnauthorizedAccessException()
         };
         Client.Process();
     }

@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using fs24bot3.Core;
 using fs24bot3.Helpers;
 using NetIRC;
@@ -40,7 +37,7 @@ public class MessageGeneric
         {
             // trim bridged user nickname like
             // <cheburator> //bpm140//: @ms привет
-            var msg = Body.Split(":").ToList();
+            var msg = Body.Split(":");
             Body = msg.Last().TrimStart(' ');
             Sender = new Core.User("@[" + MessageHelper.StripIRC(msg.First()) + "]", connection);
             Kind = MessageKind.MessageFromBridge;

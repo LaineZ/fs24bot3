@@ -30,7 +30,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             span.Duration().Seconds > 0 ? string.Format("{0:0} сек.", span.Seconds) : string.Empty);
         if (formatted.EndsWith(", ")) formatted = formatted.Substring(0, formatted.Length - 2);
 
-        if (string.IsNullOrEmpty(formatted)) formatted = "0 seconds";
+        if (string.IsNullOrEmpty(formatted)) formatted = "0 секунд";
 
         return formatted;
     }
@@ -59,7 +59,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         string commandList = string.Join('\n', cmds.Where(x => !x.Checks.Any(x => x is Checks.CheckAdmin)).
             Select(x => $"<strong>{prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
         string customList = string.Join('\n', string.Join("\n", customCommands.
-            Select(x => $"<p>{prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {x.IsLua == 1} </p>")));
+            Select(x => $"<p>{prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {(x.IsLua == 1 ? "Да" : "Нет")} </p>")));
 
         commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
         commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
@@ -250,63 +250,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         else
         {
             Context.SendSadMessage(Context.Channel, "Символы не обнаружены");
-        }
-    }
-
-    [Command("songame", "songg", "sg")]
-    [Description("Игра-перевод песен: введите по русски так чтобы получилось ...")]
-    public async Task Songame([Remainder] string translated = "")
-    {
-        Context.User.SetContext(Context);
-
-        if (Context.BotCtx.SongGame.SongameString.Length <= 0)
-        {
-            Context.SendErrorMessage(Context.Channel, $"Не удалось найти нормальную строку песни... Может попробуем поискать что-нибудь с помощью {Context.User.GetUserPrefix()}lyrics?");
-            return;
-        }
-
-        if (Context.BotCtx.SongGame.Tries <= 0)
-        {
-            await Context.SendMessage(Context.Channel, $"ВЫ ПРОИГРАЛИ!!!! ПЕРЕЗАГРУЗКА!!!!");
-            await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 1000);
-            Context.BotCtx.SongGame = new Songame(Context.BotCtx.Connection);
-            return;
-        }
-
-        if (translated.Length == 0)
-        {
-            await Context.SendMessage(Context.Channel, $"Введи на русском так чтобы получилось: {Context.BotCtx.SongGame.SongameString} попыток: {Context.BotCtx.SongGame.Tries}");
-        }
-        else
-        {
-            if (!Regex.IsMatch(translated, @"([A-Za-z])"))
-            {
-                try
-                {
-                    var translatedOutput = await Context.ServicesHelper.Translate(translated, "ru", "en");
-                    string trOutFixed = Context.BotCtx.SongGame.RemoveArticles(translatedOutput.Text);
-
-                    if (trOutFixed == Context.BotCtx.SongGame.SongameString)
-                    {
-                        int reward = 450 * Context.BotCtx.SongGame.Tries;
-                        Context.User.AddItemToInv(Context.BotCtx.Shop, "money", reward);
-                        await Context.SendMessage(Context.Channel, $"ВЫ УГАДАЛИ И ВЫИГРАЛИ {reward} ДЕНЕГ!");
-                    }
-                    else
-                    {
-                        await Context.SendMessage(Context.Channel, $"Неправильно, ожидалось | получилось: {Context.BotCtx.SongGame.SongameString} | {trOutFixed} // у вас осталось {Context.BotCtx.SongGame.Tries} попыток!");
-                        Context.BotCtx.SongGame.Tries--;
-                    }
-                }
-                catch (FormatException)
-                {
-                    Context.SendErrorMessage(Context.Channel, "К сожалению, в данный момент игра недоступна...");
-                }
-            }
-            else
-            {
-                await Context.SendMessage(Context.Channel, "Обнаружен английский язык!!!");
-            }
         }
     }
 

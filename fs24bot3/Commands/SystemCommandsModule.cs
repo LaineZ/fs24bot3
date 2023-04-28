@@ -57,14 +57,6 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
             Environment.Version.ToString(), os.VersionString));
     }
 
-    [Command("rsgame")]
-    [Checks.CheckAdmin]
-    public async Task ResetGame()
-    {
-        Context.BotCtx.SongGame = new Systems.Songame(Context.BotCtx.Connection);
-        await Context.SendMessage(Context.Channel, "Игра перезагружена!");
-    }
-
 
     [Command("whoami")]
     public async Task Whoami()
@@ -208,7 +200,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
 
     [Command("adjustreminds")]
     [Checks.CheckAdmin]
-    public async Task AdjustReminds(string channel = "#cc.ru")
+    public void AdjustReminds(string channel = "#cc.ru")
     {
         Context.BotCtx.Connection.Execute("UPDATE Reminds SET Channel = ? WHERE Channel IS NULL", channel);
     }

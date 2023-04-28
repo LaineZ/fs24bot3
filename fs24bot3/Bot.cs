@@ -26,7 +26,6 @@ public class Bot
     private readonly CommandService Service = new CommandService();
     public IMessagingClient Client { get; }
     public Shop Shop { get; }
-    public Songame SongGame { get; set; }
     public List<string> AcknownUsers = new List<string>();
     public Profiler PProfiler { get; }
     
@@ -78,7 +77,6 @@ public class Bot
         }
 
         Shop = new Shop(this);
-        SongGame = new Songame(Connection);
 
         Log.Information("Bot: Construction complete!");
     }
