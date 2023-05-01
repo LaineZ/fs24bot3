@@ -17,7 +17,6 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
     private static readonly string[] SearxUrls =
     {
-        "https://etsi.me/",
         "https://search.mdosch.de/",
         "https://search.neet.works/",
         "https://search.sapti.me/",

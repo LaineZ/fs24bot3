@@ -97,6 +97,13 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     public async Task Remind(string time = "1m", [Remainder] string message = "Remind")
     {
         double totalSecs = 0;
+
+        if (time.Contains('-'))
+        {
+            Context.SendSadMessage(Context.Channel, "Отрицательные числа недопустимы");
+            return;
+        }
+
         foreach (var part in time.Split(';'))
         {
             switch (part[^1])
@@ -125,6 +132,12 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             }
         }
 
+        if (totalSecs < 0)
+        {
+            Context.SendSadMessage(Context.Channel, "Потерялся во времени?");
+            return;
+        }
+
         TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
         Context.User.AddRemind(ts, message, Context.Channel);
         await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
@@ -132,6 +145,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
     [Command("delmind", "delremind", "deleteremind")]
     [Description("Удалить напоминание")]
+    [Checks.FullAccount]
+    [Checks.BridgeLimitedFunctions]
     public async Task DeleteRemind(uint id)
     {
         if (Context.User.DeleteRemind(id))
@@ -146,6 +161,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
     [Command("time")]
     [Description("Время")]
+    [Checks.BridgeLimitedFunctions]
     public async Task UserTime(string username = "")
     {
         if (string.IsNullOrEmpty(username))
@@ -163,6 +179,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
     [Command("reminds", "rems")]
     [Description("Список напоминаний")]
+    [Checks.BridgeLimitedFunctions]
     public async Task Reminds(string username = "", string locale = "ru-RU")
     {
         if (string.IsNullOrEmpty(username))
@@ -208,6 +225,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
 
     [Command("warnings", "warns")]
+    [Checks.FullAccount]
     public async Task GetWarns()
     {
         var warns = Context.User.GetWarnings();
