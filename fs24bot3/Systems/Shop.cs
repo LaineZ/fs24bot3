@@ -77,9 +77,13 @@ namespace fs24bot3.Systems
             {
                 // tin
                 int sellprice = (int)Math.Floor((decimal)(Items[itemname].Price * count) / 2);
+
                 Sells++;
                 user.AddItemToInv(this, "money", sellprice);
                 Items[itemname].Price -= Rand.Next(1, sellprice);
+
+                Math.Clamp(Items[itemname].Price, 100, Int32.MaxValue);
+
                 return (true, sellprice);
             }
             else
