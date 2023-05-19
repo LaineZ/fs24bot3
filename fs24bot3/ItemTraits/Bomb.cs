@@ -20,9 +20,16 @@ public class Bomb : IItem
         Sellable = true;
         Damage = damage;
     }
+
     public async Task<bool> OnUseOnUser(Bot botCtx, string channel, Core.User user, Core.User targetUser)
     {
         var rand = new Random();
+
+        if (targetUser.CountItem("wall") - Damage < 0)
+        {
+            await botCtx.Client.SendMessage(channel, RandomMsgs.MissMessages.Random());
+            return false;
+        }
 
         if (rand.Next(0, 10 * targetUser.CountItem("wall") - Damage) == 0)
         {

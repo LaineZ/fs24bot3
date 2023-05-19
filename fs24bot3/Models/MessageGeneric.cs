@@ -31,6 +31,7 @@ public class MessageGeneric
         if (message.Parameters[0] == clientName)
         {
             Target = message.Prefix.From;
+            Kind = MessageKind.MessagePersonal;
         }
 
         if (Sender.Username == ConfigurationProvider.Config.Services.BridgeNickname)
