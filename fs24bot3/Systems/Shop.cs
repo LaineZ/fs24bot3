@@ -80,9 +80,9 @@ namespace fs24bot3.Systems
 
                 Sells++;
                 user.AddItemToInv(this, "money", sellprice);
-                Items[itemname].Price -= Rand.Next(1, sellprice);
 
-                Math.Clamp(Items[itemname].Price, 100, Int32.MaxValue);
+                Items[itemname].Price -= Rand.Next(1, sellprice);
+                Items[itemname].Price = Math.Clamp(Items[itemname].Price, 100, Int32.MaxValue);
 
                 return (true, sellprice);
             }

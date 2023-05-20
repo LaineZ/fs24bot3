@@ -37,28 +37,29 @@ public class FishingRod : IItem
 
         if (!user.RemItemFromInv(botCtx.Shop, "worm", 1).Result)
         {
-            await botCtx.Client.SendMessage(channel, $"[gray]У вас нет наживки, @buy worm");
+            await botCtx.Client.SendMessage(channel, $"[gray]У вас нет наживки (worm)");
             return false;
         }
 
         int fishMult = Math.Clamp((20 * nest.Level) - nest.FishCount, 1, int.MaxValue);
 
-        if (rand.Next(1, fishMult) <= user.GetFishLevel())
+        if (rand.Next(1, fishMult) < user.GetFishLevel())
         {
-
             var report = new Dictionary<string, IItem>();
 
-            if (nest.Level == 1)
+            switch (nest.Level)
             {
-                report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Uncommon, 1, 1, 1);
-            }
-            if (nest.Level == 2)
-            {
-                report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Common, 1, 1, 1);
-            }
-            if (nest.Level == 3)
-            {
-                report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Rare, 1, 1, 1);
+                case 1:
+                    report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Uncommon);
+                    break;
+                case 2:
+                    report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Common);
+                    break;
+                case 3:
+                    report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Rare);
+                    break;
+                default:
+                    break;
             }
 
             await botCtx.Client.SendMessage(channel, $"Вы поймали {report.First().Value.Name}");
@@ -69,7 +70,7 @@ public class FishingRod : IItem
         }
 
 
-        if (rand.Next(0, 3) == 1) 
+        if (rand.Next(0, 5) == 1) 
         {
             user.IncreaseFishLevel();
             await botCtx.Client.SendMessage(channel, $"[blue]Вы повысили свой уровень рыбалки до {user.GetFishLevel()}");
@@ -78,6 +79,13 @@ public class FishingRod : IItem
         bool broken = rand.Next(0, 5) == 1;
 
         if (broken) { await botCtx.Client.SendMessage(channel, "Ваша удочка сломалась!"); }
+
+        bool brokenLine = rand.Next(0, 3) == 1;
+
+        if (brokenLine) 
+        {
+            await user.RemItemFromInv(botCtx.Shop, "line", 1);
+        }
 
         return broken;
     }

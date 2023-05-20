@@ -116,9 +116,7 @@ public class Irc : IMessagingClient
             if (!msg.Sender.UserIsIgnored())
             {
                 if (msg.Kind == MessageKind.Message) { BotContext.MessageTrigger(msg); }
-
-                bool ppc = msg.Body.StartsWith("p");
-                await BotContext.ExecuteCommand(msg, prefix, ppc);
+                await BotContext.ExecuteCommand(msg, prefix);
             }
         }
 

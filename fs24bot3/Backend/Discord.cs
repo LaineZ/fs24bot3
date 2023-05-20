@@ -114,9 +114,7 @@ public class Discord : IMessagingClient
         if (!msg.Sender.UserIsIgnored() && !args.Message.Author.IsBot)
         {
             if (msg.Kind == MessageKind.Message) { BotContext.MessageTrigger(msg); }
-
-            bool ppc = msg.Body.StartsWith("p");
-            await BotContext.ExecuteCommand(msg, prefix, ppc);
+            await BotContext.ExecuteCommand(msg, prefix);
         }
 
     }

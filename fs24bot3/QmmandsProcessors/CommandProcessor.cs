@@ -25,7 +25,7 @@ public class CommandProcessor
         public InternetServicesHelper ServicesHelper { get; }
 
         // Pass your service provider to the base command context.
-        public CustomCommandContext(Bot bot, in MessageGeneric message, bool perfppc = false, IServiceProvider provider = null) : base(provider)
+        public CustomCommandContext(Bot bot, in MessageGeneric message, IServiceProvider provider = null) : base(provider)
         {
             BotCtx = bot;
             Channel = message.Target;
