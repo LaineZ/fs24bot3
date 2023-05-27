@@ -18,7 +18,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     /// <summary>
     /// Cost needed for creating command
     /// </summary>
-    const int COMMAND_COST = 50000;
+    const int COMMAND_COST = 95000;
 
     private async Task CustomCmdRegisterpublic(string command, bool isLua, [Remainder] string output)
     {
