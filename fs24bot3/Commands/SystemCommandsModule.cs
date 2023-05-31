@@ -16,37 +16,6 @@ namespace fs24bot3.Commands;
 public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
-    
-    
-    private void ExtractZipFileToDirectory(string sourceZipFilePath, string destinationDirectoryName, bool overwrite)
-    {
-        using var archive = ZipFile.Open(sourceZipFilePath, ZipArchiveMode.Read);
-        if (!overwrite)
-        {
-            archive.ExtractToDirectory(destinationDirectoryName);
-            return;
-        }
-
-        DirectoryInfo di = Directory.CreateDirectory(destinationDirectoryName);
-        string destinationDirectoryFullPath = di.FullName;
-
-        foreach (ZipArchiveEntry file in archive.Entries)
-        {
-            string completeFileName = Path.GetFullPath(Path.Combine(destinationDirectoryFullPath, file.FullName));
-
-            if (!completeFileName.StartsWith(destinationDirectoryFullPath, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new IOException("Trying to extract file outside of destination directory.");
-            }
-
-            if (file.Name == "")
-            {// Assuming Empty for Directory
-                Directory.CreateDirectory(Path.GetDirectoryName(completeFileName));
-                continue;
-            }
-            file.ExtractToFile(completeFileName, true);
-        }
-    }
 
     [Command("info", "about", "credits")]
     [Description("Информация о боте")]
@@ -262,7 +231,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
 
         if (cmdHandle == null)
         {
-            Context.SendErrorMessage(Context.Channel, $"Команда {Context.User.GetUserPrefix()}{command} не найдена!");
+            Context.SendErrorMessage(Context.Channel, $"Команда .{command} не найдена!");
             return;
         }
 
@@ -314,14 +283,6 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         string modi = string.Join(" ", Service.GetAllModules()
             .Select(x => $"{(x.IsEnabled ? "[green]" : "[red]")}{x.Name}[r]({x.Commands.Count})"));
         await Context.SendMessage(Context.Channel, modi);
-    }
-
-    [Command("setprefix", "prefix", "pfx")]
-    [Description("Устанавливает префикс, на который отвечает бот")]
-    public async Task Prefix(string prefix = "#")
-    {
-        Context.User.SetUserPrefix(prefix);
-        await Context.SendMessage(Context.Channel, $"{Context.User.Username}: Вы установили себе префикс {prefix}! Теперь бот для вас будет отвечать на него!");
     }
 
     [Command("setcap")]

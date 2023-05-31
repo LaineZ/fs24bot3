@@ -90,7 +90,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         else
         {
             await Context.SendMessage(Context.Channel,
-            $"[gray]У вас ничего нет в инвентаре... Хотите сходить в магазин? {Context.User.GetUserPrefix()}shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
+            $"[gray]У вас ничего нет в инвентаре... Хотите сходить в магазин? .shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
         }
     }
 
@@ -239,7 +239,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                             Name = tagname
                         });
                         await Context.SendMessage(Context.Channel, 
-                        $"Тег успешно добавлен чтобы кого-то наградить им напишите {Context.User.GetUserPrefix()}addtag пользователь {tagname}!");
+                        $"Тег успешно добавлен чтобы кого-то наградить им напишите .addtag пользователь {tagname}!");
                     }
                     catch (SQLiteException)
                     {

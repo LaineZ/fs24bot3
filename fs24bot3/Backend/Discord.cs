@@ -89,19 +89,18 @@ public class Discord : IMessagingClient
         BotClient.MessageCreated += MessageCreated;
     }
 
-    private async Task Ready(DiscordClient client, EventArgs args)
+    private Task Ready(DiscordClient client, EventArgs args)
     {
         Name = client.CurrentUser.Username;
         Log.Information("Connected!");
+        return Task.CompletedTask;
     }
-
 
     private async Task MessageCreated(DiscordClient client, MessageCreateEventArgs args)
     {
         Log.Information("{0}", args.Message.Content);
         var user = new Core.User(args.Author.Mention.Replace("!", ""), 
             in BotContext.Connection);
-        var prefix = user.GetUserPrefix();
         var messageKind = MessageKind.Message;
 
         if (args.Message.Channel.IsPrivate)
@@ -114,7 +113,7 @@ public class Discord : IMessagingClient
         if (!msg.Sender.UserIsIgnored() && !args.Message.Author.IsBot)
         {
             if (msg.Kind == MessageKind.Message) { BotContext.MessageTrigger(msg); }
-            await BotContext.ExecuteCommand(msg, prefix);
+            await BotContext.ExecuteCommand(msg, ".");
         }
 
     }

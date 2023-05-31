@@ -54,7 +54,7 @@ public class Configuration
 
     public Configuration()
     {
-        Prefix = "#";
+        Prefix = ".";
         LogLevel = "Verbose";
         Backend = Backend.Basic;
         Services = new Services()

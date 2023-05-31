@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using fs24bot3.Core;
 using fs24bot3.Helpers;
 using fs24bot3.Models;
 using NetIRC;
@@ -97,7 +98,7 @@ public class Irc : IMessagingClient
 
         SetupNick(Config.Name);
 
-        BotClient = new Client(new User(Name, "Sopli IRC 3.0"), 
+        BotClient = new Client(new NetIRC.User(Name, "Sopli IRC 3.0"), 
             new TcpClientConnection(Config.Network, Config.Port));
         
         BotClient.RawDataReceived += Client_OnRawDataReceived;
@@ -111,7 +112,7 @@ public class Irc : IMessagingClient
         if (message.IRCCommand == IRCCommand.PRIVMSG)
         {
             var msg = new MessageGeneric(in message, in BotContext.Connection, Name);
-            var prefix = msg.Sender.GetUserPrefix();
+            var prefix = ConfigurationProvider.Config.Prefix;
 
             if (!msg.Sender.UserIsIgnored())
             {

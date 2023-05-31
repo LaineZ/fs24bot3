@@ -95,7 +95,7 @@ public class OnMsgEvent
         {
             await BotContext.Client.SendMessage(message.Target,
             $"[gray]{message.Sender.Username}: " +
-            $"У вас есть предупреждения используйте {message.Sender.GetUserPrefix()}warnings чтобы их прочесть!");
+            $"У вас есть предупреждения используйте .warnings чтобы их прочесть!");
             BotContext.AcknownUsers.Add(message.Sender.Username);
         }
     }

@@ -69,10 +69,10 @@ public class Bot
                 user.Username,
                 command.Command);
             user.AddWarning(
-                $"Вы регистрировали команду {user.GetUserPrefix()}{command.Command}, в новой версии fs24bot " +
+                $"Вы регистрировали команду .{command.Command}, в новой версии fs24bot " +
                 $"добавилась команда с таким же именем, " +
                 $"ВАША КАСТОМ-КОМАНДА БОЛЬШЕ НЕ БУДЕТ РАБОТАТЬ! Чтобы вернуть деньги за команду используйте " +
-                $"{user.GetUserPrefix()}delcmd {command.Command}. И создайте команду с другим именем",
+                $".delcmd {command.Command}. И создайте команду с другим именем",
                 this);
         }
 
@@ -177,8 +177,7 @@ public class Bot
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix)
     {
-        var prefixes = new[] { prefix, Client.Name + ":" };
-        if (!CommandUtilities.HasAnyPrefix(message.Body.TrimStart('p'), prefixes, out _, out var output))
+        if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
             return;
 
         PProfiler.BeginMeasure("command");
@@ -199,7 +198,7 @@ public class Bot
                 break;
             case TypeParseFailedResult err:
                 await Client.SendMessage(message.Target,
-                    $"Ошибка в `{err.Parameter}` необходимый тип: `{err.Parameter.Type.Name}` вы же ввели: `{err.Value.GetType().Name}`. Введите #helpcmd {err.Parameter.Command} чтобы узнать наконец-то, как же правильно пользоватся этой командой.");
+                    $"Ошибка в `{err.Parameter}` необходимый тип: `{err.Parameter.Type.Name}` вы же ввели: `{err.Value.GetType().Name}`. Введите .helpcmd {err.Parameter.Command} чтобы узнать наконец-то, как же правильно пользоватся этой командой.");
                 break;
             case ArgumentParseFailedResult err:
                 var parserResult = err.ParserResult as DefaultArgumentParserResult;
@@ -221,7 +220,8 @@ public class Bot
             case OverloadsFailedResult:
                 await Client.SendMessage(message.Target, "Команда выключена...");
                 break;
-            case CommandNotFoundResult err:
+            case CommandNotFoundResult _:
+                
                 if (!CustomCommandProcessor.ProcessCmd(prefix, in message))
                 {
                     string cmdName = message.Body.Split(" ")[0];

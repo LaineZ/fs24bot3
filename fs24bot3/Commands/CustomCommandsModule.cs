@@ -18,7 +18,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     /// <summary>
     /// Cost needed for creating command
     /// </summary>
-    const int COMMAND_COST = 95000;
+    const int COMMAND_COST = 250000;
 
     private async Task CustomCmdRegisterpublic(string command, bool isLua, [Remainder] string output)
     {
@@ -46,7 +46,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
             catch (SQLiteException)
             {
                 Context.User.AddItemToInv(Context.BotCtx.Shop, "money", COMMAND_COST);
-                await Context.SendMessage(Context.Channel, $"[gray][ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте {Context.User.GetUserPrefix()}cmdout");
+                await Context.SendMessage(Context.Channel, $"[gray][ДЕНЬГИ ВОЗВРАЩЕНЫ] Данная команда уже создана! Если вы создали данную команду используйте {ConfigurationProvider.Config.Prefix}cmdout");
             }
         }
         else
@@ -164,7 +164,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
             if (query.Nick.Length <= 0)
             {
                 await Context.SendMessage(Context.Channel, 
-                    $"Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте {Context.User.GetUserPrefix()}cmdown чтобы изменить владельца команды!");
+                    $"Внимание: данная команда была создана в старой версии fs24bot, пожалуйста используйте .cmdown чтобы изменить владельца команды!");
             }
             if (query.IsLua == 1)
             {

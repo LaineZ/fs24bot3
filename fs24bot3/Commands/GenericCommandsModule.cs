@@ -50,23 +50,22 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     [Description("Список команд")]
     public async Task Help()
     {
-        var prefix = Context.User.GetUserPrefix();
-
-        await Context.SendMessage(Context.Channel, "Генерация спика команд, подождите...");
         var cmds = Service.GetAllCommands();
         string commandsOutput = Resources.help;
         var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
         string commandList = string.Join('\n', cmds.Where(x => !x.Checks.Any(x => x is Checks.CheckAdmin)).
-            Select(x => $"<strong>{prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
+            Select(x => 
+            $"<strong>{ConfigurationProvider.Config.Prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
         string customList = string.Join('\n', string.Join("\n", customCommands.
-            Select(x => $"<p>{prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {(x.IsLua == 1 ? "Да" : "Нет")} </p>")));
+            Select(x => 
+            $"<p>{ConfigurationProvider.Config.Prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {(x.IsLua == 1 ? "Да" : "Нет")} </p>")));
 
         commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
         commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
 
         string link = await InternetServicesHelper.UploadToTrashbin(commandsOutput);
         await Context.SendMessage(Context.Channel, 
-            $"Выложены команды по этой ссылке: {link} также вы можете написать {prefix}helpcmd имякоманды для получения дополнительной помощи");
+            $"Выложены команды по этой ссылке: {link} также вы можете написать {ConfigurationProvider.Config.Prefix}helpcmd имякоманды для получения дополнительной помощи");
     }
 
     [Command("helpcmd")]
@@ -77,7 +76,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         {
             if (cmd.Aliases.Contains(command))
             {
-                await Context.SendMessage(Context.Channel, Context.User.GetUserPrefix() + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
+                await Context.SendMessage(Context.Channel, ConfigurationProvider.Config.Prefix + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
                 if (cmd.Remarks != null)
                 {
                     await Context.SendMessage(Context.Channel, cmd.Remarks);
@@ -89,7 +88,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
 
         Context.SendSadMessage(Context.Channel, 
-            $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {Context.User.GetUserPrefix()}cmdinfo");
+            $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {ConfigurationProvider.Config.Prefix}cmdinfo");
     }
 
     [Command("remind", "in")]

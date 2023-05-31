@@ -76,16 +76,6 @@ public class User
         }
     }
 
-    public string GetUserPrefix()
-    {
-        var userInfo = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).FirstOrDefault();
-        if (userInfo != null && !string.IsNullOrEmpty(userInfo.Prefix) && !string.IsNullOrWhiteSpace(userInfo.Prefix))
-        {
-            return userInfo.Prefix;
-        }
-        return ConfigurationProvider.Config.Prefix;
-    }
-
     public void AddWarning(string message, Bot botContext)
     {
         var warning = new SQL.Warnings()
@@ -106,11 +96,6 @@ public class User
     public void DeleteWarnings()
     {
         Connect.Execute("DELETE FROM Warnings WHERE Nick = ?", Username);
-    }
-
-    public void SetUserPrefix(string prefix = "#")
-    {
-        Connect.Execute("UPDATE UserStats SET Prefix = ? WHERE Nick = ?", prefix, Username);
     }
 
     public void SetTimeZone(string timezone)
@@ -305,7 +290,7 @@ public class User
     {
         if (!shop.Items.ContainsKey(name))
         {
-            throw new Exceptions.ItemNotFoundException();
+            throw new ItemNotFoundException();
         }
 
         count = (int)Math.Floor((decimal)count);
