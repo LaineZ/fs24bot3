@@ -15,6 +15,11 @@ using SQLite;
 using System.Diagnostics;
 using fs24bot3.Properties;
 using System.Text;
+using NLua;
+using Serilog;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace fs24bot3.Commands;
 public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
@@ -441,5 +446,91 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         }
         await Context.SendMessage(output.ToString());
+    }
+
+    [Command("calculator", "c", "calc")]
+    [Description("Калькулятор")]
+    public async Task Calculator([Remainder] string expression)
+    {
+        IntPtr pointer = IntPtr.Zero;
+        long currentMemoryUsage = 0;
+        var timeout = 5000;
+
+        var input = expression;
+
+        Lua lua = new Lua();
+
+        lua.State.SetAllocFunction(((ud, ptr, osize, nsize) =>
+        {
+            currentMemoryUsage += (long)nsize;
+
+            Log.Verbose("[LUA] MEMORY ALLOCATION: {0} bytes width: {1}",
+                currentMemoryUsage, (int)nsize.ToUInt32());
+
+            if (currentMemoryUsage > LuaExecutor.MEMORY_LIMIT)
+            {
+                return IntPtr.Zero;
+            }
+
+            return ptr != IntPtr.Zero && nsize.ToUInt32() > 0 ?
+            Marshal.ReAllocHGlobal(ptr, unchecked((IntPtr)(long)(ulong)nsize)) :
+            Marshal.AllocHGlobal((int)nsize.ToUInt32());
+        }), ref pointer);
+        lua.State.Encoding = Encoding.UTF8;
+
+
+        // block danger functions
+        lua["os.execute"] = null;
+        lua["os.exit"] = null;
+        lua["os.remove"] = null;
+        lua["os.getenv"] = null;
+        lua["os.rename"] = null;
+        lua["os.setlocale"] = null;
+        lua["os.tmpname"] = null;
+
+        lua["io"] = null;
+        lua["debug"] = null;
+        lua["require"] = null;
+        lua["print"] = null;
+        lua["pcall"] = null;
+        lua["xpcall"] = null;
+        lua["load"] = null;
+
+
+        var task = Task.Run(async () =>
+        {
+            try
+            {
+                var res = lua.DoString(input)[0];
+                if (res != null)
+                {
+                    await Context.SendMessage(res.ToString());
+                } 
+                else
+                {
+                    await Context.SendMessage("PENETRATION TEST, TEST. СПЕЦИАЛЬНО ДЛЯ ТЕБЯ!!!");
+                }
+            }
+            catch (Exception e)
+            {
+                await Context.SendMessage($"Ошибка выражения: {e.Message}");
+                lua.Close();
+                lua.Dispose();
+            }
+        });
+
+        if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
+        {
+            try
+            {
+                lua.State.Error("too long run time (10 seconds)");
+                lua.State.Close();
+                lua.State.Dispose();
+            }
+            catch (SEHException)
+            {
+                await Context.SendMessage($"Превышено время работы скрипта!");
+            }
+        }
     }
 }

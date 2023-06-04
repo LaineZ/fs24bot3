@@ -221,18 +221,7 @@ public class Bot
                 await Client.SendMessage(message.Target, "Команда выключена...");
                 break;
             case CommandNotFoundResult _:
-                
-                if (!CustomCommandProcessor.ProcessCmd(prefix, in message))
-                {
-                    string cmdName = message.Body.Split(" ")[0];
-                    var cmds = CommandSuggestion(prefix, cmdName);
-                    if (!string.IsNullOrWhiteSpace(cmds))
-                    {
-                        await Client.SendMessage(message.Target,
-                            $"Команда [b]{cmdName}[r] не найдена, возможно вы хотели написать: [b]{cmds}");
-                    }
-                }
-
+                CustomCommandProcessor.ProcessCmd(prefix, in message);
                 break;
             case CommandExecutionFailedResult err:
                 if (err.Exception.GetType() == typeof(JsonReaderException) || err.Exception.GetType() == typeof(JsonException))

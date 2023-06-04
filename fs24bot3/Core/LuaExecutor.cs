@@ -12,7 +12,7 @@ namespace fs24bot3.Core;
 class LuaExecutor
 {
 
-    const long MEMORY_LIMIT = 10_000_000; // 10 MB Memory limit (roughly)
+    public const long MEMORY_LIMIT = 10_000_000; // 10 MB Memory limit (roughly)
     private Bot Context;
     private SQL.CustomUserCommands Command { get; }
     private IntPtr Pointer = IntPtr.Zero;
