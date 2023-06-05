@@ -454,9 +454,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     {
         IntPtr pointer = IntPtr.Zero;
         long currentMemoryUsage = 0;
-        var timeout = 5000;
+        var timeout = 1000;
 
-        var input = expression;
+        var input = "return " + expression;
 
         Lua lua = new Lua();
 
@@ -521,16 +521,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
         {
-            try
-            {
-                lua.State.Error("too long run time (10 seconds)");
-                lua.State.Close();
-                lua.State.Dispose();
-            }
-            catch (SEHException)
-            {
-                await Context.SendMessage($"Превышено время работы скрипта!");
-            }
+            lua.State.Close();
+            lua.State.Dispose();
+            await Context.SendMessage("Слишком долгое выполнение скрипта");
         }
     }
 }

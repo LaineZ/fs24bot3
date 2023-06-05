@@ -26,7 +26,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     <PackageReference Include="Tomlyn" Version="0.10.2" />
-    <PackageReference Include="NLua" Version="1.6.0" />
+    <PackageReference Include="NLua" Version="1.6.3" />
   </ItemGroup>
 
   <ItemGroup>
