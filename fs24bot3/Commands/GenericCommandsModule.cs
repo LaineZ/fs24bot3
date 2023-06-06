@@ -20,6 +20,7 @@ using Serilog;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using KeraLua;
 
 namespace fs24bot3.Commands;
 public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
@@ -448,17 +449,22 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         await Context.SendMessage(output.ToString());
     }
 
+    private static void MyHookFunction()
+    {
+        // Обработка события
+    }
+
     [Command("calculator", "c", "calc")]
     [Description("Калькулятор")]
     public async Task Calculator([Remainder] string expression)
     {
         IntPtr pointer = IntPtr.Zero;
         long currentMemoryUsage = 0;
-        var timeout = 1000;
+        var timeout = 2000;
 
         var input = "return " + expression;
 
-        Lua lua = new Lua();
+        NLua.Lua lua = new NLua.Lua();
 
         lua.State.SetAllocFunction(((ud, ptr, osize, nsize) =>
         {
@@ -479,6 +485,17 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         lua.State.Encoding = Encoding.UTF8;
 
 
+        var time = 0;
+        lua.State.SetHook(((_, _) =>
+        {
+            if (time > timeout)
+            {
+                lua.State.Error("this calcuation is too hard for me");
+            }
+            time++;
+        }), LuaHookMask.Count, 1);
+
+
         // block danger functions
         lua["os.execute"] = null;
         lua["os.exit"] = null;
@@ -497,33 +514,24 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         lua["load"] = null;
 
 
-        var task = Task.Run(async () =>
+        try
         {
-            try
+            var res = lua.DoString(input)[0];
+            if (res != null)
             {
-                var res = lua.DoString(input)[0];
-                if (res != null)
-                {
-                    await Context.SendMessage(res.ToString());
-                } 
-                else
-                {
-                    await Context.SendMessage("PENETRATION TEST, TEST. СПЕЦИАЛЬНО ДЛЯ ТЕБЯ!!!");
-                }
+                await Context.SendMessage(res.ToString());
             }
-            catch (Exception e)
+            else
             {
-                await Context.SendMessage($"Ошибка выражения: {e.Message}");
-                lua.Close();
-                lua.Dispose();
+                await Context.SendMessage("PENETRATION TEST, TEST. СПЕЦИАЛЬНО ДЛЯ ТЕБЯ!!!");
             }
-        });
-
-        if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
+        }
+        catch (Exception e)
         {
-            lua.State.Close();
-            lua.State.Dispose();
-            await Context.SendMessage("Слишком долгое выполнение скрипта");
+            await Context.SendMessage($"Ошибка выражения: {e.Message}");
+            lua.Close();
+            lua.Dispose();
         }
     }
 }
+                                                                
