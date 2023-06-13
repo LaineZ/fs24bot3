@@ -9,17 +9,13 @@ using System.Threading.Tasks;
 using fs24bot3.QmmandsProcessors;
 using fs24bot3.Core;
 using System.Globalization;
-using fs24bot3.Systems;
 using fs24bot3.Helpers;
 using SQLite;
 using System.Diagnostics;
 using fs24bot3.Properties;
 using System.Text;
-using NLua;
 using Serilog;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using KeraLua;
 
 namespace fs24bot3.Commands;
@@ -447,11 +443,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         }
         await Context.SendMessage(output.ToString());
-    }
-
-    private static void MyHookFunction()
-    {
-        // Обработка события
     }
 
     [Command("calculator", "c", "calc")]
