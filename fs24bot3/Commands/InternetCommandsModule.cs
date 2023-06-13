@@ -5,16 +5,19 @@ using fs24bot3.QmmandsProcessors;
 using Genbox.WolframAlpha;
 using HtmlAgilityPack;
 using MCQuery;
+using NetIRC;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
 using SQLite;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
+
 public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
@@ -320,6 +323,59 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
                 break;
             }
         }
+    }
+
+    [Command("prz", "prazdnik", "holiday", "kakojsegodnjaprazdnik")]
+    [Description("Какой сегодня или завтра праздник?")]
+    public async Task Holiday(uint month = 0, uint day = 0)
+    {
+
+        if (month == 0 || month > 12)
+        {
+            month = (uint)DateTime.Now.Month;
+        }
+
+        if (day == 0)
+        {
+            day = (uint)DateTime.Now.Day;
+        }
+
+        var humanMonth = new Dictionary<int, string>()
+        {
+            {1, "yanvar"  },
+            {2, "fevral"  },
+            {3, "mart"    },
+            {4, "aprel"   },
+            {5, "may"     },
+            {6, "iyun"    },
+            {7, "iyul"    },
+            {8, "avgust"  },
+            {9, "sentyabr"},
+            {10, "oktyabr"},
+            {11, "noyabr" },
+            {12, "dekabr" },
+        };
+
+
+        string url = "https://kakoysegodnyaprazdnik.ru/baza/" + humanMonth[(int)month] + "/" + day;
+
+        var response = await Context.HttpTools.GetResponseAsync(url);
+        Log.Verbose(url);
+        var doc = new HtmlDocument();
+        doc.LoadHtml(await response.Content.ReadAsStringAsync());
+
+        var outputs = new List<string>();
+
+        HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@itemprop='suggestedAnswer']//span[@itemprop='text']");
+        if (divContainer != null)
+        {
+            foreach (var node in divContainer)
+            {
+                outputs.Add(node.InnerText);
+            }
+        }
+
+        await Context.SendMessage(Context.Channel, $"[b]{day}-{month}-{DateTime.Today.Year}:[r] у нас: [b]{outputs.Random()}");
     }
 
     [Command("wa", "wolfram", "wolframalpha")]
