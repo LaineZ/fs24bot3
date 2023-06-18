@@ -221,7 +221,7 @@ public class Bot
                 await Client.SendMessage(message.Target, "Команда выключена...");
                 break;
             case CommandNotFoundResult _:
-                CustomCommandProcessor.ProcessCmd(prefix, in message);
+                await CustomCommandProcessor.ProcessCmd(prefix, message);
                 break;
             case CommandExecutionFailedResult err:
                 if (err.Exception.GetType() == typeof(JsonReaderException) || err.Exception.GetType() == typeof(JsonException))

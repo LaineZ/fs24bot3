@@ -46,7 +46,7 @@ public class CommandProcessor
             await SendMessage(Channel, message);
         }
 
-        public async void SendSadMessage(string channel, string message = "")
+        public async Task SendSadMessage(string channel, string message = "")
         {
             if (!message.Any())
             {
@@ -56,6 +56,11 @@ public class CommandProcessor
             {
                 await BotCtx.Client.SendMessage(channel, "[gray]" + message);
             }
+        }
+
+        public async Task SendSadMessage()
+        {
+            await SendSadMessage(Channel);
         }
 
         public async void SendErrorMessage(string channel, string message)

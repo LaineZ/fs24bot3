@@ -65,6 +65,6 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
             return;
         }
         
-        Context.SendSadMessage(Context.Channel);
+        await Context.SendSadMessage();
     }
 }

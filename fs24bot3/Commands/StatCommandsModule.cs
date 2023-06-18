@@ -72,7 +72,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
         if (!sms.Any())
         {
-            Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
+            await Context.SendSadMessage();
             return;
         }
 

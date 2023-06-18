@@ -79,11 +79,11 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
                 }
             }
 
-            Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
+            await Context.SendSadMessage();
         }
         catch (JsonSerializationException)
         {
-            Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
+            await Context.SendSadMessage();
         }
     }
 
@@ -160,6 +160,6 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
             }
         }
 
-        Context.SendSadMessage(Context.Channel, "Не удалось найти треки...");
+        await Context.SendSadMessage();
     }
 }

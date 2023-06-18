@@ -89,7 +89,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             }
         }
 
-        Context.SendSadMessage(Context.Channel, 
+        await Context.SendSadMessage(Context.Channel, 
             $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {ConfigurationProvider.Config.Prefix}cmdinfo");
     }
 
@@ -101,7 +101,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (time.Contains('-'))
         {
-            Context.SendSadMessage(Context.Channel, "Отрицательные числа недопустимы");
+            await Context.SendSadMessage(Context.Channel, "Отрицательные числа недопустимы");
             return;
         }
 
@@ -135,7 +135,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (totalSecs < 0)
         {
-            Context.SendSadMessage(Context.Channel, "Потерялся во времени?");
+            await Context.SendSadMessage(Context.Channel, "Потерялся во времени?");
             return;
         }
 
@@ -156,7 +156,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
         else
         {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendSadMessage();
         }
     }
 
@@ -195,7 +195,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (!reminds.Any())
         {
-            Context.SendSadMessage(Context.Channel, $"У пользователя {username} нет напоминаний!");
+            await Context.SendSadMessage(Context.Channel, $"У пользователя {username} нет напоминаний!");
             return;
         }
 
@@ -234,7 +234,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (!warns.Any())
         {
-            Context.SendSadMessage(Context.Channel, $"У вас нет предупреждений!");
+            await Context.SendSadMessage(Context.Channel, $"У вас нет предупреждений!");
             return;
         }
 
@@ -268,7 +268,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
         else
         {
-            Context.SendSadMessage(Context.Channel, "Символы не обнаружены");
+            await Context.SendSadMessage(Context.Channel, "Символы не обнаружены");
         }
     }
 

@@ -42,12 +42,12 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         {
             if (Context.BotCtx.Shop.Items[itemname].Sellable)
             {
-                Context.SendSadMessage(Context.Channel,
+                await Context.SendSadMessage(Context.Channel,
                 $"Данный предмет невозможно {(sell ? "продать" : $"купить. Недостаточно денег: {price}")}.");
             }
             else
             {
-                Context.SendSadMessage(Context.Channel, $"У вас нет такого предмета!");
+                await Context.SendSadMessage(Context.Channel, $"У вас нет такого предмета!");
             }
         }
     }
@@ -244,7 +244,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                     catch (SQLiteException)
                     {
                         Context.User.AddItemToInv(Context.BotCtx.Shop, "money", 3000);
-                        Context.SendSadMessage(Context.Channel, "Тег уже существует!");
+                        await Context.SendSadMessage(Context.Channel, "Тег уже существует!");
                     }
                 }
                 break;
@@ -260,12 +260,12 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                     }
                     else
                     {
-                        Context.SendSadMessage(Context.Channel, "Вы не создатель тега!");
+                        await Context.SendSadMessage(Context.Channel, "Вы не создатель тега!");
                     }
                 }
                 else
                 {
-                    Context.SendSadMessage(Context.Channel);
+                    await Context.SendSadMessage();
                 }
                 break;
         }
@@ -280,7 +280,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
 
         if (query == null)
         {
-            Context.SendSadMessage(Context.Channel, "Тег не найден");
+            await Context.SendSadMessage(Context.Channel, "Тег не найден");
         }
 
         var destuser = new User(destanation, Context.BotCtx.Connection, Context);
@@ -310,7 +310,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         }
         else
         {
-            Context.SendSadMessage(Context.Channel, $"У вас нет предмета {Context.BotCtx.Shop.Items[itemname].Name} чтобы его использовать");
+            await Context.SendSadMessage(Context.Channel, $"У вас нет предмета {Context.BotCtx.Shop.Items[itemname].Name} чтобы его использовать");
         }
 
         if (delete)

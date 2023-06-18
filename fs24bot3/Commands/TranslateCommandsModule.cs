@@ -32,7 +32,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         }
         catch (ArgumentException)
         {
-            Context.SendSadMessage(Context.Channel, $"Вы указали неверный язык при переводе. Используйте .helpcmd tr чтобы узнать как пользоваться командой!");
+            await Context.SendSadMessage(Context.Channel, $"Вы указали неверный язык при переводе. Используйте .helpcmd tr чтобы узнать как пользоваться командой!");
         }
     }
 

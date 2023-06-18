@@ -1,6 +1,7 @@
 ﻿using fs24bot3.Models;
 using Serilog;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace fs24bot3.Core;
 
@@ -16,7 +17,7 @@ public class CustomCommandProcessor
         Log.Information("Custom command processor enabled!");
     }
 
-    public bool ProcessCmd(string prefix, in MessageGeneric message)
+    public async Task<bool> ProcessCmd(string prefix, MessageGeneric message)
     {
         var argsArray = message.Body.Split(" ").ToList();
         // remove command prefix
@@ -34,7 +35,8 @@ public class CustomCommandProcessor
             }
             else
             {
-                new LuaExecutor(Context, cmd).Execute(message.Sender.Username, message.Target, message.Body,
+                var exec = new LuaExecutor(Context, cmd);
+                await exec.Execute(message.Sender.Username, message.Target, message.Body,
                     string.Join(" ", argsArray));
             }
 

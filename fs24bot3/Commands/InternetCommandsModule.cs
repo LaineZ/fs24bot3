@@ -41,7 +41,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
             if (jsonOutput == null)
             {
-                Context.SendSadMessage(Context.Channel);
+                await Context.SendSadMessage();
                 return;
             }
 
@@ -85,7 +85,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         if (!curs.ContainsKey(shop))
         {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendSadMessage();
             return;
         }
         await Context.SendMessage($"{shop}: {usd} USD -> {curs[shop.ToLower()] * usd} RUB");
@@ -216,7 +216,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
         else
         {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendSadMessage();
         }
     }
 
@@ -247,7 +247,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
         catch (IndexOutOfRangeException)
         {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendSadMessage();
         }
     }
 
@@ -263,7 +263,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         if (lookup == null)
         {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendSadMessage();
             return;
         }
 
@@ -286,7 +286,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         if (stockObj == null)
         {
-            Context.SendSadMessage(Context.Channel, "Не удалось найти акцию!");
+            await Context.SendSadMessage(Context.Channel, "Не удалось найти акцию!");
             return;
         }
 
@@ -393,7 +393,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         if (!results.IsSuccess || !results.Pods.Any())
         {
-            Context.SendSadMessage(Context.Channel, RandomMsgs.NotFoundMessages.Random());
+            await Context.SendSadMessage();
             return;
         }
 
@@ -441,12 +441,12 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             }
             else
             {
-                Context.SendSadMessage(Context.Channel);
+                await Context.SendSadMessage();
             }
         }
         catch (InvalidOperationException e)
         {
-            Context.SendSadMessage(Context.Channel, $"Не удалось получить цитаты с inpearls: {e.Message}");
+            await Context.SendSadMessage(Context.Channel, $"Не удалось получить цитаты с inpearls: {e.Message}");
         }
     }
 
@@ -513,19 +513,20 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         string city = Context.User.GetCity(omskWhereYouLive);
         if (city == "" && omskWhereYouLive == "")
         {
-            Context.SendSadMessage(Context.Channel, "Пожалуйста, установите город!");
+            await Context.SendSadMessage(Context.Channel, "Пожалуйста, установите город!");
             return;
         }
 
         try
         {
             var wr = await Context.ServicesHelper.OpenWeatherMap(city);
+
             await Context.SendMessage($"[b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
             $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
         }
-        catch (ArgumentNullException)
+        catch (Exception)
         {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendSadMessage();
         }
     }
 
@@ -535,7 +536,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         string city = Context.User.GetCity(omskWhereYouLive);
         if (city == "" && omskWhereYouLive == "")
         {
-            Context.SendSadMessage(Context.Channel, "Пожалуйста, установите город!");
+            await Context.SendSadMessage(Context.Channel, "Пожалуйста, установите город!");
             return;
         }
 
@@ -547,11 +548,11 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
         catch (ArgumentNullException)
         {
-            Context.SendSadMessage(Context.Channel);
+            await Context.SendSadMessage();
         }
         catch (Exception)
         {
-            Context.SendSadMessage(Context.Channel, "Яндекс.Погода не работает, пробуем OpenWeatherMap...");
+            await Context.SendSadMessage(Context.Channel, "Яндекс.Погода не работает, пробуем OpenWeatherMap...");
             await OpenWeatherMap(omskWhereYouLive);
         }
     }
