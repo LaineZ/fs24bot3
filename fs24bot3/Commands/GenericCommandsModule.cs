@@ -95,9 +95,15 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
     [Command("remind", "in")]
     [Description("Напоминание. time вводится в формате 1m;30s (1 минута и 30 секунд = 90 секунд)")]
-    public async Task Remind(string time = "1m", [Remainder] string message = "Remind")
+    public async Task Remind(string time = "1m", [Remainder] string message = "")
     {
         double totalSecs = 0;
+
+
+        if (message == "")
+        {
+            message = RandomMsgs.RemindMessages.Random();
+        }
 
         if (time.Contains('-'))
         {
