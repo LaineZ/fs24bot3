@@ -409,27 +409,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
     }
 
-    [Command("rndl", "randomlyrics")]
-    [Description("Рандомная песня")]
-    public async Task RandomSong()
-    {
-        var query = Context.BotCtx.Connection.Table<SQL.LyricsCache>().ToList();
-
-        if (query.Count > 0)
-        {
-            string[] lyrics = query.Random().Lyrics.Split("\n");
-            int baseoffset = Context.Random.Next(0, lyrics.Length - 1);
-            string outputmsg = "";
-
-            for (int i = 0; i < Context.Random.Next(1, 5); i++)
-            {
-                if (lyrics.Length > baseoffset + i) { outputmsg += " " + lyrics[baseoffset + i].Trim(); }
-            }
-
-            await Context.SendMessage(Context.Channel, outputmsg);
-        }
-    }
-
     [Command("dtfnamegen", "dtfname")]
     [Description("Генератор имен")]
     public async Task Namegen(uint count = 1)

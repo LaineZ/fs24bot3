@@ -330,33 +330,6 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         await Context.SendMessage(Context.Channel, String.Join(' ', Context.BotCtx.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
     }
 
-    [Command("resetcache")]
-    [Checks.CheckAdmin]
-    public async Task ResetCache()
-    {
-        Context.BotCtx.Connection.Execute("DELETE FROM LyricsCache WHERE addedby IS NULL");
-        await Context.SendMessage(Context.Channel, "Кэш песен УДАЛЕН НАВСЕГДА.....................");
-    }
-
-    [Command("insertlyrics", "inslyr")]
-    public async Task InsertLyrics([Remainder] string song)
-    {
-        var data = song.Split(" - ");
-        if (data.Length > 0)
-        {
-            try
-            {
-                Helpers.Lyrics lyrics = new Helpers.Lyrics(data[0], data[1], Context.BotCtx.Connection);
-                await lyrics.GetLyrics();
-                await Context.SendMessage(Context.Channel, "Готово!");
-            }
-            catch (Exception e)
-            {
-                Context.SendErrorMessage(Context.Channel, "Ошибка при получении слов: " + e.Message);
-            }
-        }
-    }
-
     [Command("ignore")]
     [Checks.CheckAdmin]
     public async Task Ignore(CommandToggles.CommandEdit action, [Remainder] string username)

@@ -63,38 +63,4 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
             await Context.SendMessage(Context.Channel, RandomMsgs.BanMessages.Random());
         }
     }
-
-    [Command("trlyrics", "trlyr")]
-    [Checks.FullAccount]
-    [Description("Текст песни (Перевод)")]
-    public async Task LyricsTr(Language lang, [Remainder] string song)
-    {
-        Context.User.SetContext(Context);
-        var data = song.Split(" - ");
-        
-        if (data.Length > 0)
-        {
-            try
-            {
-                Helpers.Lyrics lyrics = new Helpers.Lyrics(data[0], data[1], Context.BotCtx.Connection);
-
-                string lyricsOut = await lyrics.GetLyrics();
-
-                if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, "money", 1000 + lyricsOut.Length))
-                {
-                    var resultTranslated = await Context.ServicesHelper.Translate(lyricsOut, lang.From, lang.To);
-
-                    await Context.SendMessage(Context.Channel, resultTranslated.Text);
-                }
-            }
-            catch (Exception e)
-            {
-                await Context.SendMessage(Context.Channel, e.Message);
-            }
-        }
-        else
-        {
-            await Context.SendMessage(Context.Channel, "Instumental");
-        }
-    }
 }

@@ -108,18 +108,6 @@ public class SQL
         public string Username { get; set; }
     }
 
-    public class LyricsCache
-    {
-        [Column("track")]
-        public string Track { get; set; }
-        [Column("artist")]
-        public string Artist { get; set; }
-        [Column("lyrics")]
-        public string Lyrics { get; set; }
-        [Column("addedby")]
-        public string AddedBy { get; set; }
-    }
-
     public class UtfCharacters
     {
         [PrimaryKey]
