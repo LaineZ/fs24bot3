@@ -66,6 +66,8 @@ class LuaExecutor
         lua["pcall"] = null;
         lua["xpcall"] = null;
         lua["load"] = null;
+        lua["loadfile"] = null;
+        lua["dofile"] = null;
 
         // just a bunch of globals
         lua["RANDOM_NICK"] = nick;

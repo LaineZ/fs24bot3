@@ -488,6 +488,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         lua["pcall"] = null;
         lua["xpcall"] = null;
         lua["load"] = null;
+        lua["loadfile"] = null;
+        lua["dofile"] = null;
+        lua["luanet"] = null;
 
 
         try
