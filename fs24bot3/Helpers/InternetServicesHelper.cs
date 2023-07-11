@@ -319,8 +319,8 @@ public class InternetServicesHelper
 
         foreach (var item in langs)
         {
-            //try
-            //{
+            try
+            {
                 var response = await Http.PostJson(ConfigurationProvider.Config.Services.LibretranslateURL + "/translate", new LibreTranslate.Request()
                 {
                     ApiKey = "",
@@ -335,11 +335,11 @@ public class InternetServicesHelper
                 resp = JsonConvert.DeserializeObject<LibreTranslate.Response>(response).TranslatedText;
 
                 Log.Verbose(resp);
-            //}
-            //catch (Exception)
-            //{
-            //    continue;
-            //}
+            }
+            catch (Exception)
+            {
+                continue;
+            }
 
         }
         return resp;
