@@ -149,6 +149,11 @@ public class HttpTools
         {
             if (response.Content.Headers.ContentType.MediaType == "text/plain")
             {
+                if (response.Content.Headers.ContentLength.GetValueOrDefault() > 10000)
+                {
+                    throw new InvalidDataException($"Ошибка в Content-Length запроса: Слишком большой размер, максимальный размер: 10000 байт");
+                }
+
                 return await response.Content.ReadAsStringAsync();
             }
             else

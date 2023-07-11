@@ -311,4 +311,37 @@ public class InternetServicesHelper
 
         throw new Exception(responseString);
     }
+
+    public async Task<string> TranslatePpc(string text)
+    {
+        string[] langs = { "en", "ru", "ja", "pt", "nl", "ru" };
+        string resp = text;
+
+        foreach (var item in langs)
+        {
+            //try
+            //{
+                var response = await Http.PostJson(ConfigurationProvider.Config.Services.LibretranslateURL + "/translate", new LibreTranslate.Request()
+                {
+                    ApiKey = "",
+                    RequestText = resp,
+                    Source = "auto",
+                    Format = "text",
+                    Target = item
+                });
+
+                Log.Verbose(response);
+
+                resp = JsonConvert.DeserializeObject<LibreTranslate.Response>(response).TranslatedText;
+
+                Log.Verbose(resp);
+            //}
+            //catch (Exception)
+            //{
+            //    continue;
+            //}
+
+        }
+        return resp;
+    }
 }

@@ -40,6 +40,8 @@ public class Services
     public string OpenWeatherMapKey { get; set; }
     [DataMember(Name = "yandex_weather_key")]
     public string YandexWeatherKey { get; set; }
+    [DataMember(Name = "libretranslate_url")]
+    public string LibretranslateURL { get; set; }
 }
 
 public class Configuration
@@ -69,6 +71,7 @@ public class Configuration
             YoutubeDlPath = "youtube-dl",
             OpenWeatherMapKey = "0",
             YandexWeatherKey = "0",
+            LibretranslateURL = "http://localhost:4200"
         };
     }
 }

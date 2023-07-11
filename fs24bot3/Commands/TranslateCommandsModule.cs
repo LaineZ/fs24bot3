@@ -36,7 +36,15 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
-    [Command("trppc", "trl")]
+    [Command("trppc")]
+    [Description("Ппц жесть переводчик")]
+    public async Task TranslatePpc([Remainder] string text)
+    {
+        var output = await Context.ServicesHelper.TranslatePpc(text);
+        await Context.SendMessage(Context.Channel, output);
+    }
+
+    [Command("trl")]
     [Description("Переводчик (ппц). Параметр lang вводится так же как и в tr")]
     public async Task TranslatePpc2(Language lang, [Remainder] string text)
     {
