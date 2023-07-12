@@ -182,11 +182,6 @@ public class Bot
 
         PProfiler.BeginMeasure("command");
 
-        if (PProfiler.GetMeasureAvg("command") > 2000)
-        {
-            await Client.SendMessage(message.Target, "Пожалуйста подождите...");
-        }
-
         var result =
             await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(this, in message));
 
