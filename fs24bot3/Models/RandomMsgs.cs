@@ -109,6 +109,8 @@ public class RandomMsgs
         "Remind",
         "Rememberino",
         "Memo",
+        "Напоминание",
+        "alert-destroyed.ogg",
         "Не забывайте, пожалуйста",
         "О, боже, неужели ты забыл?",
         "Не забывай, иначе будет стыдно",

@@ -257,7 +257,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (!File.Exists("chars.sqlite"))
         {
             var http = new HttpTools();
-            await http.DownloadFile("chars.sqlite", "https://bpm140.xyz/chars.sqlite");
+            await http.DownloadFile("chars.sqlite", "https://bpm140.ru/chars.sqlite");
             await Context.SendMessage(Context.Channel, $"Таблица юникода, УСПЕШНО ЗАГРУЖЕНА!");
         }
 
@@ -370,7 +370,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             if (Context.Random.Next(0, 1000) == 25)
             {
                 var left = stopWatch.ElapsedTicks * (totalDays - current);
-                await Context.SendMessage(Context.Channel, $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
+                await Context.SendMessage(Context.Channel, 
+                    $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. " +
+                    $"Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
             }
 
             stopWatch.Restart();
@@ -491,7 +493,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         lua["loadfile"] = null;
         lua["dofile"] = null;
         lua["luanet"] = null;
-
 
         try
         {

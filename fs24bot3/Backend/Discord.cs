@@ -9,6 +9,7 @@ using fs24bot3.Models;
 using Serilog;
 using Tomlyn;
 using System.Text;
+using System.Threading;
 
 namespace fs24bot3.Backend;
 
@@ -140,7 +141,9 @@ public class Discord : IMessagingClient
     public void Process()
     {
         Log.Information("Connecting to Discord...");
-        Task.Run(() => BotClient.ConnectAsync());
-        BotContext.ProccessInfinite();
+        Task.Run(async () => { Log.Verbose("лох"); 
+            await BotClient.ConnectAsync();
+            BotContext.ProccessInfinite(); });
+        Console.ReadLine();
     }
 }
