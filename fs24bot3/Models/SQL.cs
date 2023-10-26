@@ -37,6 +37,7 @@ public class SQL
     public class ScriptStorage
     {
         [PrimaryKey]
+        public int Id { get; set; }
         public string Command { get; set; }
         public string Nick { get; set; }
         public string Data { get; set; }

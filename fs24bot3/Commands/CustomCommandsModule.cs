@@ -6,6 +6,7 @@ using SQLite;
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
@@ -237,6 +238,15 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
         {
             await Context.SendMessage(Context.Channel, "[gray]Команды не существует");
         }
+    }
+
+    [Command("cmdupdurl")]
+    [Description("Полное обновление вывода команды (ПО URL)")]
+    [Checks.FullAccount]
+    public async Task LuaUpdCoommandUrl(string command, string rawurl)
+    {
+        var response = await http.GetTextPlainResponse(rawurl);
+        await LuaUpdCoommand(command, response);
     }
 
     [Command("delcmd")]

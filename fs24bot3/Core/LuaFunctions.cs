@@ -51,15 +51,22 @@ public class LuaFunctions
 
     public bool SetLocalStorage(string data)
     {
-        if (Encoding.Unicode.GetByteCount(data) < 1024)
+        var query = Connection.Table<SQL.ScriptStorage>().Where(v => v.Nick.Equals(Caller) && v.Command == Command);
+
+
+        if (!query.Any())
         {
-            Connection.InsertOrReplace(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = data });
+            Connection.Execute("INSERT INTO ScriptStorage (Command, Nick, Data) VALUES (?, ?, ?)", Command, Caller, data);
             return true;
         }
-        else
+
+        if (Encoding.Unicode.GetByteCount(data) < 1024)
         {
-            return false;
+            Connection.Execute("UPDATE ScriptStorage SET Data = ? WHERE Nick = ? AND Command = ?", data, Caller, Command);
+            return true;
         }
+
+        return false;
     }
 
     public void ClearLocalStorage()
@@ -70,9 +77,15 @@ public class LuaFunctions
     public bool AppendLocalStorage(string data)
     {
         string totalData = GetLocalStorage() + data;
+
+        if (totalData == null)
+        {
+            return false;
+        }
+
         if (Encoding.Unicode.GetByteCount(totalData) < 1024)
         {
-            Connection.InsertOrReplace(new SQL.ScriptStorage() { Command = Command, Nick = Caller, Data = totalData });
+            Connection.Execute("UPDATE ScriptStorage SET Data = ? WHERE Nick = ? AND Command = ?", totalData, Caller, Command);
             return true;
         }
         else

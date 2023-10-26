@@ -493,6 +493,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         lua["loadfile"] = null;
         lua["dofile"] = null;
         lua["luanet"] = null;
+        lua["getmetatable"] = null;
+        lua["setmetatable"] = null;
+        lua["package"] = null;
 
         try
         {
