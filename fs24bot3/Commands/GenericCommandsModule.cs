@@ -56,17 +56,17 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         string commandsOutput = Resources.help;
         var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
         string commandList = string.Join('\n', cmds.Where(x => !x.Checks.Any(x => x is Checks.CheckAdmin)).
-            Select(x => 
+            Select(x =>
             $"<strong>{ConfigurationProvider.Config.Prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
         string customList = string.Join('\n', string.Join("\n", customCommands.
-            Select(x => 
+            Select(x =>
             $"<p>{ConfigurationProvider.Config.Prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {(x.IsLua == 1 ? "Да" : "Нет")} </p>")));
 
         commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
         commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
 
         string link = await InternetServicesHelper.UploadToTrashbin(commandsOutput);
-        await Context.SendMessage(Context.Channel, 
+        await Context.SendMessage(Context.Channel,
             $"Выложены команды по этой ссылке: {link} также вы можете написать {ConfigurationProvider.Config.Prefix}helpcmd имякоманды для получения дополнительной помощи");
     }
 
@@ -89,7 +89,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             }
         }
 
-        await Context.SendSadMessage(Context.Channel, 
+        await Context.SendSadMessage(Context.Channel,
             $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {ConfigurationProvider.Config.Prefix}cmdinfo");
     }
 
@@ -149,6 +149,37 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
         Context.User.AddRemind(ts, message, Context.Channel);
         await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
+    }
+
+
+    [Command("at", "remindat")]
+    [Description("Напоминание. Введите дату и время в формате 'yyyy-MM-dd HH:mm:ss'")]
+    public async Task RemindAt(string dateTimeString, [Remainder] string message = "")
+    {
+        if (message == "")
+        {
+            message = RandomMsgs.RemindMessages.Random();
+        }
+
+        var timeZone = Context.User.GetTimeZone();
+        if (DateTime.TryParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime remindDateTime))
+        {
+            remindDateTime = TimeZoneInfo.ConvertTimeToUtc(remindDateTime, timeZone);
+
+            if (remindDateTime <= DateTime.UtcNow)
+            {
+                await Context.SendSadMessage(Context.Channel, "Потерялся во времени?");
+                return;
+            }
+
+            TimeSpan timeUntilRemind = remindDateTime - DateTime.UtcNow;
+            Context.User.AddRemind(timeUntilRemind, message, Context.Channel);
+            await Context.SendMessage(Context.Channel, $"{message} в {dateTimeString} {TrimTimezoneName(timeZone.DisplayName)}");
+        }
+        else
+        {
+            Context.SendErrorMessage(Context.Channel, "Неверный формат даты и времени. Используйте 'yyyy-MM-dd HH:mm:ss'");
+        }
     }
 
     [Command("delmind", "delremind", "deleteremind")]
@@ -259,7 +290,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         {
             var http = new HttpTools();
             await http.DownloadFile("chars.sqlite", "https://bpm140.ru/chars.sqlite");
-            await Context.SendMessage(Context.Channel, $"Таблица юникода, УСПЕШНО ЗАГРУЖЕНА!");
+            await Context.SendMessage(Context.Channel, $"Таблица юникода... УСПЕШНО ЗАГРУЖЕНА!");
         }
 
         SQLiteConnection connect = new SQLiteConnection("chars.sqlite");
@@ -371,7 +402,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             if (Context.Random.Next(0, 1000) == 25)
             {
                 var left = stopWatch.ElapsedTicks * (totalDays - current);
-                await Context.SendMessage(Context.Channel, 
+                await Context.SendMessage(Context.Channel,
                     $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. " +
                     $"Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
             }
@@ -401,7 +432,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             var lastmsg = messages.LastOrDefault(x => x.Nick == destination);
             if (lastmsg != null)
             {
-                await Context.SendMessage(Context.Channel, 
+                await Context.SendMessage(Context.Channel,
                     $"Последнее сообщение от пользователя: [b]" +
                     $"{messages.LastOrDefault(x => x.Nick == destination)?.Message}");
             }
@@ -518,4 +549,3 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
     }
 }
-                                                                
