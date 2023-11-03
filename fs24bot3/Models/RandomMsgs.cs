@@ -121,6 +121,7 @@ public class RandomMsgs
         "Не забывай, что это важно",
         "Не забудь об этом важном деле",
         "Звезда из далекой галактики прислала тебе этот сигнал: помни",
+        "CELL"
     };
 
     public static readonly string[] BadWordsSubstrings =

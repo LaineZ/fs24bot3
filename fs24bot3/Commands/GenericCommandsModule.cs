@@ -94,11 +94,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     }
 
     [Command("remind", "in")]
-    [Description("Напоминание. time вводится в формате 1m;30s (1 минута и 30 секунд = 90 секунд)")]
+    [Description("Напоминание. time вводится в формате 1m30s (1 минута и 30 секунд = 90 секунд)")]
     public async Task Remind(string time = "1m", [Remainder] string message = "")
     {
         double totalSecs = 0;
-
 
         if (message == "")
         {
@@ -111,30 +110,32 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             return;
         }
 
-        foreach (var part in time.Split(';'))
+        var timeSegments = Regex.Matches(time, @"(\d+[ywdhms])");
+        foreach (Match segment in timeSegments)
         {
-            switch (part[^1])
+            var value = uint.Parse(segment.Value.TrimEnd('y', 'w', 'd', 'h', 'm', 's'));
+            switch (segment.Value[^1])
             {
                 case 'y':
-                    totalSecs += 31556926 * uint.Parse(part.Trim('y'));
+                    totalSecs += 31556926 * value;
                     break;
                 case 'w':
-                    totalSecs += 604800 * uint.Parse(part.Trim('w'));
+                    totalSecs += 604800 * value;
                     break;
                 case 'd':
-                    totalSecs += 86400 * uint.Parse(part.Trim('d'));
+                    totalSecs += 86400 * value;
                     break;
                 case 'h':
-                    totalSecs += 3600 * uint.Parse(part.Trim('h'));
+                    totalSecs += 3600 * value;
                     break;
                 case 'm':
-                    totalSecs += 60 * uint.Parse(part.Trim('m'));
+                    totalSecs += 60 * value;
                     break;
                 case 's':
-                    totalSecs += 1 * uint.Parse(part.Trim('s'));
+                    totalSecs += value;
                     break;
                 default:
-                    Context.SendErrorMessage(Context.Channel, $"Неизвестная единица измерения времени: {part[^1]}");
+                    Context.SendErrorMessage(Context.Channel, $"Неизвестная единица измерения времени: {segment.Value[^1]}");
                     return;
             }
         }
