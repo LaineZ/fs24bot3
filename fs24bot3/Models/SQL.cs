@@ -63,6 +63,18 @@ public class SQL
     public class Reminds
     {
         [PrimaryKey]
+        [AutoIncrement]
+        public int Id { get; set; }
+        public uint RemindDate { get; set; }
+        public string Nick { get; set; }
+        public string Channel { get; set; }
+        public string Message { get; set; }
+    }
+
+    // for migration
+    public class RemindsOld
+    {
+        [PrimaryKey]
         public uint RemindDate { get; set; }
         public string Nick { get; set; }
         public string Channel { get; set; }

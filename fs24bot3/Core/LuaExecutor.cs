@@ -1,10 +1,13 @@
 ﻿using fs24bot3.Helpers;
 using fs24bot3.Models;
+using KeraLua;
 using NLua;
 using Serilog;
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Core;
@@ -15,8 +18,6 @@ class LuaExecutor
 
     private Bot Context;
     private SQL.CustomUserCommands Command { get; }
-    private IntPtr Pointer = IntPtr.Zero;
-    private long CurrentMemoryUsage = 0;
 
     public LuaExecutor(Bot context, SQL.CustomUserCommands command)
     {
@@ -24,30 +25,51 @@ class LuaExecutor
         Command = command;
     }
 
-    public async Task Execute(string senderNick, string channel, string message, string args)
-    {
-        var arr = Context.Connection.Table<SQL.UserStats>().ToList();
-        var nick = MessageHelper.AntiHightlight(arr[new Random().Next(0, arr.Count - 1)].Nick);
-        var timeout = 10000;
-        var time = 0;
 
-        Lua lua = new Lua();
+    public static NLua.Lua CreateLuaState(int timeout = 2000)
+    {
+        IntPtr pointer = IntPtr.Zero;
+        long currentMemoryUsage = 0;
+
+        NLua.Lua lua = new NLua.Lua();
+
         lua.State.SetAllocFunction(((ud, ptr, osize, nsize) =>
         {
-            CurrentMemoryUsage += (long)nsize;
+            currentMemoryUsage += (long)nsize;
 
-            Log.Verbose("[LUA] MEMORY ALLOCATION: {0} bytes width: {1}", 
-                CurrentMemoryUsage, (int)nsize.ToUInt32());
+            Log.Verbose("[LUA] MEMORY ALLOCATION: {0} bytes width: {1}",
+                currentMemoryUsage, (int)nsize.ToUInt32());
 
-            if (CurrentMemoryUsage > MEMORY_LIMIT)
+            if (currentMemoryUsage > LuaExecutor.MEMORY_LIMIT)
             {
                 return IntPtr.Zero;
             }
 
-            return ptr != IntPtr.Zero && nsize.ToUInt32() > 0 ? 
-            Marshal.ReAllocHGlobal(ptr, unchecked((IntPtr)(long)(ulong)nsize)) : 
+            return ptr != IntPtr.Zero && nsize.ToUInt32() > 0 ?
+            Marshal.ReAllocHGlobal(ptr, unchecked((IntPtr)(long)(ulong)nsize)) :
             Marshal.AllocHGlobal((int)nsize.ToUInt32());
-        }), ref Pointer);
+        }), ref pointer);
+        lua.State.Encoding = Encoding.UTF8;
+
+
+        var time = 0;
+        lua.State.SetHook(((_, _) =>
+        {
+            if (time > timeout)
+            {
+                lua.State.Error("execution timeout");
+            }
+            time++;
+        }), LuaHookMask.Count, 1);
+
+        return lua;
+    }
+
+    public async Task Execute(string senderNick, string channel, string message, string args)
+    {
+        var arr = Context.Connection.Table<SQL.UserStats>().ToList();
+        var nick = MessageHelper.AntiHightlight(arr[new Random().Next(0, arr.Count - 1)].Nick);
+        var lua = CreateLuaState();
         lua.State.Encoding = Encoding.UTF8;
 
         // block danger functions
@@ -77,15 +99,6 @@ class LuaExecutor
         LuaFunctions luaFunctions = new LuaFunctions(Context.Connection, 
                                         senderNick, Command.Command);
         lua["Cmd"] = luaFunctions;
-
-        lua.State.SetHook(((_, _) =>
-        {
-            if (time > timeout)
-            {
-                lua.State.Error("too long run time");
-            }
-            time++;
-        }), KeraLua.LuaHookMask.Count, 1);
 
         try
         {

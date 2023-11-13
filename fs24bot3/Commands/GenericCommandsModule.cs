@@ -17,6 +17,7 @@ using System.Text;
 using Serilog;
 using System.Runtime.InteropServices;
 using KeraLua;
+using System.Threading;
 
 namespace fs24bot3.Commands;
 public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
@@ -111,6 +112,13 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
 
         var timeSegments = Regex.Matches(time, @"(\d+[ywdhms])");
+
+        if (!timeSegments.Any())
+        {
+            Context.SendErrorMessage(Context.Channel, $"Неверный формат времени или неверные единицы измерения времени");
+            return;
+        }
+
         foreach (Match segment in timeSegments)
         {
             var value = uint.Parse(segment.Value.TrimEnd('y', 'w', 'd', 'h', 'm', 's'));
@@ -140,7 +148,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             }
         }
 
-        if (totalSecs < 0)
+        if (totalSecs <= 0)
         {
             await Context.SendSadMessage(Context.Channel, "Потерялся во времени?");
             return;
@@ -161,25 +169,29 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             message = RandomMsgs.RemindMessages.Random();
         }
 
-        var timeZone = Context.User.GetTimeZone();
-        if (DateTime.TryParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime remindDateTime))
+        string[] formats = { "yyyy-MM-dd HH:mm:ss", "HH:mm", "HH:mm:ss", "yyyy-MM-dd" };
+        foreach (var item in formats)
         {
-            remindDateTime = TimeZoneInfo.ConvertTimeToUtc(remindDateTime, timeZone);
-
-            if (remindDateTime <= DateTime.UtcNow)
+            var timeZone = Context.User.GetTimeZone();
+            if (DateTime.TryParseExact(dateTimeString, item, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime remindDateTime))
             {
-                await Context.SendSadMessage(Context.Channel, "Потерялся во времени?");
+                remindDateTime = TimeZoneInfo.ConvertTimeToUtc(remindDateTime, timeZone);
+
+                if (remindDateTime <= DateTime.UtcNow)
+                {
+                    await Context.SendSadMessage(Context.Channel, "Потерялся во времени?");
+                    return;
+                }
+
+                TimeSpan timeUntilRemind = remindDateTime - DateTime.UtcNow;
+                Context.User.AddRemind(timeUntilRemind, message, Context.Channel);
+                await Context.SendMessage(Context.Channel, $"{message} в {dateTimeString} {TrimTimezoneName(timeZone.DisplayName)}");
                 return;
             }
+            continue;
+        }
 
-            TimeSpan timeUntilRemind = remindDateTime - DateTime.UtcNow;
-            Context.User.AddRemind(timeUntilRemind, message, Context.Channel);
-            await Context.SendMessage(Context.Channel, $"{message} в {dateTimeString} {TrimTimezoneName(timeZone.DisplayName)}");
-        }
-        else
-        {
-            Context.SendErrorMessage(Context.Channel, "Неверный формат даты и времени. Используйте 'yyyy-MM-dd HH:mm:ss'");
-        }
+        await Context.SendSadMessage(Context.Channel, $"Неверный формат времени, допустимые форматы: {string.Join(", ", formats)}");
     }
 
     [Command("delmind", "delremind", "deleteremind")]
@@ -249,7 +261,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             if (usr.Username == Context.User.Username)
             {
                 rems.Append(
-                    $"id: {remind.RemindDate}: \"{remind.Message}\" в [b]{dtDateTime.ToString(rus)}" +
+                    $"id: {remind.Id}: \"{remind.Message}\" в [b]{dtDateTime.ToString(rus)}" +
                     $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
             }
             else
@@ -468,43 +480,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     [Description("Калькулятор")]
     public async Task Calculator([Remainder] string expression)
     {
-        IntPtr pointer = IntPtr.Zero;
-        long currentMemoryUsage = 0;
-        var timeout = 2000;
-
         var input = "return " + expression;
-
-        NLua.Lua lua = new NLua.Lua();
-
-        lua.State.SetAllocFunction(((ud, ptr, osize, nsize) =>
-        {
-            currentMemoryUsage += (long)nsize;
-
-            Log.Verbose("[LUA] MEMORY ALLOCATION: {0} bytes width: {1}",
-                currentMemoryUsage, (int)nsize.ToUInt32());
-
-            if (currentMemoryUsage > LuaExecutor.MEMORY_LIMIT)
-            {
-                return IntPtr.Zero;
-            }
-
-            return ptr != IntPtr.Zero && nsize.ToUInt32() > 0 ?
-            Marshal.ReAllocHGlobal(ptr, unchecked((IntPtr)(long)(ulong)nsize)) :
-            Marshal.AllocHGlobal((int)nsize.ToUInt32());
-        }), ref pointer);
-        lua.State.Encoding = Encoding.UTF8;
-
-
-        var time = 0;
-        lua.State.SetHook(((_, _) =>
-        {
-            if (time > timeout)
-            {
-                lua.State.Error("this calcuation is too hard for me");
-            }
-            time++;
-        }), LuaHookMask.Count, 1);
-
+        var lua = LuaExecutor.CreateLuaState();
 
         // block danger functions
         lua["os.execute"] = null;

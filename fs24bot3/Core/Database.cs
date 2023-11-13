@@ -17,7 +17,32 @@ public class Database
         connection.CreateTable<SQL.Item>();
         connection.CreateTable<SQL.Ignore>();
         connection.CreateTable<SQL.ScriptStorage>();
-        connection.CreateTable<SQL.Reminds>();
+
+        try
+        {
+            connection.CreateTable<SQL.Reminds>();
+        }
+        catch (SQLiteException)
+        {
+            // Reminds: Migrate from old one to new
+            connection.Execute("ALTER TABLE Reminds RENAME TO RemindsOld");
+            connection.CreateTable<SQL.Reminds>();
+            var query = connection.Table<SQL.RemindsOld>().ToList();
+
+            foreach (var item in query)
+            {
+                connection.Insert(new SQL.Reminds
+                {
+                    Channel = item.Channel,
+                    Message = item.Message,
+                    Nick = item.Nick,
+                    RemindDate = item.RemindDate
+                });
+            }
+
+            connection.DropTable<SQL.RemindsOld>();
+        }
+        
         connection.CreateTable<SQL.UtfCharacters>();
         connection.CreateTable<SQL.UnhandledExceptions>();
         connection.CreateTable<SQL.Fishing>();

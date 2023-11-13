@@ -245,12 +245,12 @@ public class User
 
     public List<SQL.Reminds> GetReminds()
     {
-        return Connect.Table<SQL.Reminds>().Where(x => x.Nick == Username).ToList();
+        return Connect.Table<SQL.Reminds>().Where(x => x.Nick == Username).OrderBy(x => x.RemindDate).ToList();
     }
 
     public bool DeleteRemind(uint id)
     {
-        var affected = Connect.Execute("DELETE FROM Reminds WHERE Nick = ? AND RemindDate = ?", Username, id);
+        var affected = Connect.Execute("DELETE FROM Reminds WHERE Nick = ? AND Id = ?", Username, id);
         return affected > 0;
     }
 
