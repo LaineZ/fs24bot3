@@ -182,8 +182,10 @@ public class Bot
 
         PProfiler.BeginMeasure("command");
 
+        var auth = await Client.EnsureAuthorization(message.Sender);
+
         var result =
-            await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(this, in message));
+            await Service.ExecuteAsync(output, new CommandProcessor.CustomCommandContext(this, in message, auth));
 
         switch (result)
         {

@@ -72,7 +72,7 @@ public class Irc : IMessagingClient
             Log.Warning("IRC backend was unable to find configuration file, I will create it for you");
             File.WriteAllText(ConfigPath, Toml.FromModel(Config));
         }
-        
+
         Fmt = new Dictionary<string, string>
         {
             // add irc colors
@@ -98,15 +98,15 @@ public class Irc : IMessagingClient
 
         SetupNick(Config.Name);
 
-        BotClient = new Client(new NetIRC.User(Name, "Sopli IRC 3.0"), 
+        BotClient = new Client(new NetIRC.User(Name, "Sopli IRC 3.0"),
             new TcpClientConnection(Config.Network, Config.Port));
-        
+
         BotClient.RawDataReceived += Client_OnRawDataReceived;
         BotClient.IRCMessageParsed += Client_OnIRCMessageParsed;
         BotClient.RegistrationCompleted += Client_OnRegister;
     }
-    
-    
+
+
     private async void Client_OnIRCMessageParsed(Client client, ParsedIRCMessage message)
     {
         if (message.IRCCommand == IRCCommand.PRIVMSG)
@@ -129,7 +129,7 @@ public class Irc : IMessagingClient
 
         if (message.NumericReply == IRCNumericReply.ERR_NICKNAMEINUSE)
         {
-           SetupNick(Name + new Random().Next(int.MinValue, int.MaxValue));
+            SetupNick(Name + new Random().Next(int.MinValue, int.MaxValue));
         }
 
         if (message.NumericReply == IRCNumericReply.ERR_PASSWDMISMATCH)
@@ -140,8 +140,8 @@ public class Irc : IMessagingClient
         if (message.IRCCommand == IRCCommand.KICK && message.Parameters[1] == Name)
         {
             Log.Warning("I've got kick from {0} rejoining...", message.Prefix);
-                await client.SendRaw("JOIN " + message.Parameters[0]);
-                await SendMessage(message.Parameters[0], "За что?");
+            await client.SendRaw("JOIN " + message.Parameters[0]);
+            await SendMessage(message.Parameters[0], "За что?");
         }
     }
 
@@ -168,14 +168,14 @@ public class Irc : IMessagingClient
     {
         await BotClient.SendRaw("JOIN " + name);
     }
-    
+
     public async void PartChannel(string name)
     {
         await BotClient.SendRaw("PART " + name);
     }
 
     public void Process()
-    {   
+    {
         Log.Information("Connecting to: {0}:{1}", Config.Network, Config.Port);
         Task.Run(() => BotClient.ConnectAsync());
         BotContext.ProccessInfinite();
@@ -211,11 +211,56 @@ public class Irc : IMessagingClient
 
             if (count > 4)
             {
-                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message), 
+                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message),
                     "addplain");
                 await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
                 return;
             }
         }
+    }
+
+
+    /// <summary>
+    /// Ensures authorization in IRC
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    public async Task<bool> EnsureAuthorization(Core.User user)
+    {        
+        var tcs = new TaskCompletionSource<bool>();
+        ParsedIRCMessageHandler messageHandler = null;
+
+        // ACC returns parsable information about a user's
+        // login status. Note that on many networks, /whois
+        // shows similar information faster and more reliably.
+        // ACC also returns the unique entity ID of the given account.
+        // The answer is in the form <nick> [-> account] ACC <digit> <EID>,
+        // where <digit> is one of the following:
+        //    0 - account or user does not exist
+        //    1 - account exists but user is not logged in
+        //    2 - user is not logged in but recognized (see ACCESS)
+        //    3 - user is logged in
+        // If the account is omitted the user's nick is used and
+        // the " -> account" portion of the reply is omitted.
+        // Account * means the account the user is logged in with.
+        // example:
+        // Totoro ACC 1 AAAAAXXX
+
+        messageHandler = (client, message) =>
+        {
+            if (message.Prefix.From == "NickServ")
+            {
+                var split = message.Trailing.Split(" ");
+
+                tcs.SetResult(split[2] == "3");
+
+                BotClient.IRCMessageParsed -= messageHandler;
+            }
+        };
+
+        BotClient.IRCMessageParsed += messageHandler;
+
+        await SendMessage("NickServ", $"ACC {user.Username}");
+        return await tcs.Task;
     }
 }

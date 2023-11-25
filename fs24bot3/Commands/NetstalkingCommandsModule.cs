@@ -1,12 +1,8 @@
-﻿using fs24bot3.Core;
-using fs24bot3.Helpers;
+﻿using fs24bot3.Helpers;
 using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Qmmands;
-using Serilog;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,11 +13,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
     private static readonly string[] SearxUrls =
     {
-        "https://search.mdosch.de/",
-        "https://search.neet.works/",
-        "https://search.sapti.me/",
         "https://search.trom.tf/",
-        "https://search.unlocked.link/",
         "https://searx.dresden.network/",
         "https://searx.mastodontech.de/",
         "https://searx.mxchange.org/",
@@ -36,6 +28,9 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
         "https://searx.zapashcanon.fr/",
         "https://searxng.nicfab.eu/",
         "https://suche.tromdienste.de/",
+        "https://search.mdosch.de/",
+        "https://search.neet.works/",
+        "https://search.sapti.me/"
     };
     
     public CommandService Service { get; set; }

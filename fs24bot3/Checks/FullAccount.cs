@@ -9,9 +9,9 @@ public sealed class FullAccount : CheckAttribute
     {
         var context = _ as CommandProcessor.CustomCommandContext;
 
-        return !context.FromBridge && !context.User.UserIsIgnored() && context.User != null
+        return !context.FromBridge && !context.User.UserIsIgnored() && context.User != null && context.IsAuthorizedAction
             ? CheckResult.Successful
-            : CheckResult.Failed("Эта команда требует аккаунт пользователя fs24_bot!");
+            : CheckResult.Failed("Эта команда требует аккаунт fs24_bot и авторизацию через NickServ!");
     }
 
     public override string ToString()

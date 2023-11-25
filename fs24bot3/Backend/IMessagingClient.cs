@@ -17,7 +17,6 @@ public interface IMessagingClient
     public Bot BotContext { get; }
 
     public Dictionary<string, string> Fmt { get; }
-
     public void SetupNick(string nickname) { }
     public void JoinChannel(string name)
     {
@@ -28,13 +27,14 @@ public interface IMessagingClient
         throw new NotImplementedException();
     }
 
-    public Task SendMessage(string channel, string message)
-    {
-        throw new NotImplementedException();
-    }
-
+    public Task SendMessage(string channel, string message);
     public void Process() 
     { 
         BotContext.ProccessInfinite();
+    }
+
+    public Task<bool> EnsureAuthorization(User user)
+    {
+        return Task.FromResult(true);
     }
 }

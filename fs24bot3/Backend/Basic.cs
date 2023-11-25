@@ -61,4 +61,9 @@ public class Basic : IMessagingClient
             }
         }
     }
+
+    public Task<bool> EnsureAuthorization(User user)
+    {
+        throw new NotImplementedException();
+    }
 }

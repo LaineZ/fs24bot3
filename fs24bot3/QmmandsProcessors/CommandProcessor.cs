@@ -23,9 +23,11 @@ public class CommandProcessor
         
         public HttpTools HttpTools { get; }
         public InternetServicesHelper ServicesHelper { get; }
+        public bool IsAuthorizedAction { get;  }
+
 
         // Pass your service provider to the base command context.
-        public CustomCommandContext(Bot bot, in MessageGeneric message, IServiceProvider provider = null) : base(provider)
+        public CustomCommandContext(Bot bot, in MessageGeneric message, bool authorized, IServiceProvider provider = null) : base(provider)
         {
             BotCtx = bot;
             Channel = message.Target;
@@ -34,6 +36,7 @@ public class CommandProcessor
             HttpTools = new HttpTools();
             ServicesHelper = new InternetServicesHelper(HttpTools);
             User = message.Sender;
+            IsAuthorizedAction = authorized;
         }
 
         public async Task SendMessage(string channel, string message)
