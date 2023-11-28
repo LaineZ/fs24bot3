@@ -18,6 +18,7 @@ using Serilog;
 using System.Runtime.InteropServices;
 using KeraLua;
 using System.Threading;
+using HandlebarsDotNet;
 
 namespace fs24bot3.Commands;
 public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
@@ -55,18 +56,28 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     {
         var cmds = Service.GetAllCommands();
         string commandsOutput = Resources.help;
+        var template = Handlebars.Compile(commandsOutput);
+
         var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
-        string commandList = string.Join('\n', cmds.Where(x => !x.Checks.Any(x => x is Checks.CheckAdmin)).
-            Select(x =>
-            $"<strong>{ConfigurationProvider.Config.Prefix}{x.Name}</strong> {string.Join(' ', x.Parameters)}</p><p class=\"desc\">{x.Description}</p><p>Требования: {string.Join(' ', x.Checks)}</p><hr>"));
-        string customList = string.Join('\n', string.Join("\n", customCommands.
-            Select(x =>
-            $"<p>{ConfigurationProvider.Config.Prefix}{x.Command} Создал: <strong>{x.Nick}</strong> Lua: {(x.IsLua == 1 ? "Да" : "Нет")} </p>")));
+        var commandList = cmds.Select(x =>
+        {
+            return new
+            {
+                prefix = ConfigurationProvider.Config.Prefix,
+                name = x.Name,
+                parameters = x.Parameters.Select(x => x.Name),
+                description = x.Description,
+                checks = x.Checks.Select(x => x.ToString())
+            };
+        });
+        var data = new
+        {
+            commands = commandList
+        };
 
-        commandsOutput = commandsOutput.Replace("[CMDS]", commandList);
-        commandsOutput = commandsOutput.Replace("[CUSTOMLIST]", customList);
 
-        string link = await InternetServicesHelper.UploadToTrashbin(commandsOutput);
+
+        string link = await InternetServicesHelper.UploadToTrashbin(template(data));
         await Context.SendMessage(Context.Channel,
             $"Выложены команды по этой ссылке: {link} также вы можете написать {ConfigurationProvider.Config.Prefix}helpcmd имякоманды для получения дополнительной помощи");
     }

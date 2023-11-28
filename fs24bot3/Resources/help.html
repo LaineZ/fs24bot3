@@ -10,33 +10,35 @@
     body {
       margin: 0px;
       padding: 0px;
-    }
-
-    a {
-      text-decoration: none;
-      color: #86796b;
-    }
-
-    a:hover {
-      color: #3A405A;
+      font-family: sans-serif;
+      color: #eff9d6;
+      background-color: #1b0326;
     }
 
     .menu {
-      background-color: #fbf1c7;
+      background-color: rgb(37, 4, 53);
     }
 
     .menuItem {
       padding-left: 1em;
       padding-bottom: 0.5em;
       display: inline-block;
-      font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     }
 
     .content {
       margin: 0.5em;
       padding: 5px;
       padding-top: 10px;
-      font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+
+    .command {
+      border-bottom: 1px solid rgb(37, 4, 53);
+    }
+
+    code {
+      background-color: #7a1c4b;
+      padding: 5px;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -44,15 +46,25 @@
 <body>
   <div class="menu">
     <div class="menuItem">
-      <h3>fs24bot help</h3>
+      <h3>fs24bot help - список команд</h3>
     </div>
   </div>
 
   <div class="content">
-    <h3>Список команд:</h3>
-    [CMDS]
-    <h3>Кастом команды:</h3>
-    [CUSTOMLIST]
+    <div class="commands">
+        {{#each commands}}
+          <div class="command">
+            <p>
+              <strong>{{this.prefix}}{{this.name}}</strong>
+              {{#each this.parameters}}
+                <code>{{this}}</code>
+              {{/each}}
+            </p>
+            <p>{{this.description}}</p>
+          </div>
+        {{/each}}
+      </div>
+    </div>
   </div>
 </body>
 

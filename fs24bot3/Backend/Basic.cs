@@ -57,13 +57,13 @@ public class Basic : IMessagingClient
                 var msg = new MessageGeneric(value, "testchannel", 
                     new User("test", BotContext.Connection));
                 BotContext.MessageTrigger(msg);
-                await BotContext.ExecuteCommand(msg, "");
+                await BotContext.ExecuteCommand(msg, ConfigurationProvider.Config.Prefix);
             }
         }
     }
 
     public Task<bool> EnsureAuthorization(User user)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(true);
     }
 }
