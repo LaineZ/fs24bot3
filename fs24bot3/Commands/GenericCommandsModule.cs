@@ -121,7 +121,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         foreach (Match segment in timeSegments)
         {
-            var value = uint.Parse(segment.Value.TrimEnd('y', 'w', 'd', 'h', 'm', 's'));
+            var value = double.Parse(segment.Value.TrimEnd('y', 'w', 'd', 'h', 'm', 's'));
             switch (segment.Value[^1])
             {
                 case 'y':
@@ -154,9 +154,16 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             return;
         }
 
-        TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
-        Context.User.AddRemind(ts, message, Context.Channel);
-        await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
+        try
+        {
+            TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
+            Context.User.AddRemind(ts, message, Context.Channel);
+            await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
+        }
+        catch (OverflowException)
+        {
+            await Context.SendSadMessage(Context.Channel, "ddos.sh");
+        }
     }
 
 

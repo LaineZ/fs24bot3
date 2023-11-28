@@ -223,7 +223,7 @@ public class User
         {
             Nick = Username,
             Message = title,
-            RemindDate = (uint)((DateTimeOffset)DateTime.Now.Add(time)).ToUnixTimeSeconds(),
+            RemindDate = ((DateTimeOffset)DateTime.Now.Add(time)).ToUnixTimeSeconds(),
             Channel = channel,
         };
 
