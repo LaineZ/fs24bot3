@@ -55,7 +55,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
                 JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
                 if (search == null || !search.Results.Any()) { continue; }
-                var result = search?.Results.Random();
+                var result = search?.Results.First();
 
                 await Context.SendMessage(Context.Channel, $"{result.Title} [blue]// {result.Url}\n" +
                                                            $"{result.Content ?? "Нет описания"}");
