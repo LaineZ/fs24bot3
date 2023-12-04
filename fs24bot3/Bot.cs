@@ -145,7 +145,7 @@ public class Bot
         PProfiler.EndMeasure("msg");
     }
 
-    public string HeuristicPrintErrorMessage(string message)
+    static string HeuristicPrintErrorMessage(string message)
     {
         try
         {

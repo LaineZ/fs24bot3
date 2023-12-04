@@ -14,11 +14,8 @@ using SQLite;
 using System.Diagnostics;
 using fs24bot3.Properties;
 using System.Text;
-using Serilog;
-using System.Runtime.InteropServices;
-using KeraLua;
-using System.Threading;
 using HandlebarsDotNet;
+using Serilog;
 
 namespace fs24bot3.Commands;
 public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
@@ -55,7 +52,17 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     public async Task Help()
     {
         var cmds = Service.GetAllCommands();
-        string commandsOutput = Resources.help;
+        string commandsOutput = "";
+        //string commandsOutput = Resources.help;
+        try
+        {
+            commandsOutput = File.ReadAllText("help.html");
+        }
+        catch (FileNotFoundException)
+        {
+            Log.Verbose("help.html not found, using compiled one");
+            commandsOutput = Resources.help;
+        }
         var template = Handlebars.Compile(commandsOutput);
 
         var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
@@ -72,7 +79,14 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         });
         var data = new
         {
-            commands = commandList
+            commands = commandList,
+            customCommands = customCommands.Select(x => new
+            {
+                prefix = ConfigurationProvider.Config.Prefix,
+                name = x.Command,
+                createdBy = string.IsNullOrWhiteSpace(x.Nick) ? "fs24bot" : x.Nick,
+                isLua = x.IsLua == 1
+            })
         };
 
 

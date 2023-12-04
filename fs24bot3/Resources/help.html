@@ -35,10 +35,15 @@
       border-bottom: 1px solid rgb(37, 4, 53);
     }
 
+    .command-name {
+      font-family: "Iosevka Term Slab", "Consolas", monospace;
+    }
+
     code {
       background-color: #7a1c4b;
       padding: 5px;
       border-radius: 10px;
+      font-family: "Iosevka Slab", "Cascadia Mono", "Consolas", monospace;
     }
   </style>
 </head>
@@ -52,19 +57,27 @@
 
   <div class="content">
     <div class="commands">
-        {{#each commands}}
-          <div class="command">
-            <p>
-              <strong>{{this.prefix}}{{this.name}}</strong>
-              {{#each this.parameters}}
-                <code>{{this}}</code>
-              {{/each}}
-            </p>
-            <p>{{this.description}}</p>
-          </div>
-        {{/each}}
+      {{#each commands}}
+      <div class="command">
+        <p class="command-name">
+          <strong>{{this.prefix}}{{this.name}}</strong>
+          {{#each this.parameters}}
+          <code>{{this}}</code>
+          {{/each}}
+        </p>
+        <p>{{this.description}}</p>
       </div>
+      {{/each}}
+      <h3>Кастом команды:</h3>
+      {{#each customCommands}}
+      <div class="command">
+        <p class="command-name">{{#if this.isLua}}<code
+            style="background-color: rgb(10, 9, 51);">Lua</code>{{/if}}<strong>{{prefix}}{{this.name}}</strong></p>
+        <p>Создал: {{this.createdBy}}</p>
+      </div>
+      {{/each}}
     </div>
+  </div>
   </div>
 </body>
 
