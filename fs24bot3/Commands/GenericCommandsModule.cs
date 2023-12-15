@@ -229,7 +229,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     [Command("delmind", "delremind", "deleteremind")]
     [Description("Удалить напоминание")]
     [Checks.FullAccount]
-    [Checks.BridgeLimitedFunctions]
     public async Task DeleteRemind(uint id)
     {
         if (Context.User.DeleteRemind(id))
@@ -244,11 +243,16 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
     [Command("time")]
     [Description("Время")]
-    [Checks.BridgeLimitedFunctions]
     public async Task UserTime(string username = "")
     {
         if (string.IsNullOrEmpty(username))
         {
+            if (Context.FromBridge)
+            {
+                await Context.SendSadMessage("Укажите ник пользователя");
+                return;
+            }
+
             username = Context.User.Username;
         }
 
@@ -262,11 +266,16 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
     [Command("reminds", "rems")]
     [Description("Список напоминаний")]
-    [Checks.BridgeLimitedFunctions]
     public async Task Reminds(string username = "", string locale = "ru-RU")
     {
         if (string.IsNullOrEmpty(username))
         {
+            if (Context.FromBridge)
+            {
+                await Context.SendSadMessage("Укажите ник пользователя");
+                return;
+            }
+
             username = Context.User.Username;
         }
 
