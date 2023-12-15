@@ -249,7 +249,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         {
             if (Context.FromBridge)
             {
-                await Context.SendSadMessage("Укажите ник пользователя");
+                await Context.SendSadMessage(Context.Channel, "Укажите ник пользователя");
                 return;
             }
 
@@ -272,7 +272,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         {
             if (Context.FromBridge)
             {
-                await Context.SendSadMessage("Укажите ник пользователя");
+                await Context.SendSadMessage(Context.Channel, "Укажите ник пользователя");
                 return;
             }
 
