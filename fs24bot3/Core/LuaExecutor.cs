@@ -51,7 +51,6 @@ class LuaExecutor
         }), ref pointer);
         lua.State.Encoding = Encoding.UTF8;
 
-
         var time = 0;
         lua.State.SetHook(((_, _) =>
         {

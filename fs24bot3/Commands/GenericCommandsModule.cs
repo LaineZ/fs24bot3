@@ -517,11 +517,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         await Context.SendMessage(output.ToString());
     }
 
-    [Command("calculator", "c", "calc")]
-    [Description("Калькулятор")]
-    public async Task Calculator([Remainder] string expression)
+
+    private async Task ExecuteLua(string input)
     {
-        var input = "return " + expression;
         var lua = LuaExecutor.CreateLuaState();
 
         // block danger functions
@@ -565,5 +563,21 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             lua.Close();
             lua.Dispose();
         }
+    }
+
+    [Command("calculator", "c", "calc")]
+    [Description("Калькулятор")]
+    public async Task Calculator([Remainder] string expression)
+    {
+        await ExecuteLua("return " + expression);
+    }
+
+
+    [Command("lua")]
+    [Description("Lua интерпретатор")]
+    [Checks.CheckAdmin]
+    public async Task Lua([Remainder] string expression)
+    {
+        await ExecuteLua(expression);
     }
 }

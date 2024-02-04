@@ -3,6 +3,7 @@ using fs24bot3.Helpers;
 using fs24bot3.Models;
 using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
+using Newtonsoft.Json;
 using Qmmands;
 using System;
 using System.Collections.Generic;
@@ -58,6 +59,19 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
         var t = Context.BotCtx.Connection.Table<SQL.Tag>()
                 .FirstOrDefault(x => x.Name == tag.Tag);
         return $"00,{t.Color}⚫{t.Name}[r]";
+    }
+
+    [Command("topic")]
+    [Description("Текущая тема разговора (последние 200 сообщений)")]
+    public async Task Topic()
+    {
+        var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
+        var messages = sms.TakeLast(200);
+        var concat = string.Join("\n", messages.Select(x => x.Message));
+
+        var response = await Context.HttpTools.PostJson("https://tools.originality.ai/tool-title-generator/title-generator-backend/generate.php", new Topic(concat));
+        string topic = JsonConvert.DeserializeObject<string>(response);
+        await Context.SendMessage($"Сейчас тема разговора: [b]{topic}");
     }
 
     [Command("daystat")]
