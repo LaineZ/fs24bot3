@@ -11,6 +11,7 @@ public class Database
     public static void InitDatabase(in SQLiteConnection connection)
     {
         Log.Information("Initializing databases");
+        connection.CreateTable<SQL.Cache>();
         connection.CreateTable<SQL.UserStats>();
         connection.CreateTable<SQL.CustomUserCommands>();
         connection.CreateTable<SQL.Tag>();

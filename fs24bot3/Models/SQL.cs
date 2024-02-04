@@ -20,6 +20,15 @@ public class SQL
         public string City { get; set; }
     }
 
+
+    public class Cache
+    {
+        [PrimaryKey]
+        public string Key { get; set; }
+        public string Value { get; set; }
+        public DateTime LastUpdate { get; set; }
+    }
+
     public class Item
     {
         [PrimaryKey]

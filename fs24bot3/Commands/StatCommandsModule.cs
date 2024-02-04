@@ -5,6 +5,7 @@ using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
 using Newtonsoft.Json;
 using Qmmands;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,13 +66,32 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     [Description("Текущая тема разговора (последние 200 сообщений)")]
     public async Task Topic()
     {
-        var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
-        var messages = sms.TakeLast(200);
-        var concat = string.Join("\n", messages.Select(x => x.Message));
+        var item = Context.BotCtx.Connection.Table<SQL.Cache>().Where(x => x.Key == "Topic").FirstOrDefault();
 
-        var response = await Context.HttpTools.PostJson("https://tools.originality.ai/tool-title-generator/title-generator-backend/generate.php", new Topic(concat));
-        string topic = JsonConvert.DeserializeObject<string>(response);
-        await Context.SendMessage($"Сейчас тема разговора: [b]{topic}");
+        if (item == null || item.LastUpdate.Subtract(DateTime.Now) < TimeSpan.FromMinutes(60))
+        {
+            var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
+            var messages = sms.TakeLast(200);
+            var concat = string.Join("\n", messages.Select(x => x.Message));
+
+            var response = await Context.HttpTools.PostJson("https://tools.originality.ai/tool-title-generator/title-generator-backend/generate.php", new Topic(concat));
+            string topic = JsonConvert.DeserializeObject<string>(response);
+
+
+            Log.Information("Invalidating cache...");
+
+            Context.BotCtx.Connection.InsertOrReplace(new SQL.Cache
+            {
+                Key = "Topic",
+                Value = topic,
+                LastUpdate = DateTime.Now
+            });
+        };
+
+
+        // try again
+        item = Context.BotCtx.Connection.Table<SQL.Cache>().Where(x => x.Key == "Topic").FirstOrDefault();
+        await Context.SendMessage($"Сейчас тема разговора: [b]{item.Value}");
     }
 
     [Command("daystat")]
