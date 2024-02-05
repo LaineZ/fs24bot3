@@ -27,6 +27,14 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     }
 
 
+    [Command("dropcache", "resetcache")]
+    [Checks.CheckAdmin]
+    public async Task DropCache()
+    {
+        Context.BotCtx.Connection.Execute("DELETE FROM Cache");
+        await Context.SendMessage("Кэш очищен");
+    }
+
     [Command("whoami")]
     public async Task Whoami()
     {

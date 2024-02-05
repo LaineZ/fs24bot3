@@ -68,11 +68,11 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     {
         var item = Context.BotCtx.Connection.Table<SQL.Cache>().Where(x => x.Key == "Topic").FirstOrDefault();
 
-        if (item == null || item.LastUpdate.Subtract(DateTime.Now) < TimeSpan.FromMinutes(60))
+        if (item == null || item.LastUpdate.Subtract(DateTime.Now) > TimeSpan.FromMinutes(60))
         {
             var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
-            var messages = sms.TakeLast(200);
-            var concat = string.Join("\n", messages.Select(x => x.Message));
+            var messages = sms.TakeLast(200).Where(x => x.Nick != "fs24_bot");
+            var concat = string.Join("\n", messages.Select(x => $"{x.Nick}: {x.Message}"));
 
             var response = await Context.HttpTools.PostJson("https://tools.originality.ai/tool-title-generator/title-generator-backend/generate.php", new Topic(concat));
             string topic = JsonConvert.DeserializeObject<string>(response);
@@ -89,7 +89,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
         };
 
 
-        // try again
+        // try again    
         item = Context.BotCtx.Connection.Table<SQL.Cache>().Where(x => x.Key == "Topic").FirstOrDefault();
         await Context.SendMessage($"Сейчас тема разговора: [b]{item.Value}");
     }
