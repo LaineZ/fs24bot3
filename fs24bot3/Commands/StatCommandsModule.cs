@@ -3,12 +3,14 @@ using fs24bot3.Helpers;
 using fs24bot3.Models;
 using fs24bot3.Properties;
 using fs24bot3.QmmandsProcessors;
+using HandlebarsDotNet.Extensions;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -63,35 +65,25 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     }
 
     [Command("topic")]
-    [Description("Текущая тема разговора (последние 200 сообщений)")]
-    public async Task Topic()
+    [Description("Текущая тема разговора")]
+    public async Task Topic(int window = 200)
     {
-        var item = Context.BotCtx.Connection.Table<SQL.Cache>().Where(x => x.Key == "Topic").FirstOrDefault();
+        var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
+        var messages = sms.TakeLast(Math.Clamp(window, 10, 200)).Where(x => x.Nick != Context.BotCtx.Client.Name && x.Nick != "fs24_bot");
+        var concat = new StringBuilder();
 
-        if (item == null || item.LastUpdate.Subtract(DateTime.Now) > TimeSpan.FromMinutes(60))
+        foreach (var item in messages.Select(x => $"{x.Nick}: {x.Message}"))
         {
-            var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
-            var messages = sms.TakeLast(200).Where(x => x.Nick != "fs24_bot");
-            var concat = string.Join("\n", messages.Select(x => $"{x.Nick}: {x.Message}"));
-
-            var response = await Context.HttpTools.PostJson("https://tools.originality.ai/tool-title-generator/title-generator-backend/generate.php", new Topic(concat));
-            string topic = JsonConvert.DeserializeObject<string>(response);
-
-
-            Log.Information("Invalidating cache...");
-
-            Context.BotCtx.Connection.InsertOrReplace(new SQL.Cache
+            if (concat.Length > 4097)
             {
-                Key = "Topic",
-                Value = topic,
-                LastUpdate = DateTime.Now
-            });
-        };
+                break;
+            }
+            concat.Append(item);
+        }
 
-
-        // try again    
-        item = Context.BotCtx.Connection.Table<SQL.Cache>().Where(x => x.Key == "Topic").FirstOrDefault();
-        await Context.SendMessage($"Сейчас тема разговора: [b]{item.Value}");
+        var response = await Context.HttpTools.PostJson("https://tools.originality.ai/tool-title-generator/title-generator-backend/generate.php", new Topic(concat.ToString()));
+        string topic = JsonConvert.DeserializeObject<string>(response);
+        await Context.SendMessage($"Сейчас тема разговора: [b]{topic}");
     }
 
     [Command("daystat")]

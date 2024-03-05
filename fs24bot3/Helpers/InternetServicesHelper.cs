@@ -11,11 +11,12 @@ using System.Net.Http;
 using fs24bot3.Core;
 using System.Globalization;
 using System.Linq;
+using fs24bot3.Backend;
 
 namespace fs24bot3.Helpers;
 public class InternetServicesHelper
 {
-    private static readonly Regex LogsRegex = new Regex(@"^\[(\d{2}:\d{2}:\d{2})\] <([^>]+)> (.+)", RegexOptions.Compiled);
+    private static readonly Regex CheburatorRegex = new Regex(@"^(?<author>[^:⌠⎮⌡]+)[⌠⎮⌡]? (?<message>[\s\S]+)$", RegexOptions.Compiled);
     private HttpTools Http { get; }
 
     public InternetServicesHelper(in HttpTools http)
@@ -81,38 +82,24 @@ public class InternetServicesHelper
         return currencies;
     }
 
-    public async Task<List<FomalhautMessage>> GetMessages(DateTime dateTime)
+    public async Task<List<SproutMessage>> GetMessages(DateTime dateTime)
     {
-        var output =
-            await Http.MakeRequestAsyncNoCookie("https://logs.fomalhaut.me/download/" +
-                                                dateTime.ToString("yyyy-MM-dd") + ".log");
+        var output = await Http.GetJson<List<SproutMessage>>("https://logs.bpm140.ru/logs/latest");
 
-        var list = new List<FomalhautMessage>();
-
-        if (output == null)
+        foreach (var item in output)
         {
-            return list;
+            if (item.Nick == ConfigurationProvider.Config.Services.BridgeNickname)
+            {
+                var captures = CheburatorRegex.Match(item.Message);
+                item.Nick = MessageHelper.StripIRC(captures.Groups["author"].Value);
+                item.Message = captures.Groups["message"].Value;
+            }
+
+
+            item.Message = MessageHelper.StripIRC(item.Message);
         }
 
-        foreach (var item in output.Split("\n"))
-        {
-            var captures = LogsRegex.Match(item);
-            var time = captures.Groups[1].Value;
-            var nick = captures.Groups[2].Value;
-            var message = captures.Groups[3].Value;
-            if (!string.IsNullOrWhiteSpace(nick) && !string.IsNullOrWhiteSpace(message))
-            {
-                list.Add(new FomalhautMessage
-                    { Date = dateTime.Add(TimeSpan.Parse(time)), Message = message, Nick = nick, Kind = Kind.Message });
-            }
-            else
-            {
-                // cannot parse message, looks like a server message or action
-                Log.Warning("Message {0} cannot be parsed!", item);
-            }
-        }
-
-        return list;
+        return output;
     }
 
     public static async Task<string> UploadToTrashbin(string data, string route = "add")
