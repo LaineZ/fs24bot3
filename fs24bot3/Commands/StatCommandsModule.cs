@@ -66,10 +66,10 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
     [Command("topic")]
     [Description("Текущая тема разговора")]
-    public async Task Topic(int window = 200)
+    public async Task Topic(int window = 100)
     {
         var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
-        var messages = sms.TakeLast(Math.Clamp(window, 10, 200)).Where(x => x.Nick != Context.BotCtx.Client.Name && x.Nick != "fs24_bot");
+        var messages = sms.TakeLast(Math.Clamp(window, 5, 100)).Where(x => x.Nick != Context.BotCtx.Client.Name && x.Nick != "fs24_bot");
         var concat = new StringBuilder();
 
         foreach (var item in messages.Select(x => $"{x.Nick}: {x.Message}"))
@@ -79,6 +79,12 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
                 break;
             }
             concat.Append(item);
+        }
+
+        if (concat.Length < 10)
+        {
+            await Context.SendSadMessage();
+            return;
         }
 
         var response = await Context.HttpTools.PostJson("https://tools.originality.ai/tool-title-generator/title-generator-backend/generate.php", new Topic(concat.ToString()));

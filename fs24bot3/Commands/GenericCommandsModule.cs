@@ -342,24 +342,40 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (!File.Exists("chars.sqlite"))
         {
             var http = new HttpTools();
-            await http.DownloadFile("chars.sqlite", "https://bpm140.ru/chars.sqlite");
+            await http.DownloadFile("chars.sqlite", "https://storage.buttex.ru/data/fs24bot/chars.sqlite");
             await Context.SendMessage(Context.Channel, $"Таблица юникода... УСПЕШНО ЗАГРУЖЕНА!");
         }
 
         SQLiteConnection connect = new SQLiteConnection("chars.sqlite");
 
-        var query = connect.Table<SQL.Chars>()
-                    .Where(x => x.Symbol == find || x.Hexcode == find || x.Name.ToLower()
-                    .Contains(find))
-                    .Take(10);
 
-        if (query.Any())
+        if (find.Length <= 2)
         {
-            await Context.SendMessage(string.Join(", ", query.Select(x => $"[r][b]{x.Name}[r] {x.Hexcode} [green]({x.Symbol})")));
+            var character = connect.Query<SQL.Chars>("SELECT * FROM chars WHERE hexcode = ? LIMIT 1", find).FirstOrDefault();
+
+            if (character != null)
+            {
+                await Context.SendMessage($"[r][b]{character.Name}[r] {character.Hexcode} [green]({character.Symbol})");
+            }
+            else
+            {
+                await Context.SendSadMessage(Context.Channel, "Символы не обнаружены");
+            }
         }
         else
         {
-            await Context.SendSadMessage(Context.Channel, "Символы не обнаружены");
+            var query = connect.Table<SQL.Chars>()
+            .Where(x => x.Symbol == find || x.Name.ToLower().Contains(find))
+            .Take(10);
+
+            if (query.Any())
+            {
+                await Context.SendMessage(string.Join(", ", query.Select(x => $"[r][b]{x.Name}[r] {x.Hexcode} [green]({x.Symbol})")));
+            }
+            else
+            {
+                await Context.SendSadMessage(Context.Channel, "Символы не обнаружены");
+            }
         }
     }
 
