@@ -186,7 +186,8 @@ public class InternetServicesHelper
             FeelsLike = json.Main.FeelsLike,
             Humidity = json.Main.Humidity,
             WindDirection = dir,
-            WindSpeed = json.Wind.Speed
+            WindSpeed = json.Wind.Speed,
+            WindHeading = json.Wind.Deg
         };
     }
 
@@ -252,6 +253,19 @@ public class InternetServicesHelper
                 _ => WindDirections.N
             };
 
+            var heading = cond?.WindDir switch
+            {
+                "n" => 0,
+                "ne" => 45,
+                "e" => 90,
+                "se" => 135,
+                "s" => 180,
+                "sw" => 225,
+                "w" => 270,
+                "nw" => 315,
+                _ => 0
+            };
+
 
             return new WeatherGeneric()
             {
@@ -261,7 +275,8 @@ public class InternetServicesHelper
                 FeelsLike = cond.FeelsLike,
                 Humidity = cond.Humidity,
                 WindDirection = dir,
-                WindSpeed = cond.WindSpeed
+                WindSpeed = cond.WindSpeed,
+                WindHeading = heading,
             };
         }
         else

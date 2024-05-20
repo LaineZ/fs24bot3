@@ -447,7 +447,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             var wr = await Context.ServicesHelper.OpenWeatherMap(city);
 
             await Context.SendMessage($"[b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
-            $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+            $" (ощущения: [b]{wr.FeelsLike} °C[r]) Влажность: [b]{wr.Humidity}%[r] Ветер: [b]{wr.WindDirection.GetDescription()} {wr.WindHeading}° {(wr.WindSpeed * 1.944):0.00} kts[r]");
         }
         catch (Exception)
         {
@@ -469,7 +469,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         {
             var wr = await Context.ServicesHelper.YandexWeather(city);
             await Context.SendMessage($"По данным Яндекс.Погоды в [b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
-            $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindSpeed} m/s");
+            $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindHeading}° {wr.WindSpeed * 1.944} kts");
         }
         catch (ArgumentNullException)
         {

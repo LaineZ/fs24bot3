@@ -9,4 +9,5 @@ public class WeatherGeneric
     public string CityName { get; set; }
     public WeatherConditions Condition { get; set; }
     public WindDirections WindDirection { get; set; }
+    public int WindHeading { get; set; }
 }
