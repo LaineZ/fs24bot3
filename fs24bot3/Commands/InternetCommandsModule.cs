@@ -447,11 +447,70 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             var wr = await Context.ServicesHelper.OpenWeatherMap(city);
 
             await Context.SendMessage($"[b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
-            $" (ощущения: [b]{wr.FeelsLike} °C[r]) Влажность: [b]{wr.Humidity}%[r] Ветер: [b]{wr.WindDirection.GetDescription()} {wr.WindHeading}° {(wr.WindSpeed * 1.944):0.00} kts[r]");
+            $" (ощущения: [b]{wr.FeelsLike} °C[r]) Влажность: [b]{wr.Humidity}%[r] Ветер: [b]{wr.WindDirection.GetDescription()} {wr.WindHeading}° {(wr.WindSpeed * 1.944):0.0} kts {wr.WindSpeed} m/s[r]");
         }
         catch (Exception)
         {
             await Context.SendSadMessage();
+        }
+    }
+
+
+    [Command("metar", "mweather")]
+    [Description("Запрос METAR информации о погоде")]
+    public async Task Metar(string airportIcao = "URWW", bool rawOutput = false)
+    {
+        string response = await Context.HttpTools.GetTextPlainResponse($"https://aviationweather.gov/cgi-bin/data/metar.php?ids={airportIcao}&hours=0&order=id,-obs&sep=true");
+        if (!rawOutput)
+        {
+            try
+            {
+                // ULLI 242000Z VRB01MPS CAVOK 18/08 Q1025 R28L/090060 NOSIG
+                var split = response.Split(' ');
+                string airportName = split[0];
+                string date = split[1].Substring(0, 2);
+                string time = split[1].Substring(2, 4);
+
+                string wind = split[2];
+                int windDirection = Int32.Parse(wind.Substring(0, 3));
+                int windSpeed = Int32.Parse(wind.Substring(3, 2));
+                string windUnits = wind.Substring(5, 3);
+
+                if (windUnits == "MPS")
+                {
+                    windSpeed = (int)Math.Floor(windSpeed * 1.944);
+                }
+
+                string visibility = split[3];
+
+                // Temperature and dew point
+                string[] tempDew = split[4].Split('/');
+                string temperature = tempDew[0];
+                //string dewPoint = tempDew[1];
+                // QNH
+                string pressure = split[5].Substring(1);
+
+                // runaway
+                string runwayInfo = split[6];
+                string runway = runwayInfo.Substring(1, 3);
+                string runwayCondition = runwayInfo.Substring(4);
+
+                string noSignificantChange = split[7] == "NOSIG" ? "Да" : "Нет";
+
+                var datetime = DateTime.Now;
+
+                string observationTime = $"{datetime.Year}-{datetime.Month:00}-{date:00} {time.Substring(0, 2)}:{time.Substring(2, 2)} UTC";
+
+                await Context.SendMessage($"[b]{airportName}: ({observationTime})[r] {temperature}°C QNH: [b]{pressure}[r] hPA Ветер: [b]{windDirection}° {windSpeed} kts [r]Видимость: [b]{visibility}[r]Изменения: [b]{noSignificantChange}[r]");
+            }
+            catch (IndexOutOfRangeException)
+            {
+                await Context.SendSadMessage(Context.Channel, "METAR строка содержит недопустимые данные");
+            }
+        }
+        else
+        {
+            await Context.SendMessage(response);
         }
     }
 
@@ -469,7 +528,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         {
             var wr = await Context.ServicesHelper.YandexWeather(city);
             await Context.SendMessage($"По данным Яндекс.Погоды в [b]{wr.CityName}[r]: {wr.Condition.GetDescription()} {wr.Temperature} °C" +
-            $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} {wr.WindHeading}° {wr.WindSpeed * 1.944} kts");
+            $" (ощущения: {wr.FeelsLike} °C) Влажность: {wr.Humidity}% Ветер: {wr.WindDirection.GetDescription()} ~{wr.WindHeading}° {(wr.WindSpeed * 1.944):0.0} kts {wr.WindSpeed} m/s");
         }
         catch (ArgumentNullException)
         {
