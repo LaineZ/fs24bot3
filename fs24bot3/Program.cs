@@ -1,13 +1,8 @@
 ﻿using fs24bot3.Core;
-using NetIRC;
 using Serilog;
 using System;
 using System.Text;
-using System.Threading.Tasks;
-using System.Linq;
 using fs24bot3.Backend;
-using fs24bot3.Helpers;
-using fs24bot3.Models;
 
 namespace fs24bot3;
 
@@ -17,7 +12,7 @@ internal static class Program
     private static void Main()
     {
         Log.Logger = new LoggerConfiguration()
-        .WriteTo.Console()
+        .WriteTo.Console(outputTemplate: "{Timestamp:HH:mm:ss} {Level:u3} {Message:lj}{NewLine}{Exception}")
 #if DEBUG
         .MinimumLevel.Verbose()
 #else

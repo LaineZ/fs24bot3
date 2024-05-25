@@ -460,57 +460,31 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Запрос METAR информации о погоде")]
     public async Task Metar(string airportIcao = "URWW", bool rawOutput = false)
     {
-        string response = await Context.HttpTools.GetTextPlainResponse($"https://aviationweather.gov/cgi-bin/data/metar.php?ids={airportIcao}&hours=0&order=id,-obs&sep=true");
+
+        var response = await Context.HttpTools.GetJson<List<MetarWeather.Root>>($"https://aviationweather.gov/cgi-bin/data/metar.php?ids={airportIcao}&format=json");
+
+        var metar = response.FirstOrDefault();
+
         if (!rawOutput)
         {
-            try
+            if (metar == null)
             {
-                // ULLI 242000Z VRB01MPS CAVOK 18/08 Q1025 R28L/090060 NOSIG
-                var split = response.Split(' ');
-                string airportName = split[0];
-                string date = split[1].Substring(0, 2);
-                string time = split[1].Substring(2, 4);
-
-                string wind = split[2];
-                int windDirection = Int32.Parse(wind.Substring(0, 3));
-                int windSpeed = Int32.Parse(wind.Substring(3, 2));
-                string windUnits = wind.Substring(5, 3);
-
-                if (windUnits == "MPS")
-                {
-                    windSpeed = (int)Math.Floor(windSpeed * 1.944);
-                }
-
-                string visibility = split[3];
-
-                // Temperature and dew point
-                string[] tempDew = split[4].Split('/');
-                string temperature = tempDew[0];
-                //string dewPoint = tempDew[1];
-                // QNH
-                string pressure = split[5].Substring(1);
-
-                // runaway
-                string runwayInfo = split[6];
-                string runway = runwayInfo.Substring(1, 3);
-                string runwayCondition = runwayInfo.Substring(4);
-
-                string noSignificantChange = split[7] == "NOSIG" ? "Да" : "Нет";
-
-                var datetime = DateTime.Now;
-
-                string observationTime = $"{datetime.Year}-{datetime.Month:00}-{date:00} {time.Substring(0, 2)}:{time.Substring(2, 2)} UTC";
-
-                await Context.SendMessage($"[b]{airportName}: ({observationTime})[r] {temperature}°C QNH: [b]{pressure}[r] hPA Ветер: [b]{windDirection}° {windSpeed} kts [r]Видимость: [b]{visibility}[r]Изменения: [b]{noSignificantChange}[r]");
+                await Context.SendSadMessage();
+                return;
             }
-            catch (IndexOutOfRangeException)
+
+            int wind = metar.Wspd;
+
+            if (metar.RawOb.Contains("MPS"))
             {
-                await Context.SendSadMessage(Context.Channel, "METAR строка содержит недопустимые данные");
+                wind = (int)Math.Floor(wind * 1.944);
             }
+
+            await Context.SendMessage($"[b]{metar.ReportTime}: {metar.IcaoId} ({metar.Name}):[r] [b]{metar.Temp}°C[r] QNH: [b]{metar.Altim}[r] hPA Ветер: [b]{metar.Wdir}° {wind} kts [r]Видимость: [b]{metar.Visib}[r]");
         }
         else
         {
-            await Context.SendMessage(response);
+            await Context.SendMessage(metar.RawOb);
         }
     }
 

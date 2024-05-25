@@ -68,7 +68,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
     [Description("Текущая тема разговора")]
     public async Task Topic(int window = 100)
     {
-        var sms = await Context.ServicesHelper.GetMessages(DateTime.UtcNow);
+        var sms = Context.BotCtx.Connection.Table<SQL.Messages>().ToList();
         var messages = sms.TakeLast(Math.Clamp(window, 5, 100)).Where(x => x.Nick != Context.BotCtx.Client.Name && x.Nick != "fs24_bot");
         var concat = new StringBuilder();
 
@@ -100,7 +100,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
         if (!res) { date = DateTime.Now; }
 
-        var sms = await Context.ServicesHelper.GetMessages(date);
+        var sms = await Context.ServicesHelper.GetMessagesSprout(date);
 
         if (!sms.Any())
         {

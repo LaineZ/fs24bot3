@@ -449,7 +449,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         foreach (var date in EachDay(dateStart, dateEnd))
         {
             stopWatch.Start();
-            var messages = await Context.ServicesHelper.GetMessages(date);
+            var messages = await Context.ServicesHelper.GetMessagesSprout(date);
             foreach (var message in messages)
             {
                 var captures = regex.Match(message.Message);
@@ -497,7 +497,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (date.Days < 1000)
         {
             await Context.SendMessage(Context.Channel, $"Последний раз я видел [b]{destination}[r] {ToReadableString(date)} назад");
-            var messages = await Context.ServicesHelper.GetMessages(user.GetLastMessage());
+            var messages = await Context.ServicesHelper.GetMessagesSprout(user.GetLastMessage());
             var lastmsg = messages.LastOrDefault(x => x.Nick == destination);
             if (lastmsg != null)
             {

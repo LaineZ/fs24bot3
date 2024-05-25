@@ -60,6 +60,17 @@ public class SQL
         public string Name { get; set; }
     }
 
+
+    public class Messages
+    {
+        [PrimaryKey]
+        [AutoIncrement]
+        public int Id { get; set; }
+        public string Nick { get; set; }
+        public string Message { get; set; }
+        public DateTime Date { get; set; }
+    }
+
     public class Warnings
     {
         [PrimaryKey]

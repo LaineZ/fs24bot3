@@ -82,7 +82,7 @@ public class InternetServicesHelper
         return currencies;
     }
 
-    public async Task<List<SproutMessage>> GetMessages(DateTime dateTime)
+    public async Task<List<SproutMessage>> GetMessagesSprout(DateTime dateTime)
     {
         var output = await Http.GetJson<List<SproutMessage>>("https://logs.bpm140.ru/logs/latest");
 

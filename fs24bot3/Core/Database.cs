@@ -1,5 +1,6 @@
 ﻿using fs24bot3.Helpers;
 using fs24bot3.Models;
+using HandlebarsDotNet;
 using Serilog;
 using SQLite;
 using System;
@@ -18,6 +19,9 @@ public class Database
         connection.CreateTable<SQL.Item>();
         connection.CreateTable<SQL.Ignore>();
         connection.CreateTable<SQL.ScriptStorage>();
+
+        connection.DropTable<SQL.Messages>();
+        connection.CreateTable<SQL.Messages>();
 
         try
         {
@@ -75,6 +79,8 @@ public class Database
             }
             connection.Commit();
         }
+        Log.Information("Vacuuming database this can take some time...");
+        connection.Execute("VACUUM");
         Log.Information("Databases loaded!");
     }
 }

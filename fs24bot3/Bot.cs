@@ -62,7 +62,7 @@ public class Bot
             bool commandIntenral = Service.GetAllCommands()
                 .Any(x => x.Aliases.Any(a => a == command.Command));
 
-            if (!commandIntenral) continue;
+            if (!commandIntenral || string.IsNullOrWhiteSpace(command.Nick)) continue;
             
             var user = new User(command.Nick, Connection);
             Log.Warning("User {0} have a command with internal name {1}!",
@@ -177,6 +177,15 @@ public class Bot
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix)
     {
+        Connection.Insert(new SQL.Messages()
+        {
+            Message = message.Body,
+            Nick = message.Sender.Username,
+            Date = DateTime.Now
+        });
+
+        Connection.Execute("DELETE FROM Messages WHERE ROWID IN (SELECT ROWID FROM Messages ORDER BY RANDOM() LIMIT 1) WHILE COUNT(*) > 100");
+
         if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
             return;
 
