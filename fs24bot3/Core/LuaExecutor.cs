@@ -1,13 +1,10 @@
 ﻿using fs24bot3.Helpers;
 using fs24bot3.Models;
 using KeraLua;
-using NLua;
 using Serilog;
 using System;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Core;
@@ -49,16 +46,17 @@ class LuaExecutor
             Marshal.ReAllocHGlobal(ptr, unchecked((IntPtr)(long)(ulong)nsize)) :
             Marshal.AllocHGlobal((int)nsize.ToUInt32());
         }), ref pointer);
-        lua.State.Encoding = Encoding.UTF8;
 
-        var time = 0;
+        lua.State.Encoding = Encoding.UTF8;
+        var start = DateTime.Now;
+        
         lua.State.SetHook(((_, _) =>
         {
-            if (time > timeout)
+            var current = DateTime.Now;
+            if ((current - start).TotalMilliseconds > timeout)
             {
                 lua.State.Error("execution timeout");
             }
-            time++;
         }), LuaHookMask.Count, 1);
 
         return lua;

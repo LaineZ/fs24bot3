@@ -184,8 +184,6 @@ public class Bot
             Date = DateTime.Now
         });
 
-        Connection.Execute("DELETE FROM Messages WHERE ROWID IN (SELECT ROWID FROM Messages ORDER BY RANDOM() LIMIT 1) WHILE COUNT(*) > 100");
-
         if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
             return;
 
