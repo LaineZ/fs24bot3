@@ -16,6 +16,7 @@ using fs24bot3.Backend;
 using fs24bot3.EventProcessors;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Qmmands.Delegates;
 
 namespace fs24bot3;
 
@@ -23,7 +24,7 @@ public class Bot
 {
     public SQLiteConnection Connection = new SQLiteConnection("fsdb.sqlite");
     private CustomCommandProcessor CustomCommandProcessor;
-    private readonly CommandService Service = new CommandService();
+    private readonly CommandService Service;
     public IMessagingClient Client { get; }
     public Shop Shop { get; }
     public List<string> AcknownUsers = new List<string>();
@@ -31,8 +32,30 @@ public class Bot
     
     private OnMsgEvent OnMsgEvent { get; }
 
+    public enum CooldownBucketType
+    {
+        Global,
+        Channel,
+        User,
+    }
+
     public Bot(IMessagingClient messagingClient)
     {
+        Service = new CommandService(new CommandServiceConfiguration
+        {
+            CooldownBucketKeyGenerator = new CooldownBucketKeyGeneratorDelegate((bucketType, context) =>
+            {
+                var ctx = context as CommandProcessor.CustomCommandContext;
+                Log.Verbose("Cooldown: {0}", bucketType);
+                return bucketType switch
+                {
+                    CooldownBucketType.Global => "global",
+                    CooldownBucketType.Channel => ctx.Channel,
+                    CooldownBucketType.User => ctx.User.Username,
+                    _ => throw new ArgumentOutOfRangeException(nameof(bucketType), bucketType, null)
+                };
+            })
+        });
         Client = messagingClient;
         Service.AddModule<GenericCommandsModule>();
         Service.AddModule<SystemCommandModule>();
@@ -136,13 +159,21 @@ public class Bot
     public void MessageTrigger(MessageGeneric message)
     {
         if (message.Sender.UserIsIgnored() || message.Kind == MessageKind.MessagePersonal) { return; }
-        
-        PProfiler.BeginMeasure("msg");
-        OnMsgEvent.DestroyWallRandomly(Shop, message);
-        OnMsgEvent.LevelInscrease(Shop, message);
-        OnMsgEvent.PrintWarningInformation(message);
-        OnMsgEvent.HandleYoutube(message);
-        PProfiler.EndMeasure("msg");
+        try
+        {
+            PProfiler.BeginMeasure("msg");
+            OnMsgEvent.InsertMessages(message);
+            OnMsgEvent.DestroyWallRandomly(Shop, message);
+            OnMsgEvent.LevelInscrease(Shop, message);
+            OnMsgEvent.PrintWarningInformation(message);
+            OnMsgEvent.HandleYoutube(message);
+            OnMsgEvent.WhoWrotesMe(message);
+            PProfiler.EndMeasure("msg");
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Message trigger causes a exception: {0}", ex);
+        }
     }
 
     static string HeuristicPrintErrorMessage(string message)
@@ -177,13 +208,6 @@ public class Bot
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix)
     {
-        Connection.Insert(new SQL.Messages()
-        {
-            Message = message.Body,
-            Nick = message.Sender.Username,
-            Date = DateTime.Now
-        });
-
         if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
             return;
 
@@ -204,6 +228,9 @@ public class Bot
                 await Client.SendMessage(message.Target,
                     $"Ошибка в `{err.Parameter}` необходимый тип: `{err.Parameter.Type.Name}` вы же ввели: `{err.Value.GetType().Name}`. Введите .helpcmd {err.Parameter.Command} чтобы узнать наконец-то, как же правильно пользоватся этой командой.");
                 break;
+            case CommandOnCooldownResult err:
+                await Client.SendMessage(message.Target, $"{RandomMsgs.CommandCooldownMessages.Random()} {err.Cooldowns.FirstOrDefault().RetryAfter.ToString(@"hh\:mm\:ss")}");
+                break;
             case ArgumentParseFailedResult err:
                 var parserResult = err.ParserResult as DefaultArgumentParserResult;
 
@@ -223,7 +250,7 @@ public class Bot
                 break;
             case OverloadsFailedResult:
                 await Client.SendMessage(message.Target, "Команда выключена...");
-                break;
+                break;                
             case CommandNotFoundResult _:
                 await CustomCommandProcessor.ProcessCmd(prefix, message);
                 break;

@@ -66,6 +66,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
     [Command("topic")]
     [Description("Текущая тема разговора")]
+    [Cooldown(1, 2, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
     public async Task Topic(int window = 100)
     {
         var sms = Context.BotCtx.Connection.Table<SQL.Messages>().ToList();

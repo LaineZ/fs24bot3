@@ -124,6 +124,14 @@ public class RandomMsgs
         "CELL"
     };
 
+    public static readonly string[] CommandCooldownMessages =
+    {
+        "Команда будет доступна через",
+        "Колодки прогорели, остынут через",
+        "BRAKES HOT....BRK FAN: ON in",
+        "Подождите",
+    };
+
     public static readonly string[] BadWordsSubstrings =
     {
         "бля",

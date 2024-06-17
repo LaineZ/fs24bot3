@@ -8,6 +8,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using fs24bot3.Helpers;
+using HandlebarsDotNet;
+using static fs24bot3.Models.OpenWeatherMapResponse;
+using NetIRC;
+using System.Collections.Generic;
 
 namespace fs24bot3.EventProcessors;
 public class OnMsgEvent
@@ -85,6 +90,33 @@ public class OnMsgEvent
             catch (Exception e)
             {
                 Log.Error("Cannot handle youtube: {0}", e);
+            }
+        }
+    }
+
+    public void InsertMessages(MessageGeneric message)
+    {
+        BotContext.Connection.Insert(new SQL.Messages()
+        {
+            Message = message.Body,
+            Nick = message.Sender.Username,
+            Date = DateTime.Now
+        });
+    }
+
+    public async void WhoWrotesMe(MessageGeneric message)
+    {
+        if (message.Body.ToLower().TrimStart().StartsWith("кто мне пишет"))
+        {
+            var wroteMe = BotContext.Connection.Table<SQL.Messages>().ToList().Where(x => x.Message.Contains(message.Sender.Username)).DistinctBy( x => x.Nick).Select(x => x.Nick);
+            if (wroteMe.Any())
+            {
+                await BotContext.Client.SendMessage(message.Target, $"Уважаемый {message.Sender.Username} 🥰! Вам писали следующие люди: {MessageHelper.AntiHightlight(string.Join(", ", wroteMe))}");
+                BotContext.Connection.Execute("DELETE FROM Messages WHERE Message LIKE ?", $"%{message.Sender.Username}%");
+            }
+            else
+            {
+                await BotContext.Client.SendMessage(message.Target, $"{message.Sender.Username}: вам никто не писал...");
             }
         }
     }
