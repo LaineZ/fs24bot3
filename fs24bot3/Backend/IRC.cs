@@ -246,21 +246,29 @@ public class Irc : IMessagingClient
         // example:
         // Totoro ACC 1 AAAAAXXX
 
-        messageHandler = (client, message) =>
+        try
         {
-            if (message.Prefix.From == "NickServ")
+            messageHandler = (client, message) =>
             {
-                var split = message.Trailing.Split(" ");
+                if (message.Prefix.From == "NickServ")
+                {
+                    var split = message.Trailing.Split(" ");
 
-                tcs.SetResult(split[2] == "3");
+                    tcs.SetResult(split[2] == "3");
 
-                BotClient.IRCMessageParsed -= messageHandler;
-            }
-        };
+                    BotClient.IRCMessageParsed -= messageHandler;
+                }
+            };
 
-        BotClient.IRCMessageParsed += messageHandler;
+            BotClient.IRCMessageParsed += messageHandler;
 
-        await SendMessage("NickServ", $"ACC {user.Username}");
-        return await tcs.Task;
+            await SendMessage("NickServ", $"ACC {user.Username}");
+            return await tcs.Task;
+        }
+        catch (Exception e)
+        {
+            Log.Error("Unable to verify account status for {0}: {1}", user.Username, e);
+            return await Task.FromResult(false);
+        }
     }
 }

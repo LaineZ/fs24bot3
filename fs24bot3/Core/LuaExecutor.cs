@@ -106,6 +106,9 @@ class LuaExecutor
         {
             await Context.Client.SendMessage(channel,
                 $"Ошибка Lua скрипта: {e.Message}");
+        }
+        finally
+        {
             lua.Close();
             lua.Dispose();
         }

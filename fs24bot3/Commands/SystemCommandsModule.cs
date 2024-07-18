@@ -338,6 +338,14 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         await Context.SendMessage(Context.Channel, String.Join(' ', Context.BotCtx.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
     }
 
+    [Command("say", "writeasbot")]
+    [Checks.CheckAdmin]
+    public async Task WriteAsBot(string channel, [Remainder] string message)
+    {
+        await Context.SendMessage(channel, message);
+        await Context.SendMessage(Context.Channel, "Сообщение отправлено!");
+    }
+
     [Command("ignore")]
     [Checks.CheckAdmin]
     public async Task Ignore(CommandToggles.CommandEdit action, [Remainder] string username)

@@ -16,6 +16,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
     [Command("tr", "translate")]
     [Description("Переводчик")]
     [Remarks("Параметр lang нужно вводить в формате 'sourcelang-translatelang' или 'traslatelang' в данном случае переводчик попытается догадаться с какого языка пытаются перевести (работает криво, претензии не к разработчику бота)\nВсе языки вводятся по стандарту ISO-639-1 посмотреть можно здесь: https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")]
+    [Cooldown(10, 2, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
     public async Task Translate(Language lang, [Remainder] string text) 
     {
         try
@@ -38,6 +39,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("trppc")]
     [Description("Ппц жесть переводчик")]
+    [Cooldown(1, 2, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
     public async Task TranslatePpc([Remainder] string text)
     {
         var output = await Context.ServicesHelper.TranslatePpc(text);
@@ -46,6 +48,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("trl")]
     [Description("Переводчик (ппц). Параметр lang вводится так же как и в tr")]
+    [Cooldown(5, 2, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
     public async Task TranslatePpc2(Language lang, [Remainder] string text)
     {
         try

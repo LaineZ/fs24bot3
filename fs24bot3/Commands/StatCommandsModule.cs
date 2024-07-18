@@ -30,6 +30,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
         string lastBlock = bars[idx];
         int emptyBlocks = width - blocks - lastBlock.Length;
         string color;
+
         if (perc < 25)
         {
             color = "05";

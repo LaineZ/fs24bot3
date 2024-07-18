@@ -24,6 +24,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("execute", "exec")]
     [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
+    [Cooldown(5, 2, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
     public async Task ExecuteApi(string lang, [Remainder] string code)
     {
         APIExec.Input codeData = new APIExec.Input
@@ -69,12 +70,12 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("executeurl", "execurl")]
     [Description("Тоже самое что и exec только работает через URL")]
+    [Cooldown(5, 3, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
     public async Task ExecuteApiUrl(string code, string rawurl)
     {
         var response = await Context.HttpTools.GetTextPlainResponse(rawurl);
         await ExecuteApi(code, response);
     }
-
 
     [Command("shopcurrency", "shopcur", "curshop", "curshp")]
     [Description("Курсы валют различных интернет магазинов. Поддерживается только USD.")]
@@ -85,15 +86,32 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         if (!curs.ContainsKey(shop))
         {
-            await Context.SendSadMessage();
+            await Context.SendSadMessage(Context.Channel, "Такой интернет магазин не поддерживается");
             return;
         }
         await Context.SendMessage($"{shop}: {usd} USD -> {curs[shop.ToLower()] * usd} RUB");
     }
 
-    [Command("isblocked", "blocked", "block", "blk", "isup", "isdown", "ping")]
+    [Command("isup", "isdown", "ping")]
+    [Description("Работает ли сайт?")]
+    [Cooldown(5, 1, CooldownMeasure.Minutes, Bot.CooldownBucketType.Channel)]
+    public async Task IsUp(string url)
+    {
+        var urik = new UriBuilder(url);
+        bool response = await Context.HttpTools.PingHost(urik.Host);
+        if (response)
+        {
+            await Context.SendMessage(Context.Channel, $"[green]{urik.Host}: Работает!");
+        }
+        else
+        {
+            await Context.SendMessage(Context.Channel, $"[red]{urik.Host}: Не смог установить соединение...");
+        }
+    }
+
+    [Command("isblocked", "blocked", "block", "blk")]
     [Description("Заблокирован ли сайт в России?")]
-    public async Task IsBlocked([Remainder] string url)
+    public async Task IsBlocked(string url)
     {
         var output = await Context.HttpTools.PostJson("https://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
         var jsonOutput = JsonConvert.DeserializeObject<IsBlockedInRussia.Root>(output);
@@ -116,16 +134,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
         else
         {
-            var urik = new UriBuilder(url);
-            bool response = await Context.HttpTools.PingHost(urik.Host);
-            if (response)
-            {
-                await Context.SendMessage(Context.Channel, $"[green]{urik.Host}: Не заблокирован!");
-            }
-            else
-            {
-                await Context.SendMessage(Context.Channel, $"[red]{urik.Host}: Не смог установить соединение с сайтом, возможно сайт заблокирован.");
-            }
+            await Context.SendMessage(Context.Channel, $"[green]{url}: Не заблокирован!");
         }
     }
 
@@ -305,6 +314,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
     [Command("wa", "wolfram", "wolframalpha")]
     [Description("Wolfram|Alpha — база знаний и набор вычислительных алгоритмов, вопросно-ответная система. Не является поисковой системой.")]
+    [Cooldown(20, 10, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
     public async Task Wolfram([Remainder] string query)
     {
         WolframAlphaClient client = new WolframAlphaClient(ConfigurationProvider.Config.Services.WolframID);
@@ -393,7 +403,6 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
                     var reply = jsonOutput.Replies.FirstOrDefault();
                     if (reply != null)
                     {
-
                         var containsBadword = RandomMsgs.BadWordsSubstrings.Any(x => reply.ToLower().Contains(x)); ;
 
                         if (!containsBadword)

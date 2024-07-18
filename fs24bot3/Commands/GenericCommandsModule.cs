@@ -47,9 +47,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         return name.Split(" ")[0];
     }
 
-    [Command("help", "commands")]
-    [Description("Список команд")]
-    public async Task Help()
+    private async Task HelpAll()
     {
         var cmds = Service.GetAllCommands();
         string commandsOutput = "";
@@ -89,16 +87,11 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             })
         };
 
-
-
         string link = await InternetServicesHelper.UploadToTrashbin(template(data));
         await Context.SendMessage(Context.Channel,
-            $"Выложены команды по этой ссылке: {link} также вы можете написать {ConfigurationProvider.Config.Prefix}helpcmd имякоманды для получения дополнительной помощи");
+            $"Выложены команды по этой ссылке: {link} также вы можете написать `{ConfigurationProvider.Config.Prefix}help имякоманды` для получения дополнительной помощи");
     }
-
-    [Command("helpcmd")]
-    [Description("Помощь по команде")]
-    public async Task HelpСmd(string command = "helpcmd")
+    private async Task HelpCmd(string command)
     {
         foreach (Command cmd in Service.GetAllCommands())
         {
@@ -117,6 +110,19 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         await Context.SendSadMessage(Context.Channel,
             $"К сожалению команда не найдена, если вы пытаетесь посмотреть справку по кастом команде: используйте {ConfigurationProvider.Config.Prefix}cmdinfo");
+    }
+
+    [Command("help", "commands", "cmds", "helpcmd")]
+    [Description("Справка, если параметр `commandName` пуст - выведет список всех команд в виде HTML страницы")]
+    public async Task Help(string commandName = "")
+    {
+        if (string.IsNullOrWhiteSpace(commandName))
+        {
+            await HelpAll();
+        } else
+        {
+            await HelpCmd(commandName);
+        }
     }
 
     [Command("remind", "in")]

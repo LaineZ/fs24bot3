@@ -94,7 +94,9 @@ public class RandomMsgs
         "Извините, кажется, я неправильно понял ваш запрос и поэтому дал некорректный ответ. Я постараюсь исправить ситуацию и предоставить вам нужную информацию.",
         "Извините, но по вашему запросу не было найдено результатов. Пожалуйста, попробуйте изменить запрос или обратиться к другому источнику информации.",
         "Ничего не найдено по вашему запросу. Мы сожалеем об этом и рекомендуем вам попробовать использовать другие ключевые слова для поиска.",
-        "Sorry, as an IRC Bot, I am unable to browse the internet right now"
+        "Sorry, as an IRC Bot, I am unable to browse the internet right now",
+        "NOT ALLOWED",
+        "INVALID ENYTRY"
     };
 
     public static readonly string[] NetworkMessages =
