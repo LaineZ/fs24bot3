@@ -14,7 +14,6 @@ public class CustomCommandProcessor
     {
         Context = context;
         CustomExecutor = new CustomExecutor(Context);
-        Log.Information("Custom command processor enabled!");
     }
 
     public async Task<bool> ProcessCmd(string prefix, MessageGeneric message)

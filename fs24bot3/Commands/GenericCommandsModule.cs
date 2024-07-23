@@ -539,12 +539,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         await Context.SendMessage(output.ToString());
     }
 
-
     private async Task ExecuteLua(string input)
     {
         var lua = LuaExecutor.CreateLuaState();
-
-        // block danger functions
+        // Block danger functions
         lua["os.execute"] = null;
         lua["os.exit"] = null;
         lua["os.remove"] = null;
@@ -582,6 +580,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         catch (Exception e)
         {
             await Context.SendMessage($"Ошибка выражения: {e.Message}");
+        }
+        finally
+        {
             lua.Close();
             lua.Dispose();
         }
