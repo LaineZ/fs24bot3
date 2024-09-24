@@ -99,7 +99,7 @@ class LuaExecutor
 
         try
         {
-            var res = (string)lua.DoString(Command.Output)[0];
+            var res = lua.DoString(Command.Output)[0].ToString();
             await Context.Client.SendMessage(channel, res);
         }
         catch (Exception e)

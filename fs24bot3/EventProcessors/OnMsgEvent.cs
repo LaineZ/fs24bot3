@@ -13,6 +13,8 @@ using HandlebarsDotNet;
 using static fs24bot3.Models.OpenWeatherMapResponse;
 using NetIRC;
 using System.Collections.Generic;
+using static fs24bot3.Models.BandcampSearch;
+using static fs24bot3.Models.APIExec;
 
 namespace fs24bot3.EventProcessors;
 public class OnMsgEvent
@@ -20,6 +22,7 @@ public class OnMsgEvent
     private readonly Bot BotContext;
     private readonly Random Rand = new Random();
     private readonly Regex YoutubeRegex = new Regex(@"(?:https?:)?(?:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['\""][^<>]*>|<\/a>))[?=&+%\w.-]*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+    private readonly Regex URLRegex = new Regex(@"https?:\/\/\S*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
     public OnMsgEvent(Bot botCtx)
     {
@@ -39,11 +42,29 @@ public class OnMsgEvent
     {
         message.Sender.CreateAccountIfNotExist();
         message.Sender.SetLastMessage();
-        bool newLevel = message.Sender.IncreaseXp(message.Body.Length * new Random().Next(1, 3));
+        bool newLevel = message.Sender.IncreaseXp(message.Body.Length);
         if (newLevel)
         {
             var report = message.Sender.AddRandomRarityItem(shop, ItemInventory.ItemRarity.Rare);
             await BotContext.Client.SendMessage(message.Target, $"{message.Sender.Username}: У вас теперь {message.Sender.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!");
+        }
+    }
+
+    public async void HandleURL(MessageGeneric message)
+    {
+        var http = new HttpTools();
+
+        MatchCollection matches = URLRegex.Matches(message.Body);
+
+        foreach (var match in matches)
+        {
+            var response = await http.GetResponseAsync(match.ToString());
+
+            if (response.IsSuccessStatusCode)
+            {
+                string text = await response.Content.ReadAsStringAsync();
+
+            }
         }
     }
 
