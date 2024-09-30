@@ -24,6 +24,43 @@ class MessageHelper
 
         return Name;
     }
+    
+    public static string Bar(int width, int perc)
+    {
+        string[] bars = new string[] { " ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█" };
+        double cellWidth = width / 100.0;
+        int blocks = (int)Math.Floor(perc * cellWidth);
+        int idx = (int)Math.Floor((perc * width) / 12.5) % 9;
+        string lastBlock = bars[idx];
+        int emptyBlocks = width - blocks - lastBlock.Length;
+        string color;
+
+        if (perc < 25)
+        {
+            color = "05";
+        }
+        else if (perc < 50)
+        {
+            color = "07";
+        }
+        else if (perc < 66)
+        {
+            color = "08";
+        }
+        else if (perc < 85)
+        {
+            color = "09";
+        }
+        else if (perc < 100)
+        {
+            color = "10";
+        }
+        else
+        {
+            color = "11";
+        }
+        return $"▕{color}{new string('█', blocks)}{lastBlock.PadRight(emptyBlocks > 0 ? emptyBlocks : 0)}\u000f▏\u0003";
+    }
 
     public static string GenerateName(int len)
     {

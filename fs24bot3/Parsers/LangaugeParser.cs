@@ -3,44 +3,45 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace fs24bot3.Parsers
+namespace fs24bot3.Parsers;
+
+public class Language
 {
+    public string From;
+    public string To;
 
-    public class Language
+    public Language(string input)
     {
-        public string From;
-        public string To;
+        string[] langs = input.Split("-");
 
-        public Language(string input)
+        if (langs.Length > 1)
         {
-            string[] langs = input.Split("-");
-
-            if (langs.Length > 1)
-            {
-                From = langs[0];
-                To = langs[1]; 
-            } else
-            {
-                throw new FormatException($"`{input}` is not a valid string for constructing Language class");
-            }
+            From = langs[0];
+            To = langs[1];
         }
-
-        public override string ToString()
+        else
         {
-            return $"{From}-{To}";
+            throw new FormatException($"`{input}` is not a valid string for constructing Language class");
         }
     }
-    public class LanugageParser : TypeParser<Language>
+
+    public override string ToString()
     {
-        public override ValueTask<TypeParserResult<Language>> ParseAsync(Parameter parameter, string value, CommandContext context)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return TypeParserResult<Language>.Failed("Value cannot be null or whitespace.");
+        return $"{From}-{To}";
+    }
+}
 
-            if (value.All(char.IsLetter))
-                return TypeParserResult<Language>.Failed("Both parts of value must consist of only letters.");
+public class LanugageParser : TypeParser<Language>
+{
+    public override ValueTask<TypeParserResult<Language>> ParseAsync(Parameter parameter, string value,
+        CommandContext context)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return TypeParserResult<Language>.Failed("Value cannot be null or whitespace.");
 
-            return TypeParserResult<Language>.Successful(new Language(value));
-        }
+        if (value.All(char.IsLetter))
+            return TypeParserResult<Language>.Failed("Both parts of value must consist of only letters.");
+
+        return TypeParserResult<Language>.Successful(new Language(value));
     }
 }

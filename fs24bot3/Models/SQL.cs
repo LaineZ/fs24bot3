@@ -1,6 +1,7 @@
 ﻿using fs24bot3.ItemTraits;
 using SQLite;
 using System;
+using fs24bot3.Helpers;
 
 namespace fs24bot3.Models;
 
@@ -164,6 +165,32 @@ public class SQL
         public string Nick { get; set; }
         public int Level { get; set; }
         public string NestName { get; set; }
+    }
+
+    public class Goals {
+        [PrimaryKey]
+        [AutoIncrement]
+        public int Id { get; set; }
+        public string Nick { get; set; }
+        public string Goal { get; set; }
+        public uint Progress { get; set; }
+        public uint Total { get; set; }
+
+        public int Percentage()
+        {
+            if (Total == 0)
+            {
+                return 100;
+            }
+
+            float percents = ((float)Progress / (float)Total) * 100f;
+            return (int)Math.Floor(percents);
+        }
+
+        public override string ToString()
+        {
+            return $"ID: {Id}: Цель [b]{Goal}[r] {(Progress == Total ? "[green]" : "")}{Progress}/{Total} {Percentage()}%[r]";
+        }
     }
 
     public class UnhandledExceptions

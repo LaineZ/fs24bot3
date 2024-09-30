@@ -19,7 +19,8 @@ public class Database
         connection.CreateTable<SQL.Item>();
         connection.CreateTable<SQL.Ignore>();
         connection.CreateTable<SQL.ScriptStorage>();
-
+        connection.CreateTable<SQL.Goals>();
+        
         connection.DropTable<SQL.Messages>();
         connection.CreateTable<SQL.Messages>();
 

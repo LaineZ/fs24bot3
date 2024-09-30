@@ -14,10 +14,12 @@ using SQLite;
 using System.Diagnostics;
 using fs24bot3.Properties;
 using System.Text;
+using fs24bot3.Parsers;
 using HandlebarsDotNet;
 using Serilog;
 
 namespace fs24bot3.Commands;
+
 public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
@@ -61,9 +63,12 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             Log.Verbose("help.html not found, using compiled one");
             commandsOutput = Resources.help;
         }
+
         var template = Handlebars.Compile(commandsOutput);
 
-        var customCommands = Context.BotCtx.Connection.Query<SQL.CustomUserCommands>("SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
+        var customCommands =
+            Context.BotCtx.Connection.Query<SQL.CustomUserCommands>(
+                "SELECT * FROM CustomUserCommands ORDER BY length(Output) DESC");
         var commandList = cmds.Select(x =>
         {
             return new
@@ -91,13 +96,17 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         await Context.SendMessage(Context.Channel,
             $"Выложены команды по этой ссылке: {link} также вы можете написать `{ConfigurationProvider.Config.Prefix}help имякоманды` для получения дополнительной помощи");
     }
+
     private async Task HelpCmd(string command)
     {
         foreach (Command cmd in Service.GetAllCommands())
         {
             if (cmd.Aliases.Contains(command))
             {
-                await Context.SendMessage(Context.Channel, ConfigurationProvider.Config.Prefix + cmd.Name + " " + string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " + cmd.Description);
+                await Context.SendMessage(Context.Channel,
+                    ConfigurationProvider.Config.Prefix + cmd.Name + " " +
+                    string.Join(" ", cmd.Parameters.Select(x => $"[{x.Name} default: {x.DefaultValue}]")) + " - " +
+                    cmd.Description);
                 if (cmd.Remarks != null)
                 {
                     await Context.SendMessage(Context.Channel, cmd.Remarks);
@@ -119,7 +128,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (string.IsNullOrWhiteSpace(commandName))
         {
             await HelpAll();
-        } else
+        }
+        else
         {
             await HelpCmd(commandName);
         }
@@ -146,7 +156,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (!timeSegments.Any())
         {
-            Context.SendErrorMessage(Context.Channel, $"Неверный формат времени или неверные единицы измерения времени");
+            Context.SendErrorMessage(Context.Channel,
+                $"Неверный формат времени или неверные единицы измерения времени");
             return;
         }
 
@@ -174,7 +185,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                     totalSecs += value;
                     break;
                 default:
-                    Context.SendErrorMessage(Context.Channel, $"Неизвестная единица измерения времени: {segment.Value[^1]}");
+                    Context.SendErrorMessage(Context.Channel,
+                        $"Неизвестная единица измерения времени: {segment.Value[^1]}");
                     return;
             }
         }
@@ -211,7 +223,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         foreach (var item in formats)
         {
             var timeZone = Context.User.GetTimeZone();
-            if (DateTime.TryParseExact(dateTimeString, item, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime remindDateTime))
+            if (DateTime.TryParseExact(dateTimeString, item, CultureInfo.InvariantCulture, DateTimeStyles.None,
+                    out DateTime remindDateTime))
             {
                 remindDateTime = TimeZoneInfo.ConvertTimeToUtc(remindDateTime, timeZone);
 
@@ -223,13 +236,16 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
                 TimeSpan timeUntilRemind = remindDateTime - DateTime.UtcNow;
                 Context.User.AddRemind(timeUntilRemind, message, Context.Channel);
-                await Context.SendMessage(Context.Channel, $"{message} в {dateTimeString} {TrimTimezoneName(timeZone.DisplayName)}");
+                await Context.SendMessage(Context.Channel,
+                    $"{message} в {dateTimeString} {TrimTimezoneName(timeZone.DisplayName)}");
                 return;
             }
+
             continue;
         }
 
-        await Context.SendSadMessage(Context.Channel, $"Неверный формат времени, допустимые форматы: {string.Join(", ", formats)}");
+        await Context.SendSadMessage(Context.Channel,
+            $"Неверный формат времени, допустимые форматы: {string.Join(", ", formats)}");
     }
 
     [Command("delmind", "delremind", "deleteremind")]
@@ -267,7 +283,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         var time = DateTime.Now.ToUniversalTime();
         CultureInfo rus = new CultureInfo("ru-RU", false);
 
-        await Context.SendMessage($"Сейчас у {username} {TimeZoneInfo.ConvertTimeFromUtc(time, timezone).ToString(rus)} {TrimTimezoneName(timezone.DisplayName)}");
+        await Context.SendMessage(
+            $"Сейчас у {username} {TimeZoneInfo.ConvertTimeFromUtc(time, timezone).ToString(rus)} {TrimTimezoneName(timezone.DisplayName)}");
     }
 
     [Command("reminds", "rems")]
@@ -314,7 +331,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             else
             {
                 rems.Append($"\"{remind.Message}\" в [b]{dtDateTime.ToString(rus)} " +
-                $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
+                            $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
             }
         }
 
@@ -357,7 +374,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (find.Length <= 2)
         {
-            var character = connect.Query<SQL.Chars>("SELECT * FROM chars WHERE hexcode = ? LIMIT 1", find).FirstOrDefault();
+            var character = connect.Query<SQL.Chars>("SELECT * FROM chars WHERE hexcode = ? LIMIT 1", find)
+                .FirstOrDefault();
 
             if (character != null)
             {
@@ -371,12 +389,13 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         else
         {
             var query = connect.Table<SQL.Chars>()
-            .Where(x => x.Symbol == find || x.Name.ToLower().Contains(find))
-            .Take(10);
+                .Where(x => x.Symbol == find || x.Name.ToLower().Contains(find))
+                .Take(10);
 
             if (query.Any())
             {
-                await Context.SendMessage(string.Join(", ", query.Select(x => $"[r][b]{x.Name}[r] {x.Hexcode} [green]({x.Symbol})")));
+                await Context.SendMessage(string.Join(", ",
+                    query.Select(x => $"[r][b]{x.Name}[r] {x.Hexcode} [green]({x.Symbol})")));
             }
             else
             {
@@ -401,6 +420,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                 names.Add(MessageHelper.GenerateNameRus(Math.Clamp(maxlen, 5, 20)));
             }
         }
+
         await Context.SendMessage(Context.Channel, string.Join(",", names));
     }
 
@@ -463,7 +483,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                 {
                     if (htmlOutput)
                     {
-                        output += $"<p>{message.Date} from <strong>{message.Nick}</strong></p><img src='{captures.Value}' alt='{captures.Value}' style='width: auto; height: 100%;'>\n";
+                        output +=
+                            $"<p>{message.Date} from <strong>{message.Nick}</strong></p><img src='{captures.Value}' alt='{captures.Value}' style='width: auto; height: 100%;'>\n";
                     }
                     else
                     {
@@ -471,6 +492,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                     }
                 }
             }
+
             stopWatch.Stop();
             current++;
 
@@ -484,7 +506,9 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
             stopWatch.Restart();
         }
-        await Context.SendMessage(Context.Channel, await InternetServicesHelper.UploadToTrashbin(output, htmlOutput ? "add" : "addplain"));
+
+        await Context.SendMessage(Context.Channel,
+            await InternetServicesHelper.UploadToTrashbin(output, htmlOutput ? "add" : "addplain"));
     }
 
     [Command("seen", "see", "lastseen")]
@@ -502,7 +526,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (date.Days < 1000)
         {
-            await Context.SendMessage(Context.Channel, $"Последний раз я видел [b]{destination}[r] {ToReadableString(date)} назад");
+            await Context.SendMessage(Context.Channel,
+                $"Последний раз я видел [b]{destination}[r] {ToReadableString(date)} назад");
             var messages = await Context.ServicesHelper.GetMessagesSprout(user.GetLastMessage());
             var lastmsg = messages.LastOrDefault(x => x.Nick == destination);
             if (lastmsg != null)
@@ -533,9 +558,10 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             {
                 output.Append(", ");
             }
-            output.Append(adjectives.Random()).Append(' ').Append(nouns.Random());
 
+            output.Append(adjectives.Random()).Append(' ').Append(nouns.Random());
         }
+
         await Context.SendMessage(output.ToString());
     }
 
@@ -595,12 +621,129 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         await ExecuteLua("return " + expression);
     }
 
-
     [Command("lua")]
     [Description("Lua интерпретатор")]
     [Checks.CheckAdmin]
     public async Task Lua([Remainder] string expression)
     {
         await ExecuteLua(expression);
+    }
+
+    [Command("creategoal", "addgoal", "newgoal", "ag")]
+    [Description("Создать цель. Лимит описания цели 50 символов")]
+    [Checks.FullAccount]
+    public async Task CreateGoal([Remainder] string goalDescription = "")
+    {
+        if (goalDescription.Length > 50)
+        {
+            await Context.SendErrorMessage("У вас слишком длинное название цели, максимальная длина цели 50 символов.");
+            return;
+        }
+        
+        var taskComplexityMatch = Regex.Matches(goalDescription, @"(\d+)\/(\d+)").FirstOrDefault();
+
+        uint completed = 0;
+        uint total = 1;
+
+        if (taskComplexityMatch != null)
+        {
+            completed = uint.TryParse(taskComplexityMatch.Groups.Values.First().Value, out completed) ? completed : 0;
+            total = uint.TryParse(taskComplexityMatch.Groups.Values.Last().Value, out total) ? total : 1;
+        }
+
+        var goal = Context.User.AddGoal(goalDescription, completed, total);
+
+        await Context.SendMessage(
+            $"Цель {Context.User.Username} `{goal.Goal}` успешно создана просмотреть можно с помощью {ConfigurationProvider.Config.Prefix}goal {goal.Id}!");
+    }
+
+
+    [Command("setgoal", "updategoal", "updgoal", "upgoal", "sg")]
+    [Description("Изменить прогресс цели. ID цели можно получить в goals или goal get [часть описания цели]")]
+    [Remarks("Параметр progress принимает значения (числа) в стиле [progress]/[total] или [progress]. Обратите внимание что [total] не может быть равен 0")]
+    [Checks.FullAccount]
+    public async Task SetGoal(string goalDescriptionOrId, GoalProgress progress)
+    {
+        var goal = FindGoalFuzzy(goalDescriptionOrId);
+
+        if (goal is null)
+        {
+            await Context.SendSadMessage();
+            return;
+        }
+
+        goal.Progress = Math.Clamp(progress.Progress, 0, goal.Total);
+        if (progress.Total > 0)
+        {
+            goal.Total = progress.Total;
+        }
+
+        Context.User.UpdateGoal(goal);
+        await Context.SendMessage(goal.ToString());
+    }
+
+
+    private SQL.Goals FindGoalFuzzy(string goal)
+    {
+        SQL.Goals finding;
+
+        if (int.TryParse(goal, out int id))
+        {
+            finding = Context.User.FindGoalById(id);
+        }
+        else
+        {
+            finding = Context.User.SearchGoals(goal).FirstOrDefault();
+        }
+
+        return finding;
+    }
+
+    [Command("goals")]
+    [Description("Список ваших целей")]
+    [Checks.FullAccount]
+    public async Task GetGoals()
+    {
+        var goals = Context.User.GetAllGoals();
+        var sb = new StringBuilder();
+
+        if (!goals.Any())
+        {
+            await Context.SendSadMessage(Context.Channel, "У вас нет целей...");
+            return;
+        }
+
+        foreach (var g in goals)
+        {
+            sb.Append($"{g}\n");
+        }
+
+        await Context.SendMessage(sb.ToString());
+    }
+
+    [Command("goal")]
+    [Description("Простотр и удаление вашей цели, параметр goalDescriptionOrId принимает как ID, так и часть описания задачи")]
+    [Remarks("Параметр action принимает следующие значения:\nget - получить информацию по цели\ndelete - удалить цель")]
+    [Checks.FullAccount]
+    public async Task Goal(CommandToggles.Goal action, [Remainder] string goalDescriptionOrId)
+    {
+        var finding = FindGoalFuzzy(goalDescriptionOrId);
+        
+        if (finding is null)
+        {
+            await Context.SendSadMessage();
+            return;
+        }
+        
+        switch (action)
+        {
+            case CommandToggles.Goal.Get:
+                await Context.SendMessage(finding.ToString());
+                break;
+            case CommandToggles.Goal.Delete:
+                Context.User.DeleteGoal(finding.Id);
+                await Context.SendMessage($"Цель от {Context.User} с ID {finding.Id} была удалена!");
+                break;
+        }
     }
 }

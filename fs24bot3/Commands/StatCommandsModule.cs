@@ -20,44 +20,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
     public CommandService Service { get; set; }
     private readonly Regex WordRegex = new Regex(@"\S*");
-
-    private static string Bar(int width, int perc)
-    {
-        string[] bars = new string[] { " ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█" };
-        double cellWidth = width / 100.0;
-        int blocks = (int)Math.Floor(perc * cellWidth);
-        int idx = (int)Math.Floor((perc * width) / 12.5) % 9;
-        string lastBlock = bars[idx];
-        int emptyBlocks = width - blocks - lastBlock.Length;
-        string color;
-
-        if (perc < 25)
-        {
-            color = "05";
-        }
-        else if (perc < 50)
-        {
-            color = "07";
-        }
-        else if (perc < 66)
-        {
-            color = "08";
-        }
-        else if (perc < 85)
-        {
-            color = "09";
-        }
-        else if (perc < 100)
-        {
-            color = "10";
-        }
-        else
-        {
-            color = "11";
-        }
-        return $"▕{color}{new string('█', blocks)}{lastBlock.PadRight(emptyBlocks)}\u000f▏\u0003";
-    }
-
+    
     private string FmtTag(SQL.Tags tag)
     {
         var t = Context.BotCtx.Connection.Table<SQL.Tag>()
@@ -167,7 +130,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
         double percent = (double)data.Xp / data.Need;
 
         await Context.SendMessage(Context.Channel, 
-            $"Статистика: {data.Nick} Уровень: {data.Level} XP: {Bar(15, (int)(percent * 100.0))} {data.Xp} / {data.Need}");
+            $"Статистика: {data.Nick} Уровень: {data.Level} XP: {MessageHelper.Bar(15, (int)(percent * 100.0))} {data.Xp} / {data.Need}");
 
         if (tags.Any())
         {

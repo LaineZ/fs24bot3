@@ -66,7 +66,12 @@ public class CommandProcessor
             await SendSadMessage(Channel);
         }
 
-        public async void SendErrorMessage(string channel, string message)
+        public async Task SendErrorMessage(string message)
+        {
+            await SendErrorMessage(Channel, "[red]" + message);
+        }
+
+        public async Task SendErrorMessage(string channel, string message)
         {
             await BotCtx.Client.SendMessage(channel, "[red]" + message);
         }

@@ -230,7 +230,6 @@ public class User
         Connect.Insert(remind);
     }
 
-
     public void AddRemindAbs(DateTime time, string title)
     {
         var remind = new SQL.Reminds()
@@ -315,7 +314,6 @@ public class User
         return false;
     }
 
-
     public int CountItem(string itemname)
     {
         var item = Connect.Table<SQL.Inventory>()
@@ -326,6 +324,44 @@ public class User
     public void SetCity(string city)
     {
         Connect.Execute("UPDATE UserStats SET City = ? WHERE Nick = ?", city, Username);
+    }
+
+    public SQL.Goals AddGoal(string goal, uint progress = 0, uint total = 1)
+    {
+        Connect.Insert(new SQL.Goals
+            { Nick = Username, Goal = goal, Progress = progress, Total = total });
+        return Connect.Table<SQL.Goals>().LastOrDefault();
+    }
+
+    public bool UpdateGoal(SQL.Goals goal)
+    {
+        goal.Nick = Username;
+        return Connect.Update(goal) > 0;
+    }
+    
+    public bool DeleteGoal(int goalId)
+    {
+        return Connect.Delete<SQL.Goals>(goalId) > 0;
+    }
+
+    public List<SQL.Goals> GetAllGoals()
+    {
+        return Connect.Table<SQL.Goals>().Where(x => x.Nick == Username).ToList();
+    }
+
+    public SQL.Goals FindGoalById(int goalId)
+    {
+        return Connect.Table<SQL.Goals>().Where(x => x.Nick == Username && x.Id == goalId).FirstOrDefault();
+    }
+
+    public List<SQL.Goals> SearchGoals(string goal)
+    {
+        string goalSearch = $"%{goal}%";
+        var query = Connect.Query<SQL.Goals>("SELECT * FROM Goals WHERE Nick = ? AND Goal LIKE ?",
+            Username, goalSearch
+        );
+        
+        return query;
     }
 
     public string GetCity(string def)
@@ -374,5 +410,10 @@ public class User
         {
             throw new UserNotFoundException();
         }
+    }
+
+    public override string ToString()
+    {
+        return Username;
     }
 }

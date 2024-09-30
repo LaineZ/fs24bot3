@@ -57,6 +57,7 @@ public class Bot
             })
         });
         Client = messagingClient;
+        
         Service.AddModule<GenericCommandsModule>();
         Service.AddModule<SystemCommandModule>();
         Service.AddModule<InventoryCommandsModule>();
@@ -67,7 +68,9 @@ public class Bot
         Service.AddModule<BandcampCommandsModule>();
         Service.AddModule<TranslateCommandModule>();
         Service.AddModule<FishCommandsModule>();
+        
         Service.AddTypeParser(new Parsers.LanugageParser());
+        Service.AddTypeParser(new Parsers.GoalProgressParser());
 
         Database.InitDatabase(Connection);
         CustomCommandProcessor = new CustomCommandProcessor(this);
@@ -186,18 +189,18 @@ public class Bot
             {
                 return obj.message;
             }
-            else if (obj.error != null)
+
+            if (obj.error != null)
             {
                 return obj.error;
             }
-            else if (obj.detail != null)
+
+            if (obj.detail != null)
             {
                 return obj.detail;
             }
-            else
-            {
-                return message;
-            }
+
+            return message;
         }
         catch (JsonReaderException)
         {

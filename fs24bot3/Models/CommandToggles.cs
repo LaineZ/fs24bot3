@@ -8,10 +8,14 @@ public class CommandToggles
         Delete,
     }
 
-
     public enum Switch
     {            
         Enable,
         Disable
+    }
+
+    public enum Goal {
+        Get,
+        Delete
     }
 }
