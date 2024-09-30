@@ -654,7 +654,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         var goal = Context.User.AddGoal(goalDescription, completed, total);
 
         await Context.SendMessage(
-            $"Цель {Context.User.Username} `{goal.Goal}` успешно создана просмотреть можно с помощью {ConfigurationProvider.Config.Prefix}goal {goal.Id}!");
+            $"Цель {Context.User.Username} `{goal.Goal}` успешно создана просмотреть можно с помощью {ConfigurationProvider.Config.Prefix}goal get {goal.Id}!");
     }
 
 
@@ -672,12 +672,13 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             return;
         }
 
-        goal.Progress = Math.Clamp(progress.Progress, 0, goal.Total);
         if (progress.Total > 0)
         {
             goal.Total = progress.Total;
         }
 
+        goal.Progress = Math.Clamp(progress.Progress, 0, goal.Total);
+        
         Context.User.UpdateGoal(goal);
         await Context.SendMessage(goal.ToString());
     }

@@ -28,6 +28,11 @@ public class User
         Ctx = ctx;
     }
 
+    public static User PickRandomUser(in SQLiteConnection connection, CommandProcessor.CustomCommandContext ctx = null)
+    {
+        string username = connection.Table<SQL.UserStats>().Select(x => x.Nick).ToList().Random();
+        return new User(username, connection, ctx);
+    }
 
     /// <summary>
     /// Disables Chat-context related messages. (just sets to null Ctx variable, lol)

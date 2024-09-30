@@ -52,6 +52,7 @@ namespace fs24bot3.Systems
             Items.Add("line", new BasicItem("🪢 Леска", 1000));
             Items.Add("mixer", new BasicItem("🎚 Микшер", 3000, ItemInventory.ItemRarity.Rare));
             Items.Add("rod", new FishingRod("🎣 Удочка", 20000, ItemInventory.ItemRarity.Uncommon));
+            Items.Add("shard", new BasicItem("🔷 Осколок", 0, ItemInventory.ItemRarity.Common, false));
 
             BotCtx = botCtx;
 

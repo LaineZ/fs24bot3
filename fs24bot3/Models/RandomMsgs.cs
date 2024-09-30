@@ -131,7 +131,10 @@ public class RandomMsgs
         "Команда будет доступна через",
         "Колодки прогорели, остынут через",
         "BRAKES HOT....BRK FAN: ON in",
-        "Подождите",
+        "Ability on cooldown",
+        "Recharging",
+        "Building Nix... Please wait",
+        "Подождите"
     };
 
     public static readonly string[] BadWordsSubstrings =

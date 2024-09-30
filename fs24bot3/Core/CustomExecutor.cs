@@ -25,8 +25,8 @@ class CustomExecutor
     public async void Execute(SQL.CustomUserCommands command, string senderNick, string channel, string args)
     {
         string[] outputs = command.Output.Split("||");
-        var arr = Bot.Connection.Table<SQL.UserStats>().Select(x => x.Nick).ToArray();
-        var nick = MessageHelper.AntiHightlight(arr.Random());
+        var user = User.PickRandomUser(Bot.Connection); 
+        var nick = MessageHelper.AntiHightlight(user.Username);
 
         int index = 0;
 

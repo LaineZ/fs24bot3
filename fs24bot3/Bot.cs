@@ -206,7 +206,6 @@ public class Bot
         {
             return message;
         }
-
     }
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix)

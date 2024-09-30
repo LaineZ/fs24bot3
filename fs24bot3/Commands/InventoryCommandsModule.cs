@@ -11,9 +11,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
+
 public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
-
     public CommandService Service { get; set; }
 
     private async Task BuyOrSellInternal(string itemnamecount, bool sell = false)
@@ -36,14 +36,14 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         if (success)
         {
             await Context.SendMessage(Context.Channel,
-            $"[green]Вы успешно {(sell ? "продали" : "купили")} {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
+                $"[green]Вы успешно {(sell ? "продали" : "купили")} {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
         }
         else
         {
             if (Context.BotCtx.Shop.Items[itemname].Sellable)
             {
                 await Context.SendSadMessage(Context.Channel,
-                $"Данный предмет невозможно {(sell ? "продать" : $"купить. Недостаточно денег: {price}")}.");
+                    $"Данный предмет невозможно {(sell ? "продать" : $"купить. Недостаточно денег: {price}")}.");
             }
             else
             {
@@ -52,14 +52,47 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         }
     }
 
+    [Command("tip")]
+    [Description("Похвалить пользователя")]
+    [Checks.FullAccount]
+    [Cooldown(3, 60, CooldownMeasure.Minutes, Bot.CooldownBucketType.User)]
+    public async Task Tip(string destinationNick = "")
+    {
+        Context.User.EnableSilentMode();
+
+        User destination;
+        if (string.IsNullOrWhiteSpace(destinationNick))
+        {
+            destination = User.PickRandomUser(Context.BotCtx.Connection);
+
+            while (destination.Username == Context.User.Username)
+            {
+                destination = User.PickRandomUser(Context.BotCtx.Connection);
+            }
+        }
+        else
+        {
+            destination = new User(destinationNick, in Context.BotCtx.Connection);
+            if (Context.User.Username == destination.Username)
+            {
+                await Context.SendSadMessage(Context.Channel, "Вы не можете себя похвалить");
+                return;
+            }
+        }
+
+        destination.AddItemToInv(Context.BotCtx.Shop, "shard", 50);
+        await Context.SendMessage($"{Context.User} tipped {destination}. Well Played!");
+    }
+
     [Command("shop")]
     [Description("Магазин")]
     public async Task Shop()
     {
         var shopitems = string.Join(' ',
-        Context.BotCtx.Shop.Items
-        .Where(x => x.Value.Sellable)
-        .Select(x => $"<div class=\"shopbox\"><p>{x.Value.Name} {x.Key}</p><h1></h1><p> Цена: {x.Value.Price}</p></div>"));
+            Context.BotCtx.Shop.Items
+                .Where(x => x.Value.Sellable)
+                .Select(x =>
+                    $"<div class=\"shopbox\"><p>{x.Value.Name} {x.Key}</p><h1></h1><p> Цена: {x.Value.Price}</p></div>"));
 
         var shopTemplate = Resources.shop.Replace("[SHOPITEMS]", shopitems);
 
@@ -79,18 +112,20 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
             if (!useSlugs)
             {
                 await Context.SendMessage(Context.Channel,
-                Context.User.Username + ": " + string.Join(" ", userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
+                    Context.User.Username + ": " + string.Join(" ",
+                        userInv.Select(x => $"{Context.BotCtx.Shop.Items[x.Item].Name} x{x.ItemCount}")));
             }
             else
             {
                 await Context.SendMessage(Context.Channel,
-                Context.User.Username + ": " + string.Join(" ", userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
+                    Context.User.Username + ": " + string.Join(" ",
+                        userInv.Select(x => $"{x.Item}({Context.BotCtx.Shop.Items[x.Item].Name}) x{x.ItemCount}")));
             }
         }
         else
         {
             await Context.SendMessage(Context.Channel,
-            $"[gray]У вас ничего нет в инвентаре... Хотите сходить в магазин? .shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
+                $"[gray]У вас ничего нет в инвентаре... Хотите сходить в магазин? .shop -> {ConfigurationProvider.Config.Prefix}helpcmd buy");
         }
     }
 
@@ -136,17 +171,18 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
     [Command("transfer")]
     [Checks.FullAccount]
     [Description("Передать вещи")]
-    public async Task Transfer(string destanationNick, [Remainder] string itemnamecount)
+    public async Task Transfer(string destinationNick, [Remainder] string itemnamecount)
     {
         Context.User.EnableSilentMode();
         int.TryParse(Regex.Match(itemnamecount, @"\d+").Value, out int count);
         string itemname = itemnamecount.Replace(count.ToString(), string.Empty).Trim();
-        User destanation = new User(destanationNick, in Context.BotCtx.Connection);
+        User destanation = new User(destinationNick, in Context.BotCtx.Connection);
 
         if (await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, count))
         {
             destanation.AddItemToInv(Context.BotCtx.Shop, itemname, count);
-            await Context.SendMessage(Context.Channel, $"Вы успешно передали {itemname} x{count} пользователю {destanationNick}");
+            await Context.SendMessage(Context.Channel,
+                $"Вы успешно передали {itemname} x{count} пользователю {destinationNick}");
         }
         else
         {
@@ -213,8 +249,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
     [Description("Список всех тегов")]
     public async Task Tags()
     {
-        var tags = Context.BotCtx.Connection.Table<SQL.Tag>().
-                   ToList().Select(x => $"00,{x.Color}⚫{x.Name}[r]");
+        var tags = Context.BotCtx.Connection.Table<SQL.Tag>().ToList().Select(x => $"00,{x.Color}⚫{x.Name}[r]");
         await Context.SendMessage(Context.Channel, string.Join(" ", tags));
     }
 
@@ -238,8 +273,8 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                             CreatedBy = Context.User.Username,
                             Name = tagname
                         });
-                        await Context.SendMessage(Context.Channel, 
-                        $"Тег успешно добавлен чтобы кого-то наградить им напишите .addtag пользователь {tagname}!");
+                        await Context.SendMessage(Context.Channel,
+                            $"Тег успешно добавлен чтобы кого-то наградить им напишите .addtag пользователь {tagname}!");
                     }
                     catch (SQLiteException)
                     {
@@ -247,6 +282,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                         await Context.SendSadMessage(Context.Channel, "Тег уже существует!");
                     }
                 }
+
                 break;
             case CommandToggles.CommandEdit.Delete:
                 var query = Context.BotCtx.Connection.Table<SQL.Tag>().FirstOrDefault(v => v.Name.Equals(tagname));
@@ -256,7 +292,8 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                     if (query.CreatedBy == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
                     {
                         Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).Delete();
-                        await Context.SendMessage(Context.Channel, "Тег успешно удален, также этот тег будет удален с пользователей!");
+                        await Context.SendMessage(Context.Channel,
+                            "Тег успешно удален, также этот тег будет удален с пользователей!");
                     }
                     else
                     {
@@ -267,6 +304,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
                 {
                     await Context.SendSadMessage();
                 }
+
                 break;
         }
     }
@@ -301,22 +339,26 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
             if (nick != null && nick != Context.User.Username)
             {
                 User targetUser = new User(nick, in Context.BotCtx.Connection);
-                delete = await Context.BotCtx.Shop.Items[itemname].OnUseOnUser(Context.BotCtx, Context.Channel, Context.User, targetUser);
+                delete = await Context.BotCtx.Shop.Items[itemname]
+                    .OnUseOnUser(Context.BotCtx, Context.Channel, Context.User, targetUser);
             }
             else
             {
-                delete = await Context.BotCtx.Shop.Items[itemname].OnUseMyself(Context.BotCtx, Context.Channel, Context.User);
+                delete = await Context.BotCtx.Shop.Items[itemname]
+                    .OnUseMyself(Context.BotCtx, Context.Channel, Context.User);
             }
         }
         else
         {
-            await Context.SendSadMessage(Context.Channel, $"У вас нет предмета {Context.BotCtx.Shop.Items[itemname].Name} чтобы его использовать");
+            await Context.SendSadMessage(Context.Channel,
+                $"У вас нет предмета {Context.BotCtx.Shop.Items[itemname].Name} чтобы его использовать");
         }
 
         if (delete)
         {
             await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
-            await Context.SendMessage(Context.Channel, $"[red]Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
+            await Context.SendMessage(Context.Channel,
+                $"[red]Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
         }
     }
 }
