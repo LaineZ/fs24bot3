@@ -71,6 +71,7 @@ public class Bot
         
         Service.AddTypeParser(new Parsers.LanugageParser());
         Service.AddTypeParser(new Parsers.GoalProgressParser());
+        Service.AddTypeParser(new Parsers.ColorParser());
 
         Database.InitDatabase(Connection);
         CustomCommandProcessor = new CustomCommandProcessor(this);

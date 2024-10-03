@@ -12,8 +12,10 @@ using Serilog;
 using SQLite;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
@@ -21,7 +23,13 @@ namespace fs24bot3.Commands;
 public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
-
+    
+    private IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
+    {
+        for (var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
+            yield return day;
+    }
+    
     [Command("execute", "exec")]
     [Description("REPL. поддерживает множество языков, lua, php, nodejs, python3, python2, cpp, c, lisp ... и многие другие")]
     [Cooldown(5, 2, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
@@ -522,5 +530,65 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             await Context.SendSadMessage(Context.Channel, "Яндекс.Погода не работает, пробуем OpenWeatherMap...");
             await OpenWeatherMap(omskWhereYouLive);
         }
+    }
+    
+    [Command("getimages", "images", "img", "imagefind", "findimage")]
+    [Description("Получает изображение из логов")]
+    public async Task GetImagesFromLogs(string nickname, string dStart, string dEnd, bool htmlOutput = true)
+    {
+        Regex regex = new("https?://.*.(png|jpg|gif|webp|jpeg)");
+        var dateStart = DateTime.Now;
+        DateTime.TryParse(dStart, out dateStart);
+
+        Stopwatch stopWatch = new Stopwatch();
+        var result = DateTime.TryParse(dEnd, out DateTime dateEnd);
+        string output = "";
+
+        if (!result)
+        {
+            await Context.SendMessage(Context.Channel, "Ошибка ввода конечной даты!");
+            return;
+        }
+
+        var totalDays = EachDay(dateStart, dateEnd).Count();
+        int current = 0;
+
+        foreach (var date in EachDay(dateStart, dateEnd))
+        {
+            stopWatch.Start();
+            var messages = await Context.ServicesHelper.GetMessagesSprout(date);
+            foreach (var message in messages)
+            {
+                var captures = regex.Match(message.Message);
+                if (message.Nick == nickname && captures.Success)
+                {
+                    if (htmlOutput)
+                    {
+                        output +=
+                            $"<p>{message.Date} from <strong>{message.Nick}</strong></p><img src='{captures.Value}' alt='{captures.Value}' style='width: auto; height: 100%;'>\n";
+                    }
+                    else
+                    {
+                        output += $"{captures.Value}\n";
+                    }
+                }
+            }
+
+            stopWatch.Stop();
+            current++;
+
+            if (Context.Random.Next(0, 1000) == 25)
+            {
+                var left = stopWatch.ElapsedTicks * (totalDays - current);
+                await Context.SendMessage(Context.Channel,
+                    $"Обработка логфайла: {current}/{totalDays} Осталось: {new TimeSpan(left).ToReadableString()}. " +
+                    $"Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
+            }
+
+            stopWatch.Restart();
+        }
+
+        await Context.SendMessage(Context.Channel,
+            await InternetServicesHelper.UploadToTrashbin(output, htmlOutput ? "add" : "addplain"));
     }
 }

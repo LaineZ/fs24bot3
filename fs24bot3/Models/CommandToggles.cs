@@ -18,4 +18,11 @@ public class CommandToggles
         Get,
         Delete
     }
+
+    public enum ColorFormats
+    {
+        Hex,
+        RGB255,
+        RGB1,
+    }
 }

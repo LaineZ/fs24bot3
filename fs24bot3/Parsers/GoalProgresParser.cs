@@ -1,6 +1,5 @@
 using Qmmands;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Parsers;

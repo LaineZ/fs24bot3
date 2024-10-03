@@ -129,10 +129,13 @@ public class OnMsgEvent
     {
         if (message.Body.ToLower().TrimStart().StartsWith("кто мне пишет"))
         {
-            var wroteMe = BotContext.Connection.Table<SQL.Messages>().ToList().Where(x => x.Message.Contains(message.Sender.Username)).DistinctBy( x => x.Nick).Select(x => x.Nick);
+            var wroteMe = BotContext.Connection.Table<SQL.Messages>().ToList()
+                .Where(x => x.Message.Contains(message.Sender.Username) && x.Nick != message.Sender.Username)
+                .DistinctBy( x => x.Nick).Select(x => x.Nick);
             if (wroteMe.Any())
             {
-                await BotContext.Client.SendMessage(message.Target, $"Уважаемый {message.Sender.Username} 🥰! Вам писали следующие люди: {MessageHelper.AntiHightlight(string.Join(", ", wroteMe))}");
+                await BotContext.Client.SendMessage(message.Target, 
+                    $"Уважаемый {message.Sender.Username} 🥰! Вам писали следующие люди: {MessageHelper.AntiHightlight(string.Join(", ", wroteMe))}");
                 BotContext.Connection.Execute("DELETE FROM Messages WHERE Message LIKE ?", $"%{message.Sender.Username}%");
             }
             else

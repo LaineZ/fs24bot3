@@ -2,6 +2,7 @@
 using Qmmands;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -11,7 +12,6 @@ using fs24bot3.Core;
 using System.Globalization;
 using fs24bot3.Helpers;
 using SQLite;
-using System.Diagnostics;
 using fs24bot3.Properties;
 using System.Text;
 using fs24bot3.Parsers;
@@ -23,26 +23,8 @@ namespace fs24bot3.Commands;
 public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
+    
 
-    private string ToReadableString(TimeSpan span)
-    {
-        string formatted = string.Format("{0}{1}{2}{3}",
-            span.Duration().Days > 0 ? string.Format("{0:0} дн. ", span.Days) : string.Empty,
-            span.Duration().Hours > 0 ? string.Format("{0:0} ч. ", span.Hours) : string.Empty,
-            span.Duration().Minutes > 0 ? string.Format("{0:0} мин. ", span.Minutes) : string.Empty,
-            span.Duration().Seconds > 0 ? string.Format("{0:0} сек.", span.Seconds) : string.Empty);
-        if (formatted.EndsWith(", ")) formatted = formatted.Substring(0, formatted.Length - 2);
-
-        if (string.IsNullOrEmpty(formatted)) formatted = "0 секунд";
-
-        return formatted;
-    }
-
-    private IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
-    {
-        for (var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
-            yield return day;
-    }
 
     private string TrimTimezoneName(string name)
     {
@@ -201,7 +183,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         {
             TimeSpan ts = TimeSpan.FromSeconds(totalSecs);
             Context.User.AddRemind(ts, message, Context.Channel);
-            await Context.SendMessage(Context.Channel, $"{message} через {ToReadableString(ts)}");
+            await Context.SendMessage(Context.Channel, $"{message} через {ts.ToReadableString()}");
         }
         catch (OverflowException)
         {
@@ -326,12 +308,12 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             {
                 rems.Append(
                     $"id: {remind.Id}: \"{remind.Message}\" в [b]{dtDateTime.ToString(rus)}" +
-                    $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
+                    $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{dt.Subtract(DateTime.UtcNow).ToReadableString()}\n");
             }
             else
             {
                 rems.Append($"\"{remind.Message}\" в [b]{dtDateTime.ToString(rus)} " +
-                            $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{ToReadableString(dt.Subtract(DateTime.UtcNow))}\n");
+                            $"{TrimTimezoneName(timezone.DisplayName)} [r]или через [blue]{dt.Subtract(DateTime.UtcNow).ToReadableString()}\n");
             }
         }
 
@@ -451,66 +433,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
     }
 
-    [Command("getimages", "images", "img", "imagefind", "findimage")]
-    [Description("Получает изображение из логов")]
-    public async Task GetImagesFromLogs(string nickname, string dStart, string dEnd, bool htmlOutput = true)
-    {
-        Regex regex = new("https?://.*.(png|jpg|gif|webp|jpeg)");
-        var dateStart = DateTime.Now;
-        DateTime.TryParse(dStart, out dateStart);
-
-        Stopwatch stopWatch = new Stopwatch();
-        var result = DateTime.TryParse(dEnd, out DateTime dateEnd);
-        string output = "";
-
-        if (!result)
-        {
-            await Context.SendMessage(Context.Channel, "Ошибка ввода конечной даты!");
-            return;
-        }
-
-        var totalDays = EachDay(dateStart, dateEnd).Count();
-        int current = 0;
-
-        foreach (var date in EachDay(dateStart, dateEnd))
-        {
-            stopWatch.Start();
-            var messages = await Context.ServicesHelper.GetMessagesSprout(date);
-            foreach (var message in messages)
-            {
-                var captures = regex.Match(message.Message);
-                if (message.Nick == nickname && captures.Success)
-                {
-                    if (htmlOutput)
-                    {
-                        output +=
-                            $"<p>{message.Date} from <strong>{message.Nick}</strong></p><img src='{captures.Value}' alt='{captures.Value}' style='width: auto; height: 100%;'>\n";
-                    }
-                    else
-                    {
-                        output += $"{captures.Value}\n";
-                    }
-                }
-            }
-
-            stopWatch.Stop();
-            current++;
-
-            if (Context.Random.Next(0, 1000) == 25)
-            {
-                var left = stopWatch.ElapsedTicks * (totalDays - current);
-                await Context.SendMessage(Context.Channel,
-                    $"Обработка логфайла: {current}/{totalDays} Осталось: {ToReadableString(new TimeSpan(left))}. " +
-                    $"Обработка одного логфайла занимает: {stopWatch.ElapsedMilliseconds} ms");
-            }
-
-            stopWatch.Restart();
-        }
-
-        await Context.SendMessage(Context.Channel,
-            await InternetServicesHelper.UploadToTrashbin(output, htmlOutput ? "add" : "addplain"));
-    }
-
     [Command("seen", "see", "lastseen")]
     [Description("Когда последний раз пользователь писал сообщения")]
     public async Task LastSeen(string destination)
@@ -527,7 +449,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         if (date.Days < 1000)
         {
             await Context.SendMessage(Context.Channel,
-                $"Последний раз я видел [b]{destination}[r] {ToReadableString(date)} назад");
+                $"Последний раз я видел [b]{destination}[r] {date.ToReadableString()} назад");
             var messages = await Context.ServicesHelper.GetMessagesSprout(user.GetLastMessage());
             var lastmsg = messages.LastOrDefault(x => x.Nick == destination);
             if (lastmsg != null)
@@ -657,7 +579,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
             $"Цель {Context.User.Username} `{goal.Goal}` успешно создана просмотреть можно с помощью {ConfigurationProvider.Config.Prefix}goal get {goal.Id}!");
     }
 
-
     [Command("setgoal", "updategoal", "updgoal", "upgoal", "sg")]
     [Description("Изменить прогресс цели. ID цели можно получить в goals или goal get [часть описания цели]")]
     [Remarks("Параметр progress принимает значения (числа) в стиле [progress]/[total] или [progress]. Обратите внимание что [total] не может быть равен 0")]
@@ -747,4 +668,22 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                 break;
         }
     }
+
+    /*[Command("color", "rgb", "clr")]
+    public async Task ColorTransform(Color color, CommandToggles.ColorFormats outputFormat = CommandToggles.ColorFormats.Hex)
+    {
+        switch (outputFormat)
+        {
+            case CommandToggles.ColorFormats.Hex:
+                var colorstring = string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B); 
+                await Context.SendMessage(colorstring);
+                break;
+            case CommandToggles.ColorFormats.RGB255:
+                await Context.SendMessage($"rgb({color.R}, {color.G}, {color.B})");
+                break;
+            case CommandToggles.ColorFormats.RGB1:
+                await Context.SendMessage($"{((float)color.R / 255.0):0.###}, {((float)color.G / 255.0):0.###}, {((float)color.B / 255.0):0.###}");
+                break;
+        }
+    }*/
 }
