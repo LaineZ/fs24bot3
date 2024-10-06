@@ -27,6 +27,7 @@ public class Bot
     private readonly CommandService Service;
     public IMessagingClient Client { get; }
     public Shop Shop { get; }
+    public Systems.DuckDuckGoGPT Gpt { get; }
     public List<string> AcknownUsers = new List<string>();
     public Profiler PProfiler { get; }
     
@@ -104,6 +105,7 @@ public class Bot
         }
 
         Shop = new Shop(this);
+        Gpt = new Systems.DuckDuckGoGPT();
 
         Log.Information("Bot: Construction complete!");
     }

@@ -392,48 +392,49 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             await Context.SendSadMessage(Context.Channel, $"Не удалось получить цитаты с inpearls: {e.Message}");
         }
     }
-
-    [Command("talk", "chatbot")]
-    [Description("Чатбот")]
-    public async Task Chatbot([Remainder] string message)
+    
+    [Command("chat", "talk", "chatgpt", "gpt", "ask")]
+    public async Task ChatGPT([Remainder] string message)
     {
-        ChatBotResponse jsonOutput;
-        for (int i = 0; i < 5; i++)
+
+        if (!Context.BotCtx.Gpt.Contexts.ContainsKey(Context.User))
         {
-            var fmt = $"{Context.User.Username}: {message}\nuser2: ";
-            var msg = new ChatBotRequest(fmt);
-            try
-            {
-                var output = await Context.HttpTools.PostJson("https://pelevin.gpt.dobro.ai/generate/", msg);
-                jsonOutput = JsonConvert.DeserializeObject<ChatBotResponse>(output);
-                if (jsonOutput != null)
-                {
-                    var reply = jsonOutput.Replies.FirstOrDefault();
-                    if (reply != null)
-                    {
-                        var containsBadword = RandomMsgs.BadWordsSubstrings.Any(x => reply.ToLower().Contains(x)); ;
-
-                        if (!containsBadword)
-                        {
-                            await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {jsonOutput.Replies.FirstOrDefault()}");
-                            return;
-                        }
-                    }
-                }
-                else
-                {
-                    await Context.SendMessage(Context.Channel, $"{Context.User.Username}: я не понимаю о чем ты");
-                    return;
-                }
-            }
-            catch (HttpRequestException)
-            {
-                break;
-            }
+            Context.BotCtx.Gpt.Contexts[Context.User] = new DuckDuckGoGPTHelper();
+            Log.Verbose("Creating new Session for USER");
         }
-
-        await Context.SendMessage(Context.Channel, $"{Context.User.Username}: {RandomMsgs.NotFoundMessages.Random()}");
+        
+        var msg = await Context.BotCtx.Gpt.Contexts[Context.User].SendMessage(message);
+        await Context.SendMessage(msg);
     }
+
+    [Command("cleargpt", "clear")]
+    public async Task ClearGPT()
+    {
+        
+        if (Context.BotCtx.Gpt.Contexts.ContainsKey(Context.User))
+        {
+            Context.BotCtx.Gpt.Contexts.Remove(Context.User);
+            await Context.SendMessage(Context.Channel, "Ваш контекст чата был удалён...");
+        }
+        else
+        {
+            await Context.SendSadMessage(Context.Channel, "Вас еще не чатились со мной");
+        }
+    }
+
+    [Command("gchat", "globaltalk", "talkglobal")]
+    public async Task TalkGlobalGPT([Remainder] string message)
+    {
+        var msg = await Context.BotCtx.Gpt.GlobalContext.SendMessage(message);
+        await Context.SendMessage(Context.Channel, msg);
+    }
+
+    [Command("clearglobal")]
+    public async Task ClearGlobalGPTContexnt()
+    {
+        await Context.BotCtx.Gpt.GlobalContext.NewConversion();
+    }
+
 
     [Command("mc", "minecraft", "mineserver", "mineserv")]
     [Description("Информация о сервере Minecraft")]

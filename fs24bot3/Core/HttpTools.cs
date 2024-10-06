@@ -37,6 +37,7 @@ public class HttpTools
             str = tmp;
             tmp = HttpUtility.HtmlDecode(str);
         }
+
         return str; //completely decoded string
     }
 
@@ -44,7 +45,11 @@ public class HttpTools
     {
         var hostname = host.Split(":");
         var port = 25565;
-        if (hostname.Length > 1) { _ = int.TryParse(hostname[1], out port); }
+        if (hostname.Length > 1)
+        {
+            _ = int.TryParse(hostname[1], out port);
+        }
+
         if (IPAddress.TryParse(hostname[0], out IPAddress ip))
         {
             Log.Verbose("parsed addr: {0}:{1}", ip, port);
@@ -66,13 +71,13 @@ public class HttpTools
         var responseString = await response.Content.ReadAsStringAsync();
         return responseString;
     }
-    
+
     public async Task<T> GetJson<T>(string url)
     {
         var response = await GetResponseAsync(url);
         response.EnsureSuccessStatusCode();
-        
-        return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(), 
+
+        return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(),
             JsonSerializerHelper.OPTIMIMAL_SETTINGS);
     }
 
@@ -86,6 +91,7 @@ public class HttpTools
             {
                 return await result.Content.ReadAsStringAsync();
             }
+
             throw new InvalidDataException($"{result.StatusCode}: {result.Content.ReadAsStringAsync().Result}");
         }
         catch (Exception e)
@@ -110,6 +116,7 @@ public class HttpTools
             return null;
         }
     }
+
     public async Task<bool> PingHost(string nameOrAddress)
     {
         bool pingable = false;
@@ -142,6 +149,7 @@ public class HttpTools
         var resp = await GetResponseAsync(url);
         await File.WriteAllBytesAsync(filename, await resp.Content.ReadAsByteArrayAsync());
     }
+
     public async Task<string> GetTextPlainResponse(string rawurl)
     {
         var response = await GetResponseAsync(rawurl);
@@ -151,16 +159,19 @@ public class HttpTools
             {
                 if (response.Content.Headers.ContentLength.GetValueOrDefault() > 10000)
                 {
-                    throw new InvalidDataException($"Ошибка в Content-Length запроса: Слишком большой размер, максимальный размер: 10000 байт");
+                    throw new InvalidDataException(
+                        $"Ошибка в Content-Length запроса: Слишком большой размер, максимальный размер: 10000 байт");
                 }
 
                 return await response.Content.ReadAsStringAsync();
             }
             else
             {
-                throw new InvalidDataException($"Ошибка в Content-Type запроса: Необходимый Content-Type: text/plain получилось: {response.Content.Headers.ContentType.MediaType}");
+                throw new InvalidDataException(
+                    $"Ошибка в Content-Type запроса: Необходимый Content-Type: text/plain получилось: {response.Content.Headers.ContentType.MediaType}");
             }
         }
+
         return null;
     }
 }

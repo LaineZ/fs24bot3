@@ -17,6 +17,7 @@ public sealed class NetstalkingCommandsModule : ModuleBase<CommandProcessor.Cust
 
     [Command("ms", "search")]
     [Description("SearX - Еще один инструмент нетсталкинга")]
+    [Disabled]
     public async Task MailSearch([Remainder] string query)
     {
 

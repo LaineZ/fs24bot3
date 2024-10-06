@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using fs24bot3.Core;
 using fs24bot3.Helpers;
@@ -198,6 +199,11 @@ public class Irc : IMessagingClient
             {
                 await BotClient.SendAsync(new PrivMsgMessage(channel, sb.ToString()));
                 count++;
+
+                if (count > 3)
+                {
+                    Thread.Sleep(500);
+                }
             }
             else
             {

@@ -1,7 +1,6 @@
 ﻿using fs24bot3.Systems;
 using fs24bot3.Models;
 using fs24bot3.QmmandsProcessors;
-using Newtonsoft.Json;
 using Serilog;
 using SQLite;
 using System;
@@ -420,5 +419,19 @@ public class User
     public override string ToString()
     {
         return Username;
+    }
+
+    public override int GetHashCode()
+    {
+        return Username.GetHashCode();
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is User otherUser)
+        {
+            return Username == otherUser.Username;
+        }
+        return false;
     }
 }
