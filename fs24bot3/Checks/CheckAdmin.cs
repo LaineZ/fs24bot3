@@ -13,7 +13,7 @@ public sealed class CheckAdmin : CheckAttribute
 
         try
         {
-            return (context.User.GetUserInfo().Admin > 1 && context.IsAuthorizedAction) || ConfigurationProvider.Config.Backend == Models.Backend.Basic
+            return (context.User.GetUserInfo().Admin >= 1 && context.IsAuthorizedAction) || ConfigurationProvider.Config.Backend == Models.Backend.Basic
             ? CheckResult.Successful
             : CheckResult.Failed("Эта команда только для админов!");
         }

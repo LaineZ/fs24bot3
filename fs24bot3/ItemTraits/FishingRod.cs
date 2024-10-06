@@ -58,8 +58,6 @@ public class FishingRod : IItem
                 case 3:
                     report = user.AddRandomRarityItem(botCtx.Shop, ItemInventory.ItemRarity.Rare);
                     break;
-                default:
-                    break;
             }
 
             await botCtx.Client.SendMessage(channel, $"Вы поймали {report.First().Value.Name}");

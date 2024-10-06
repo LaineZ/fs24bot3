@@ -63,7 +63,6 @@ public class Bot
         Service.AddModule<SystemCommandModule>();
         Service.AddModule<InventoryCommandsModule>();
         Service.AddModule<InternetCommandsModule>();
-        Service.AddModule<NetstalkingCommandsModule>();
         Service.AddModule<CustomCommandsModule>();
         Service.AddModule<StatCommandModule>();
         Service.AddModule<BandcampCommandsModule>();

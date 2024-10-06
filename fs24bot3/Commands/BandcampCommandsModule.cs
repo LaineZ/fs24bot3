@@ -48,13 +48,14 @@ public sealed class BandcampCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
 
     [Command("bc", "bandcamp", "bcs")]
+    [Disabled]
     [Description("Поиск по сайту bandcamp.com")]
     public async Task BcSearch([Remainder] string query)
     {
         try
         {
             var searchResult = await Context.HttpTools.GetJson<BandcampSearch.Root>
-                ("https://bandcamp.com/api/fuzzysearch/1/autocomplete?q=" + query);
+                ("https://bandcamp.com/api/bcsearch_public_api/1/autocomplete_elastic" + query);
             if (searchResult.auto.results.Any())
             {
                 foreach (var rezik in searchResult.auto.results.Where(rezik => !rezik.is_label))

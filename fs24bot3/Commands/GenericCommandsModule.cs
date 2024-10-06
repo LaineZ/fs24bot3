@@ -669,7 +669,8 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         }
     }
 
-    /*[Command("color", "rgb", "clr")]
+    [Command("color", "rgb", "clr")]
+    [Disabled]
     public async Task ColorTransform(Color color, CommandToggles.ColorFormats outputFormat = CommandToggles.ColorFormats.Hex)
     {
         switch (outputFormat)
@@ -685,5 +686,5 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                 await Context.SendMessage($"{((float)color.R / 255.0):0.###}, {((float)color.G / 255.0):0.###}, {((float)color.B / 255.0):0.###}");
                 break;
         }
-    }*/
+    }
 }
