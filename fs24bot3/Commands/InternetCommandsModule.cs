@@ -394,6 +394,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
     
     [Command("chat", "talk", "chatgpt", "gpt", "ask")]
+    [Cooldown(5, 1, CooldownMeasure.Seconds,  Bot.CooldownBucketType.Channel)]
     public async Task ChatGPT([Remainder] string message)
     {
 
@@ -402,8 +403,8 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             Context.BotCtx.Gpt.Contexts[Context.User] = new DuckDuckGoGPTHelper();
             Log.Verbose("Creating new Session for USER");
         }
-        
-        var msg = await Context.BotCtx.Gpt.Contexts[Context.User].SendMessage(message);
+
+        var msg = await Context.BotCtx.Gpt.Contexts[Context.User].SendMessage($"{Context.User}: {message}");
         await Context.SendMessage(msg);
     }
 
@@ -414,25 +415,27 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         if (Context.BotCtx.Gpt.Contexts.ContainsKey(Context.User))
         {
             Context.BotCtx.Gpt.Contexts.Remove(Context.User);
-            await Context.SendMessage(Context.Channel, "Ваш контекст чата был удалён...");
+            await Context.SendMessage(Context.Channel, $"{Context.User}: Ваш контекст чата был удалён...");
         }
         else
         {
-            await Context.SendSadMessage(Context.Channel, "Вас еще не чатились со мной");
+            await Context.SendSadMessage(Context.Channel, $"{Context.User}: Вас еще не чатились со мной");
         }
     }
 
     [Command("gchat", "globaltalk", "talkglobal")]
+    [Cooldown(5, 1, CooldownMeasure.Seconds,  Bot.CooldownBucketType.Channel)]
     public async Task TalkGlobalGPT([Remainder] string message)
     {
         var msg = await Context.BotCtx.Gpt.GlobalContext.SendMessage(message);
-        await Context.SendMessage(Context.Channel, msg);
+        await Context.SendMessage(Context.Channel, $"Global: {msg}");
     }
 
     [Command("clearglobal")]
     public async Task ClearGlobalGPTContexnt()
     {
-        await Context.BotCtx.Gpt.GlobalContext.NewConversion();
+        Context.BotCtx.Gpt.GlobalContext = new DuckDuckGoGPTHelper();
+        await Context.SendMessage(Context.Channel, "Глобальный контекст удалён!");
     }
 
 
