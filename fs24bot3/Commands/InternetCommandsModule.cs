@@ -404,8 +404,8 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             Log.Verbose("Creating new Session for USER");
         }
 
-        var msg = await Context.BotCtx.Gpt.Contexts[Context.User].SendMessage($"{Context.User}: {message}");
-        await Context.SendMessage(msg);
+        var msg = await Context.BotCtx.Gpt.Contexts[Context.User].SendMessage(message);
+        await Context.SendMessage($"{Context.User}: {msg}");
     }
 
     [Command("cleargpt", "clear")]
@@ -437,7 +437,6 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         Context.BotCtx.Gpt.GlobalContext = new DuckDuckGoGPTHelper();
         await Context.SendMessage(Context.Channel, "Глобальный контекст удалён!");
     }
-
 
     [Command("mc", "minecraft", "mineserver", "mineserv")]
     [Description("Информация о сервере Minecraft")]
