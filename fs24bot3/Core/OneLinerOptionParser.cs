@@ -7,6 +7,7 @@ namespace fs24bot3.Core;
 class OneLinerOptionParser
 {
     public List<(string, string)> Options { get; }
+    public List<string> AllowedOptions { get; set; }
     public string RetainedInput { get; }
 
     private readonly Regex SearchTermRegex = new Regex(
@@ -33,6 +34,7 @@ class OneLinerOptionParser
     {
         RetainedInput = input;
         Options = new List<(string, string)>();
+        AllowedOptions = new List<string>();
 
         Match match = SearchTermRegex.Match(input);
         foreach (Capture term in match.Groups["term"].Captures.Cast<Capture>())
@@ -57,6 +59,12 @@ class OneLinerOptionParser
             {
                 RetainedInput = RetainedInput.Replace($"{prefix.Value}:{termString.Value}", "");
                 Log.Verbose("option: {0} value: {1}", prefix.Value, termString.Value);
+
+                if (AllowedOptions.Any() && !AllowedOptions.Contains(prefix.Value.ToLower()))
+                {
+                    continue;
+                }
+                
                 Options.Add((prefix.Value, termString.Value));
             }
 

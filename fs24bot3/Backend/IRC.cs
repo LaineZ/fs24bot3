@@ -17,21 +17,14 @@ using Tomlyn;
 
 namespace fs24bot3.Backend;
 
-
 public class IrcConfiguration
 {
-    [DataMember(Name = "name")]
-    public string Name { get; set; }
-    [DataMember(Name = "network")]
-    public string Network { get; set; }
-    [DataMember(Name = "channel")]
-    public string Channel { get; set; }
-    [DataMember(Name = "port")]
-    public int Port { get; set; }
-    [DataMember(Name = "nickserv_pass")]
-    public string NickservPass { get; set; }
-    [DataMember(Name = "server_pass")]
-    public string ServerPassword { get; set; }
+    [DataMember(Name = "name")] public string Name { get; set; }
+    [DataMember(Name = "network")] public string Network { get; set; }
+    [DataMember(Name = "channel")] public string Channel { get; set; }
+    [DataMember(Name = "port")] public int Port { get; set; }
+    [DataMember(Name = "nickserv_pass")] public string NickservPass { get; set; }
+    [DataMember(Name = "server_pass")] public string ServerPassword { get; set; }
 
     public IrcConfiguration()
     {
@@ -117,7 +110,11 @@ public class Irc : IMessagingClient
 
             if (!msg.Sender.UserIsIgnored())
             {
-                if (msg.Kind == MessageKind.Message) { BotContext.MessageTrigger(msg); }
+                if (msg.Kind == MessageKind.Message)
+                {
+                    BotContext.MessageTrigger(msg);
+                }
+
                 await BotContext.ExecuteCommand(msg, prefix);
             }
         }
@@ -165,6 +162,7 @@ public class Irc : IMessagingClient
             await BotClient.SendRaw("NICK " + nickname);
         }
     }
+
     public async void JoinChannel(string name)
     {
         await BotClient.SendRaw("JOIN " + name);
@@ -184,43 +182,31 @@ public class Irc : IMessagingClient
 
     public async Task SendMessage(string channel, string message)
     {
-        List<string> msgLines = message.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+        var sb = new StringBuilder(message);
+        foreach (var (tag, value) in Fmt)
+        {
+            sb.Replace($"[{tag}]", value);
+        }
+
+        List<string> msgLines = sb.ToString().Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         int count = 0;
 
         foreach (string outputstr in msgLines)
         {
-            var sb = new StringBuilder(outputstr);
-            foreach (var (tag, value) in Fmt)
-            {
-                sb.Replace($"[{tag}]", value);
-            }
+            var currentSplit = MessageHelper.SplitByWords(outputstr);
 
-            if (sb.Length < 1000)
+            foreach (var split in currentSplit)
             {
-                await BotClient.SendAsync(new PrivMsgMessage(channel, sb.ToString()));
-                count++;
-
-                if (count > 3)
+                await BotClient.SendAsync(new PrivMsgMessage(channel, split));
+                count += 1;
+                
+                if (count > 4)
                 {
-                    Thread.Sleep(500);
+                    string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message),
+                        "addplain");
+                    await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
+                    return;
                 }
-            }
-            else
-            {
-                string link = await InternetServicesHelper.UploadToTrashbin(
-                    MessageHelper.StripIRC(message), "addplain");
-                await BotClient.SendAsync(new PrivMsgMessage(channel, $"Слишком жесткое сообщение с длинной " +
-                                                                      $"{sb.Length} символов! Психанул?!?!?!"));
-                await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
-                return;
-            }
-
-            if (count > 4)
-            {
-                string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message),
-                    "addplain");
-                await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
-                return;
             }
         }
     }
@@ -232,7 +218,7 @@ public class Irc : IMessagingClient
     /// <param name="user"></param>
     /// <returns></returns>
     public async Task<bool> EnsureAuthorization(Core.User user)
-    {        
+    {
         var tcs = new TaskCompletionSource<bool>();
         ParsedIRCMessageHandler messageHandler = null;
 
