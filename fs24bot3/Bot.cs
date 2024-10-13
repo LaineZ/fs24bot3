@@ -212,13 +212,23 @@ public class Bot
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix)
     {
-        if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
-            return;
-
         PProfiler.BeginMeasure("command");
 
-        var auth = false;
+        try
+        {
+            await message.ParseBodyOptions();
+        }
+        catch (Exception e)
+        {
+            await Client.SendMessage(message.Target, $"[red]Критическая ошибка при обработке сообщения: {e.Message}");
+            return;
+        }
 
+        if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
+            return;
+        
+        var auth = false;
+        
         if (message.Kind != MessageKind.MessageFromBridge)
         {
             auth = await Client.EnsureAuthorization(message.Sender);

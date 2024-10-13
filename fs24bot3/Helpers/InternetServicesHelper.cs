@@ -24,9 +24,6 @@ public class InternetServicesHelper
         Http = http;
     }
 
-
-
-
     public async Task<List<string>> InPearls(string category = "", int page = 0)
     {
         var web = new HtmlWeb();
@@ -198,7 +195,7 @@ public class InternetServicesHelper
     {
         var latlon = await GetCityLatLon(city);
 
-        var request = new HttpRequestMessage()
+        var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
             RequestUri = new Uri("https://api.weather.yandex.ru/v2/informers?lat=" + latlon.Lat + "&lon=" + latlon.Lon + "&lang=ru_RU"),
@@ -341,10 +338,7 @@ public class InternetServicesHelper
 
                 Log.Verbose(resp);
             }
-            catch (Exception)
-            {
-                continue;
-            }
+            catch (Exception) { }
 
         }
         return resp;

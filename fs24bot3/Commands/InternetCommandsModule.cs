@@ -76,15 +76,6 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
-    [Command("executeurl", "execurl")]
-    [Description("Тоже самое что и exec только работает через URL")]
-    [Cooldown(5, 3, CooldownMeasure.Minutes, Bot.CooldownBucketType.Global)]
-    public async Task ExecuteApiUrl(string code, string rawurl)
-    {
-        var response = await Context.HttpTools.GetTextPlainResponse(rawurl);
-        await ExecuteApi(code, response);
-    }
-
     [Command("shopcurrency", "shopcur", "curshop", "curshp")]
     [Description("Курсы валют различных интернет магазинов. Поддерживается только USD.")]
     [Remarks("Параметр shop допускает следующие значения: `ЦБ-РФ`, `Aliexpress`, `GearBest`, `GeekBuying`, `Banggood`")]
@@ -474,7 +465,6 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
             await Context.SendSadMessage();
         }
     }
-
 
     [Command("metar", "mweather")]
     [Description("Запрос METAR информации о погоде")]

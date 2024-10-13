@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 namespace fs24bot3.Core;
 class OneLinerOptionParser
 {
-    public List<(string, string)> Options { get; }
+    public Dictionary<string, string> Options { get; }
     public List<string> AllowedOptions { get; set; }
     public string RetainedInput { get; }
 
@@ -33,7 +33,7 @@ class OneLinerOptionParser
     public OneLinerOptionParser(string input)
     {
         RetainedInput = input;
-        Options = new List<(string, string)>();
+        Options = new Dictionary<string, string>();
         AllowedOptions = new List<string>();
 
         Match match = SearchTermRegex.Match(input);
@@ -64,8 +64,8 @@ class OneLinerOptionParser
                 {
                     continue;
                 }
-                
-                Options.Add((prefix.Value, termString.Value));
+
+                Options[prefix.Value] = termString.Value;
             }
 
             RetainedInput = RetainedInput.TrimStart();

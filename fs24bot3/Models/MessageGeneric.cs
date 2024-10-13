@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using fs24bot3.Core;
 using fs24bot3.Helpers;
 using NetIRC;
@@ -16,7 +17,7 @@ public enum MessageKind
 
 public class MessageGeneric
 {
-    public string Body { get; }
+    public string Body { get; private set; }
     public Core.User Sender { get; }
     public string Target { get; }
     public MessageKind Kind { get; }
@@ -52,5 +53,20 @@ public class MessageGeneric
         Target = target;
         Sender = sender;
         Kind = messageKind;
+    }
+
+    public async Task ParseBodyOptions()
+    {
+        var http = new HttpTools();
+        var parser = new OneLinerOptionParser(Body);
+
+        if (parser.Options.TryGetValue("url", out var url))
+        {
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                var output = await http.GetTextPlainResponse(url);
+                Body = parser.RetainedInput + " " + output;
+            }
+        }
     }
 }

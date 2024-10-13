@@ -165,11 +165,9 @@ public class HttpTools
 
                 return await response.Content.ReadAsStringAsync();
             }
-            else
-            {
-                throw new InvalidDataException(
-                    $"Ошибка в Content-Type запроса: Необходимый Content-Type: text/plain получилось: {response.Content.Headers.ContentType.MediaType}");
-            }
+
+            throw new InvalidDataException(
+                $"Ошибка в Content-Type запроса: Необходимый Content-Type: text/plain получилось: {response.Content.Headers.ContentType.MediaType}");
         }
 
         return null;
