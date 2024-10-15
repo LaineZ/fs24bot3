@@ -11,6 +11,7 @@ using fs24bot3.ItemTraits;
 using static fs24bot3.Models.Exceptions;
 
 namespace fs24bot3.Core;
+
 public class User
 {
     public string Username { get; }
@@ -48,13 +49,15 @@ public class User
 
     public TimeZoneInfo GetTimeZone()
     {
-        if (GetUserInfo().Timezone == null)
+        try
+        {
+            return GetUserInfo().Timezone == null
+                ? TimeZoneInfo.Local
+                : TimeZoneInfo.FindSystemTimeZoneById(GetUserInfo().Timezone);
+        }
+        catch (UserNotFoundException)
         {
             return TimeZoneInfo.Local;
-        }
-        else
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(GetUserInfo().Timezone);
         }
     }
 
@@ -126,7 +129,8 @@ public class User
         var nick = Connect.Table<SQL.UserStats>().Where(v => v.Nick.Equals(Username)).First();
         Connect.Execute("UPDATE UserStats SET Xp = Xp + ? WHERE Nick = ?", count, nick.Nick);
 
-        Log.Verbose("{4}: Setting level: {0} {1} Current data: {2}/{3}", count, nick.Level, nick.Xp, nick.Need, nick.Nick);
+        Log.Verbose("{4}: Setting level: {0} {1} Current data: {2}/{3}", count, nick.Level, nick.Xp, nick.Need,
+            nick.Nick);
 
         if (nick.Xp >= nick.Need)
         {
@@ -141,7 +145,8 @@ public class User
 
     public void SetLastMessage()
     {
-        Connect.Execute("UPDATE UserStats SET LastMsg = ? WHERE Nick = ?", (int)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(), Username);
+        Connect.Execute("UPDATE UserStats SET LastMsg = ? WHERE Nick = ?",
+            (int)((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(), Username);
     }
 
     public DateTime GetLastMessage()
@@ -167,7 +172,11 @@ public class User
     public int GetFishLevel()
     {
         var q = Connect.Table<SQL.Fishing>().FirstOrDefault(v => v.Nick == Username);
-        if (q != null) { return q.Level; }
+        if (q != null)
+        {
+            return q.Level;
+        }
+
         return 1;
     }
 
@@ -185,7 +194,9 @@ public class User
         }
     }
 
-    public Dictionary<string, IItem> AddRandomRarityItem(Shop shop, ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Uncommon, int mincount = 1, int maxcount = 1, int iterations = 1)
+    public Dictionary<string, IItem> AddRandomRarityItem(Shop shop,
+        ItemInventory.ItemRarity rarity = ItemInventory.ItemRarity.Uncommon, int mincount = 1, int maxcount = 1,
+        int iterations = 1)
     {
         var rng = new Random();
         var dict = new Dictionary<string, IItem>();
@@ -263,6 +274,7 @@ public class User
         {
             throw new ItemNotFoundException();
         }
+
         count = (int)Math.Floor((decimal)count);
         try
         {
@@ -270,7 +282,8 @@ public class User
         }
         catch (SQLiteException)
         {
-            Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, name, Username);
+            Connect.Execute("UPDATE Inventory SET Count = Count + ? WHERE Item = ? AND Nick = ?", count, name,
+                Username);
         }
     }
 
@@ -283,6 +296,7 @@ public class User
     {
         Connect.Execute("DELETE FROM Tags WHERE TagName = ? AND Nick = ?", tag.Name, Username);
     }
+
     /// <summary>
     /// Removes item from inventory
     /// </summary>
@@ -301,13 +315,16 @@ public class User
 
         if (item != null && item.ItemCount >= count && count > 0)
         {
-            Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, name, Username);
+            Connect.Execute("UPDATE Inventory SET Count = Count - ? WHERE Item = ? AND Nick = ?", count, name,
+                Username);
             // clening up items with 0
             Connect.Execute("DELETE FROM Inventory WHERE Count = 0");
             if (Ctx != null)
             {
-                await Ctx.SendMessage(Ctx.Channel, $" {shop.Items[name].Name} -{count} За использование данной команды");
+                await Ctx.SendMessage(Ctx.Channel,
+                    $" {shop.Items[name].Name} -{count} За использование данной команды");
             }
+
             return true;
         }
 
@@ -315,6 +332,7 @@ public class User
         {
             await Ctx.SendMessage(Ctx.Channel, $"Недостаточно {shop.Items[name].Name} x{count}");
         }
+
         return false;
     }
 
@@ -342,7 +360,7 @@ public class User
         goal.Nick = Username;
         return Connect.Update(goal) > 0;
     }
-    
+
     public bool DeleteGoal(int goalId)
     {
         return Connect.Delete<SQL.Goals>(goalId) > 0;
@@ -364,7 +382,7 @@ public class User
         var query = Connect.Query<SQL.Goals>("SELECT * FROM Goals WHERE Nick = ? AND Goal LIKE ?",
             Username, goalSearch
         );
-        
+
         return query;
     }
 
@@ -391,15 +409,27 @@ public class User
     public List<SQL.Inventory> GetInventory()
     {
         var query = Connect.Table<SQL.Inventory>().Where(v => v.Nick.Equals(Username)).ToList();
-        if (query.Any()) { return query; }
-        else { return new List<SQL.Inventory>(); }
+        if (query.Any())
+        {
+            return query;
+        }
+        else
+        {
+            return new List<SQL.Inventory>();
+        }
     }
 
     public List<SQL.Tags> GetTags()
     {
         var query = Connect.Table<SQL.Tags>().Where(v => v.Nick.Equals(Username)).ToList();
-        if (query.Any()) { return query; }
-        else { return new List<SQL.Tags>(); }
+        if (query.Any())
+        {
+            return query;
+        }
+        else
+        {
+            return new List<SQL.Tags>();
+        }
     }
 
     public SQL.UserStats GetUserInfo()
@@ -410,10 +440,8 @@ public class User
         {
             return query;
         }
-        else
-        {
-            throw new UserNotFoundException();
-        }
+
+        throw new UserNotFoundException();
     }
 
     public override string ToString()
@@ -432,6 +460,7 @@ public class User
         {
             return Username == otherUser.Username;
         }
+
         return false;
     }
 }

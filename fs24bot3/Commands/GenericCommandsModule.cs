@@ -275,12 +275,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     {
         if (string.IsNullOrEmpty(username))
         {
-            if (Context.FromBridge)
-            {
-                await Context.SendSadMessage(Context.Channel, "Укажите ник пользователя");
-                return;
-            }
-
             username = Context.User.Username;
         }
 
