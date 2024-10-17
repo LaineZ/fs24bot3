@@ -138,7 +138,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
         if (!timeSegments.Any())
         {
-            Context.SendErrorMessage(Context.Channel,
+            await Context.SendErrorMessage(Context.Channel,
                 $"Неверный формат времени или неверные единицы измерения времени");
             return;
         }
@@ -167,7 +167,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
                     totalSecs += value;
                     break;
                 default:
-                    Context.SendErrorMessage(Context.Channel,
+                    await Context.SendErrorMessage(Context.Channel,
                         $"Неизвестная единица измерения времени: {segment.Value[^1]}");
                     return;
             }

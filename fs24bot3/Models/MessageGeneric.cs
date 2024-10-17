@@ -39,7 +39,7 @@ public class MessageGeneric
             // trim bridged user nickname like
             // <cheburator> //bpm140//: @ms привет
             var msg = Body.Split(":");
-            Body = msg.Last().TrimStart(' ');
+            Body = string.Join(":", msg.Skip(1)).TrimStart();
             Sender = new Core.User("@[" + MessageHelper.StripIRC(msg.First()) + "]", connection);
             Kind = MessageKind.MessageFromBridge;
             Log.Verbose("Message from the bridge: {0} from {1}", Body, Sender);
