@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using Tomlyn;
+﻿using System.Runtime.Serialization;
 
 namespace fs24bot3.Models;
 
@@ -63,7 +57,7 @@ public class Configuration
         {
             JdoodleClientID = "0",
             JdoodleClientSecret = "0",
-            TrashbinUrl = "http://trashbin.140.ted.ge",
+            TrashbinUrl = "",
             WolframID = "0",
             RapidApiKey = "0",
             BridgeNickname = "cheburator",

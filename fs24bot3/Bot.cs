@@ -172,6 +172,7 @@ public class Bot
             OnMsgEvent.LevelInscrease(Shop, message);
             OnMsgEvent.PrintWarningInformation(message);
             OnMsgEvent.HandleYoutube(message);
+            OnMsgEvent.HandleURL(message);
             OnMsgEvent.WhoWrotesMe(message);
             PProfiler.EndMeasure("msg");
         }

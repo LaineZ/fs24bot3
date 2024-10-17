@@ -13,16 +13,25 @@ using HandlebarsDotNet;
 using static fs24bot3.Models.OpenWeatherMapResponse;
 using NetIRC;
 using System.Collections.Generic;
+using HtmlAgilityPack;
 using static fs24bot3.Models.BandcampSearch;
 using static fs24bot3.Models.APIExec;
 
 namespace fs24bot3.EventProcessors;
+
 public class OnMsgEvent
 {
     private readonly Bot BotContext;
     private readonly Random Rand = new Random();
-    private readonly Regex YoutubeRegex = new Regex(@"(?:https?:)?(?:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['\""][^<>]*>|<\/a>))[?=&+%\w.-]*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
-    private readonly Regex URLRegex = new Regex(@"https?:\/\/\S*", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+    private readonly Regex YoutubeRegex = new Regex(
+        @"(?:https?:)?(?:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['\""][^<>]*>|<\/a>))[?=&+%\w.-]*",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+    private readonly Regex URLRegex =
+        new Regex(
+            @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
     public OnMsgEvent(Bot botCtx)
     {
@@ -33,7 +42,7 @@ public class OnMsgEvent
     {
         string year = date.Substring(0, 4);
         string month = date.Substring(4, 2);
-        string day = date.Substring(6, 2); ;
+        string day = date.Substring(6, 2);
 
         return year + "-" + month + "-" + day;
     }
@@ -46,24 +55,30 @@ public class OnMsgEvent
         if (newLevel)
         {
             var report = message.Sender.AddRandomRarityItem(shop, ItemInventory.ItemRarity.Rare);
-            await BotContext.Client.SendMessage(message.Target, $"{message.Sender.Username}: У вас теперь {message.Sender.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!");
+            await BotContext.Client.SendMessage(message.Target,
+                $"{message.Sender.Username}: У вас теперь {message.Sender.GetUserInfo().Level} уровень. Вы получили за это: {report.First().Value.Name}!");
         }
     }
 
     public async void HandleURL(MessageGeneric message)
     {
-        var http = new HttpTools();
-
-        MatchCollection matches = URLRegex.Matches(message.Body);
-
-        foreach (var match in matches)
+        foreach (var match in URLRegex.Matches(message.Body))
         {
-            var response = await http.GetResponseAsync(match.ToString());
+            var web = new HtmlWeb();
+            string url = match.ToString();
 
-            if (response.IsSuccessStatusCode)
+            if (url is null)
             {
-                string text = await response.Content.ReadAsStringAsync();
+                continue;
+            }
 
+            var document = await web.LoadFromWebAsync(url);
+            string title = document.DocumentNode.SelectSingleNode("//head/title").InnerText ?? "Нет заголовка";
+            var domain = url.Split("/");
+
+            if (domain.Length >= 3)
+            {
+                await BotContext.Client.SendMessage(message.Target, $"[b][ {title} ][r] - {domain[2]}");
             }
         }
     }
@@ -80,9 +95,9 @@ public class OnMsgEvent
     {
         foreach (var match in YoutubeRegex.Matches(message.Body))
         {
-            try
+            new Thread(async () =>
             {
-                new Thread(async () =>
+                try
                 {
                     Process p = new Process();
                     p.StartInfo.UseShellExecute = false;
@@ -93,8 +108,8 @@ public class OnMsgEvent
                     string output = await p.StandardOutput.ReadToEndAsync();
                     await p.WaitForExitAsync();
 
-                    var jsonOutput = JsonConvert.DeserializeObject<Youtube.Root>(output,
-                        Helpers.JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+                    var jsonOutput =
+                        JsonConvert.DeserializeObject<Youtube.Root>(output, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
 
                     if (jsonOutput != null)
                     {
@@ -106,12 +121,12 @@ public class OnMsgEvent
                             $"[green]Просмотров: [r][b]{jsonOutput.view_count}[r] " +
                             $"[green]Дата загрузки: [r][b]{FmtUploadDate(jsonOutput.upload_date)}[r]");
                     }
-                }).Start();
-            }
-            catch (Exception e)
-            {
-                Log.Error("Cannot handle youtube: {0}", e);
-            }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }).Start();
         }
     }
 
@@ -131,16 +146,18 @@ public class OnMsgEvent
         {
             var wroteMe = BotContext.Connection.Table<SQL.Messages>().ToList()
                 .Where(x => x.Message.Contains(message.Sender.Username) && x.Nick != message.Sender.Username)
-                .DistinctBy( x => x.Nick).Select(x => x.Nick);
+                .DistinctBy(x => x.Nick).Select(x => x.Nick);
             if (wroteMe.Any())
             {
-                await BotContext.Client.SendMessage(message.Target, 
+                await BotContext.Client.SendMessage(message.Target,
                     $"Уважаемый {message.Sender.Username} 🥰! Вам писали следующие люди: {MessageHelper.AntiHightlight(string.Join(", ", wroteMe))}");
-                BotContext.Connection.Execute("DELETE FROM Messages WHERE Message LIKE ?", $"%{message.Sender.Username}%");
+                BotContext.Connection.Execute("DELETE FROM Messages WHERE Message LIKE ?",
+                    $"%{message.Sender.Username}%");
             }
             else
             {
-                await BotContext.Client.SendMessage(message.Target, $"{message.Sender.Username}: вам никто не писал...");
+                await BotContext.Client.SendMessage(message.Target,
+                    $"{message.Sender.Username}: вам никто не писал...");
             }
         }
     }
@@ -150,8 +167,8 @@ public class OnMsgEvent
         if (BotContext.AcknownUsers.All(x => x != message.Sender.Username) && message.Sender.GetWarnings().Any())
         {
             await BotContext.Client.SendMessage(message.Target,
-            $"[gray]{message.Sender.Username}: " +
-            $"У вас есть предупреждения используйте .warnings чтобы их прочесть!");
+                $"[gray]{message.Sender.Username}: " +
+                $"У вас есть предупреждения используйте .warnings чтобы их прочесть!");
             BotContext.AcknownUsers.Add(message.Sender.Username);
         }
     }

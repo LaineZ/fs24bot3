@@ -232,7 +232,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 
     [Command("delmind", "delremind", "deleteremind")]
     [Description("Удалить напоминание")]
-    [Checks.FullAccount]
     public async Task DeleteRemind(uint id)
     {
         if (Context.User.DeleteRemind(id))
