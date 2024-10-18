@@ -113,8 +113,19 @@ public class OnMsgEvent
 
             try
             {
-                var document = await web.LoadFromWebAsync(url);
-                string title = document?.DocumentNode?.SelectSingleNode("//head/title")?.InnerText ?? "Нет заголовка";
+                var http = new HttpTools(2);
+                var request = await http.GetResponseAsync(url);
+                var text = await request.Content.ReadAsStringAsync();
+
+                var document = new HtmlDocument();
+                document.LoadHtml(text);
+                string title = document.DocumentNode?.SelectSingleNode("//title")?.InnerText;
+
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    return;
+                }
+
                 var domain = url.Split("/");
 
                 if (domain.Length >= 3)
@@ -122,9 +133,9 @@ public class OnMsgEvent
                     await BotContext.Client.SendMessage(message.Target, $"[b][ {title} ][r] - {domain[2]}");
                 }
             }
-            catch (HttpRequestException)
+            catch (Exception e)
             {
-                Log.Warning("Unable to handle URL: {0} due to request error", url);
+                Log.Warning("Unable to handle URL: {0} due to error: {1}", url, e);
             }
         }
     }
