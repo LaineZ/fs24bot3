@@ -34,7 +34,7 @@ public class MessageGeneric
             Kind = MessageKind.MessagePersonal;
         }
 
-        if (Sender.Username == ConfigurationProvider.Config.Services.BridgeNickname)
+        if (Sender.GetPermissions().Bridge)
         {
             // trim bridged user nickname like
             // <cheburator> //bpm140//: @ms привет

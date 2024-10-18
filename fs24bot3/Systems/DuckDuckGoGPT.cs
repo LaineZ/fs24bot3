@@ -6,6 +6,6 @@ namespace fs24bot3.Systems;
 
 public class DuckDuckGoGPT
 {
-    public Dictionary<User, DuckDuckGoGPTHelper> Contexts = new();
+    public readonly Dictionary<User, DuckDuckGoGPTHelper> Contexts = new();
     public DuckDuckGoGPTHelper GlobalContext = new();
 }

@@ -53,14 +53,13 @@ public class Configuration
         Prefix = ".";
         LogLevel = "Verbose";
         Backend = Backend.Basic;
-        Services = new Services()
+        Services = new Services
         {
             JdoodleClientID = "0",
             JdoodleClientSecret = "0",
             TrashbinUrl = "",
             WolframID = "0",
             RapidApiKey = "0",
-            BridgeNickname = "cheburator",
             FinnhubKey = "0",
             YoutubeDlPath = "youtube-dl",
             OpenWeatherMapKey = "0",

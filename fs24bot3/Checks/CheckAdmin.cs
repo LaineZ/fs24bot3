@@ -11,9 +11,11 @@ public sealed class CheckAdmin : CheckAttribute
     {
         var context = _ as CommandProcessor.CustomCommandContext;
 
+        var permissions = context.User.GetPermissions();
+
         try
         {
-            return (context.User.GetUserInfo().Admin >= 1 && context.IsAuthorizedAction) || ConfigurationProvider.Config.Backend == Models.Backend.Basic
+            return (permissions.Admin && context.IsAuthorizedAction) || ConfigurationProvider.Config.Backend == Models.Backend.Basic
             ? CheckResult.Successful
             : CheckResult.Failed("Эта команда только для админов!");
         }

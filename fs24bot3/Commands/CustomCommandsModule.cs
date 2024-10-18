@@ -92,7 +92,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
         
         if (query != null && query.Command == command && query.IsLua == 0)
         {
-            if (query.Nick == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
+            if (query.Nick == Context.User.Username || Context.User.GetPermissions().Admin)
             {
                 switch (action)
                 {
@@ -198,9 +198,9 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     public async Task CustomCmdRepl(string command, string oldstr, string newstr = "")
     {
         var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
-        if (query != null && query.Command == command || Context.User.GetUserInfo().Admin == 2)
+        if (query != null && query.Command == command || Context.User.GetPermissions().Admin)
         {
-            if (query.Nick == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
+            if (query.Nick == Context.User.Username || Context.User.GetPermissions().Admin)
             {
                 Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", query.Output.Replace(oldstr, newstr), command);
                 await Context.SendMessage(Context.Channel, "[blue]Команда успешно обновлена!");
@@ -222,9 +222,9 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     public async Task LuaUpdCoommand(string command, [Remainder] string newstr)
     {
         var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).FirstOrDefault();
-        if (query != null && query.IsLua == 1 && query.Command == command || Context.User.GetUserInfo().Admin == 2)
+        if (query != null && query.IsLua == 1 && query.Command == command || Context.User.GetPermissions().Admin)
         {
-            if (query.Nick == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
+            if (query.Nick == Context.User.Username || Context.User.GetPermissions().Admin)
             {
                 Context.BotCtx.Connection.Execute("UPDATE CustomUserCommands SET Output = ? WHERE Command = ?", newstr, command);
                 await Context.SendMessage(Context.Channel, "[blue]Команда успешно обновлена!");
@@ -254,7 +254,7 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     [Checks.FullAccount]
     public async Task CustomCmdRem(string command)
     {
-        if (Context.User.GetUserInfo().Admin == 2)
+        if (Context.User.GetPermissions().Admin)
         {
             var query = Context.BotCtx.Connection.Table<SQL.CustomUserCommands>().Where(v => v.Command.Equals(command)).Delete();
             if (query > 0)

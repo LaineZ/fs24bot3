@@ -111,7 +111,7 @@ public class Discord : IMessagingClient
         
         var msg = new MessageGeneric(args.Message.Content, args.Channel.Id.ToString(), user, messageKind);
 
-        if (!msg.Sender.UserIsIgnored() && !args.Message.Author.IsBot)
+        if (!msg.Sender.GetPermissions().ExecuteCommands && !args.Message.Author.IsBot)
         {
             if (msg.Kind == MessageKind.Message) { BotContext.MessageTrigger(msg); }
             await BotContext.ExecuteCommand(msg, ".");
@@ -141,7 +141,7 @@ public class Discord : IMessagingClient
     public void Process()
     {
         Log.Information("Connecting to Discord...");
-        Task.Run(async () => { Log.Verbose("лох"); 
+        Task.Run(async () => { Log.Verbose("пїЅпїЅпїЅ"); 
             await BotClient.ConnectAsync();
             BotContext.ProccessInfinite(); });
         Console.ReadLine();

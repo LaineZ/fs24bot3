@@ -3,13 +3,19 @@ using Qmmands;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Checks;
+
 public sealed class FullAccount : CheckAttribute
 {
     public override ValueTask<CheckResult> CheckAsync(CommandContext _)
     {
         var context = _ as CommandProcessor.CustomCommandContext;
 
-        return !context.FromBridge && !context.User.UserIsIgnored() && context.User != null && context.IsAuthorizedAction
+        if (context?.User is null)
+        {
+            return CheckResult.Failed("Нет аккаунта пользователя");
+        }
+
+        return !context.FromBridge && context.IsAuthorizedAction
             ? CheckResult.Successful
             : CheckResult.Failed("Эта команда требует аккаунт fs24_bot и авторизацию через NickServ!");
     }

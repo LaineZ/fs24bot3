@@ -107,14 +107,11 @@ public class Irc : IMessagingClient
         {
             var msg = new MessageGeneric(in message, in BotContext.Connection, Name);
             var prefix = ConfigurationProvider.Config.Prefix;
+            var permissions = msg.Sender.GetPermissions();
+            BotContext.MessageTrigger(msg);
 
-            if (!msg.Sender.UserIsIgnored())
+            if (permissions.ExecuteCommands)
             {
-                if (msg.Kind == MessageKind.Message)
-                {
-                    BotContext.MessageTrigger(msg);
-                }
-
                 await BotContext.ExecuteCommand(msg, prefix);
             }
         }
@@ -199,7 +196,7 @@ public class Irc : IMessagingClient
             {
                 await BotClient.SendAsync(new PrivMsgMessage(channel, split));
                 count += 1;
-                
+
                 if (count > 4)
                 {
                     string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message),

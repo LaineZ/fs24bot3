@@ -17,7 +17,7 @@ public class Database
         connection.CreateTable<SQL.CustomUserCommands>();
         connection.CreateTable<SQL.Tag>();
         connection.CreateTable<SQL.Item>();
-        connection.CreateTable<SQL.Ignore>();
+        connection.CreateTable<Permissions>();
         connection.CreateTable<SQL.ScriptStorage>();
         connection.CreateTable<SQL.Goals>();
         

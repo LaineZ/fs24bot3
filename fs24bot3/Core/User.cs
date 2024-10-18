@@ -69,10 +69,9 @@ public class User
         {
             Log.Warning("User {0} not found in database", Username);
 
-            var user = new SQL.UserStats()
+            var user = new SQL.UserStats
             {
                 Nick = Username,
-                Admin = 0,
                 Level = 1,
                 Xp = 0,
                 Need = 1000,
@@ -157,10 +156,16 @@ public class User
         return dtDateTime;
     }
 
-    public bool UserIsIgnored()
+    public Permissions GetPermissions()
     {
-        Log.Verbose("Ignored: {0}", Connect.Table<SQL.Ignore>().Any(v => v.Username == Username));
-        return Connect.Table<SQL.Ignore>().Any(v => v.Username.Equals(Username));
+        var perms = Connect.Table<Permissions>().FirstOrDefault(x => x.Username == Username);
+        if (perms == null)
+        {
+            return new Permissions(Username);
+        }
+
+        perms.ApplyValuesAsBitflags();
+        return perms;
     }
 
     public void SetLevel(int level)

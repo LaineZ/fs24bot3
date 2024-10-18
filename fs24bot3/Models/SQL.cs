@@ -14,13 +14,11 @@ public class SQL
         public int Level { get; set; }
         public int Xp { get; set; }
         public int Need { get; set; }
-        public int Admin { get; set; }
         public int LastMsg { get; set; }
         public string Prefix { get; set; }
         public string Timezone { get; set; }
         public string City { get; set; }
     }
-
 
     public class Cache
     {
@@ -135,12 +133,7 @@ public class SQL
         public string Tag { get; set; }
     }
 
-    // ultimate table99999
-    public class Ignore
-    {
-        [PrimaryKey]
-        public string Username { get; set; }
-    }
+
 
     public class UtfCharacters
     {

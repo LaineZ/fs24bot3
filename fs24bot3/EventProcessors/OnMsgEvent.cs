@@ -13,6 +13,8 @@ using HandlebarsDotNet;
 using static fs24bot3.Models.OpenWeatherMapResponse;
 using NetIRC;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Sockets;
 using HtmlAgilityPack;
 using static fs24bot3.Models.BandcampSearch;
 using static fs24bot3.Models.APIExec;
@@ -62,6 +64,43 @@ public class OnMsgEvent
 
     public async void HandleURL(MessageGeneric message)
     {
+        // TODO: more convinient URL handling from different services
+        
+        foreach (var match in YoutubeRegex.Matches(message.Body))
+        {
+            try
+            {
+                Process p = new Process();
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.FileName = ConfigurationProvider.Config.Services.YoutubeDlPath;
+                p.StartInfo.Arguments = "--simulate --print-json \"" + match + "\"";
+                p.Start();
+                string output = await p.StandardOutput.ReadToEndAsync();
+                await p.WaitForExitAsync();
+
+                var jsonOutput =
+                    JsonConvert.DeserializeObject<Youtube.Root>(output, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+
+                if (jsonOutput != null)
+                {
+                    var ts = TimeSpan.FromSeconds(jsonOutput.duration);
+                    await BotContext.Client.SendMessage(message.Target,
+                        $"[b]{jsonOutput.title}[r] от [b]{jsonOutput.channel}[r]. " +
+                        $"[green]Длительность: [r][b]{ts:hh\\:mm\\:ss}[r] " +
+                        $"[green]👍[r][b] {jsonOutput.like_count}[r] " +
+                        $"[green]Просмотров: [r][b]{jsonOutput.view_count}[r] " +
+                        $"[green]Дата загрузки: [r][b]{FmtUploadDate(jsonOutput.upload_date)}[r]");
+
+                    return;
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+
         foreach (var match in URLRegex.Matches(message.Body))
         {
             var web = new HtmlWeb();
@@ -72,13 +111,20 @@ public class OnMsgEvent
                 continue;
             }
 
-            var document = await web.LoadFromWebAsync(url);
-            string title = document.DocumentNode.SelectSingleNode("//head/title").InnerText ?? "Нет заголовка";
-            var domain = url.Split("/");
-
-            if (domain.Length >= 3)
+            try
             {
-                await BotContext.Client.SendMessage(message.Target, $"[b][ {title} ][r] - {domain[2]}");
+                var document = await web.LoadFromWebAsync(url);
+                string title = document?.DocumentNode?.SelectSingleNode("//head/title")?.InnerText ?? "Нет заголовка";
+                var domain = url.Split("/");
+
+                if (domain.Length >= 3)
+                {
+                    await BotContext.Client.SendMessage(message.Target, $"[b][ {title} ][r] - {domain[2]}");
+                }
+            }
+            catch (HttpRequestException)
+            {
+                Log.Warning("Unable to handle URL: {0} due to request error", url);
             }
         }
     }
@@ -88,45 +134,6 @@ public class OnMsgEvent
         if (Rand.Next(0, 10) == 1 && await message.Sender.RemItemFromInv(shop, "wall", 1))
         {
             Log.Information("Breaking wall for {0}", message.Sender.Username);
-        }
-    }
-
-    public void HandleYoutube(MessageGeneric message)
-    {
-        foreach (var match in YoutubeRegex.Matches(message.Body))
-        {
-            new Thread(async () =>
-            {
-                try
-                {
-                    Process p = new Process();
-                    p.StartInfo.UseShellExecute = false;
-                    p.StartInfo.RedirectStandardOutput = true;
-                    p.StartInfo.FileName = ConfigurationProvider.Config.Services.YoutubeDlPath;
-                    p.StartInfo.Arguments = "--simulate --print-json \"" + match + "\"";
-                    p.Start();
-                    string output = await p.StandardOutput.ReadToEndAsync();
-                    await p.WaitForExitAsync();
-
-                    var jsonOutput =
-                        JsonConvert.DeserializeObject<Youtube.Root>(output, JsonSerializerHelper.OPTIMIMAL_SETTINGS);
-
-                    if (jsonOutput != null)
-                    {
-                        var ts = TimeSpan.FromSeconds(jsonOutput.duration);
-                        await BotContext.Client.SendMessage(message.Target,
-                            $"[b]{jsonOutput.title}[r] от [b]{jsonOutput.channel}[r]. " +
-                            $"[green]Длительность: [r][b]{ts:hh\\:mm\\:ss}[r] " +
-                            $"[green]👍[r][b] {jsonOutput.like_count}[r] " +
-                            $"[green]Просмотров: [r][b]{jsonOutput.view_count}[r] " +
-                            $"[green]Дата загрузки: [r][b]{FmtUploadDate(jsonOutput.upload_date)}[r]");
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-            }).Start();
         }
     }
 

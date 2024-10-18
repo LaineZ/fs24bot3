@@ -30,7 +30,7 @@ public class Bot
     public Systems.DuckDuckGoGPT Gpt { get; }
     public List<string> AcknownUsers = new List<string>();
     public Profiler PProfiler { get; }
-    
+
     private OnMsgEvent OnMsgEvent { get; }
 
     public enum CooldownBucketType
@@ -58,7 +58,7 @@ public class Bot
             })
         });
         Client = messagingClient;
-        
+
         Service.AddModule<GenericCommandsModule>();
         Service.AddModule<SystemCommandModule>();
         Service.AddModule<InventoryCommandsModule>();
@@ -68,7 +68,7 @@ public class Bot
         Service.AddModule<BandcampCommandsModule>();
         Service.AddModule<TranslateCommandModule>();
         Service.AddModule<FishCommandsModule>();
-        
+
         Service.AddTypeParser(new Parsers.LanugageParser());
         Service.AddTypeParser(new Parsers.GoalProgressParser());
         Service.AddTypeParser(new Parsers.ColorParser());
@@ -90,7 +90,7 @@ public class Bot
                 .Any(x => x.Aliases.Any(a => a == command.Command));
 
             if (!commandIntenral || string.IsNullOrWhiteSpace(command.Nick)) continue;
-            
+
             var user = new User(command.Nick, Connection);
             Log.Warning("User {0} have a command with internal name {1}!",
                 user.Username,
@@ -146,7 +146,7 @@ public class Bot
             var reminds = Connection.Table<SQL.Reminds>();
             foreach (var item in reminds)
             {
-                DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, 
+                DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0,
                     DateTimeKind.Utc);
                 dtDateTime = dtDateTime.AddSeconds(item.RemindDate).ToLocalTime();
                 if (dtDateTime <= DateTime.Now)
@@ -163,23 +163,35 @@ public class Bot
 
     public void MessageTrigger(MessageGeneric message)
     {
-        if (message.Sender.UserIsIgnored() || message.Kind == MessageKind.MessagePersonal) { return; }
+        if (message.Kind == MessageKind.MessagePersonal)
+        {
+            return;
+        }
+        var permissions = message.Sender.GetPermissions();
+        PProfiler.BeginMeasure("msg");
+        
         try
         {
-            PProfiler.BeginMeasure("msg");
-            OnMsgEvent.InsertMessages(message);
-            OnMsgEvent.DestroyWallRandomly(Shop, message);
-            OnMsgEvent.LevelInscrease(Shop, message);
-            OnMsgEvent.PrintWarningInformation(message);
-            OnMsgEvent.HandleYoutube(message);
-            OnMsgEvent.HandleURL(message);
-            OnMsgEvent.WhoWrotesMe(message);
-            PProfiler.EndMeasure("msg");
+            if (permissions.HandleProcessing && !permissions.Bridge)
+            {
+                OnMsgEvent.InsertMessages(message);
+                OnMsgEvent.DestroyWallRandomly(Shop, message);
+                OnMsgEvent.LevelInscrease(Shop, message);
+                OnMsgEvent.PrintWarningInformation(message);
+                OnMsgEvent.WhoWrotesMe(message);
+            }
+
+            if (permissions.HandleUrls)
+            {
+                OnMsgEvent.HandleURL(message);
+            }
         }
         catch (Exception ex)
         {
             Log.Error("Message trigger causes a exception: {0}", ex);
         }
+
+        PProfiler.EndMeasure("msg");
     }
 
     static string HeuristicPrintErrorMessage(string message)
@@ -239,7 +251,8 @@ public class Bot
                     $"Ошибка в `{err.Parameter}` необходимый тип: `{err.Parameter.Type.Name}` вы же ввели: `{err.Value.GetType().Name}`. Введите .helpcmd {err.Parameter.Command} чтобы узнать наконец-то, как же правильно пользоватся этой командой.");
                 break;
             case CommandOnCooldownResult err:
-                await Client.SendMessage(message.Target, $"{RandomMsgs.CommandCooldownMessages.Random()} {err.Cooldowns.FirstOrDefault().RetryAfter.ToString(@"hh\:mm\:ss")}");
+                await Client.SendMessage(message.Target,
+                    $"{RandomMsgs.CommandCooldownMessages.Random()} {err.Cooldowns.FirstOrDefault().RetryAfter.ToString(@"hh\:mm\:ss")}");
                 break;
             case ArgumentParseFailedResult err:
                 var parserResult = err.ParserResult as DefaultArgumentParserResult;
@@ -260,12 +273,13 @@ public class Bot
                 break;
             case OverloadsFailedResult:
                 await Client.SendMessage(message.Target, "Команда выключена...");
-                break;                
+                break;
             case CommandNotFoundResult _:
                 await CustomCommandProcessor.ProcessCmd(prefix, message);
                 break;
             case CommandExecutionFailedResult err:
-                if (err.Exception.GetType() == typeof(JsonReaderException) || err.Exception.GetType() == typeof(JsonException))
+                if (err.Exception.GetType() == typeof(JsonReaderException) ||
+                    err.Exception.GetType() == typeof(JsonException))
                 {
                     await Client.SendMessage(message.Target, RandomMsgs.NetworkMessages.Random());
                 }

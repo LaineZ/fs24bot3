@@ -289,7 +289,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
 
                 if (query != null && query.Name == tagname)
                 {
-                    if (query.CreatedBy == Context.User.Username || Context.User.GetUserInfo().Admin == 2)
+                    if (query.CreatedBy == Context.User.Username || Context.User.GetPermissions().Admin)
                     {
                         Context.BotCtx.Connection.Table<SQL.Tag>().Where(v => v.Name.Equals(tagname)).Delete();
                         await Context.SendMessage(Context.Channel,

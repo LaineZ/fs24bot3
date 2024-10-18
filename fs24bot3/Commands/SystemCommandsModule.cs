@@ -9,10 +9,12 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace fs24bot3.Commands;
+
 public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
@@ -22,7 +24,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     public async Task Version()
     {
         var os = Environment.OSVersion;
-        await Context.SendMessage(Context.Channel, string.Format("fs24_bot3 by @140bpmdubstep | .NET Core: {0} Система: {1}",
+        await Context.SendMessage(Context.Channel, string.Format(
+            "fs24_bot3 by @140bpmdubstep | .NET Core: {0} Система: {1}",
             Environment.Version.ToString(), os.VersionString));
     }
 
@@ -47,8 +50,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     {
         var proc = System.Diagnostics.Process.GetCurrentProcess();
         await Context.SendMessage(Context.Channel, string.Join(" | ", proc.GetType().GetProperties()
-        .Where(x => !x.Name.ToLower().Contains("paged") && x.Name.EndsWith("64"))
-        .Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
+            .Where(x => !x.Name.ToLower().Contains("paged") && x.Name.EndsWith("64"))
+            .Select(prop => $"{prop.Name.Replace("64", "")} = {(long)prop.GetValue(proc, null) / 1024 / 1024} MiB")));
     }
 
     [Command("profiler", "prof", "performance", "perf")]
@@ -65,14 +68,15 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     {
         if (string.IsNullOrWhiteSpace(timeZone))
         {
-            var tz = string.Join("\n", TimeZoneInfo.GetSystemTimeZones().Select(x => $"id: `{x.Id}` название: {x.DisplayName}"));
-            await Context.SendMessage(Context.Channel, $"Часовые пояса: {Helpers.InternetServicesHelper.UploadToTrashbin(tz, "addplain").Result}");
+            var tz = string.Join("\n",
+                TimeZoneInfo.GetSystemTimeZones().Select(x => $"id: `{x.Id}` название: {x.DisplayName}"));
+            await Context.SendMessage(Context.Channel,
+                $"Часовые пояса: {Helpers.InternetServicesHelper.UploadToTrashbin(tz, "addplain").Result}");
             return;
         }
 
         Context.User.SetTimeZone(timeZone);
         await Context.SendMessage(Context.Channel, "Часовой пояс установлен!");
-
     }
 
     [Command("printstopwords")]
@@ -128,6 +132,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         {
             user.AddItemToInv(Context.BotCtx.Shop, item.Key, 1);
         }
+
         await Context.SendMessage(Context.Channel, "Вы выдали себе все предметы!");
     }
 
@@ -171,7 +176,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         User sql = new User(username, in Context.BotCtx.Connection);
 
         sql.AddItemToInv(Context.BotCtx.Shop, item, count);
-        await Context.SendMessage(Context.Channel, "Вы добавили предмет: " + Context.BotCtx.Shop.Items[item].Name + " пользователю " + username);
+        await Context.SendMessage(Context.Channel,
+            "Вы добавили предмет: " + Context.BotCtx.Shop.Items[item].Name + " пользователю " + username);
     }
 
 
@@ -235,7 +241,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task CommandMgmt(CommandToggles.Switch action, string command)
     {
-        var cmdHandle = Service.GetAllCommands().Where(x => x.Aliases.Where(al => al == command).Any()).FirstOrDefault();
+        var cmdHandle = Service.GetAllCommands().Where(x => x.Aliases.Where(al => al == command).Any())
+            .FirstOrDefault();
 
         if (cmdHandle == null)
         {
@@ -286,8 +293,10 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Command("mods", "modules")]
     public async Task Mods()
     {
-        await Context.SendMessage(Context.Channel, $"[red]█[r] Выключен [green]█[r] Включен. Число в скобках: количество команд в модуле");
-        await Context.SendMessage(Context.Channel, $"В данный момент загружено: {Service.GetAllModules().Count} модулей");
+        await Context.SendMessage(Context.Channel,
+            $"[red]█[r] Выключен [green]█[r] Включен. Число в скобках: количество команд в модуле");
+        await Context.SendMessage(Context.Channel,
+            $"В данный момент загружено: {Service.GetAllModules().Count} модулей");
         string modi = string.Join(" ", Service.GetAllModules()
             .Select(x => $"{(x.IsEnabled ? "[green]" : "[red]")}{x.Name}[r]({x.Commands.Count})"));
         await Context.SendMessage(Context.Channel, modi);
@@ -308,7 +317,6 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         Context.BotCtx.Connection.Tracer = new Action<string>(q => { Log.Warning(q); });
         Context.BotCtx.Connection.Trace = enabled;
         await Context.SendMessage(Context.Channel, $"SQL логирование `{enabled}`");
-
     }
 
     [Command("delete")]
@@ -327,6 +335,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         {
             Context.BotCtx.Connection.Execute("DELETE FROM UserStats WHERE Level = ?", level);
         }
+
         Context.BotCtx.Connection.Execute("VACUUM;");
         await Context.SendMessage(Context.Channel, "Данные удалены!");
     }
@@ -335,7 +344,8 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
     [Checks.CheckAdmin]
     public async Task ViewUsers()
     {
-        await Context.SendMessage(Context.Channel, String.Join(' ', Context.BotCtx.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
+        await Context.SendMessage(Context.Channel,
+            String.Join(' ', Context.BotCtx.Connection.Table<SQL.UserStats>().Select(x => $"{x.Nick}({x.Level})")));
     }
 
     [Command("say", "writeasbot")]
@@ -346,31 +356,65 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         await Context.SendMessage(Context.Channel, "Сообщение отправлено!");
     }
 
-    [Command("ignore")]
+    [Command("setpermission", "setperm", "sp")]
+    [Description("Установка прав пользователю")]
     [Checks.CheckAdmin]
-    public async Task Ignore(CommandToggles.CommandEdit action, [Remainder] string username)
+    public async Task SetPermission(PermissionsFlags permission, [Remainder] string username)
     {
         var usernames = username.Split(" ");
-        switch (action)
+
+        foreach (var item in usernames)
         {
-            case CommandToggles.CommandEdit.Add:
-                foreach (var item in usernames)
-                {
-                    var ignr = new SQL.Ignore()
-                    {
-                        Username = item
-                    };
-                    Context.BotCtx.Connection.Insert(ignr);
-                }
-                await Context.SendMessage(Context.Channel, $"Пользователь(и) {username} добавлен(ы) в игнор!");
-                break;
-            case CommandToggles.CommandEdit.Delete:
-                foreach (var item in usernames)
-                {
-                    Context.BotCtx.Connection.Execute("DELETE FROM Ignore WHERE Username = ?", item);
-                }
-                await Context.SendMessage(Context.Channel, $"Пользователь(и) {username} удален(ы) из игнора!");
-                break;
+            var user = new User(item, Context.BotCtx.Connection);
+            var permissionClass = user.GetPermissions();
+            permissionClass.TooglePermission(permission);
+            Context.BotCtx.Connection.InsertOrReplace(permissionClass);
         }
+
+        string fmt = username.Length > 1 ? "пользователей" : "пользователя";
+        await Context.SendMessage(Context.Channel, $"Права {fmt} {string.Join(", ", usernames)} были модифицированы!");
+    }
+
+    [Command("permissions", "perms", "permlist")]
+    [Checks.CheckAdmin]
+    public async Task Permissions(string username)
+    {
+        var user = new User(username, Context.BotCtx.Connection);
+        var permission = user.GetPermissions();
+
+        if (permission == null || permission.Flags == PermissionsFlags.None)
+        {
+            await Context.SendMessage("У этого пользователя вообще нет прав...");
+            return;
+        }
+
+        var sb = new StringBuilder();
+
+        if (permission.Admin)
+        {
+            sb.Append("права администратора, ");
+        }
+
+        if (permission.Bridge)
+        {
+            sb.Append("мост, ");
+        }
+
+        if (permission.ExecuteCommands)
+        {
+            sb.Append("выполнение команд, ");
+        }
+
+        if (permission.HandleProcessing)
+        {
+            sb.Append("обработка данных, ");
+        }
+
+        if (permission.HandleUrls)
+        {
+            sb.Append("обработка ссылок, ");
+        }
+
+        await Context.SendMessage(Context.Channel, $"Права пользователя [b]{username}[r]: {sb}");
     }
 }
