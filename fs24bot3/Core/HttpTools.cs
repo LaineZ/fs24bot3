@@ -24,7 +24,7 @@ public class HttpTools
         Client.MaxResponseContentBufferSize = maxContentSize * 1024 * 1024;
     }
 
-    public string RecursiveHtmlDecode(string str)
+    public static string RecursiveHtmlDecode(string str)
     {
         if (string.IsNullOrWhiteSpace(str)) return str;
         var tmp = HttpUtility.HtmlDecode(str);

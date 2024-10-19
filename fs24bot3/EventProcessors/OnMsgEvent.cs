@@ -103,7 +103,6 @@ public class OnMsgEvent
 
         foreach (var match in URLRegex.Matches(message.Body))
         {
-            var web = new HtmlWeb();
             string url = match.ToString();
 
             if (url is null)
@@ -114,6 +113,7 @@ public class OnMsgEvent
             try
             {
                 var http = new HttpTools(2);
+
                 var request = await http.GetResponseAsync(url);
                 var text = await request.Content.ReadAsStringAsync();
 
@@ -130,7 +130,7 @@ public class OnMsgEvent
 
                 if (domain.Length >= 3)
                 {
-                    await BotContext.Client.SendMessage(message.Target, $"[b][ {title} ][r] - {domain[2]}");
+                    await BotContext.Client.SendMessage(message.Target, $"[b][ {HttpTools.RecursiveHtmlDecode(title)} ][r] - {domain[2]}");
                 }
             }
             catch (Exception e)
