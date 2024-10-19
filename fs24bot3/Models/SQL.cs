@@ -185,21 +185,4 @@ public class SQL
             return $"ID: {Id}: Цель [b]{Goal}[r] {(Progress == Total ? "[green]" : "")}{Progress}/{Total} {Percentage()}%[r]";
         }
     }
-
-    public class UnhandledExceptions
-    {
-        [PrimaryKey]
-        public string Date { get; set; }
-        public string ErrorMessage { get; set; }
-        public string Username { get; set; }
-        public string Input { get; set; }
-
-        public UnhandledExceptions(string err, string username, string input)
-        {
-            Date = DateTime.Now.ToString();
-            ErrorMessage = err;
-            Username = username;
-            Input = input;
-        }
-    }
 }

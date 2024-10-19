@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using fs24bot3.Core;
@@ -59,6 +60,11 @@ public class MessageGeneric
     {
         var http = new HttpTools();
         var parser = new OneLinerOptionParser(Body);
+
+        parser.AllowedOptions = new List<string>
+        {
+            "url"
+        };
 
         if (parser.Options.TryGetValue("url", out var url))
         {

@@ -233,7 +233,7 @@ public class Bot
         }
         catch (Exception e)
         {
-            await Client.SendMessage(message.Target, $"[red]Критическая ошибка при обработке сообщения: {e.Message}");
+            await Client.SendMessage(message.Target, $"[red]Ошибка при обработке опций сообщения: {e.Message}");
             return;
         }
 
@@ -300,8 +300,6 @@ public class Bot
                 }
 
                 Log.Error(err.Exception.Message + ": " + err.Exception.StackTrace);
-                Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace,
-                    message.Sender.Username, message.Body));
                 break;
         }
 

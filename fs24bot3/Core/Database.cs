@@ -50,7 +50,6 @@ public class Database
         }
         
         connection.CreateTable<SQL.UtfCharacters>();
-        connection.CreateTable<SQL.UnhandledExceptions>();
         connection.CreateTable<SQL.Fishing>();
         connection.CreateTable<SQL.FishingNests>();
         connection.CreateTable<SQL.Warnings>();
