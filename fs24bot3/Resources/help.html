@@ -6,56 +6,17 @@
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <title>FS24BOT: Help</title>
   <meta name='viewport' content='width=device-width, initial-scale=1'>
-  <style>
-    body {
-      margin: 0px;
-      padding: 0px;
-      font-family: sans-serif;
-      color: #eff9d6;
-      background-color: #1b0326;
-    }
-
-    .menu {
-      background-color: rgb(37, 4, 53);
-    }
-
-    .menuItem {
-      padding-left: 1em;
-      padding-bottom: 0.5em;
-      display: inline-block;
-    }
-
-    .content {
-      margin: 0.5em;
-      padding: 5px;
-      padding-top: 10px;
-    }
-
-    .command {
-      border-bottom: 1px solid rgb(37, 4, 53);
-    }
-
-    .command-name {
-      font-family: "Iosevka Term Slab", "Consolas", monospace;
-    }
-
-    code {
-      background-color: #7a1c4b;
-      padding: 5px;
-      border-radius: 10px;
-      font-family: "Iosevka Slab", "Cascadia Mono", "Consolas", monospace;
-    }
-  </style>
+  <style>{{ style }}</style>
 </head>
 
 <body>
-  <div class="menu">
+  <header>
     <div class="menuItem">
       <h3>fs24bot help - список команд</h3>
     </div>
-  </div>
+  </header>
 
-  <div class="content">
+  <header>
     <p>Используйте <code>url:ссылка</code> в аргументе чтобы подставить результат из raw-url (pastebin, trashbin, gist и т.д)</p>
     <div class="commands">
       {{#each commands}}
@@ -78,8 +39,7 @@
       </div>
       {{/each}}
     </div>
-  </div>
-  </div>
+  </header>
 </body>
 
 </html>

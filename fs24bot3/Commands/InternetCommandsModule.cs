@@ -5,16 +5,13 @@ using fs24bot3.QmmandsProcessors;
 using Genbox.WolframAlpha;
 using HtmlAgilityPack;
 using MCQuery;
-using NetIRC;
 using Newtonsoft.Json;
 using Qmmands;
 using Serilog;
-using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 

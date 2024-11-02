@@ -1,0 +1,38 @@
+body {
+    margin: 0px;
+    padding: 0px;
+    font-family: sans-serif;
+    color: #eff9d6;
+    background-color: #1b0326;
+}
+
+header {
+    background-color: rgb(37, 4, 53);
+}
+
+ .menuItem {
+    padding-left: 1em;
+    padding-bottom: 0.5em;
+    display: inline-block;
+ }
+
+ main {
+    margin: 0.5em;
+    padding: 5px;
+    padding-top: 10px;
+ }
+
+ .command {
+    border-bottom: 1px solid rgb(37, 4, 53);
+ }
+
+ .command-name {
+    font-family: "Iosevka Term Slab", "Consolas", monospace;
+ }
+
+ code {
+    background-color: #7a1c4b;
+    padding: 5px;
+    border-radius: 10px;
+    font-family: "Iosevka Slab", "Cascadia Mono", "Consolas", monospace;
+ }

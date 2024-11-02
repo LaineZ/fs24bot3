@@ -272,5 +272,13 @@ namespace fs24bot3.Properties
                 return ResourceManager.GetString("nouns", resourceCulture);
             }
         }
+
+        internal static string style 
+        {
+            get
+            {
+                return ResourceManager.GetString("style", resourceCulture);
+            }
+        }
     }
 }

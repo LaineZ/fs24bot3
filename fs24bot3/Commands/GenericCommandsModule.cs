@@ -24,8 +24,6 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
 {
     public CommandService Service { get; set; }
     
-
-
     private string TrimTimezoneName(string name)
     {
         return name.Split(" ")[0];
@@ -35,15 +33,17 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
     {
         var cmds = Service.GetAllCommands();
         string commandsOutput = "";
-        //string commandsOutput = Resources.help;
+        string styleOutput = "";
         try
         {
             commandsOutput = File.ReadAllText("help.html");
+            styleOutput = File.ReadAllText("style.css");
         }
         catch (FileNotFoundException)
         {
-            Log.Verbose("help.html not found, using compiled one");
+            Log.Verbose("help.html or style.css not found, using compiled one");
             commandsOutput = Resources.help;
+            styleOutput = Resources.style;
         }
 
         var template = Handlebars.Compile(commandsOutput);
@@ -64,6 +64,7 @@ public sealed class GenericCommandsModule : ModuleBase<CommandProcessor.CustomCo
         });
         var data = new
         {
+            style = styleOutput,
             commands = commandList,
             customCommands = customCommands.Select(x => new
             {

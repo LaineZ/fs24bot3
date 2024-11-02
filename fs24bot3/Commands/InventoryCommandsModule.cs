@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace fs24bot3.Commands;
 
@@ -36,7 +37,7 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
         if (success)
         {
             await Context.SendMessage(Context.Channel,
-                $"[green]Вы успешно {(sell ? "продали" : "купили")} {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
+$"[green]Вы успешно {(sell ? "продали" : "купили")} {Context.BotCtx.Shop.Items[itemname].Name} x{count} за {price} денег");
         }
         else
         {
@@ -88,6 +89,17 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
     [Description("Магазин")]
     public async Task Shop()
     {
+        // TODO: Refactor to use templates
+        string shopTemplate = "";
+        string styleOutput = "";
+        try 
+        {
+
+        }
+        catch (FileNotFoundException)
+        {
+        
+        }
         var shopitems = string.Join(' ',
             Context.BotCtx.Shop.Items
                 .Where(x => x.Value.Sellable)
