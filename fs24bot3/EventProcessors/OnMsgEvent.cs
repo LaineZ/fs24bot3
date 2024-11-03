@@ -130,7 +130,8 @@ public class OnMsgEvent
 
                 if (domain.Length >= 3)
                 {
-                    await BotContext.Client.SendMessage(message.Target, $"[b][ {HttpTools.RecursiveHtmlDecode(title)} ][r] - {domain[2]}");
+                    string titleDecoded = HttpTools.RecursiveHtmlDecode(title).Trim().Replace("\n", " ").Replace("\r\n", " ");
+                    await BotContext.Client.SendMessage(message.Target, $"[b][ {titleDecoded} ][r] - {domain[2].ToLower()}");
                 }
             }
             catch (Exception e)
