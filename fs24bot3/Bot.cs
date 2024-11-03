@@ -172,7 +172,7 @@ public class Bot
         
         try
         {
-            if (permissions.HandleProcessing && !permissions.Bridge)
+            if (message.Kind != MessageKind.MessageFromBridge && permissions.HandleProcessing)
             {
                 OnMsgEvent.InsertMessages(message);
                 OnMsgEvent.DestroyWallRandomly(Shop, message);
@@ -270,10 +270,10 @@ public class Bot
                 switch (parserResult.Failure)
                 {
                     case DefaultArgumentParserFailure.NoWhitespaceBetweenArguments:
-                        await Client.SendMessage(message.Target, $"Нет пробелов между аргументами!");
+                        await Client.SendMessage(message.Target, "Нет пробелов между аргументами!");
                         break;
                     case DefaultArgumentParserFailure.TooManyArguments:
-                        await Client.SendMessage(message.Target, $"Слишком много аргрументов!!!");
+                        await Client.SendMessage(message.Target, "Слишком много аргрументов!!!");
                         break;
                     default:
                         await Client.SendMessage(message.Target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
