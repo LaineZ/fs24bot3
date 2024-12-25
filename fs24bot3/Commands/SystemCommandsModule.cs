@@ -262,8 +262,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
                 break;
         }
     }
-
-
+    
     [Command("mod", "module")]
     [Description("Управление модулями")]
     [Checks.CheckAdmin]

@@ -172,7 +172,7 @@ public class Bot
         
         try
         {
-            if (permissions.HandleProcessing && !permissions.Bridge)
+            if (message.Kind != MessageKind.MessageFromBridge && permissions.HandleProcessing)
             {
                 OnMsgEvent.InsertMessages(message);
                 OnMsgEvent.DestroyWallRandomly(Shop, message);
@@ -225,13 +225,23 @@ public class Bot
 
     public async Task ExecuteCommand(MessageGeneric message, string prefix)
     {
-        if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
-            return;
-
         PProfiler.BeginMeasure("command");
 
-        var auth = false;
+        try
+        {
+            await message.ParseBodyOptions();
+        }
+        catch (Exception e)
+        {
+            await Client.SendMessage(message.Target, $"[red]Ошибка при обработке опций сообщения: {e.Message}");
+            return;
+        }
 
+        if (!CommandUtilities.HasAnyPrefix(message.Body, prefix, out _, out var output))
+            return;
+        
+        var auth = false;
+        
         if (message.Kind != MessageKind.MessageFromBridge)
         {
             auth = await Client.EnsureAuthorization(message.Sender);
@@ -260,10 +270,10 @@ public class Bot
                 switch (parserResult.Failure)
                 {
                     case DefaultArgumentParserFailure.NoWhitespaceBetweenArguments:
-                        await Client.SendMessage(message.Target, $"Нет пробелов между аргументами!");
+                        await Client.SendMessage(message.Target, "Нет пробелов между аргументами!");
                         break;
                     case DefaultArgumentParserFailure.TooManyArguments:
-                        await Client.SendMessage(message.Target, $"Слишком много аргрументов!!!");
+                        await Client.SendMessage(message.Target, "Слишком много аргрументов!!!");
                         break;
                     default:
                         await Client.SendMessage(message.Target, $"Ошибка парсера: `{err.ParserResult.FailureReason}`");
@@ -290,8 +300,6 @@ public class Bot
                 }
 
                 Log.Error(err.Exception.Message + ": " + err.Exception.StackTrace);
-                Connection.Insert(new SQL.UnhandledExceptions(err.Exception.Message + ": " + err.Exception.StackTrace,
-                    message.Sender.Username, message.Body));
                 break;
         }
 

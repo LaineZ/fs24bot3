@@ -26,7 +26,7 @@ public sealed class FishCommandsModule : ModuleBase<CommandProcessor.CustomComma
 
             if (state == null)
             {
-                await Context.SendMessage(Context.Channel, $"[gray]Такого места для рыбалки не сущесвует");
+                await Context.SendMessage(Context.Channel, "[gray]Такого места для рыбалки не сущесвует");
                 return;
             }
             if (state.FishingLineRequired <= Context.User.CountItem("line"))

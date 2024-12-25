@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - run: bash ./fs24bot3/build-linux.bash
+      - run: bash ./fs24bot3/build-linux-shared.bash
       - uses: actions/upload-artifact@v3
         with:
-          name: f24bot3-linux
+          name: fs24bot3-linux
           path: ./releases

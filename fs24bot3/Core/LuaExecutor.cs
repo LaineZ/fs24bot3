@@ -90,6 +90,7 @@ class LuaExecutor
 
         // just a bunch of globals
         lua["RANDOM_NICK"] = nick;
+        lua["CMD_ISSUER"] = senderNick;  
         lua["CMD_NAME"] = Command.Command;
         lua["CMD_OWNER"] = Command.Nick;
         lua["CMD_ARGS"] = args;

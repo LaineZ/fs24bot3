@@ -1,15 +1,10 @@
-﻿using fs24bot3.Core;
-using HtmlAgilityPack;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -22,13 +17,14 @@ public class HttpTools
     readonly CookieContainer Cookies = new CookieContainer();
     public readonly HttpClient Client = new HttpClient();
 
-    public HttpTools()
+    public HttpTools(uint maxContentSize = 8)
     {
         Client.DefaultRequestHeaders.UserAgent.ParseAdd(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0");
+        Client.MaxResponseContentBufferSize = maxContentSize * 1024 * 1024;
     }
 
-    public string RecursiveHtmlDecode(string str)
+    public static string RecursiveHtmlDecode(string str)
     {
         if (string.IsNullOrWhiteSpace(str)) return str;
         var tmp = HttpUtility.HtmlDecode(str);
@@ -157,19 +153,11 @@ public class HttpTools
         {
             if (response.Content.Headers.ContentType.MediaType == "text/plain")
             {
-                if (response.Content.Headers.ContentLength.GetValueOrDefault() > 10000)
-                {
-                    throw new InvalidDataException(
-                        $"Ошибка в Content-Length запроса: Слишком большой размер, максимальный размер: 10000 байт");
-                }
-
                 return await response.Content.ReadAsStringAsync();
             }
-            else
-            {
-                throw new InvalidDataException(
-                    $"Ошибка в Content-Type запроса: Необходимый Content-Type: text/plain получилось: {response.Content.Headers.ContentType.MediaType}");
-            }
+
+            throw new InvalidDataException(
+                $"Ошибка в Content-Type запроса: Необходимый Content-Type: text/plain получилось: {response.Content.Headers.ContentType.MediaType}");
         }
 
         return null;

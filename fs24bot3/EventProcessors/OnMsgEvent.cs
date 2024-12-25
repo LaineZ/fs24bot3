@@ -96,7 +96,6 @@ public class OnMsgEvent
 
         foreach (var match in URLRegex.Matches(message.Body))
         {
-            var web = new HtmlWeb();
             string url = match.ToString();
 
             if (url is null)
@@ -106,8 +105,14 @@ public class OnMsgEvent
 
             try
             {
-                var document = await web.LoadFromWebAsync(url);
-                string title = document?.DocumentNode?.SelectSingleNode("//title")?.InnerText ?? null;
+                var http = new HttpTools(2);
+
+                var request = await http.GetResponseAsync(url);
+                var text = await request.Content.ReadAsStringAsync();
+
+                var document = new HtmlDocument();
+                document.LoadHtml(text);
+                string title = document.DocumentNode?.SelectSingleNode("//title")?.InnerText;
 
                 if (string.IsNullOrWhiteSpace(title))
                 {
@@ -118,12 +123,13 @@ public class OnMsgEvent
 
                 if (domain.Length >= 3)
                 {
-                    await BotContext.Client.SendMessage(message.Target, $"[b][ {title} ][r] - {domain[2]}");
+                    string titleDecoded = HttpTools.RecursiveHtmlDecode(title).Trim().Replace("\n", " ").Replace("\r\n", " ");
+                    await BotContext.Client.SendMessage(message.Target, $"[b][ {titleDecoded} ][r] - {domain[2].ToLower()}");
                 }
             }
-            catch (HttpRequestException)
+            catch (Exception e)
             {
-                Log.Warning("Unable to handle URL: {0} due to request error", url);
+                Log.Warning("Unable to handle URL: {0} due to error: {1}", url, e);
             }
         }
     }

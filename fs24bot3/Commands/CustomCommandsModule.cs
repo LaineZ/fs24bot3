@@ -4,17 +4,13 @@ using fs24bot3.QmmandsProcessors;
 using Qmmands;
 using SQLite;
 using System;
-using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
 using System.Threading.Tasks;
 
 namespace fs24bot3.Commands;
 public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCommandContext>
 {
     public CommandService Service { get; set; }
-
-    readonly HttpTools http = new HttpTools();
 
     /// <summary>
     /// Cost needed for creating command
@@ -71,15 +67,6 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
     public async Task CustomCmdRegisterLua(string command, [Remainder] string code)
     {
         await CustomCmdRegisterpublic(command, true, code);
-    }
-
-    [Command("regcmdurl", "regluaurl")]
-    [Description("Регистрация команды (Параметр command вводится без префикса) Документация Lua: https://gist.github.com/LaineZ/67086615e481cb0f5a6c84f8e71103bf")]
-    [Checks.FullAccount]
-    public async Task CustomCmdRegisterUrlAsync(string command, string rawurl)
-    {
-        var response = await http.GetTextPlainResponse(rawurl);
-        await CustomCmdRegisterpublic(command, true, response);
     }
 
     [Command("cmdout")]
@@ -238,15 +225,6 @@ public sealed class CustomCommandsModule : ModuleBase<CommandProcessor.CustomCom
         {
             await Context.SendMessage(Context.Channel, "[gray]Команды не существует");
         }
-    }
-
-    [Command("cmdupdurl")]
-    [Description("Полное обновление вывода команды (ПО URL)")]
-    [Checks.FullAccount]
-    public async Task LuaUpdCoommandUrl(string command, string rawurl)
-    {
-        var response = await http.GetTextPlainResponse(rawurl);
-        await LuaUpdCoommand(command, response);
     }
 
     [Command("delcmd")]

@@ -7,68 +7,32 @@ public class Exceptions
 {
     public class UserNotFoundException : Exception
     {
-        public override string Message
-        {
-            get
-            {
-                return "Пользователь не найден!";
-            }
-        }
+        public override string Message => "Пользователь не найден!";
     }
 
 
     public class ItemNotFoundException : Exception
     {
-        public override string Message
-        {
-            get
-            {
-                return "Такого предмета не существует в базе данных!";
-            }
-        }
+        public override string Message => "Такого предмета не существует в базе данных!";
     }
 
     public class WrongTypeException : Exception
     {
-        public override string Message
-        {
-            get
-            {
-                return "Неверный тип!";
-            }
-        }
+        public override string Message => "Неверный тип!";
     }
 
     public class LyricsNotFoundException : Exception
     {
-        public override string Message
-        {
-            get
-            {
-                return "Слова не найдены";
-            }
-        }
+        public override string Message => "Слова не найдены";
     }
 
     public class SearchError : Exception
     {
-        public override string Message
-        {
-            get
-            {
-                return "Произошла ошибка поиска!";
-            }
-        }
+        public override string Message => "Произошла ошибка поиска!";
     }
 
     public class RodError : Exception
     {
-        public override string Message
-        {
-            get
-            {
-                return "У вас нет такой удочки!";
-            }
-        }
+        public override string Message => "У вас нет такой удочки!";
     }
 }
