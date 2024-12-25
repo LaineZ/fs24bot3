@@ -7,17 +7,10 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using fs24bot3.Helpers;
 using HandlebarsDotNet;
-using static fs24bot3.Models.OpenWeatherMapResponse;
-using NetIRC;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Sockets;
 using HtmlAgilityPack;
-using static fs24bot3.Models.BandcampSearch;
-using static fs24bot3.Models.APIExec;
 
 namespace fs24bot3.EventProcessors;
 
@@ -114,7 +107,13 @@ public class OnMsgEvent
             try
             {
                 var document = await web.LoadFromWebAsync(url);
-                string title = document?.DocumentNode?.SelectSingleNode("//head/title")?.InnerText ?? "Нет заголовка";
+                string title = document?.DocumentNode?.SelectSingleNode("//title")?.InnerText ?? null;
+
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    return;
+                }
+
                 var domain = url.Split("/");
 
                 if (domain.Length >= 3)
