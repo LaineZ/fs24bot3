@@ -22,13 +22,13 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
         try
         {
             var translatedOutput = await Context.ServicesHelper.Translate(text, lang.From, lang.To);
-            if (translatedOutput.Tl != null)
+            if (translatedOutput.Tl != null && translatedOutput.Texts.Any())
             {
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.Text} ({lang})");
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.Texts[0]} ({lang})");
             }
             else
             {
-                await Context.SendMessage(Context.Channel, $"{translatedOutput.Text} ({lang})");
+                await Context.SendMessage(Context.Channel, $"{translatedOutput.Texts[0]} ({lang})");
             }
         }
         catch (ArgumentException)
@@ -64,7 +64,7 @@ public sealed class TranslateCommandModule : ModuleBase<CommandProcessor.CustomC
             for (int i = 0; i < splitted.Length; i++)
             {
                 var tr = await Context.ServicesHelper.Translate(splitted[i], lang.From, lang.To);
-                splitted[i] = tr.Text;
+                splitted[i] = tr.Texts[0];
             }
 
             await Context.SendMessage(Context.Channel, string.Join(' ', splitted).ToLower());

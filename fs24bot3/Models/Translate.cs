@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace fs24bot3.Models;
@@ -29,7 +27,7 @@ public class Translate
         public int Code { get; set; }
 
         [JsonProperty("texts")]
-        public string Text { get; set; }
+        public List<string> Texts { get; set; }
 
         [JsonProperty("tl")]
         public string Tl { get; set; }

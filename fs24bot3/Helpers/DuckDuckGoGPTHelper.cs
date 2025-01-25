@@ -87,7 +87,7 @@ public class DuckDuckGoGPTHelper
 
         if (!response.IsSuccessStatusCode)
         {
-            return "Я не могу говорить в данный момент";
+            return $"Я не могу говорить в данный момент, походу память забилась.... попробуйте `{ConfigurationProvider.Config.Prefix}clear` чтобы заработало";
         }
 
         var value = await response.Content.ReadAsStringAsync();
