@@ -471,8 +471,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     public async Task Metar(string airportIcao = "URWW", bool rawOutput = false)
     {
 
-        var response = await Context.HttpTools.GetJson<List<MetarWeather.Root>>($"https://aviationweather.gov/cgi-bin/data/metar.php?ids={airportIcao}&format=json");
-
+        var response = await Context.HttpTools.GetJson<List<MetarWeather.Root>>($"https://aviationweather.gov/api/data/metar?ids={airportIcao}&format=json");
         var metar = response.FirstOrDefault();
 
         if (!rawOutput)

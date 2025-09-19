@@ -238,12 +238,10 @@ public class Irc : IMessagingClient
         {
             messageHandler = (client, message) =>
             {
-                if (message.Prefix.From == "NickServ")
+                if (message.Prefix is not null && message.Prefix.From == "NickServ")
                 {
                     var split = message.Trailing.Split(" ");
-
                     tcs.SetResult(split[2] == "3");
-
                     BotClient.IRCMessageParsed -= messageHandler;
                 }
             };
