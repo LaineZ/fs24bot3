@@ -84,22 +84,33 @@ public class InternetServicesHelper
 
     public async Task<List<SproutMessage>> GetMessagesSprout(DateTime dateTime)
     {
-        var output = await Http.GetJson<List<SproutMessage>>("https://logs.bpm140.ru/logs/latest");
-
-        foreach (var item in output)
+        try
         {
-            if (item.Nick == ConfigurationProvider.Config.Services.BridgeNickname)
+            var output = await Http.GetJson<List<SproutMessage>>("https://logs.bpm140.ru/logs/latest");
+
+            if (output is null)
             {
-                var captures = CheburatorRegex.Match(item.Message);
-                item.Nick = MessageHelper.StripIRC(captures.Groups["author"].Value);
-                item.Message = captures.Groups["message"].Value;
+                return [];
             }
 
+            foreach (var item in output)
+            {
+                if (item.Nick == ConfigurationProvider.Config.Services.BridgeNickname)
+                {
+                    var captures = CheburatorRegex.Match(item.Message);
+                    item.Nick = MessageHelper.StripIRC(captures.Groups["author"].Value);
+                    item.Message = captures.Groups["message"].Value;
+                }
 
-            item.Message = MessageHelper.StripIRC(item.Message);
+
+                item.Message = MessageHelper.StripIRC(item.Message);
+            }
+
+            return output;
+        } catch (Exception)
+        {
+            return [];
         }
-
-        return output;
     }
 
     public static async Task<string> UploadToTrashbin(string data, string route = "add")

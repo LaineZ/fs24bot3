@@ -71,6 +71,12 @@ public class HttpTools
     public async Task<T> GetJson<T>(string url)
     {
         var response = await GetResponseAsync(url);
+
+        if (response is null)
+        {
+            return default(T);
+        }
+
         response.EnsureSuccessStatusCode();
 
         return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(),
