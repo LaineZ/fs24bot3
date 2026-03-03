@@ -78,9 +78,15 @@ public class HttpTools
         }
 
         response.EnsureSuccessStatusCode();
-
-        return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(),
-            JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+        var content = await response.Content.ReadAsStringAsync();
+        if (content.Length > 0)
+        {
+            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync(),
+                JsonSerializerHelper.OPTIMIMAL_SETTINGS);
+        } else
+        {
+            return default(T);
+        }
     }
 
     public async Task<string> MakeRequestAsyncNoCookie(string url)

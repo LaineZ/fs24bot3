@@ -470,8 +470,20 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     [Description("Запрос METAR информации о погоде")]
     public async Task Metar(string airportIcao = "URWW", bool rawOutput = false)
     {
+        if (airportIcao.Length != 4)
+        {
+            await Context.SendErrorMessage("ICAO код аэропорта должен содержать 4 символа. Подробнее: https://en.wikipedia.org/wiki/ICAO_airport_code");
+            return;
+        }
 
         var response = await Context.HttpTools.GetJson<List<MetarWeather.Root>>($"https://aviationweather.gov/api/data/metar?ids={airportIcao}&format=json");
+
+        if (response is null || response.Count == 0)
+        {
+            await Context.SendSadMessage();
+            return;
+        }
+
         var metar = response.FirstOrDefault();
 
         if (!rawOutput)
