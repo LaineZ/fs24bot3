@@ -108,35 +108,6 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
         }
     }
 
-    [Command("isblocked", "blocked", "block", "blk")]
-    [Description("Заблокирован ли сайт в России?")]
-    public async Task IsBlocked(string url)
-    {
-        var output = await Context.HttpTools.PostJson("https://isitblockedinrussia.com/", new IsBlockedInRussia.RequestRoot() { host = url });
-        var jsonOutput = JsonConvert.DeserializeObject<IsBlockedInRussia.Root>(output);
-
-        int totalblocks = 0;
-        int totalips = jsonOutput.ips.Count;
-
-        foreach (var item in jsonOutput.ips)
-        {
-            if (item.blocked.Any())
-            {
-                totalblocks += 1;
-            }
-        }
-
-        if (totalblocks > 0 || jsonOutput.domain.blocked.Any())
-        {
-            await Context.SendMessage(Context.Channel, $"[b]{url}[r]: заблокировано [red]{totalblocks}[r] айпишников из [green]{totalips}[r]!!!" +
-                $" Также заблочено доменов: [b][red]{jsonOutput.domain.blocked.Count}[r] Подробнее: https://isitblockedinrussia.com/?host={url}");
-        }
-        else
-        {
-            await Context.SendMessage(Context.Channel, $"[green]{url}: Не заблокирован!");
-        }
-    }
-
     [Command("whrand", "whowrand", "howrand")]
     public async Task WikiHowRand()
     {
@@ -256,59 +227,6 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
                 break;
             }
         }
-    }
-
-    [Command("prz", "prazdnik", "holiday", "kakojsegodnjaprazdnik")]
-    [Description("Какой сегодня или завтра праздник?")]
-    public async Task Holiday(uint month = 0, uint day = 0)
-    {
-
-        if (month == 0 || month > 12)
-        {
-            month = (uint)DateTime.Now.Month;
-        }
-
-        if (day == 0)
-        {
-            day = (uint)DateTime.Now.Day;
-        }
-
-        var humanMonth = new Dictionary<int, string>()
-        {
-            {1, "yanvar"  },
-            {2, "fevral"  },
-            {3, "mart"    },
-            {4, "aprel"   },
-            {5, "may"     },
-            {6, "iyun"    },
-            {7, "iyul"    },
-            {8, "avgust"  },
-            {9, "sentyabr"},
-            {10, "oktyabr"},
-            {11, "noyabr" },
-            {12, "dekabr" },
-        };
-
-
-        string url = "https://kakoysegodnyaprazdnik.ru/baza/" + humanMonth[(int)month] + "/" + day;
-
-        var response = await Context.HttpTools.GetResponseAsync(url);
-        Log.Verbose(url);
-        var doc = new HtmlDocument();
-        doc.LoadHtml(await response.Content.ReadAsStringAsync());
-
-        var outputs = new List<string>();
-
-        HtmlNodeCollection divContainer = doc.DocumentNode.SelectNodes("//div[@itemprop='suggestedAnswer']//span[@itemprop='text']");
-        if (divContainer != null)
-        {
-            foreach (var node in divContainer)
-            {
-                outputs.Add(node.InnerText);
-            }
-        }
-
-        await Context.SendMessage(Context.Channel, $"[b]{day}-{month}-{DateTime.Today.Year}:[r] у нас: [b]{outputs.Random()}");
     }
 
     [Command("wa", "wolfram", "wolframalpha")]
