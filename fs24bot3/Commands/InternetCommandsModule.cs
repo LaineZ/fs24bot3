@@ -227,6 +227,10 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
                 break;
             }
         }
+        else
+        {
+            await Context.SendSadMessage();
+        }
     }
 
     [Command("wa", "wolfram", "wolframalpha")]
@@ -239,7 +243,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
 
         if (results.IsError)
         {
-            Context.SendErrorMessage(Context.Channel, $"Ошибка при работе сервиса: {results.ErrorDetails}");
+            await Context.SendErrorMessage(Context.Channel, $"Ошибка при работе сервиса: {results.ErrorDetails}");
             return;
         }
 
@@ -279,6 +283,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
 
     [Command("pearls", "inpearls", "inp", "ip")]
+    [Disabled]
     [Description("Самые душевные цитаты в мире!")]
     public async Task InPearls(string category = "", int page = 0)
     {
@@ -303,6 +308,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
     
     [Command("chat", "talk", "chatgpt", "gpt", "ask")]
+    [Disabled]
     [Cooldown(5, 1, CooldownMeasure.Seconds,  Bot.CooldownBucketType.Channel)]
     public async Task ChatGPT([Remainder] string message)
     {
@@ -318,6 +324,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
 
     [Command("cleargpt", "clear")]
+    [Disabled]
     public async Task ClearGPT()
     {
         
@@ -333,6 +340,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
 
     [Command("gchat", "globaltalk", "talkglobal")]
+    [Disabled]
     [Cooldown(5, 1, CooldownMeasure.Seconds,  Bot.CooldownBucketType.Channel)]
     public async Task TalkGlobalGPT([Remainder] string message)
     {
@@ -341,6 +349,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     }
 
     [Command("clearglobal")]
+    [Disabled]
     public async Task ClearGlobalGPTContexnt()
     {
         Context.BotCtx.Gpt.GlobalContext = new DuckDuckGoGPTHelper();
@@ -456,6 +465,7 @@ public sealed class InternetCommandsModule : ModuleBase<CommandProcessor.CustomC
     
     [Command("getimages", "images", "img", "imagefind", "findimage")]
     [Description("Получает изображение из логов")]
+    [Disabled]
     public async Task GetImagesFromLogs(string nickname, string dStart, string dEnd, bool htmlOutput = true)
     {
         Regex regex = new("https?://.*.(png|jpg|gif|webp|jpeg)");

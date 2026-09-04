@@ -65,7 +65,7 @@ public class Bot
         Service.AddModule<InternetCommandsModule>();
         Service.AddModule<CustomCommandsModule>();
         Service.AddModule<StatCommandModule>();
-        Service.AddModule<BandcampCommandsModule>();
+        //Service.AddModule<BandcampCommandsModule>();
         Service.AddModule<TranslateCommandModule>();
         Service.AddModule<FishCommandsModule>();
 
@@ -172,13 +172,16 @@ public class Bot
         
         try
         {
-            if (message.Kind != MessageKind.MessageFromBridge && permissions.HandleProcessing)
+            if (permissions.HandleProcessing)
             {
                 OnMsgEvent.InsertMessages(message);
-                OnMsgEvent.DestroyWallRandomly(Shop, message);
-                OnMsgEvent.LevelInscrease(Shop, message);
-                OnMsgEvent.PrintWarningInformation(message);
-                OnMsgEvent.WhoWrotesMe(message);
+                if (message.Kind != MessageKind.MessageFromBridge)
+                {
+                    OnMsgEvent.DestroyWallRandomly(Shop, message);
+                    OnMsgEvent.LevelInscrease(Shop, message);
+                    OnMsgEvent.PrintWarningInformation(message);
+                    OnMsgEvent.WhoWrotesMe(message);
+                }
             }
 
             if (permissions.HandleUrls)

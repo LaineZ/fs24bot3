@@ -148,7 +148,8 @@ public class OnMsgEvent
         {
             Message = message.Body,
             Nick = message.Sender.Username,
-            Date = DateTime.Now
+            Date = DateTime.Now,
+            FromBridge = message.Kind == MessageKind.MessageFromBridge
         });
     }
 
@@ -157,7 +158,7 @@ public class OnMsgEvent
         if (message.Body.ToLower().TrimStart().StartsWith("кто мне пишет"))
         {
             var wroteMe = BotContext.Connection.Table<SQL.Messages>().ToList()
-                .Where(x => x.Message.Contains(message.Sender.Username) && x.Nick != message.Sender.Username)
+                .Where(x => x.Message.Contains(message.Sender.Username) && x.Nick != message.Sender.Username && !x.FromBridge)
                 .DistinctBy(x => x.Nick).Select(x => x.Nick);
             if (wroteMe.Any())
             {

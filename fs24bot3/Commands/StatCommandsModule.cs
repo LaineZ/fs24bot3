@@ -59,6 +59,7 @@ public sealed class StatCommandModule : ModuleBase<CommandProcessor.CustomComman
 
     [Command("daystat")]
     [Description("Статистика за день")]
+    [Disabled]
     public async Task Daystat(string dateString = "")
     {
         var res = DateTime.TryParse(dateString, out DateTime date);

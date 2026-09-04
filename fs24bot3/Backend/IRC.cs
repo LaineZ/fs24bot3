@@ -179,9 +179,12 @@ public class Irc : IMessagingClient
     public async Task SendMessage(string channel, string message)
     {
         var sb = new StringBuilder(message);
+        var sbUpload = new StringBuilder(message);
+
         foreach (var (tag, value) in Fmt)
         {
             sb.Replace($"[{tag}]", value);
+            sbUpload.Replace($"[{tag}]", String.Empty);
         }
 
         List<string> msgLines = sb.ToString().Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
@@ -198,7 +201,7 @@ public class Irc : IMessagingClient
 
                 if (count > 4)
                 {
-                    string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(message),
+                    string link = await InternetServicesHelper.UploadToTrashbin(MessageHelper.StripIRC(sbUpload.ToString()),
                         "addplain");
                     await BotClient.SendAsync(new PrivMsgMessage(channel, "Полный вывод: " + link));
                     return;
