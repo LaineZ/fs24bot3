@@ -50,8 +50,12 @@ public class Permissions
     public void TooglePermission(PermissionsFlags flag)
     {
         Flags ^= flag;
-        
-        Log.Verbose("{0}", Flags);
+    }
+
+
+    public void DisableAll()
+    {
+        Flags = 0;
     }
 
     public void ApplyValuesAsBitflags()

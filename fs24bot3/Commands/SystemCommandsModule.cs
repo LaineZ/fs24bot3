@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace fs24bot3.Commands;
 
@@ -272,7 +273,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
 
         if (modHandle == null)
         {
-            Context.SendErrorMessage(Context.Channel, $"Модуль {module} не найден!");
+            await Context.SendErrorMessage(Context.Channel, $"Модуль {module} не найден!");
             return;
         }
 
@@ -374,12 +375,32 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
         await Context.SendMessage(Context.Channel, $"Права {fmt} {string.Join(", ", usernames)} были модифицированы!");
     }
 
+    [Command("revokepermissions")]
+    [Description("Убрать ВСЕ права пользователю")]
+    [Checks.CheckAdmin]
+    public async Task RevokePermissions([Remainder] string username)
+    {
+        var usernames = username.Split(" ");
+
+        foreach (var item in usernames)
+        {
+            var user = new User(item, Context.BotCtx.Connection);
+            var permissionClass = user.GetPermissions();
+            permissionClass.DisableAll();
+            Context.BotCtx.Connection.InsertOrReplace(permissionClass);
+        }
+
+        string fmt = username.Length > 1 ? "пользователей" : "пользователя";
+        await Context.SendMessage(Context.Channel, $"Права у {fmt} {string.Join(", ", usernames)} были убраны!");
+    }
+
     [Command("permissions", "perms", "permlist")]
     [Checks.CheckAdmin]
     public async Task Permissions(string username)
     {
         var user = new User(username, Context.BotCtx.Connection);
         var permission = user.GetPermissions();
+        var cal = new List<string>();
 
         if (permission == null || permission.Flags == PermissionsFlags.None)
         {
@@ -387,33 +408,31 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
             return;
         }
 
-        var sb = new StringBuilder();
-
         if (permission.Admin)
         {
-            sb.Append("права администратора, ");
+            cal.Add("права администратора");
         }
 
         if (permission.Bridge)
         {
-            sb.Append("мост, ");
+            cal.Add("мост");
         }
 
         if (permission.ExecuteCommands)
         {
-            sb.Append("выполнение команд, ");
+            cal.Add("выполнение команд");
         }
 
         if (permission.HandleProcessing)
         {
-            sb.Append("обработка данных, ");
+            cal.Add("обработка данных");
         }
 
         if (permission.HandleUrls)
         {
-            sb.Append("обработка ссылок, ");
+            cal.Add("обработка ссылок");
         }
 
-        await Context.SendMessage(Context.Channel, $"Права пользователя [b]{username}[r]: {sb}");
+        await Context.SendMessage(Context.Channel, $"Права пользователя [b]{username}[r]: {String.Join(", ", cal)}");
     }
 }
