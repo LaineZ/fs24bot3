@@ -247,7 +247,7 @@ public sealed class SystemCommandModule : ModuleBase<CommandProcessor.CustomComm
 
         if (cmdHandle == null)
         {
-            Context.SendErrorMessage(Context.Channel, $"Команда .{command} не найдена!");
+            await Context.SendErrorMessage(Context.Channel, $"Команда .{command} не найдена!");
             return;
         }
 
