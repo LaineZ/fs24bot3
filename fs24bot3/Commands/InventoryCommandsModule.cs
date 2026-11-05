@@ -334,31 +334,35 @@ public sealed class InventoryCommandsModule : ModuleBase<CommandProcessor.Custom
     {
         Context.User.EnableSilentMode();
         bool delete = false;
+        bool got = Context.BotCtx.Shop.Items.TryGetValue(itemname, out var item);
+
+        if (!got)
+        {
+            await Context.SendSadMessage(Context.Channel, $"Предмета `{itemname}` не существует");
+            return;
+        }
+
         if (Context.User.CountItem(itemname) > 0)
         {
             if (nick != null && nick != Context.User.Username)
             {
                 User targetUser = new User(nick, in Context.BotCtx.Connection);
-                delete = await Context.BotCtx.Shop.Items[itemname]
-                    .OnUseOnUser(Context.BotCtx, Context.Channel, Context.User, targetUser);
+                delete = await item.OnUseOnUser(Context.BotCtx, Context.Channel, Context.User, targetUser);
             }
             else
             {
-                delete = await Context.BotCtx.Shop.Items[itemname]
-                    .OnUseMyself(Context.BotCtx, Context.Channel, Context.User);
+                delete = await item.OnUseMyself(Context.BotCtx, Context.Channel, Context.User);
             }
         }
         else
         {
-            await Context.SendSadMessage(Context.Channel,
-                $"У вас нет предмета {Context.BotCtx.Shop.Items[itemname].Name} чтобы его использовать");
+            await Context.SendSadMessage(Context.Channel, $"У вас нет предмета {item.Name} чтобы его использовать");
         }
 
         if (delete)
         {
             await Context.User.RemItemFromInv(Context.BotCtx.Shop, itemname, 1);
-            await Context.SendMessage(Context.Channel,
-                $"[red]Предмет {Context.BotCtx.Shop.Items[itemname].Name} использован!");
+            await Context.SendMessage(Context.Channel, $"[red]Предмет {item.Name} использован!");
         }
     }
 }
